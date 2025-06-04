@@ -7,6 +7,8 @@
 
 A powerful, modular desktop application for managing {ProjectName} environments with integrated terminal support, environment verification, and dynamic configuration management.
 
+This project is also an experiment in "vibe coding" mixed with solid code practices. I explored a variety of AI tools and language models to see how they complement traditional development. Details can be found in the [AI Coding Experiment](docs/llm-experiments.md) document.
+
 ## 🚀 Features
 
 - **Dynamic Environment Verification**: JSON-configurable verification system for tools and dependencies
@@ -514,6 +516,7 @@ The debug panel button changes appearance based on active options:
 - [Command System](docs/command-system.md) - Command generation and execution
 - [Terminal Features](docs/terminal-features.md) - Tab information panel
 - [API Reference](docs/api-reference.md) - Internal API documentation
+- [AI Coding Experiment](docs/llm-experiments.md) - Overview of vibe coding with various tools and models
 
 ## 🙏 Acknowledgments
 
