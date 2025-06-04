@@ -19,8 +19,8 @@ const { displaySettings, sections: configSidebarSections } = appConfig;
 // Constants for terminal and sidebar dimensions
 const FLOATING_TERMINAL_AVG_WIDTH = 500; // Approximate width
 const FLOATING_TERMINAL_AVG_HEIGHT = 300; // Approximate height
-const SIDEBAR_EXPANDED_WIDTH = 280; // From floating-sidebar.css
-const SIDEBAR_COLLAPSED_WIDTH = 50; // From floating-sidebar.css
+const SIDEBAR_EXPANDED_WIDTH = 280; // From app-control-sidebar.css
+const SIDEBAR_COLLAPSED_WIDTH = 50; // From app-control-sidebar.css
 
 const App = () => {
   // Project Name state
