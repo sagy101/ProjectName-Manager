@@ -394,7 +394,7 @@ const ConfigSection = ({
                     // Optionally, show a user-facing error or notification here
                   }
                 }}
-                disabled={isLocked || !config.enabled} // Basic disable logic, can be expanded
+                disabled={isLocked || !config.enabled || isLogsDisabled()} // Disable when logs are unavailable
                 title={section.components.customButton.label} // Use label for tooltip
               >
                 <span className="custom-button-label">{section.components.customButton.label}</span>
