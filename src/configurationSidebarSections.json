@@ -1,106 +1,111 @@
 {
   "displaySettings": {
-    "projectName": "Generic Project Name",
-    "openDevToolsByDefault": true
+    "projectName": "ISO",
+    "openDevToolsByDefault": false
   },
   "sections": [
     {
-      "id": "serviceAlpha",
-      "title": "Service Alpha + DB Alpha",
+      "id": "mirror",
+      "title": "Mirror + MariaDB",
       "components": {
         "toggle": true,
         "attachToggle": {
           "enabled": true,
-          "mutuallyExclusiveWith": ["serviceDelta"]
+          "mutuallyExclusiveWith": ["activity-logger"]
         },
         "infoButton": true,
         "gitBranch": true,
+        "modeSelector": {
+          "options": ["run", "suspend"],
+          "labels": ["Run", "Suspend"],
+          "default": "suspend"
+        },
         "subSections": [
           {
-            "id": "serviceAlpha_uiComponent",
-            "title": "UI Component Alpha",
+            "id": "frontend",
+            "title": "Frontend",
             "components": {
               "toggle": true,
-              "deploymentOptions": ["standard", "developer"],
-              "labels": ["Standard Mode", "Developer Mode"]
+              "deploymentOptions": ["normal", "dev"],
+              "labels": ["Normal", "Dev Mode"]
             }
           }
         ]
       }
     },
     {
-      "id": "serviceBeta",
-      "title": "Service Beta + Agent Beta + Browser Beta",
+      "id": "gopm",
+      "title": "GoPM + Agent + Chromium",
       "components": {
         "toggle": true,
         "infoButton": true,
         "gitBranch": true,
-        "deploymentOptions": ["runtime_option_1", "runtime_option_2"]
+        "deploymentOptions": ["container", "process"]
       }
     },
     {
-      "id": "serviceGamma",
-      "title": "Analysis Service Gamma + External API Gamma",
+      "id": "url-intelligence",
+      "title": "URL Intelligence + TI (Cloud)",
       "components": {
         "toggle": true,
         "infoButton": true,
         "gitBranch": true,
         "dropdownSelectors": [
           {
-            "id": "contextSelectorGamma",
-            "command": "echo \"contextA contextB contextC\"",
+            "id": "kubectlContext",
+            "command": "kubectl config get-contexts -o name",
             "parseResponse": "lines",
-            "placeholder": "Choose Context...",
+            "placeholder": "Select context...",
             "loadingText": "Loading contexts...",
             "errorText": "Error loading contexts",
             "noOptionsText": "No contexts found",
-            "dependsOn": "globalConfigKey1",
+            "dependsOn": "gcloudProject",
             "defaultValue": {
-              "contains": "default_context_value"
+              "contains": "staging"
             }
           }
         ],
         "subSections": [
           {
-            "id": "serviceGamma_analysisSubService",
-            "title": "Analysis Sub-Service Gamma.1",
+            "id": "url-intelligence-sub",
+            "title": "URL Intelligence",
             "components": {
               "toggle": true,
-              "deploymentOptions": ["modeX", "modeY", "modeZ"],
-              "labels": ["Mode X", "Mode Y", "Mode Z"],
+              "deploymentOptions": ["forwarding", "process", "mock"],
+              "labels": ["Forwarding", "Process", "Mock"],
               "dropdownSelectors": [
                 {
-                  "id": "podSelectorGamma1",
-                  "command": "echo \"pod1_gamma1 pod2_gamma1\"",
+                  "id": "urlIntelPod",
+                  "command": "kubectl get pods -l app=url-intelligence --no-headers -o custom-columns=\":metadata.name\"",
                   "parseResponse": "lines",
-                  "placeholder": "Choose Pod (for Mode X)...",
-                  "loadingText": "Loading pods...",
-                  "errorText": "Error loading pods",
-                  "noOptionsText": "No pods found",
-                  "dependsOn": "contextSelectorGamma",
+                  "placeholder": "Select URL Intel pod (for Forwarding)...",
+                  "loadingText": "Loading URL Intel pods...",
+                  "errorText": "Error loading URL Intel pods",
+                  "noOptionsText": "No URL Intel pods found",
+                  "dependsOn": "kubectlContext",
                   "visibleWhen": {
                     "configKey": "deploymentType",
-                    "hasValue": "modeX"
+                    "hasValue": "forwarding"
                   }
                 }
               ]
             }
           },
           {
-            "id": "serviceGamma_apiSubService",
-            "title": "External API Sub-Service Gamma.2",
+            "id": "threat-intelligence-sub",
+            "title": "Threat Intelligence",
             "components": {
               "toggle": true,
               "dropdownSelectors": [
                 {
-                  "id": "podSelectorGamma2",
-                  "command": "echo \"pod1_gamma2 pod2_gamma2\"",
+                  "id": "threatIntelPod",
+                  "command": "kubectl get pods -l app=threat-intelligence --no-headers -o custom-columns=\":metadata.name\"",
                   "parseResponse": "lines",
-                  "placeholder": "Choose Pod...",
+                  "placeholder": "Select Threat Intel pod...",
                   "loadingText": "Loading pods...",
-                  "errorText": "Error loading pods",
-                  "noOptionsText": "No pods found",
-                  "dependsOn": "contextSelectorGamma"
+                  "errorText": "Error loading Threat Intel pods",
+                  "noOptionsText": "No Threat Intel pods found",
+                  "dependsOn": "kubectlContext"
                 }
               ]
             }
@@ -109,72 +114,77 @@
       }
     },
     {
-      "id": "serviceDelta",
-      "title": "Logging Service Delta",
+      "id": "activity-logger",
+      "title": "Activity Logger",
       "components": {
         "toggle": true,
         "attachToggle": {
           "enabled": true,
-          "mutuallyExclusiveWith": ["serviceAlpha"]
+          "mutuallyExclusiveWith": ["mirror"]
         },
         "infoButton": true,
         "gitBranch": true,
         "mainToggle": {
           "validationRequired": {
-            "condition": "gcloudProject && !projectSelectorFallbacks.includes(gcloudProject)",
-            "errorMessage": "Cannot enable Logging Service Delta until a cloud project is selected."
+                        "condition": "gcloudProject && !projectSelectorFallbacks.includes(gcloudProject)",
+              "errorMessage": "Cannot enable Activity Logger until a cloud project is selected."
           }
+        },
+        "modeSelector": {
+          "options": ["run", "suspend"],
+          "labels": ["Run", "Suspend"],
+          "default": "suspend"
         }
       }
     },
     {
-      "id": "serviceEpsilon",
-      "title": "Processing Engine Epsilon",
+      "id": "rule-engine",
+      "title": "Rule Engine",
       "components": {
         "toggle": true,
         "infoButton": true,
         "gitBranch": true,
-        "deploymentOptions": ["runtime_option_1", "runtime_option_2"],
-        "labels": ["Runtime Option 1", "Runtime Option 2"]
+        "deploymentOptions": ["container", "process"],
+        "labels": ["Container", "Process"]
       }
     },
     {
-      "id": "engineZeta",
-      "title": "Analytics Engine Zeta",
+      "id": "test-analytics",
+      "title": "Test Analytics Engine",
       "testSection": true,
       "components": {
         "toggle": true,
         "infoButton": true,
         "gitBranch": true,
         "modeSelector": {
-          "options": ["env_dev", "env_stg", "env_prod"],
-          "default": "env_dev"
+          "options": ["development", "staging", "production"],
+          "default": "development"
         },
         "subSections": [
           {
-            "id": "engineZeta_dataHandler",
-            "title": "Data Handler Zeta.1",
+            "id": "data-processor",
+            "title": "Data Processor",
             "components": {
               "toggle": true,
-              "deploymentOptions": ["process_type_A", "process_type_B", "process_type_C"]
+              "deploymentOptions": ["batch", "stream", "hybrid"]
             }
           },
           {
-            "id": "engineZeta_mlModule",
-            "title": "Machine Learning Module Zeta.2",
+            "id": "ml-engine",
+            "title": "ML Engine",
             "components": {
               "toggle": true,
-              "deploymentOptions": ["ml_framework_1", "ml_framework_2", "ml_framework_3"],
-              "labels": ["ML Framework Alpha", "ML Framework Beta", "ML Framework Gamma"]
+              "deploymentOptions": ["tensorflow", "pytorch", "sklearn"],
+              "labels": ["TensorFlow", "PyTorch", "Scikit-learn"]
             }
           }
         ],
         "customButton": {
-          "id": "viewLogsButtonZeta",
-          "label": "Show sigmas",
-          "commandId": "engineZeta_log_command"
+          "id": "testAnalyticsLogs",
+          "label": "View Logs",
+          "commandId": "testAnalyticsLogCommand"
         }
       }
     }
-  ]
+  ] 
 }
