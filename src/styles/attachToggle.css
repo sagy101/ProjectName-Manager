@@ -1,0 +1,112 @@
+.attach-toggle-container {
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
+.attach-toggle-button {
+  display: flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid #454642;
+  font-size: 0.75rem;
+  font-weight: normal;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: #3D3E3A;
+  color: #F8F8F8;
+  outline: none;
+}
+
+.attach-toggle-button:hover:not(:disabled) {
+  background-color: #454642;
+}
+
+.attach-toggle-button:active:not(:disabled) {
+  background-color: #515248;
+}
+
+.attach-toggle-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.attach-toggle-button.attached {
+  background-color: #5a913c;
+  border-color: #6ba347;
+  color: white;
+}
+
+.attach-toggle-button.detached {
+  background-color: #3D3E3A;
+  color: #F8F8F8;
+}
+
+/* Warning state - used when another toggle is being activated */
+.attach-toggle-button.warning {
+  background-color: #d32f2f;
+  border-color: #b71c1c;
+  color: white;
+  animation: warning-pulse 0.5s alternate infinite;
+}
+
+@keyframes warning-pulse {
+  from {
+    background-color: #d32f2f;
+  }
+  to {
+    background-color: #b71c1c;
+  }
+}
+
+.attach-toggle-status {
+  display: flex;
+  align-items: center;
+}
+
+.attach-toggle-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  background-color: currentColor;
+  position: relative;
+}
+
+.attach-toggle-indicator::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: inherit;
+  opacity: 0.7;
+  animation: pulse 1.5s infinite;
+}
+
+.attached .attach-toggle-indicator::after {
+  animation: pulse 1.5s infinite;
+}
+
+.detached .attach-toggle-indicator::after {
+  animation: none;
+}
+
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.7;
+  }
+  70% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
+} 

@@ -1,0 +1,433 @@
+# Verification Types Reference
+
+This document provides a comprehensive reference for all verification types supported by {ProjectName} Manager's environment verification system. For a higher-level overview of the verification system, see the [System Architecture](architecture.md#environment-verification-system) document.
+
+## Overview
+
+Verifications are checks that validate the presence and configuration of tools, paths, environment variables, and other dependencies required for your development environment. Each verification has a `checkType` that determines how the validation is performed.
+
+Verifications can be organized in categories within the `generalEnvironmentVerifications.json` file, which now also supports header configuration with dropdown selectors for dynamic environment selection.
+
+## Verification Structure
+
+All verifications share a common base structure:
+
+```json
+{
+  "id": "uniqueIdentifier",
+  "title": "Human-readable description",
+  "checkType": "verificationType",
+  // Additional properties based on checkType
+}
+```
+
+**Common Properties:**
+- `id` (string, required): Unique identifier for the verification
+- `title` (string, required): Human-readable description shown in the UI
+- `checkType` (string, required): Type of verification to perform
+
+## File Structure
+
+The `generalEnvironmentVerifications.json` file now supports an optional header configuration:
+
+```json
+{
+  "header": {
+    "title": "General Environment",
+    "dropdownSelectors": [
+      {
+        "id": "gcloudProject",
+        "command": "gcloud projects list --format=\"value(projectId)\"",
+        "parseResponse": "lines",
+        "placeholder": "Select project...",
+        "loadingText": "Loading projects...",
+        "errorText": "Error loading projects",
+        "noOptionsText": "No projects found"
+      }
+    ]
+  },
+  "categories": [
+    {
+      "category": {
+        "title": "Category Name",
+        "verifications": [
+          // Verification objects
+        ]
+      }
+    }
+  ]
+}
+```
+
+**Header Configuration**:
+- `header` (optional): Configures the environment section header
+  - `title`: Display title for the environment section
+  - `dropdownSelectors`: Array of dropdown selector configurations for global environment settings
+
+For detailed information about dropdown selectors, see the [Configuration Guide](configuration-guide.md#dropdown-selectors).
+
+## Verification Types
+
+### 1. Command Success (`commandSuccess`)
+
+Checks if a command executes successfully (exit code 0).
+
+**Properties:**
+- `command` (string, required): Command to execute
+
+**Example:**
+```json
+{
+  "id": "nodeInstalled",
+  "title": "Node.js installed",
+  "checkType": "commandSuccess",
+  "command": "node --version"
+}
+```
+
+**Use Cases:**
+- Checking if tools are installed and accessible
+- Verifying basic command availability
+- Testing simple command execution
+
+### 2. Output Contains (`outputContains`)
+
+Verifies that command output contains specific text.
+
+**Properties:**
+- `command` (string, required): Command to execute
+- `expectedValue` (string, optional): Text that must be present in output
+  - If empty or not provided: Checks for any non-empty output
+- `outputStream` (string, optional): Which output stream to check
+  - `"stdout"`: Check standard output
+  - `"stderr"`: Check standard error
+  - `"any"` (default): Check both stdout and stderr
+
+**Examples:**
+
+**Basic version check:**
+```json
+{
+  "id": "nodeVersion",
+  "title": "Node.js v18+ installed",
+  "checkType": "outputContains",
+  "command": "node --version",
+  "expectedValue": "v18."
+}
+```
+
+**Check for any output (tool installed):**
+```json
+{
+  "id": "nvmInstalled",
+  "title": "NVM installed",
+  "checkType": "outputContains",
+  "command": "nvm --version",
+  "expectedValue": ""
+}
+```
+
+**Java version (stderr output):**
+```json
+{
+  "id": "javaVersion",
+  "title": "Java 17 installed",
+  "checkType": "outputContains",
+  "command": "java -version",
+  "expectedValue": "openjdk version \"17.",
+  "outputStream": "stderr"
+}
+```
+
+**Use Cases:**
+- Verifying specific tool versions
+- Checking if a tool is installed (any output)
+- Checking configuration output
+- Validating command responses
+
+### 3. Environment Variable Exists (`envVarExists`)
+
+Checks if an environment variable is set (has any value).
+
+**Properties:**
+- `variableName` (string, required): Name of the environment variable
+
+**Example:**
+```json
+{
+  "id": "homeSet",
+  "title": "$HOME environment variable set",
+  "checkType": "envVarExists",
+  "variableName": "HOME"
+}
+```
+
+**Use Cases:**
+- Verifying required environment variables are set
+- Checking shell configuration
+- Validating development environment setup
+
+### 4. Environment Variable Equals (`envVarEquals`)
+
+Checks if an environment variable has a specific value.
+
+**Properties:**
+- `variableName` (string, required): Name of the environment variable
+- `expectedValue` (string, required): Expected value of the variable
+
+**Example:**
+```json
+{
+  "id": "nodeEnv",
+  "title": "NODE_ENV set to development",
+  "checkType": "envVarEquals",
+  "variableName": "NODE_ENV",
+  "expectedValue": "development"
+}
+```
+
+**Use Cases:**
+- Verifying specific environment configurations
+- Checking deployment environment settings
+- Validating configuration values
+
+### 5. Path Exists (`pathExists`)
+
+Checks if a file or directory exists at the specified path.
+
+**Properties:**
+- `pathValue` (string, required): Path to check (supports environment variable substitution)
+- `pathType` (string, optional): Type of path to expect
+  - `"directory"`: Must be a directory
+  - `"file"`: Must be a file
+  - If not specified: Can be either file or directory
+
+**Environment Variable Substitution:**
+- `$HOME`: User's home directory
+- `$GOPATH`: Go workspace path (if set)
+
+**Examples:**
+
+**Directory check:**
+```json
+{
+  "id": "projectDir",
+  "title": "./frontend directory exists",
+  "checkType": "pathExists",
+  "pathValue": "./frontend",
+  "pathType": "directory"
+}
+```
+
+**File check:**
+```json
+{
+  "id": "gradlewExists",
+  "title": "gradlew exists",
+  "checkType": "pathExists",
+  "pathValue": "./gradlew",
+  "pathType": "file"
+}
+```
+
+**File check with environment variable:**
+```json
+{
+  "id": "bashProfile",
+  "title": "Bash profile exists",
+  "checkType": "pathExists",
+  "pathValue": "$HOME/.bash_profile",
+  "pathType": "file"
+}
+```
+
+**Any path type:**
+```json
+{
+  "id": "configExists",
+  "title": "Configuration file or directory exists",
+  "checkType": "pathExists",
+  "pathValue": "./config"
+}
+```
+
+**Use Cases:**
+- Verifying project directory structure
+- Checking for configuration files
+- Validating installation paths
+- Checking for build scripts (e.g., gradlew, package.json)
+- Verifying tool installations in specific locations
+
+## Platform-Specific Considerations
+
+### Java Version Detection
+
+Java outputs version information to stderr, not stdout:
+
+```json
+{
+  "id": "javaInstalled",
+  "title": "Java installed",
+  "checkType": "outputContains",
+  "command": "java -version",
+  "expectedValue": "openjdk version",
+  "outputStream": "stderr"
+}
+```
+
+### Command Timeouts
+
+All commands have a 5-second timeout to prevent hanging. Long-running commands should be avoided in verifications.
+
+## Verification Results
+
+Each verification returns one of three states:
+
+- **`valid`**: Verification passed successfully
+- **`invalid`**: Verification failed
+- **`waiting`**: Verification is in progress
+
+## Best Practices
+
+### Command Design
+- Use simple, fast commands when possible
+- Avoid commands that require user interaction
+- Test commands manually before adding to configuration
+- Consider platform differences (macOS, Linux, Windows)
+
+### Output Matching
+- Use specific but flexible matching strings
+- Account for version number variations
+- Consider locale and language differences
+- Test with different tool versions
+
+### Path Verification
+- Use relative paths for project structure
+- Use environment variables for user-specific paths
+- Specify `pathType` when the distinction matters
+- Test paths on different operating systems
+
+### Environment Variables
+- Check for existence before checking specific values
+- Use descriptive variable names
+- Document expected values in verification titles
+- Consider case sensitivity
+
+## Error Handling
+
+The verification system handles various error conditions:
+
+- **Command not found**: Returns `invalid`
+- **Command execution timeout**: Returns `invalid`
+- **Permission denied**: Returns `invalid`
+- **Path access errors**: Returns `invalid`
+- **Environment variable not set**: Returns `invalid`
+
+## Examples by Use Case
+
+### Development Tools
+```json
+[
+  {
+    "id": "gitInstalled",
+    "title": "Git installed",
+    "checkType": "commandSuccess",
+    "command": "git --version"
+  },
+  {
+    "id": "dockerInstalled",
+    "title": "Docker installed",
+    "checkType": "commandSuccess",
+    "command": "docker --version"
+  },
+  {
+    "id": "yarnInstalled",
+    "title": "Yarn package manager",
+    "checkType": "commandSuccess",
+    "command": "yarn --version"
+  }
+]
+```
+
+### Version-Specific Checks
+```json
+[
+  {
+    "id": "pythonVersion",
+    "title": "Python 3.9+ installed",
+    "checkType": "outputContains",
+    "command": "python3 --version",
+    "expectedValue": "Python 3.9"
+  },
+  {
+    "id": "goVersion",
+    "title": "Go 1.19+ installed",
+    "checkType": "outputContains",
+    "command": "go version",
+    "expectedValue": "go1.19"
+  }
+]
+```
+
+### Project Structure
+```json
+[
+  {
+    "id": "srcDir",
+    "title": "Source directory exists",
+    "checkType": "pathExists",
+    "pathValue": "./src",
+    "pathType": "directory"
+  },
+  {
+    "id": "packageJson",
+    "title": "package.json exists",
+    "checkType": "pathExists",
+    "pathValue": "./package.json",
+    "pathType": "file"
+  }
+]
+```
+
+### Environment Configuration
+```json
+[
+  {
+    "id": "pathSet",
+    "title": "PATH environment variable",
+    "checkType": "envVarExists",
+    "variableName": "PATH"
+  },
+  {
+    "id": "debugMode",
+    "title": "Debug mode enabled",
+    "checkType": "envVarEquals",
+    "variableName": "DEBUG",
+    "expectedValue": "true"
+  }
+]
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Command not found**: Ensure the tool is installed and in PATH
+2. **Permission denied**: Check file/directory permissions
+3. **Unexpected output**: Verify the expected value matches actual output
+4. **Environment variables**: Ensure variables are set in the correct scope
+
+### Debugging Tips
+
+1. Test commands manually in a terminal
+2. Check both stdout and stderr output
+3. Verify environment variable values with `echo $VARIABLE_NAME`
+4. Use the application's debug panel to test verification states
+5. Check console logs for detailed error messages
+
+### Platform Considerations
+
+- **Windows**: Use appropriate commands (e.g., `where` instead of `which`)
+- **macOS**: Consider Homebrew installation paths
+- **Linux**: Account for different distributions and package managers
+- **Shells**: Test with different shells (bash, zsh, fish) 

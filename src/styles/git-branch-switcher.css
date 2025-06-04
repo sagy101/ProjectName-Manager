@@ -1,0 +1,259 @@
+/* GitBranchSwitcher Wrapper */
+.git-branch-switcher-wrapper {
+  position: relative; /* For dropdown positioning */
+  display: block; /* Changed from inline-block to allow width 100% */
+  width: 100%; /* Make wrapper take full available width of its parent */
+}
+
+/* Display Button (what is always visible) */
+.git-branch-switcher-display-button {
+  display: flex; /* Changed from inline-flex to flex for 100% width */
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  background-color: #383838; /* Slightly lighter than section bg */
+  color: #D0D0D0;
+  border: 1px solid #4e4e4e;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  min-height: 30px;
+  width: 100%; /* Button takes full width of wrapper */
+  justify-content: space-between; /* Pushes chevron to the right */
+  overflow: hidden; /* Needed for children to respect text-overflow */
+}
+
+.git-branch-switcher-display-button:hover {
+  background-color: #454545;
+  border-color: #606060;
+}
+
+.git-branch-switcher-display-button.open {
+  background-color: #454545;
+  border-color: #007bff; /* Highlight when open */
+}
+
+.git-branch-switcher-display-button > span { /* Direct child span holding branch name */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-grow: 1; /* Allow it to take available space before chevron */
+  min-width: 0; /* Important for flex item to shrink and allow ellipsis */
+  text-align: left; /* Align text to the left */
+}
+
+.git-branch-switcher-display-button .icon {
+  width: 1em;
+  height: 1em;
+}
+
+.git-branch-switcher-display-button .display-icon {
+  color: #b0b0b0;
+  margin-right: 6px;
+}
+
+.git-branch-switcher-display-button .chevron-icon {
+  color: #b0b0b0;
+  margin-left: 8px;
+  width: 0.9em; /* Slightly smaller chevron */
+  height: 0.9em;
+  flex-shrink: 0; /* Prevent chevron from shrinking */
+}
+
+/* Dropdown Panel */
+.git-branch-dropdown {
+  position: absolute;
+  top: calc(100% + 5px); /* Position below the button */
+  left: 0;
+  width: 280px; /* Or min-width and let content dictate */
+  background-color: #2c2c2c; /* Dark background for dropdown */
+  border: 1px solid #444;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000; /* Ensure it's on top */
+  color: #E0E0E0;
+  padding-bottom: 8px;
+}
+
+.dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid #444;
+  font-size: 0.9em;
+  color: #b0b0b0;
+}
+
+.dropdown-header .close-button {
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  padding: 2px;
+}
+.dropdown-header .close-button:hover {
+  color: #fff;
+}
+.dropdown-header .close-button .icon {
+  width: 1.2em;
+  height: 1.2em;
+}
+
+/* Search Input */
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid #444;
+}
+
+.search-input-wrapper .search-icon {
+  width: 1em;
+  height: 1em;
+  color: #888;
+  margin-right: 8px;
+}
+
+.branch-search-input {
+  width: 100%;
+  background-color: #252525;
+  border: 1px solid #404040;
+  color: #E0E0E0;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 0.95em;
+  outline: none;
+}
+
+.branch-search-input:focus {
+  border-color: #007bff;
+  background-color: #2a2a2a;
+}
+
+/* Branch List */
+.branch-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px; /* Scrollable list */
+  overflow-y: auto;
+}
+
+.branch-list li {
+  padding: 8px 12px;
+  font-size: 0.9em;
+  cursor: pointer;
+  border-bottom: 1px solid #3a3a3a;
+  display: flex;
+  align-items: center;
+}
+.branch-list li:last-child {
+  border-bottom: none;
+}
+
+.branch-list li:hover {
+  background-color: #3b3b3b;
+}
+
+.branch-list li.current {
+  font-weight: bold;
+  color: #79b8ff;
+}
+
+.branch-list li > span.branch-name-in-list { 
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.branch-list li .check-icon-list {
+  width: 1em;
+  height: 1em;
+  margin-right: 8px;
+  color: #79b8ff;
+  flex-shrink: 0;
+}
+
+.create-branch-item {
+  color: #a0a0a0;
+}
+.create-branch-item strong {
+  color: #E0E0E0;
+}
+
+.loading-branches-text,
+.no-results-item,
+.dropdown-error-message {
+  padding: 10px 12px;
+  font-size: 0.9em;
+  color: #888;
+  text-align: center;
+}
+
+.dropdown-error-message {
+  color: #fc8181;
+  background-color: rgba(252, 129, 129, 0.1);
+  border-bottom: 1px solid #444;
+}
+
+.loading-branches-text .icon {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 5px;
+}
+
+/* Animation for loading spinner */
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Remove old styles that are no longer applicable */
+.git-branch-switcher.editing,
+.git-branch-switcher .branch-input,
+.git-branch-switcher .action-button,
+.git-branch-switcher .error-message {
+  /* These were for the old inline edit mode, 
+     can be removed or kept if there's a fallback */
+  display: none; 
+}
+
+/* Added styles for disabled state */
+.git-branch-switcher-display-button[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: var(--vscode-button-secondaryBackground) !important; /* Match other disabled buttons if possible */
+  color: var(--vscode-disabledForeground) !important;
+}
+
+.git-branch-switcher-display-button[disabled]:hover {
+  background-color: var(--vscode-button-secondaryBackground) !important; /* Ensure no hover effect */
+}
+
+.git-branch-dropdown .branch-list li.disabled-item,
+.git-branch-dropdown .create-branch-item.disabled-item {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: transparent !important; /* Override hover effects */
+  color: var(--vscode-disabledForeground, #aaa) !important; /* Adjust color to look disabled */
+}
+
+.git-branch-dropdown .branch-list li.disabled-item:hover,
+.git-branch-dropdown .create-branch-item.disabled-item:hover {
+  background-color: transparent !important; /* Ensure no hover effect */
+  color: var(--vscode-disabledForeground, #aaa) !important;
+}
+
+.git-branch-dropdown .branch-search-input[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: var(--vscode-input-background) !important;
+  color: var(--vscode-disabledForeground) !important;
+} 

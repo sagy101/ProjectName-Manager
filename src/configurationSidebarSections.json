@@ -1,0 +1,180 @@
+{
+  "displaySettings": {
+    "projectName": "Generic Project Name",
+    "openDevToolsByDefault": true
+  },
+  "sections": [
+    {
+      "id": "serviceAlpha",
+      "title": "Service Alpha + DB Alpha",
+      "components": {
+        "toggle": true,
+        "attachToggle": {
+          "enabled": true,
+          "mutuallyExclusiveWith": ["serviceDelta"]
+        },
+        "infoButton": true,
+        "gitBranch": true,
+        "subSections": [
+          {
+            "id": "serviceAlpha_uiComponent",
+            "title": "UI Component Alpha",
+            "components": {
+              "toggle": true,
+              "deploymentOptions": ["standard", "developer"],
+              "labels": ["Standard Mode", "Developer Mode"]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "serviceBeta",
+      "title": "Service Beta + Agent Beta + Browser Beta",
+      "components": {
+        "toggle": true,
+        "infoButton": true,
+        "gitBranch": true,
+        "deploymentOptions": ["runtime_option_1", "runtime_option_2"]
+      }
+    },
+    {
+      "id": "serviceGamma",
+      "title": "Analysis Service Gamma + External API Gamma",
+      "components": {
+        "toggle": true,
+        "infoButton": true,
+        "gitBranch": true,
+        "dropdownSelectors": [
+          {
+            "id": "contextSelectorGamma",
+            "command": "echo \"contextA contextB contextC\"",
+            "parseResponse": "lines",
+            "placeholder": "Choose Context...",
+            "loadingText": "Loading contexts...",
+            "errorText": "Error loading contexts",
+            "noOptionsText": "No contexts found",
+            "dependsOn": "globalConfigKey1",
+            "defaultValue": {
+              "contains": "default_context_value"
+            }
+          }
+        ],
+        "subSections": [
+          {
+            "id": "serviceGamma_analysisSubService",
+            "title": "Analysis Sub-Service Gamma.1",
+            "components": {
+              "toggle": true,
+              "deploymentOptions": ["modeX", "modeY", "modeZ"],
+              "labels": ["Mode X", "Mode Y", "Mode Z"],
+              "dropdownSelectors": [
+                {
+                  "id": "podSelectorGamma1",
+                  "command": "echo \"pod1_gamma1 pod2_gamma1\"",
+                  "parseResponse": "lines",
+                  "placeholder": "Choose Pod (for Mode X)...",
+                  "loadingText": "Loading pods...",
+                  "errorText": "Error loading pods",
+                  "noOptionsText": "No pods found",
+                  "dependsOn": "contextSelectorGamma",
+                  "visibleWhen": {
+                    "configKey": "deploymentType",
+                    "hasValue": "modeX"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "serviceGamma_apiSubService",
+            "title": "External API Sub-Service Gamma.2",
+            "components": {
+              "toggle": true,
+              "dropdownSelectors": [
+                {
+                  "id": "podSelectorGamma2",
+                  "command": "echo \"pod1_gamma2 pod2_gamma2\"",
+                  "parseResponse": "lines",
+                  "placeholder": "Choose Pod...",
+                  "loadingText": "Loading pods...",
+                  "errorText": "Error loading pods",
+                  "noOptionsText": "No pods found",
+                  "dependsOn": "contextSelectorGamma"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "serviceDelta",
+      "title": "Logging Service Delta",
+      "components": {
+        "toggle": true,
+        "attachToggle": {
+          "enabled": true,
+          "mutuallyExclusiveWith": ["serviceAlpha"]
+        },
+        "infoButton": true,
+        "gitBranch": true,
+        "mainToggle": {
+          "validationRequired": {
+            "condition": "gcloudProject && !projectSelectorFallbacks.includes(gcloudProject)",
+            "errorMessage": "Cannot enable Logging Service Delta until a cloud project is selected."
+          }
+        }
+      }
+    },
+    {
+      "id": "serviceEpsilon",
+      "title": "Processing Engine Epsilon",
+      "components": {
+        "toggle": true,
+        "infoButton": true,
+        "gitBranch": true,
+        "deploymentOptions": ["runtime_option_1", "runtime_option_2"],
+        "labels": ["Runtime Option 1", "Runtime Option 2"]
+      }
+    },
+    {
+      "id": "engineZeta",
+      "title": "Analytics Engine Zeta",
+      "testSection": true,
+      "components": {
+        "toggle": true,
+        "infoButton": true,
+        "gitBranch": true,
+        "modeSelector": {
+          "options": ["env_dev", "env_stg", "env_prod"],
+          "default": "env_dev"
+        },
+        "subSections": [
+          {
+            "id": "engineZeta_dataHandler",
+            "title": "Data Handler Zeta.1",
+            "components": {
+              "toggle": true,
+              "deploymentOptions": ["process_type_A", "process_type_B", "process_type_C"]
+            }
+          },
+          {
+            "id": "engineZeta_mlModule",
+            "title": "Machine Learning Module Zeta.2",
+            "components": {
+              "toggle": true,
+              "deploymentOptions": ["ml_framework_1", "ml_framework_2", "ml_framework_3"],
+              "labels": ["ML Framework Alpha", "ML Framework Beta", "ML Framework Gamma"]
+            }
+          }
+        ],
+        "customButton": {
+          "id": "viewLogsButtonZeta",
+          "label": "Show sigmas",
+          "commandId": "engineZeta_log_command"
+        }
+      }
+    }
+  ]
+}

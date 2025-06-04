@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>{ProjectName} Manager</title>
+  <link rel="stylesheet" href="src/styles.css" />
+  <style>
+    /* Debug styling removed */
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <!-- Emergency debug panel removed -->
+  
+  <!-- Make sure we can access the modules directly for debugging -->
+  <script>
+    window.onerror = function(message, source, lineno, colno, error) {
+      console.error('Error caught:', message, 'at', source, ':', lineno, ':', colno, error);
+      return false;
+    };
+    
+    // Emergency debug functions removed
+    
+  </script>
+  
+  <!-- Load React bundle -->
+  <script src="dist/renderer.js"></script>
+</body>
+</html> 

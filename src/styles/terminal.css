@@ -1,0 +1,251 @@
+.terminal-main-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.tabs {
+  display: flex;
+  background-color: #262626;
+  border-bottom: 1px solid #333;
+  height: 40px;
+  overflow-x: hidden;
+  overflow-y: visible;
+  white-space: nowrap;
+  position: relative;
+}
+
+.terminal-container {
+  flex: 1;
+  padding: 15px;
+  position: relative;
+  height: calc(100% - 40px); /* Use percentage instead of vh units */
+  overflow: hidden;
+}
+
+.output-wrapper {
+  height: 100%;
+  background-color: #2D2E2C;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.output-area {
+  border-radius: 6px;
+  overflow-y: auto;
+}
+
+.output-area::-webkit-scrollbar {
+  width: 10px;
+  background: transparent;
+}
+
+.output-area::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+}
+
+/* Style for error text */
+.error-text {
+  color: #ff5555;
+}
+
+/* Overflow indicator and dropdown styles */
+.tab.overflow-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  width: 40px;
+  cursor: pointer;
+  position: relative;
+  background-color: #333;
+  color: #bbb;
+  transition: color 0.2s, background-color 0.2s;
+  z-index: 10;
+}
+
+.tab.overflow-indicator:hover {
+  background-color: #444;
+  color: #fff;
+}
+
+.tab.overflow-indicator svg {
+  transition: transform 0.2s;
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.5;
+}
+
+.tab.overflow-indicator:hover svg {
+  transform: translateY(2px);
+}
+
+/* Updated dropdown styling */
+.overflow-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: #303030;
+  border: 1px solid #444;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  z-index: 99999;
+  min-width: 220px;
+  max-height: 350px;
+  overflow-y: auto;
+  padding: 6px 0;
+  display: block !important;
+  animation: dropdown-appear 0.15s ease-out;
+  transform-origin: top right;
+  margin-top: 2px;
+}
+
+@keyframes dropdown-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Make sure scrollbars in dropdown are styled */
+.overflow-dropdown::-webkit-scrollbar {
+  width: 8px;
+  background: transparent;
+}
+
+.overflow-dropdown::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.overflow-tab {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  position: relative;
+  padding-right: 30px; /* Reduced padding since we removed close button */
+}
+
+.overflow-tab:hover {
+  background-color: #3a3a3a;
+}
+
+.overflow-tab.active {
+  background-color: #404040;
+}
+
+.overflow-tab .tab-status {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.overflow-tab .tab-title {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #ddd;
+  font-size: 14px;
+}
+
+.overflow-tab .tab-info-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  font-size: 14px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  transition: background-color 0.2s, color 0.2s;
+  right: 8px;
+  font-weight: bold;
+}
+
+.overflow-tab .tab-info-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* Styles for Error Message Display in TerminalComponent (Terminal.jsx) */
+.terminal-instance.error-display-tab {
+    display: none; /* Default to none, .active class will make it flex */
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    background-color: var(--pfpt-neutral-800, #1e1e1e); /* From inline */
+    color: var(--pfpt-neutral-300, #d2d2d2); /* From inline */
+    height: 100%;
+    width: 100%;
+    overflow-y: auto;
+}
+
+.terminal-instance.error-display-tab.active {
+    display: flex;
+}
+
+.error-message-container {
+    display: flex;
+    align-items: center;
+    text-align: center; /* Added from inline */
+    max-width: 80%; /* Prevent it from becoming too wide */
+    background-color: var(--pfpt-neutral-700, #2a2a2a); /* Slightly different background for emphasis */
+    padding: 15px 20px;
+    border-radius: 4px;
+    border-left: 4px solid var(--pfpt-danger-emphasis, #dc3545);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.error-icon { /* Styles for the div containing the SVG */
+    margin-right: 10px; /* From inline */
+    color: var(--pfpt-danger-text, #f44336); /* From inline, for potential text content */
+}
+
+.error-icon svg { /* Targeting SVG specifically within .error-icon */
+    fill: var(--pfpt-danger-text, #dc3545); /* Already present, ensure consistency */
+    width: 24px;
+    height: 24px;
+    /* margin-right: 15px; /* This was on svg, now on parent .error-icon div */
+    flex-shrink: 0;
+}
+
+.error-message-text {
+    font-family: var(--code-font-family, "Menlo", "Consolas", "Liberation Mono", monospace);
+    font-size: 0.9rem;
+    color: var(--pfpt-neutral-100, #f0f0f0);
+    white-space: pre-wrap;  /* From inline, also already present */
+    word-break: break-word; /* From inline, also already present */
+    line-height: 1.5;
+}
+
+.terminal-instance-wrapper {
+    height: 100%;
+    width: 100%;
+    display: none; /* Default to none */
+}
+
+.terminal-instance-wrapper.active {
+    display: block; /* Or 'flex' if its content requires it, but xterm usually manages its own block-like display */
+}

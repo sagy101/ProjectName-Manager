@@ -1,0 +1,159 @@
+{
+  "header": {
+    "title": "General Environment",
+    "dropdownSelectors": [
+      {
+        "id": "gcloudProject",
+        "command": "gcloud projects list --format=\"value(projectId)\"",
+        "parseResponse": "lines",
+        "placeholder": "Select project...",
+        "loadingText": "Loading projects...",
+        "errorText": "Error loading projects",
+        "noOptionsText": "No projects found"
+      }
+    ]
+  },
+  "categories": [
+    {
+      "category": {
+        "title": "Cloud",
+        "verifications": [
+          {
+            "id": "cloudGcloudCLI",
+            "title": "gcloud CLI",
+            "command": "gcloud --version",
+            "checkType": "outputContains",
+            "expectedValue": "Google Cloud SDK",
+            "outputStream": "stdout"
+          },
+          {
+            "id": "cloudKubectlCLI",
+            "title": "kubectl CLI",
+            "command": "kubectl version --client",
+            "checkType": "outputContains",
+            "expectedValue": "Client Version:",
+            "outputStream": "stdout"
+          },
+          {
+            "id": "cloudKubectx",
+            "title": "kubectx",
+            "command": "kubectx --help",
+            "checkType": "commandSuccess"
+          }
+        ]
+      }
+    },
+    {
+      "category": {
+        "title": "Container Runtime",
+        "verifications": [
+          {
+            "id": "dockerRunning",
+            "title": "Docker Desktop running",
+            "command": "docker version --format '{{.Server.Version}}'",
+            "checkType": "commandSuccess"
+          },
+          {
+            "id": "dockerDaemon",
+            "title": "Docker daemon accessible",
+            "command": "docker ps",
+            "checkType": "commandSuccess"
+          },
+          {
+            "id": "rancherDesktop",
+            "title": "Rancher Desktop (if installed)",
+            "command": "rdctl version",
+            "checkType": "outputContains",
+            "expectedValue": "",
+            "outputStream": "stdout"
+          },
+          {
+            "id": "containerRuntime",
+            "title": "Container runtime available",
+            "command": "docker info --format '{{.ServerVersion}}'",
+            "checkType": "outputContains",
+            "expectedValue": "",
+            "outputStream": "stdout"
+          }
+        ]
+      }
+    },
+    {
+      "category": {
+        "title": "Node.js",
+        "verifications": [
+          {
+            "id": "nodeJs",
+            "title": "Node.js 15.5.1",
+            "command": "nvm ls 15.5.1",
+            "checkType": "outputContains",
+            "expectedValue": "v15.5.1",
+            "outputStream": "stdout"
+          },
+          {
+            "id": "nvmInstalled",
+            "title": "Nvm installed",
+            "command": "nvm --version",
+            "checkType": "commandSuccess"
+          }
+        ]
+      }
+    },
+    {
+      "category": {
+        "title": "Go",
+        "verifications": [
+          {
+            "id": "goInstalled",
+            "title": "Go installed",
+            "command": "go version",
+            "checkType": "outputContains",
+            "expectedValue": "go version go1"
+          },
+          {
+            "id": "goLocation",
+            "title": "Go location: $HOME/go",
+            "checkType": "pathExists",
+            "pathValue": "$HOME/go",
+            "pathType": "directory"
+          },
+          {
+            "id": "goPathConfig",
+            "title": "GOPATH configured: $HOME/go",
+            "checkType": "envVarEquals",
+            "variableName": "GOPATH",
+            "expectedValue": "$HOME/go"
+          },
+          {
+            "id": "goPathIncludes",
+            "title": "PATH includes: $GOPATH/bin",
+            "command": "echo $PATH",
+            "checkType": "outputContains",
+            "expectedValue": "$GOPATH/bin"
+          }
+        ]
+      }
+    },
+    {
+      "category": {
+        "title": "Additional",
+        "verifications": [
+          {
+            "id": "javaVersion",
+            "title": "Java 17 installed",
+            "command": "java -version",
+            "checkType": "outputContains",
+            "expectedValue": "openjdk version \"17.",
+            "outputStream": "stderr"
+          },
+          {
+            "id": "additionalCloudbees",
+            "title": "CLOUDBEES_FEATURES_ENV_KEY",
+            "checkType": "envVarExists",
+            "variableName": "CLOUDBEES_FEATURES_ENV_KEY"
+          }
+        ]
+      }
+    }
+  ]
+}

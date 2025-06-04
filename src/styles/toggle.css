@@ -1,0 +1,39 @@
+/* Toggle switch styles */
+.toggle {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 34px;
+  height: 16px;
+  position: relative;
+  border-radius: 20px;
+  background-color: #454642;
+  transition: all 0.3s;
+  cursor: pointer;
+  outline: none;
+}
+
+.toggle:checked {
+  background-color: #B3E33B;
+}
+
+.toggle:before {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  background-color: #F8F8F8;
+  transition: all 0.3s;
+}
+
+.toggle:checked:before {
+  transform: translateX(17px);
+}
+
+.toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

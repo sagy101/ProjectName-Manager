@@ -1,0 +1,346 @@
+[
+  {
+    "sectionId": "engineZeta_log_command",
+    "command": {
+      "base": "echo 'Displaying logs for Analytics Engine Zeta'",
+      "tabTitle": "Analytics Engine Zeta Logs"
+    }
+  },
+  {
+    "sectionId": "serviceAlpha",
+    "conditions": {
+      "enabled": true,
+      "attachState.serviceAlpha": false
+    },
+    "command": {
+      "base": "echo 'Execute Service Alpha command'",
+      "associatedContainers": [
+        "generic_container_a1",
+        "generic_container_a2"
+      ],
+      "tabTitle": {
+        "base": "Service Alpha + DB Alpha"
+      }
+    }
+  },
+  {
+    "sectionId": "serviceAlpha",
+    "conditions": {
+      "enabled": true,
+      "attachState.serviceAlpha": true
+    },
+    "command": {
+      "base": "echo 'Execute Service Alpha command (Debug mode)'",
+      "associatedContainers": [
+        "generic_container_a1",
+        "generic_container_a2"
+      ],
+      "tabTitle": {
+        "base": "Service Alpha + DB Alpha (Debug)"
+      }
+    }
+  },
+  {
+    "sectionId": "serviceAlpha_uiComponent",
+    "conditions": {
+      "serviceAlphaConfig.enabled": true,
+      "serviceAlpha_uiComponentConfig.enabled": true,
+      "serviceAlpha_uiComponentConfig.deploymentType": "developer"
+    },
+    "command": {
+      "base": "echo 'Execute UI Component Alpha command (Developer Mode)'",
+      "prefix": "echo 'Setup for UI Component Alpha...' && ",
+      "tabTitle": "UI Component Alpha (Developer Mode)"
+    }
+  },
+  {
+    "sectionId": "serviceAlpha_uiComponent",
+    "conditions": {
+      "serviceAlphaConfig.enabled": true,
+      "serviceAlpha_uiComponentConfig.enabled": true,
+      "serviceAlpha_uiComponentConfig.deploymentType": "standard"
+    },
+    "command": {
+      "base": "echo 'Execute UI Component Alpha command (Standard Mode)'",
+      "prefix": "echo 'Setup for UI Component Alpha...' && ",
+      "tabTitle": "UI Component Alpha (Standard Mode)"
+    }
+  },
+  {
+    "sectionId": "serviceBeta",
+    "conditions": {
+      "enabled": true,
+      "deploymentType": "runtime_option_2"
+    },
+    "command": {
+      "base": "echo 'Execute Service Beta command (Runtime Option 2)'",
+      "prefix": "echo 'Setup for Service Beta...' && ",
+      "tabTitle": "Service Beta (Runtime Option 2)",
+      "refreshConfig": {
+        "prependCommands": [
+          {
+            "command": "echo 'Preprocessing for Service Beta...' && "
+          }
+        ]
+      }
+    }
+  },
+  {
+    "sectionId": "serviceBeta",
+    "conditions": {
+      "enabled": true,
+      "deploymentType": "runtime_option_1"
+    },
+    "command": {
+      "base": "echo 'Execute Service Beta command (Runtime Option 1)'",
+      "associatedContainers": ["generic_container_b1"],
+      "prefix": "echo 'Setup for Service Beta...' && ",
+      "tabTitle": "Service Beta (Runtime Option 1)"
+    }
+  },
+  {
+    "sectionId": "serviceGamma_analysisSubService",
+    "conditions": {
+      "enabled": true,
+      "serviceGammaConfig.enabled": true,
+      "serviceGamma_analysisSubServiceConfig.deploymentType": "modeZ"
+    },
+    "command": {
+      "base": "echo 'Execute Analysis Sub-Service Gamma.1 command (Mode Z)'",
+      "prefix": "echo 'Setup for Sub-Service Gamma.1...' && ",
+      "tabTitle": {
+        "base": "Analysis Sub-Service Gamma.1 (Mode Z)"
+      }
+    }
+  },
+  {
+    "sectionId": "serviceGamma_analysisSubService",
+    "conditions": {
+      "enabled": true,
+      "serviceGammaConfig.enabled": true,
+      "serviceGamma_analysisSubServiceConfig.deploymentType": "modeY"
+    },
+    "command": {
+      "base": "echo 'Execute Analysis Sub-Service Gamma.1 command (Mode Y) with context ${contextSelectorGammaValue} and secret ${secretValue1}'",
+      "prefix": "echo 'Setup for Sub-Service Gamma.1...' && ",
+      "tabTitle": {
+        "base": "Analysis Sub-Service Gamma.1 (Mode Y)"
+      }
+    }
+  },
+  {
+    "sectionId": "serviceGamma_analysisSubService",
+    "conditions": {
+      "enabled": true,
+      "serviceGammaConfig.enabled": true,
+      "serviceGamma_analysisSubServiceConfig.deploymentType": "modeX",
+      "podGamma1Selected": true
+    },
+    "command": {
+      "base": "echo 'Execute port-forward for Analysis Sub-Service Gamma.1 to pod ${podSelectorGamma1Value} in context ${contextSelectorGammaValue}'",
+      "prefix": "echo 'Setup for Sub-Service Gamma.1...' && ",
+      "tabTitle": {
+        "base": "Analysis Sub-Service Gamma.1",
+        "conditionalAppends": [
+          {
+            "condition": "serviceGamma_analysisSubServiceConfig.deploymentType === 'modeX' && podGamma1Selected === true",
+            "append": " (Mode X: ${podSelectorGamma1Value})"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "sectionId": "serviceGamma_apiSubService",
+    "conditions": {
+      "enabled": true,
+      "serviceGammaConfig.enabled": true,
+      "podGamma2Selected": true
+    },
+    "command": {
+      "base": "echo 'Execute port-forward for External API Sub-Service Gamma.2 to pod ${podSelectorGamma2Value} in context ${contextSelectorGammaValue}'",
+      "prefix": "echo 'Setup for Sub-Service Gamma.2...' && ",
+      "tabTitle": {
+        "base": "External API Sub-Service Gamma.2"
+      }
+    }
+  },
+  {
+    "sectionId": "serviceDelta",
+    "conditions": {
+      "enabled": true,
+      "attachState.serviceDelta": false
+    },
+    "command": {
+      "base": "echo 'Execute Logging Service Delta command with project ${globalConfigKey1Value}'",
+      "tabTitle": "Logging Service Delta"
+    }
+  },
+  {
+    "sectionId": "serviceDelta",
+    "conditions": {
+      "enabled": true,
+      "attachState.serviceDelta": true
+    },
+    "command": {
+      "base": "echo 'Execute Logging Service Delta command (Debug mode) with project ${globalConfigKey1Value}'",
+      "tabTitle": "Logging Service Delta (Debug)"
+    }
+  },
+  {
+    "sectionId": "serviceEpsilon",
+    "conditions": {
+      "enabled": true,
+      "deploymentType": "runtime_option_2"
+    },
+    "command": {
+      "base": "echo 'Execute Processing Engine Epsilon command (Runtime Option 2)'",
+      "tabTitle": {
+        "base": "Processing Engine Epsilon (Runtime Option 2)"
+      },
+      "refreshConfig": {
+        "prependCommands": [
+          {
+            "command": "echo 'Preprocessing for Epsilon...' && "
+          }
+        ]
+      }
+    }
+  },
+  {
+    "sectionId": "serviceEpsilon",
+    "conditions": {
+      "enabled": true,
+      "deploymentType": "runtime_option_1"
+    },
+    "command": {
+      "base": "echo 'Execute Processing Engine Epsilon command (Runtime Option 1)'",
+      "associatedContainers": ["generic_container_e1"],
+      "prefix": "echo 'Setup for Epsilon...' && ",
+      "tabTitle": "Processing Engine Epsilon (Runtime Option 1)"
+    }
+  },
+  {
+    "sectionId": "engineZeta",
+    "conditions": {
+      "enabled": true,
+      "mode": "env_dev"
+    },
+    "command": {
+      "base": "echo 'Execute Analytics Engine Zeta (Dev Mode: ${selectedModeValue})'",
+      "tabTitle": {
+        "base": "Analytics Engine Zeta (Dev)"
+      }
+    }
+  },
+  {
+    "sectionId": "engineZeta",
+    "conditions": {
+      "enabled": true,
+      "mode": "env_stg"
+    },
+    "command": {
+      "base": "echo 'Execute Analytics Engine Zeta (Staging Mode: ${selectedModeValue})'",
+      "tabTitle": {
+        "base": "Analytics Engine Zeta (Staging)"
+      }
+    }
+  },
+  {
+    "sectionId": "engineZeta",
+    "conditions": {
+      "enabled": true,
+      "mode": "env_prod"
+    },
+    "command": {
+      "base": "echo 'Execute Analytics Engine Zeta (Production Mode: ${selectedModeValue})'",
+      "tabTitle": {
+        "base": "Analytics Engine Zeta (Prod)"
+      }
+    }
+  },
+  {
+    "sectionId": "engineZeta",
+    "conditions": {
+      "enabled": true,
+      "engineZeta_dataHandlerConfig.enabled": true,
+      "engineZeta_dataHandlerConfig.deploymentType": "process_type_A"
+    },
+    "command": {
+      "base": "echo 'Execute Data Handler Zeta.1 (Type A) for mode ${selectedModeValue}'",
+      "tabTitle": {
+        "base": "Data Handler Zeta.1 (Type A)"
+      }
+    }
+  },
+  {
+    "sectionId": "engineZeta",
+    "conditions": {
+      "enabled": true,
+      "engineZeta_dataHandlerConfig.enabled": true,
+      "engineZeta_dataHandlerConfig.deploymentType": "process_type_B"
+    },
+    "command": {
+      "base": "echo 'Execute Data Handler Zeta.1 (Type B) for mode ${selectedModeValue}'",
+      "tabTitle": {
+        "base": "Data Handler Zeta.1 (Type B)"
+      }
+    }
+  },
+  {
+    "sectionId": "engineZeta",
+    "conditions": {
+      "enabled": true,
+      "engineZeta_dataHandlerConfig.enabled": true,
+      "engineZeta_dataHandlerConfig.deploymentType": "process_type_C"
+    },
+    "command": {
+      "base": "echo 'Execute Data Handler Zeta.1 (Type C) for mode ${selectedModeValue}'",
+      "tabTitle": {
+        "base": "Data Handler Zeta.1 (Type C)"
+      }
+    }
+  },
+  {
+    "sectionId": "engineZeta",
+    "conditions": {
+      "enabled": true,
+      "engineZeta_mlModuleConfig.enabled": true,
+      "engineZeta_mlModuleConfig.deploymentType": "ml_framework_1"
+    },
+    "command": {
+      "base": "echo 'Execute ML Module Zeta.2 (Framework 1) for env ${selectedModeValue}'",
+      "tabTitle": {
+        "base": "ML Module Zeta.2 (Framework 1)"
+      }
+    }
+  },
+  {
+    "sectionId": "engineZeta",
+    "conditions": {
+      "enabled": true,
+      "engineZeta_mlModuleConfig.enabled": true,
+      "engineZeta_mlModuleConfig.deploymentType": "ml_framework_2"
+    },
+    "command": {
+      "base": "echo 'Execute ML Module Zeta.2 (Framework 2) for env ${selectedModeValue}'",
+      "tabTitle": {
+        "base": "ML Module Zeta.2 (Framework 2)"
+      }
+    }
+  },
+  {
+    "sectionId": "engineZeta",
+    "conditions": {
+      "enabled": true,
+      "engineZeta_mlModuleConfig.enabled": true,
+      "engineZeta_mlModuleConfig.deploymentType": "ml_framework_3"
+    },
+    "command": {
+      "base": "echo 'Execute ML Module Zeta.2 (Framework 3) for env ${selectedModeValue}'",
+      "tabTitle": {
+        "base": "ML Module Zeta.2 (Framework 3)"
+      }
+    }
+  }
+] 

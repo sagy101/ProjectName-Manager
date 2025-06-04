@@ -1,0 +1,14 @@
+/* Import all component styles */
+@import './global.css';
+@import './tabs.css';
+@import './terminal.css';
+@import './config.css';
+@import './toggle.css';
+@import './deployment.css';
+@import './run-button.css';
+@import './selector.css';
+@import './dropdown-selector.css';
+@import './loading-screen.css';
+@import './environment-verification.css';
+@import './debug-panel.css'; 
+@import './tab-info-panel.css'; 

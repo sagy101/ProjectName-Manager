@@ -1,0 +1,16 @@
+/* Main styles file */
+@import './styles/index.css';
+@import './styles/global.css';
+@import './styles/app.css';
+@import './styles/config.css';
+@import './styles/toggle.css';
+@import './styles/selector.css';
+@import './styles/tabs.css';
+@import './styles/terminal.css';
+
+@import './styles/deployment.css';
+@import './styles/run-button.css';
+@import './styles/attachToggle.css';
+@import './styles/notification.css';
+@import './styles/environment-verification.css';
+@import './styles/debug-panel.css'; 

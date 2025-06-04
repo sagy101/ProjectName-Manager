@@ -1,0 +1,109 @@
+/* Modern deployment options styles */
+.deployment-options {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: center;
+}
+
+.deployment-options-label {
+  font-size: 0.85rem;
+  color: #CCC;
+  margin-bottom: 2px;
+  text-align: center;
+  width: 100%;
+}
+
+.deployment-toggle-container {
+  display: flex;
+  background-color: #2D2E2C;
+  padding: 2px;
+  border-radius: 6px;
+  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.deployment-toggle-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #CCC;
+  padding: 5px 0;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+.deployment-toggle-btn:hover:not(:disabled) {
+  color: white;
+}
+
+.deployment-toggle-btn.active {
+  color: #2D2E2C;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.deployment-toggle-btn.active:first-child {
+  background-color: #B3E33B;
+}
+
+.deployment-toggle-btn.active:last-child {
+  background-color: #FEB32E;
+}
+
+/* Custom colors for mock toggle */
+.mock-toggle-container .deployment-toggle-btn.active:first-child {
+  background-color: #B3E33B; /* Standard */
+}
+
+.mock-toggle-container .deployment-toggle-btn.active:last-child {
+  background-color: #9C65F5; /* Mock */
+}
+
+.deployment-toggle-btn:disabled {
+  cursor: not-allowed;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Mode selector specific styles */
+.mode-selector-container .deployment-toggle-btn.active {
+  color: #FFFFFF; /* White text for all active buttons */
+}
+
+.mode-selector-container .deployment-toggle-btn.active:first-child {
+  background-color: #4CAF50; /* Green for development */
+}
+
+.mode-selector-container .deployment-toggle-btn.active:nth-child(2) {
+  background-color: #FF9800; /* Orange for staging */
+}
+
+.mode-selector-container .deployment-toggle-btn.active:last-child {
+  background-color: #F44336; /* Red for production */
+}
+
+/* URL Intelligence selectors */
+.url-intelligence-selectors {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+  width: 100%;
+}
+
+/* Remove unused selector group styles since we removed the groups */
+.selector-group {
+  display: none;
+}
+
+ 

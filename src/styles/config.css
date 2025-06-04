@@ -1,0 +1,139 @@
+.config-container {
+  padding-top: 3px;
+  display: flex;
+  flex-direction: column;
+  height: 98%;
+}
+
+.config-section {
+  margin-bottom: 4px;
+  padding: 5px 8px;
+  background-color: #3D3E3A;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  min-width: 0; /* Prevent overflow */
+}
+
+/* Section header with title and toggle side by side */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3px;
+  flex-wrap: nowrap; /* Prevent wrapping */
+  min-width: 0; /* Enable text truncation */
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 0.85rem; /* Slightly reduce font size */
+  color: #FEB32E;
+  white-space: nowrap; /* Keep on one line */
+  overflow: hidden; /* Hide overflow */
+  text-overflow: ellipsis; /* Add ellipsis for overflow */
+  flex: 1; /* Take available space */
+  padding-right: 8px; /* Space for toggle */
+}
+
+/* New container for section controls */
+.section-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Space between drawer toggle and title */
+  flex: 1; /* Allow title to take available space */
+  min-width: 0; /* Important for text overflow on title */
+}
+
+.drawer-toggle {
+  background: transparent;
+  border: none;
+  color: var(--pfpt-neutral-400, #A0A0A0); /* Subdued color */
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.drawer-toggle svg {
+  width: 16px; /* Adjust size as needed */
+  height: 16px;
+}
+
+.drawer-toggle:hover:not(:disabled) {
+  color: var(--pfpt-primary-orange, #FEB32E);
+}
+
+.drawer-toggle.open svg {
+  transform: rotate(180deg);
+}
+
+.drawer-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.config-section-drawer {
+  padding: 8px 12px; /* Consistent padding */
+  margin-top: 6px; /* Space below header */
+  background-color: rgba(0,0,0,0.1); /* Slightly darker background for visual separation */
+  border-radius: 4px;
+  border: 1px solid var(--pfpt-neutral-700, #454642); /* Subtle border */
+}
+
+.config-section-drawer .no-verification-info {
+  font-size: 0.75rem;
+  color: var(--pfpt-neutral-400, #A0A0A0);
+  font-style: italic;
+  text-align: center;
+  padding: 4px 0;
+}
+
+.section-header .toggle-container {
+  margin: 0;
+  justify-content: flex-end;
+}
+
+.section-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.toggle-container, .mock-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logs-button {
+  background-color: var(--pfpt-neutral-600, #4A4B47); /* Slightly lighter background */
+  color: var(--pfpt-neutral-white, #F8F8F8);
+  border: 1px solid var(--pfpt-neutral-500, #555650); /* More distinct border */
+  padding: 4px 10px; /* Slightly more padding */
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+  font-size: 0.8rem;
+  margin-top: 4px; /* Adjusted margin */
+  text-align: center;
+}
+
+.logs-button:hover:not(:disabled) {
+  background-color: var(--pfpt-neutral-500, #555650);
+  border-color: var(--pfpt-neutral-400, #6A6B67);
+}
+
+.logs-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Grid layout removed - sections now displayed in a single column */

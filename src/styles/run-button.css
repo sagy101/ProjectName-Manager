@@ -1,0 +1,119 @@
+/* Run Button Styles */
+.run-button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: auto;
+  margin-bottom: 10px;
+  padding-top: 8px;
+}
+
+.run-iso-button {
+  position: relative;
+  background: linear-gradient(135deg, #B3E33B 0%, #8BC220 100%);
+  color: #1A1A1A;
+  border: none;
+  padding: 12px 30px;
+  width: 90%;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 6px 12px rgba(139, 194, 32, 0.3), 
+              0 1px 3px rgba(0, 0, 0, 0.1), 
+              inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Stop button styles */
+.run-iso-button.stop {
+  background: linear-gradient(135deg, #FC4384 0%, #E63473 100%);
+  box-shadow: 0 6px 12px rgba(252, 67, 132, 0.3), 
+              0 1px 3px rgba(0, 0, 0, 0.1), 
+              inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.run-iso-button.stop:before {
+  background: linear-gradient(135deg, #FF5B97 0%, #FC4384 100%);
+}
+
+.run-iso-button.stop:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 10px 20px rgba(252, 67, 132, 0.4), 
+              0 3px 6px rgba(0, 0, 0, 0.1), 
+              inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.stop-icon {
+  margin-right: 2px;
+  transform: scale(1.2);
+  transition: transform 0.3s ease;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
+}
+
+.run-iso-button.stop:hover .stop-icon {
+  transform: scale(1.4);
+}
+
+.run-icon {
+  margin-right: 2px;
+  transform: scale(1.2);
+  transition: transform 0.3s ease;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
+}
+
+.run-iso-button:hover .run-icon {
+  transform: scale(1.4);
+}
+
+.run-iso-button:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #D5FF40 0%, #B3E33B 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.run-iso-button:hover:before {
+  opacity: 1;
+}
+
+.run-iso-button:active {
+  transform: translateY(-1px) scale(0.98);
+  box-shadow: 0 3px 6px rgba(139, 194, 32, 0.2),
+              0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.run-iso-button::after {
+  content: '';
+  position: absolute;
+  width: 30px;
+  height: 200%;
+  background: rgba(255, 255, 255, 0.2);
+  top: -50%;
+  left: -100%;
+  transform: rotate(30deg);
+  transition: transform 0.7s;
+}
+
+.run-iso-button:hover::after {
+  transform: rotate(30deg) translateX(300%);
+}
+
+@keyframes pulse-border {
+  0% { box-shadow: 0 0 0 0 rgba(139, 194, 32, 0.6); }
+  70% { box-shadow: 0 0 0 5px rgba(139, 194, 32, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(139, 194, 32, 0); }
+} 

@@ -1,0 +1,286 @@
+.environment-verification-container {
+  background-color: #33342E;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  user-select: none;
+}
+
+.verification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px 8px 20px;
+  background-color: #2A2B25;
+  transition: background-color 0.2s;
+  position: relative;
+  border-left: 0;
+  height: 36px; /* Set explicit height for consistent centering */
+}
+
+.verification-header:hover {
+  background-color: #363730;
+}
+
+/* Bold status indicator */
+.verification-header::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 12px; /* Wider indicator */
+  background-color: #2196F3; /* Default blue for waiting */
+  box-shadow: 0 0 8px 1px rgba(33, 150, 243, 0.4); /* Glowing effect */
+  z-index: 1;
+}
+
+/* Valid state */
+.verification-header.valid::before {
+  background-color: #4CAF50; /* Green */
+  box-shadow: 0 0 8px 1px rgba(76, 175, 80, 0.4);
+}
+
+/* Invalid state */
+.verification-header.invalid::before {
+  background-color: #F44336; /* Red */
+  box-shadow: 0 0 8px 1px rgba(244, 67, 54, 0.4);
+}
+
+/* Mixed states with invalid */
+.verification-header.partial-invalid-valid::before,
+.verification-header.partial-invalid-waiting::before,
+.verification-header.mixed::before {
+  background-color: #FEB32E; /* Yellow */
+  box-shadow: 0 0 8px 1px rgba(254, 179, 46, 0.4);
+}
+
+/* Status corner indicator */
+.verification-header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 24px 24px 0 0;
+  border-color: transparent;
+  z-index: 2;
+  opacity: 0.9;
+  transition: all 0.3s ease;
+}
+
+.verification-header.valid::after {
+  border-color: #4CAF50 transparent transparent transparent;
+}
+
+.verification-header.invalid::after {
+  border-color: #F44336 transparent transparent transparent;
+}
+
+.verification-header.partial-invalid-valid::after,
+.verification-header.partial-invalid-waiting::after,
+.verification-header.mixed::after {
+  border-color: #FEB32E transparent transparent transparent;
+}
+
+.verification-header.waiting::after,
+.verification-header.waiting-valid::after {
+  border-color: #2196F3 transparent transparent transparent;
+  animation: pulse-triangle 1.5s infinite;
+}
+
+/* Pulsing animation for waiting states */
+.verification-header.waiting::before,
+.verification-header.waiting-valid::before {
+  animation: pulse-glow 1.5s infinite alternate;
+}
+
+.verification-header h2 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #FEB32E;
+  position: relative;
+  z-index: 3;
+}
+
+.toggle-icon {
+  color: #FEB32E;
+  font-size: 0.8rem;
+  position: relative;
+  z-index: 3;
+}
+
+.verification-content {
+  padding: 8px 12px;
+}
+
+.verification-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Adjusted for better responsiveness */
+  gap: 16px;
+}
+
+.verification-section {
+  min-width: 150px;
+}
+
+.verification-section h3 {
+  margin: 0 0 6px 0;
+  font-size: 0.8rem;
+  color: #C6C7C1;
+  border-bottom: 1px solid #464740;
+  padding-bottom: 4px;
+}
+
+.verification-section-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.verification-indicator {
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  padding: 2px 0;
+}
+
+.status-icon {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-right: 6px;
+  font-weight: bold;
+}
+
+.verification-indicator.waiting .status-icon {
+  color: #9FA1A6;
+}
+
+.verification-indicator.valid .status-icon {
+  color: #4CAF50;
+}
+
+.verification-indicator.invalid .status-icon {
+  color: #F44336;
+}
+
+.verification-indicator .label {
+  color: #F8F8F8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+
+/* Fix for dropdown visibility issue */
+.verification-content, 
+.verification-grid,
+.verification-section,
+.verification-section-content,
+.verification-indicator {
+  overflow: visible;
+}
+
+/* Styles for always-visible section */
+.verification-content.always-visible {
+  display: none;
+}
+
+
+
+.refresh-button {
+  background: transparent;
+  border: none;
+  color: var(--pfpt-neutral-300, #C6C7C1);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.refresh-button:hover {
+  background-color: var(--pfpt-neutral-600, #454642);
+  color: var(--pfpt-neutral-white, #FFFFFF);
+}
+
+.refresh-button:active {
+  background-color: var(--pfpt-neutral-700, #5A5B57);
+}
+
+/* Enhanced animations */
+@keyframes pulse-glow {
+  0% { 
+    background-color: #2196F3; 
+    box-shadow: 0 0 8px 1px rgba(33, 150, 243, 0.4);
+  }
+  100% { 
+    background-color: #64B5F6; 
+    box-shadow: 0 0 15px 2px rgba(100, 181, 246, 0.7);
+  }
+}
+
+@keyframes pulse-triangle {
+  0% { 
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  100% { 
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+/* Legacy/compatibility */
+@keyframes pulse-color {
+  0% { background-color: #2196F3; }
+  50% { background-color: #64B5F6; }
+  100% { background-color: #2196F3; }
+}
+
+@keyframes pulse {
+  0% { border-left-color: #2196F3; }
+  50% { border-left-color: #64B5F6; }
+  100% { border-left-color: #2196F3; }
+}
+
+.verification-header .header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 100;
+  height: 100%; /* Take full height of header */
+}
+
+.verification-header .header-right .verification-indicator {
+  padding: 0;
+  margin: 0;
+  height: 100%; /* Take full height */
+  display: flex;
+  align-items: center;
+}
+
+
+
+.verification-header .header-right .toggle-icon {
+  cursor: pointer;
+  padding: 4px;
+  color: #FEB32E;
+  font-size: 0.8rem;
+}
+
+.verification-header .header-left {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  flex: 1;
+} 

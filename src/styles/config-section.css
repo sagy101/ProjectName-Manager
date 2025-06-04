@@ -1,0 +1,437 @@
+.config-section.border-valid {
+  border: 1px solid #4CAF50; /* Green */
+}
+
+.config-section.border-invalid {
+  border: 1px solid #F44336; /* Red */
+}
+
+.config-section.border-waiting {
+  border: 1px solid #2196F3; /* Blue */
+}
+
+/* Add some padding and margin to make the border more visible */
+.config-section {
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc; /* Default border */
+  border-radius: 4px; /* Optional: for rounded corners */
+}
+
+/* Ensure other styles for config-section are maintained or enhanced */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px 8px 5px; /* Adjusted padding slightly */
+  /* background-color: #383838; */ /* Example, can be themed */
+  border-bottom: 1px solid #424242; /* Separator for content below header */
+  position: relative; /* For absolute positioning of indicators if needed */
+}
+
+.section-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Space between drawer toggle and title */
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 0.9rem; /* Slightly smaller main title */
+  font-weight: 600;
+  color: #E0E0E0;
+}
+
+.section-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Drawer toggle button */
+.drawer-toggle {
+  background: none;
+  border: none;
+  color: #A0A0A0;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drawer-toggle svg {
+  width: 16px; /* Smaller chevron */
+  height: 16px;
+  transition: transform 0.2s ease-in-out;
+}
+
+.drawer-toggle.open svg {
+  transform: rotate(180deg);
+}
+
+.drawer-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Styles for the content area within the main section (below header, above sub-sections) */
+.config-section-drawer {
+  padding: 8px 12px;
+  background-color: rgba(0,0,0,0.1); /* Subtle background for drawer */
+  border-bottom: 1px solid #424242; /* Separator if sub-sections follow */
+}
+
+.git-branch-info-header {
+  padding: 5px 12px 8px 12px;
+  background-color: rgba(0,0,0,0.05);
+  border-bottom: 1px solid #424242; 
+}
+
+
+
+/* Dropdown selectors container */
+.dropdown-selectors-container {
+  padding: 8px 12px;
+  background-color: rgba(0,0,0,0.05);
+  border-bottom: 1px solid #424242;
+}
+
+.dropdown-selectors-container .dropdown-selector {
+  margin-bottom: 8px;
+  max-width: 98%; /* Or a fixed px value like 280px */
+  box-sizing: border-box;
+}
+
+.dropdown-selectors-container .dropdown-selector:last-child {
+  margin-bottom: 0;
+}
+
+/* Section-specific dropdown selector styling */
+.section-dropdown-selector {
+  font-size: 0.85rem;
+}
+
+.section-dropdown-selector .selected-value {
+  height: 26px;
+  padding: 4px 10px;
+}
+
+.section-dropdown-selector .dropdown-label {
+  font-size: 0.8rem;
+  margin-bottom: 2px;
+}
+
+/* Container for Sub-sections */
+.sub-sections-container {
+  margin-top: 0px; 
+  padding: 5px 12px 5px 12px; /* Reduced padding */
+  border-top: 1px solid #3a3a3a;
+}
+
+.git-branch-info-header + .dropdown-selectors-container {
+  border-top: none; /* No top border if git branch info is directly above */
+}
+
+.dropdown-selectors-container + .config-section-drawer {
+  /* If drawer comes after dropdown selectors (if it's not open by default) */
+  border-top: none;
+}
+
+.config-section-drawer + .sub-sections-container {
+  border-top: none; 
+}
+
+.git-branch-info-header + .sub-sections-container {
+  /* This case should be less common now with dropdown selectors in between */
+  border-top: none; 
+}
+
+.dropdown-selectors-container + .sub-sections-container {
+    border-top: none; /* No top border if dropdown selectors are directly above */
+}
+
+/* Individual Sub-section Styling */
+.config-sub-section {
+  padding: 8px 0px 8px 12px; /* Reduced padding, smaller left indent for content */
+  margin-top: 6px; /* Reduced margin */
+  background-color: rgba(255, 255, 255, 0.02); /* Slightly more subtle background */
+  border-radius: 3px; /* Smaller radius */
+  border: 1px solid #383838; /* Slightly lighter border */
+}
+
+.config-sub-section:first-child {
+  margin-top: 8px; /* Reduced margin for the first sub-section */
+}
+
+.sub-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px; /* Reduced margin */
+}
+
+.sub-section-header h4 {
+  margin: 0;
+  font-size: 0.8rem; /* Slightly smaller sub-section title */
+  font-weight: 500; /* Keep weight */
+  color: #C8C8C8; /* Slightly adjusted color */
+}
+
+.sub-section-header .toggle-switch {
+  transform: scale(0.85); /* Make toggle smaller in sub-section headers */
+  margin-right: -5px; /* Adjust position due to scaling */
+}
+
+
+/* Content within a sub-section (e.g., where toggles for mode selection go) */
+.sub-section-content {
+  padding-top: 4px; /* Reduced padding */
+  display: flex; /* Added for centering children */
+  flex-direction: column; /* Stack children vertically */
+  align-items: center; /* Center children horizontally */
+  width: 100%; /* Ensure it takes full width to allow children to center within it*/
+}
+
+/* Styles for Dropdown Selectors within a Sub-section */
+.sub-section-dropdown-selectors {
+  width: 100%;
+  padding: 8px 0px 0px 0px; /* Top padding, no horizontal padding as the parent .config-sub-section has it */
+  margin-top: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center dropdowns horizontally */
+  background: none;
+  border: none;
+}
+
+/* Ensure dropdowns don't overflow the sub-section visually */
+.config-sub-section .section-dropdown-selector {
+  width: 95%;
+  margin: 0 auto 8px auto;
+  box-sizing: border-box;
+}
+
+/* Specific styling for URL Intelligence sub-section's 3-button toggle */
+.url-intelligence-sub-container {
+  width: 100%; /* Ensure it takes full width */
+}
+
+.url-intelligence-sub-container .deployment-toggle-container {
+  width: 100%; /* Ensure the button container itself also takes full width */
+}
+
+.url-intelligence-sub-container .deployment-toggle-btn {
+  font-size: 0.7rem; /* Even smaller buttons for compactness */
+  padding: 2px 0; /* Reduced padding */
+  line-height: 1.4; /* Adjust line height for smaller font */
+}
+
+/* Styling for Frontend sub-section (if specific needs arise) */
+.frontend-sub-section {
+  /* Inherits .config-sub-section styles */
+  /* Add specific overrides here if needed */
+}
+
+
+.frontend-sub-section .deployment-toggle-container {
+  width: 100%; /* Ensure full width like URLI sub-section */
+}
+
+.frontend-sub-section .deployment-toggle-btn {
+  font-size: 0.7rem; /* Match URLI sub-section button size */
+  padding: 2px 0; /* Match URLI sub-section button padding */
+  line-height: 1.4; /* Match URLI sub-section button line-height */
+}
+
+
+
+/* If dropdown selectors are directly under git branch, and then drawer is open, avoid double borders */
+.dropdown-selectors-container + .config-section-drawer {
+  border-top: none;
+}
+
+/* Logs button style adjustments for compactness if needed */
+.logs-button {
+  /* padding: 5px 8px; */ /* Slightly smaller padding if needed */
+  /* font-size: 0.75rem; */ /* Smaller font if needed */
+  /* margin-top: 8px; */ /* Reduced margin if needed */
+}
+
+/* Styles for border indication based on verification status */
+.config-section.border-valid {
+  border-left: 3px solid #4CAF50; /* Green */
+}
+.config-section.border-invalid {
+  border-left: 3px solid #F44336; /* Red */
+}
+.config-section.border-waiting {
+  border-left: 3px solid #FFC107; /* Amber */
+}
+.config-section.border-disabled {
+  border-left: 3px solid #666666; /* Grey for disabled sections */
+}
+
+
+/* Styles for VerificationIndicator within the drawer */
+.config-section-drawer .verification-indicator {
+  padding: 5px 0; /* Add some padding around the indicator */
+  font-size: 0.8rem;
+}
+
+.no-verification-info {
+  font-size: 0.8rem;
+  color: #aaa;
+  padding: 5px 0;
+}
+
+/* Ensure config-section itself has some base styling if not provided by border */
+.config-section {
+  background-color: #333; /* Darker background for the section */
+  margin-bottom: 8px;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  border-left: 3px solid #555; /* Default border if no status specific one */
+}
+
+/* New styles for header branch info */
+.git-branch-info-header {
+  display: flex; /* Align icon and text */
+  align-items: center; /* Vertical alignment */
+  font-size: 0.9em; /* Slightly larger for better readability */
+  color: #A0A0A0; /* General color for the line */
+  padding: 4px 10px 8px 10px; /* Adjust padding */
+  margin-left: 0; /* Remove left margin to align with title */
+  margin-top: -4px; /* Pull it up a bit closer to the header */
+}
+
+.git-branch-icon {
+  width: 1em; /* Size relative to font-size */
+  height: 1em;
+  margin-right: 6px; /* Space between icon and "Branch:" */
+  color: #888; /* Icon color */
+}
+
+.git-branch-info-header span:nth-child(2) { /* Targeting "Branch: " */
+  font-weight: bold;
+  color: #C0C0C0; /* Brighter label color */
+  margin-right: 4px; /* Space after "Branch:" */
+}
+
+.git-branch-name {
+  color: #E0E0E0; /* Bright color for the branch name itself */
+  font-weight: 500; 
+}
+
+.git-branch-status-waiting,
+.git-branch-status-unknown,
+.git-branch-status-error {
+  font-style: italic;
+  color: #999; /* Status color */
+  font-weight: normal; 
+}
+
+.git-branch-status-error {
+  color: #F44336; 
+}
+
+.git-branch-info {
+  margin-top: 8px;
+  font-size: 0.9em;
+}
+
+.git-branch-info span:first-child {
+  font-weight: bold;
+}
+
+.config-section-verification-popover {
+  background: var(--pfpt-neutral-900, #23272f);
+  color: var(--pfpt-neutral-100, #fff);
+  border: 1.5px solid var(--pfpt-primary-green, #6ee7b7);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18), 0 1.5px 4px rgba(110,231,183,0.12);
+  padding: 16px 20px;
+  min-width: 220px;
+  max-width: 320px;
+  font-size: 15px;
+  pointer-events: auto;
+  transition: opacity 0.15s;
+  z-index: 1000;
+}
+
+.config-section-verification-popover .verification-indicator {
+  margin: 0;
+  font-size: 15px;
+}
+
+.config-section-verification-popover .no-verification-info {
+  color: var(--pfpt-neutral-300, #bbb);
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Optional: make the info button more visually distinct */
+.verification-info-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 50%;
+  transition: background 0.15s;
+}
+.verification-info-btn:hover, .verification-info-btn.open {
+  background: var(--pfpt-primary-green, #6ee7b7);
+  color: #23272f;
+}
+
+.config-section-verification-popover .section-description-tooltip {
+  font-size: 14px;
+  color: var(--pfpt-primary-green, #6ee7b7);
+  margin-bottom: 10px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.config-section-verification-popover .section-verification-indicators {
+  margin-top: 0;
+}
+
+/* Custom Button Styling */
+.custom-button {
+  background-color: var(--pfpt-neutral-600, #4a4b47); /* Made it a bit lighter than before */
+  color: var(--pfpt-neutral-white, #F8F8F8); /* Ensure text is bright */
+  border: 1px solid var(--pfpt-neutral-500, #555650);
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+  font-size: 0.85rem;
+  margin-top: 10px; /* Space from other content */
+  display: flex; /* Keep flex for alignment */
+  align-items: center; /* Vertical alignment */
+  justify-content: center; /* Horizontal centering for the label */
+  width: 100%; /* Make it full width */
+}
+
+.custom-button:hover:not(:disabled) {
+  background-color: var(--pfpt-neutral-500, #555650);
+  border-color: var(--pfpt-neutral-400, #6A6B67);
+  color: var(--pfpt-white, #ffffff);
+}
+
+.custom-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* .custom-button-icon { /* Removed as icon is no longer used */
+/*  width: 18px; */
+/*  height: 18px; */
+/*  margin-right: 8px; */
+/*  color: var(--pfpt-blue-300, #77bbff); */
+/* } */
+
+.custom-button-label {
+  font-weight: 500;
+  text-align: center; /* Ensure label text itself is centered if it wraps */
+} 

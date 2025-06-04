@@ -1,0 +1,180 @@
+.tabs {
+  display: flex;
+  background-color: #343532;
+  color: #F8F8F8;
+  overflow-x: auto;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 40px;
+  scrollbar-width: thin;
+}
+
+.tabs::-webkit-scrollbar {
+  height: 5px;
+}
+
+.tabs::-webkit-scrollbar-track {
+  background: #2D2E2C;
+}
+
+.tabs::-webkit-scrollbar-thumb {
+  background-color: #454642;
+  border-radius: 5px;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #333;
+  color: #aaa;
+  cursor: pointer;
+  border-right: 1px solid #444;
+  transition: background-color 0.2s, color 0.2s;
+  min-width: 120px;
+  max-width: 200px;
+  position: relative;
+  padding-right: 60px; /* Space for both buttons */
+}
+
+.tab:hover {
+  background-color: #444;
+  color: #fff;
+}
+
+.tab.active {
+  background-color: #3E3F3C; /* Slightly lighter than tabs bar */
+  color: #fff;
+  border-top: 3px solid #FEB32E; /* Orange top border */
+  /* Make active tab appear slightly raised or connected */
+  position: relative; 
+  /* top: -1px; */ /* Optional: if you want to visually lift it a bit */
+  padding-top: 5px; /* Adjust padding to account for border */
+}
+
+.tab-title {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 8px;
+}
+
+.tab-status {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.tab-status.status-idle {
+  background-color: #666;
+}
+
+.tab-status.status-running {
+  background-color: #4CAF50;
+  animation: pulse 1.5s infinite;
+}
+
+.tab-status.status-done {
+  background-color: #2196F3;
+}
+
+.tab-status.status-error {
+  background-color: #F44336;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.tab-info-button,
+.tab-close {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  font-size: 16px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.tab-info-button {
+  right: 30px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.tab-close {
+  right: 8px;
+  font-size: 18px;
+}
+
+.tab-info-button:hover,
+.tab-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.tab.active .tab-info-button,
+.tab.active .tab-close {
+  color: #ccc;
+}
+
+.tab.active .tab-info-button:hover,
+.tab.active .tab-close:hover {
+  color: #fff;
+}
+
+/* Styles for Error Tabs */
+.tab-status.status-error-config {
+    background-color: var(--pfpt-danger-emphasis, #dc3545); /* A distinct error color */
+}
+
+.tab.error-tab-button {
+    /* border-bottom: 2px solid var(--pfpt-danger-emphasis, #dc3545); */
+    /* Using a more subtle indicator for non-active error tabs, active error tabs will use top border */
+    color: var(--pfpt-danger-text, #dc3545); /* Make text color error-ish */
+}
+
+.tab.error-tab-button:hover {
+  background-color: #553333; /* Darker red hover for error tabs */
+  color: var(--pfpt-neutral-white, #fff);
+}
+
+.tab.error-tab-button.active {
+    background-color: #4d3232; /* Slightly different background for active error tab */
+    color: var(--pfpt-danger-text, #f0b3ae); /* Lighter error text for active */
+    border-top: 3px solid var(--pfpt-danger-emphasis, #dc3545); /* Error color top border for active error tab */
+    padding-top: 5px; /* Adjust padding to account for border */
+}
+
+.tab.error-tab-button.active .tab-info-button,
+.tab.error-tab-button.active .tab-close {
+  color: var(--pfpt-danger-text, #f0b3ae);
+}
+
+.tab.error-tab-button.active .tab-info-button:hover,
+.tab.error-tab-button.active .tab-close:hover {
+  color: var(--pfpt-neutral-white, #fff);
+}

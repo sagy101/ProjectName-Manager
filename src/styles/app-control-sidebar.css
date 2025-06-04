@@ -1,0 +1,413 @@
+.app-control-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  background-color: #2D2E2C; /* Darker, similar to some terminal backgrounds */
+  color: #f5f6fa;
+  box-shadow: -3px 0 10px rgba(0, 0, 0, 0.3);
+  z-index: 1500;
+  transition: width 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+.app-control-sidebar.collapsed {
+  width: 50px;
+}
+
+.app-control-sidebar.expanded {
+  width: 280px;
+}
+
+.sidebar-toggle-button {
+  background: #353b48; /* Kept, distinct enough */
+  color: #f5f6fa;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  transition: background-color 0.2s ease-in-out;
+  z-index: 2;
+}
+
+.sidebar-toggle-button:hover {
+  background: #4a505c;
+}
+
+.sidebar-toggle-button .icon {
+  width: 24px;
+  height: 24px;
+}
+
+.app-control-sidebar.collapsed .sidebar-content {
+  display: none;
+}
+
+.app-control-sidebar.expanded .sidebar-minimized-icons {
+  display: none;
+}
+
+.sidebar-content {
+  padding: 15px;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.sidebar-content h3 {
+  margin-top: 0;
+  color: #FEB32E; /* Orange to match TabInfoPanel headers */
+  border-bottom: 1px solid #4a505c;
+  padding-bottom: 10px;
+  font-size: 1.1em; /* Slightly larger */
+}
+
+.sidebar-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-content li {
+  padding: 10px 5px; /* Adjusted padding */
+  border-bottom: 1px solid #4a505c;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.sidebar-content li:hover {
+   background-color: rgba(255, 255, 255, 0.05); /* Subtle hover for list items */
+}
+
+.sidebar-content li:last-child {
+  border-bottom: none;
+}
+
+.sidebar-content .terminal-title {
+  font-size: 0.9em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px; /* Adjusted max-width */
+}
+
+.sidebar-content .terminal-actions button {
+  background: none;
+  border: none;
+  color: #cccccc; /* Lighter gray for icons */
+  cursor: pointer;
+  padding: 5px;
+  margin-left: 6px; /* Slightly more margin */
+  border-radius: 3px; /* Add subtle rounding */
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+.sidebar-content .terminal-actions button:hover {
+  color: #FEB32E; /* Orange hover for icon buttons */
+  background-color: rgba(254, 179, 46, 0.1); /* Faint orange background */
+}
+
+.sidebar-content .terminal-actions button .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.sidebar-content li.active .terminal-title {
+  font-weight: bold;
+  color: #6EE7B7; /* Using a green similar to config section valid border */
+}
+
+.sidebar-content .empty-message {
+  font-style: italic;
+  color: #aaa;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.sidebar-minimized-icons {
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.minimized-icon-button {
+  background-color: #353b48;
+  color: #f5f6fa;
+  border: 1px solid #4a505c;
+  border-radius: 4px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1em;
+  font-weight: bold;
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.minimized-icon-button:hover {
+  background-color: #4a505c;
+  border-color: #FEB32E; /* Orange border on hover */
+}
+
+.empty-minimized-message {
+  font-size: 0.7em;
+  color: #aaa;
+  padding: 10px;
+  text-align: center;
+}
+
+/* Styles for the Debug Toggle Button within the sidebar */
+.debug-toggle-sidebar {
+  position: absolute;
+  bottom: 15px; /* Position from the bottom */
+  /* Adjusted positioning based on expanded/collapsed state */
+}
+
+.debug-toggle-sidebar.expanded {
+  right: 15px; /* Position from the right when expanded */
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #444; /* Match the original debug button style */
+  border: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.debug-toggle-sidebar.collapsed {
+  right: 5px; /* Position from the right when collapsed, closer to edge */
+  width: 40px; /* Maybe make it smaller when collapsed? Or keep same size? */
+  height: 40px;
+  border-radius: 50%;
+  background-color: #444; /* Match the original debug button style */
+  border: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.debug-toggle-sidebar:hover {
+  background-color: #555; /* Hover effect */
+}
+
+/* Styles for when debug options are active (match original .has-active-options) */
+.debug-toggle-sidebar.has-active-options {
+  background-color: #555;
+  border: 2px solid #FEB32E;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3), 0 0 10px rgba(254, 179, 46, 0.3);
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.debug-toggle-sidebar.has-active-options:hover {
+  background-color: #666;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3), 0 0 15px rgba(254, 179, 46, 0.5);
+}
+
+/* Reuse the pulse-glow animation from debug-panel.css */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3), 0 0 10px rgba(254, 179, 46, 0.3);
+  }
+  50% {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3), 0 0 20px rgba(254, 179, 46, 0.5);
+  }
+}
+
+.debug-icon { /* Reuse the debug-icon styling */
+  font-size: 18px;
+}
+
+/* Sidebar Bottom Controls - for Debug Toggle */
+.sidebar-bottom-controls {
+  margin-top: auto; /* Pushes this section to the bottom */
+  padding: 10px;    /* Default padding (for expanded state) */
+  border-top: 1px solid #4a505c;
+  /* Not a flex container by default */
+}
+
+.app-control-sidebar.expanded .sidebar-bottom-controls {
+  display: flex;           /* Use flex for expanded state if needed for button content alignment */
+  justify-content: center; /* Centers the button if it's not full-width, or its content */
+}
+
+.app-control-sidebar.collapsed .sidebar-bottom-controls {
+  padding: 10px 0; /* Vertical padding only, 0 horizontal. Content width will be 50px. */
+}
+
+.debug-section-toggle-button {
+  /* Common styles for both states */
+  background-color: transparent; 
+  color: #cccccc;
+  border: 1px solid #4a505c; 
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex; 
+  align-items: center;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+  line-height: 1; /* Ensure consistent line height for icon and text */
+}
+
+/* Styles for the button when sidebar is EXPANDED */
+.debug-section-toggle-button.expanded {
+  width: 100%;      
+  padding: 10px;    
+  justify-content: flex-start; 
+}
+
+.debug-section-toggle-button.expanded .icon {
+  width: 20px; /* Explicit size for the icon in expanded button */
+  height: 20px;
+  margin-right: 8px;
+  flex-shrink: 0; /* Prevent icon from shrinking if text is long */
+}
+
+.debug-section-toggle-button.expanded .debug-toggle-text {
+  font-size: 0.9em;
+  white-space: nowrap; /* Prevent text from wrapping */
+}
+
+/* Styles for the Debug Toggle Button when sidebar is COLLAPSED */
+.debug-section-toggle-button.collapsed {
+  width: 36px;          
+  height: 36px;         
+  padding: 0;           
+  margin: 0 auto 10px auto; 
+  justify-content: center; 
+}
+
+.debug-section-toggle-button.collapsed .debug-toggle-text {
+  display: none;
+}
+
+.debug-section-toggle-button.collapsed .icon {
+  width: 20px; /* Consistent icon size */
+  height: 20px;
+  margin-right: 0; 
+}
+
+.debug-section-toggle-button:hover:not(:disabled) { /* :not(:disabled) added */
+  background-color: #4a505c;
+  color: #FEB32E;
+}
+
+.debug-section-toggle-button.has-active-options {
+  border-color: #FEB32E;
+  color: #FEB32E;
+  box-shadow: 0 0 8px rgba(254, 179, 46, 0.3);
+}
+
+.debug-section-toggle-button.collapsed.has-active-options {
+  border-width: 2px; /* Make border more prominent for active state when collapsed */
+}
+
+.debug-section-toggle-button.has-active-options:hover:not(:disabled) { /* :not(:disabled) added */
+  background-color: rgba(254, 179, 46, 0.2);
+}
+
+/* Disabled state for the debug button */
+.debug-section-toggle-button.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #3D3E3A; /* Match other disabled buttons */
+  color: #666;
+  border-color: #4A4A45;
+}
+
+.debug-section-toggle-button.disabled:hover {
+  background-color: #3D3E3A; /* No hover effect when disabled */
+  color: #666;
+  border-color: #4A4A45;
+}
+
+/* Debug Section Content */
+.debug-section-content {
+  padding: 10px 15px 15px 15px; /* More padding at the bottom */
+  border-top: 1px solid #4a505c; /* Separator if toggle is outside this content div */
+  background-color: #252624; /* Slightly different bg for the section itself */
+}
+
+.debug-section-content h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #FEB32E; /* Orange to match TabInfoPanel headers */
+  font-size: 1em;
+}
+
+.debug-section-content button {
+  background-color: #3D3E3A;
+  color: #F8F8F8;
+  border: 1px solid #4A4A45;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  cursor: pointer;
+  margin-right: 5px;
+  margin-bottom: 8px;
+  transition: background-color 0.2s, border-color 0.2s;
+  display: flex;
+  align-items: center;
+  width: 100%; /* Make buttons full width */
+  justify-content: flex-start;
+}
+
+.debug-section-content button .icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+}
+
+.debug-section-content button:hover {
+  background-color: #4A4A45;
+  border-color: #555;
+}
+
+.debug-section-content button.active {
+  background-color: #FEB32E;
+  color: #1E1F1C;
+  border-color: #FEB32E;
+}
+
+.debug-section-content button.active:hover {
+  background-color: #FFC555; /* Lighter orange for hover on active */
+  border-color: #FFC555;
+}
+
+.debug-section-content button.disabled {
+  background-color: #2A2B25;
+  color: #666;
+  border-color: #333;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.debug-section-content button.disabled:hover {
+  background-color: #2A2B25;
+  border-color: #333;
+}
+
+/* Optional Keyframe for pulsing active debug button in sidebar */
+/* @keyframes pulse-glow-sidebar-debug {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(254, 179, 46, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(254, 179, 46, 0.5);
+  }
+} */

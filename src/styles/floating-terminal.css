@@ -1,0 +1,90 @@
+.floating-terminal-window {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  background-color: #1e1e1e; /* Dark background for the terminal window */
+  border: 1px solid #444; /* Slightly more prominent border */
+  border-radius: 6px; /* Consistent rounded corners */
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* Softer, more modern shadow */
+  overflow: hidden; /* Ensures content stays within rounded corners */
+  min-width: 450px; /* Increased minimum width */
+  min-height: 300px; /* Increased minimum height */
+  width: 800px; /* Default larger width - Increased */
+  height: 500px; /* Default larger height - Increased */
+  resize: both; /* Allow resizing */
+}
+
+.floating-terminal-title-bar {
+  background-color: #2d2d2d; /* Title bar color, slightly lighter than window */
+  color: #ccc; /* Light text color for title */
+  padding: 8px 12px; /* Adjusted padding */
+  cursor: grab; /* Indicates draggable */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #444; /* Separator line */
+  user-select: none; /* Prevent text selection when dragging */
+}
+
+.floating-terminal-title {
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+.floating-terminal-controls {
+  display: flex;
+  align-items: center;
+}
+
+.floating-terminal-minimize-btn,
+.floating-terminal-close-btn {
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 1.2em; /* Slightly larger for better clickability */
+  font-weight: bold;
+  cursor: pointer;
+  padding: 2px 6px; /* Adjusted padding */
+  margin-left: 6px; /* Spacing between buttons */
+  border-radius: 3px;
+  line-height: 1; /* Ensure consistent vertical alignment */
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.floating-terminal-minimize-btn:hover,
+.floating-terminal-close-btn:hover {
+  background-color: #555;
+  color: #fff;
+}
+
+.floating-terminal-content {
+  flex-grow: 1;
+  padding: 0; /* Remove padding if TerminalComponent handles its own */
+  background-color: #1e1e1e; /* Ensure content area matches window bg */
+  overflow: hidden; /* Content should not overflow */
+  /* Ensure TerminalComponent can take full height */
+  display: flex;
+  flex-direction: column;
+}
+
+/* If TerminalComponent itself doesn't fill height, you might need this */
+.floating-terminal-content > div {
+  height: 100% !important; /* Force child div (TerminalComponent wrapper) to fill */
+}
+
+/* Specific styling for the TerminalComponent when embedded */
+.floating-terminal-content .terminal-wrapper {
+  border-radius: 0 0 6px 6px; /* Match bottom corners of the window */
+  height: 100% !important; /* Ensure it fills the content area */
+  overflow: hidden; /* Important for xterm.js rendering */
+}
+
+/* Remove default border from embedded TerminalComponent if it has one */
+.floating-terminal-content .terminal-wrapper .xterm {
+  border: none !important; 
+  height: 100% !important; 
+}
+
+.floating-terminal-content .xterm-viewport {
+  border-radius: 0 0 6px 6px;
+}

@@ -1,0 +1,137 @@
+[
+  {
+    "sectionId": "serviceAlpha_uiComponent",
+    "skipVerification": true,
+    "description": "UI Component Alpha configuration details. No specific path verification needed."
+  },
+  {
+    "sectionId": "serviceAlpha",
+    "directoryPath": "./path/to/service_alpha",
+    "description": "Handles generic Service Alpha and its associated database.",
+    "verifications": [
+      {
+        "id": "serviceAlphaDirExists",
+        "title": "./path/to/service_alpha directory exists",
+        "checkType": "pathExists",
+        "pathValue": "./path/to/service_alpha",
+        "pathType": "directory"
+      },
+      {
+        "id": "serviceAlphaToolExists",
+        "title": "Tool X for Service Alpha exists",
+        "checkType": "pathExists",
+        "pathValue": "./path/to/service_alpha/tool_x",
+        "pathType": "file"
+      }
+    ]
+  },
+  {
+    "sectionId": "serviceBeta",
+    "directoryPath": "./path/to/service_beta",
+    "description": "Manages generic Service Beta, its agent, and browser components.",
+    "verifications": [
+      {
+        "id": "serviceBetaDirExists",
+        "title": "./path/to/service_beta directory exists",
+        "checkType": "pathExists",
+        "pathValue": "./path/to/service_beta",
+        "pathType": "directory"
+      },
+      {
+        "id": "dependencyBetaInstalled",
+        "title": "Dependency Beta installed",
+        "command": "echo \"Checking Dependency Beta version...\"",
+        "checkType": "commandSuccess"
+      }
+    ]
+  },
+  {
+    "sectionId": "serviceGamma",
+    "directoryPath": "./path/to/service_gamma",
+    "description": "Provides generic analysis and external API capabilities.",
+    "verifications": [
+      {
+        "id": "serviceGammaSubDir1Exists",
+        "title": "./path/to/service_gamma/subdir1 exists",
+        "checkType": "pathExists",
+        "pathValue": "./path/to/service_gamma/subdir1",
+        "pathType": "directory"
+      },
+      {
+        "id": "serviceGammaSubDir1ToolExists",
+        "title": "Tool Y in /subdir1 exists",
+        "checkType": "pathExists",
+        "pathValue": "./path/to/service_gamma/subdir1/tool_y",
+        "pathType": "file"
+      },
+      {
+        "id": "serviceGammaSubDir2ToolExists",
+        "title": "Tool Z in /subdir2 exists",
+        "checkType": "pathExists",
+        "pathValue": "./path/to/service_gamma/subdir2/tool_z",
+        "pathType": "file"
+      },
+      {
+        "id": "commonInfraDirExists",
+        "title": "./path/to/common_infra directory exists",
+        "checkType": "pathExists",
+        "pathValue": "./path/to/common_infra",
+        "pathType": "directory"
+      }
+    ]
+  },
+  {
+    "sectionId": "serviceDelta",
+    "directoryPath": "./path/to/service_delta",
+    "description": "Logs and tracks generic user and system activity.",
+    "verifications": [
+      {
+        "id": "serviceDeltaDirExists",
+        "title": "./path/to/service_delta directory exists",
+        "checkType": "pathExists",
+        "pathValue": "./path/to/service_delta",
+        "pathType": "directory"
+      },
+      {
+        "id": "serviceDeltaToolExists",
+        "title": "Tool W for Service Delta exists",
+        "checkType": "pathExists",
+        "pathValue": "./path/to/service_delta/tool_w",
+        "pathType": "file"
+      }
+    ]
+  },
+  {
+    "sectionId": "serviceEpsilon",
+    "directoryPath": "./path/to/service_epsilon",
+    "description": "Evaluates and enforces custom generic rules.",
+    "verifications": [
+      {
+        "id": "serviceEpsilonDirExists",
+        "title": "./path/to/service_epsilon directory exists",
+        "checkType": "pathExists",
+        "pathValue": "./path/to/service_epsilon",
+        "pathType": "directory"
+      }
+    ]
+  },
+  {
+    "sectionId": "engineZeta",
+    "directoryPath": "./path/to/engine_zeta",
+    "description": "Advanced generic analytics engine for processing data with ML and real-time capabilities.",
+    "verifications": [
+      {
+        "id": "engineZetaDirExists",
+        "title": "./path/to/engine_zeta directory exists",
+        "checkType": "pathExists",
+        "pathValue": "./path/to/engine_zeta",
+        "pathType": "directory"
+      }
+    ]
+  },
+  {
+    "sectionId": "engineZeta_log_command",
+    "description": "Displays logs for the Analytics Engine Zeta in a generic terminal view.",
+    "verifications": []
+  }
+] 
