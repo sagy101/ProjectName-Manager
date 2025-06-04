@@ -210,15 +210,17 @@ contextBridge.exposeInMainWorld('electron', {
   
   // Container cleanup event handlers
   onStopAllContainersBeforeQuit: (callback) => {
-    ipcRenderer.on('stop-all-containers-before-quit', (event) => callback());
+    const wrapperFn = (event) => callback();
+    ipcRenderer.on('stop-all-containers-before-quit', wrapperFn);
     return () => {
-      ipcRenderer.removeListener('stop-all-containers-before-quit', callback);
+      ipcRenderer.removeListener('stop-all-containers-before-quit', wrapperFn);
     };
   },
   onStopAllContainersBeforeReload: (callback) => {
-    ipcRenderer.on('stop-all-containers-before-reload', (event) => callback());
+    const wrapperFn = (event) => callback();
+    ipcRenderer.on('stop-all-containers-before-reload', wrapperFn);
     return () => {
-      ipcRenderer.removeListener('stop-all-containers-before-reload', callback);
+      ipcRenderer.removeListener('stop-all-containers-before-reload', wrapperFn);
     };
   }
 }); 
