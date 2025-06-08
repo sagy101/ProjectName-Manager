@@ -93,21 +93,13 @@ Commands are defined in `src/configurationSidebarCommands.json`:
 - **`tabTitle`** (object or string): Terminal tab title configuration
 - **`refreshConfig`** (object): Configuration for command modifications during refresh
 
-## Choosing Between Modifiers and Separate Command Objects
+## Separate Command Objects
 
-There are two approaches to handling multiple command variants, but we strongly recommend using separate command objects for better reliability and maintainability:
-
-### Approach 1: Using Modifiers (Legacy, Not Recommended)
-
-While modifiers can work for simple cases, they are prone to errors and can be difficult to maintain. We recommend avoiding this approach in favor of separate command objects.
-
-### Approach 2: Separate Command Objects (Recommended)
-
-Use separate command objects for all cases where you need different command variants. This approach:
-- Provides better clarity and maintainability
-- Avoids potential JavaScript evaluation errors
-- Makes it easier to debug and modify commands
-- Ensures consistent behavior across different conditions
+Use separate command objects when handling multiple command variants. They:
+- Provide better clarity and maintainability
+- Avoid potential JavaScript evaluation errors
+- Make it easier to debug and modify commands
+- Ensure consistent behavior across different conditions
 
 **Example (your-analytics-section):**
 ```json
@@ -592,12 +584,3 @@ Container status is available in the Tab Information Panel:
 }
 ```
 
-## Future Enhancements
-
-Planned improvements to the command system:
-
-- **Template Variables**: Support for dynamic variable substitution
-- **Command Chaining**: Ability to define command sequences
-- **Conditional Execution**: Commands that run based on previous command results
-- **Environment Injection**: Automatic environment variable setup
-- **Command History**: Tracking and replay of previously executed commands 
