@@ -6,6 +6,7 @@ import { projectSelectorFallbacks } from '../constants/selectors';
 import { STATUS } from '../constants/verificationConstants';
 import configSidebarSections from '../configurationSidebarSections.json';
 import configSidebarCommands from '../configurationSidebarCommands.json';
+import { evaluateCondition, generateCommandList } from '../utils/evalUtils';
 
 // Destructure after import to get the actual sections array
 const { sections: configSidebarSectionsActual } = configSidebarSections;
@@ -455,7 +456,16 @@ const IsoConfiguration = ({ projectName, globalDropdownValues, terminalRef, veri
       // If running, call stopIsoExecution instead of just toggling state
       stopIsoExecution(); 
     } else {
-      const commandList = generateCommandList(configState, globalDropdownValues);
+      const commandList = generateCommandList(
+        configState,
+        globalDropdownValues,
+        {
+          attachState,
+          configSidebarCommands,
+          configSidebarSectionsActual,
+          showTestSections
+        }
+      );
       if (terminalRef && terminalRef.current) {
         updateIsRunning(true);
         console.log('runIsoConfiguration: Calling openTabs with commandList:', commandList);
@@ -464,457 +474,6 @@ const IsoConfiguration = ({ projectName, globalDropdownValues, terminalRef, veri
     }
   };
   
-  // Helper function to evaluate conditions
-  const evaluateCondition = (conditionStr, currentConfig, currentSectionId) => {
-    // console.log(`  Evaluating condition: "${conditionStr}" for section "${currentSectionId}"`);
-    // New strategy: Use a safer Function constructor with a well-defined context.
-    // The context will include:
-    // 1. All properties of the current section's config (e.g., config.alpha.*)
-    // 2. All other top-level section configs, accessible via their {sectionId}Config name (e.g., betaEngineConfig.deploymentType)
-    // 3. The global attachState.
-    // 4. All global dropdown values.
-
-    const context = {};
-
-    // Add current section's direct properties
-    if (currentConfig[currentSectionId]) {
-      Object.assign(context, currentConfig[currentSectionId]);
-    }
-
-    // Add other sections' configs as {sectionId}Config
-    // Also add their subConfigs directly for easier access like someSubConfig.property
-    for (const sectionKey in currentConfig) {
-      if (currentConfig.hasOwnProperty(sectionKey)) {
-        // Add top-level section config, e.g., betaEngineConfig for section 'beta-engine'
-        context[`${sectionKey}Config`] = currentConfig[sectionKey];
-
-        // Add sub-section configs of this top-level section directly to context
-        // e.g., if sectionKey is 'alpha' and it has 'frontendConfig', add 'frontendConfig' to context
-        if (typeof currentConfig[sectionKey] === 'object' && currentConfig[sectionKey] !== null) {
-          for (const subKey in currentConfig[sectionKey]) {
-            if (currentConfig[sectionKey].hasOwnProperty(subKey) && subKey.endsWith('Config')) {
-              context[subKey] = currentConfig[sectionKey][subKey];
-            }
-          }
-        }
-      }
-    }
-    
-    // Add global attachState
-    context.attachState = attachState || {};
-
-    // Add global dropdown values
-    if (globalDropdownValues) {
-        Object.assign(context, globalDropdownValues);
-    }
-
-    // console.log(`    Context for condition "${conditionStr}":`, context);
-
-    try {
-      // Sanitize condition string to prevent direct access to 'config' or 'currentConfig'
-      // and ensure it's treated as a boolean expression.
-      let safeConditionStr = conditionStr;
-      // Basic safety: remove direct "config." or "currentConfig." if someone tries to be clever.
-      safeConditionStr = safeConditionStr.replace(/config\./g, '').replace(/currentConfig\./g, '');
-      
-      const conditionFunction = new Function(...Object.keys(context), `return !!(${safeConditionStr});`);
-      const result = conditionFunction(...Object.values(context));
-      // console.log(`    Condition "${conditionStr}" evaluated to: ${result}`);
-      return result;
-    } catch (e) {
-      console.error(`Error evaluating condition "${conditionStr}" for section "${currentSectionId}":`, e);
-      console.error("Available context keys:", Object.keys(context));
-      return false;
-    }
-  };
-
-  // Helper function to evaluate expressions (DEPRECATED - logic moved to evaluateCondition)
-  // This function can be removed if evaluateCondition handles all cases.
-  // For now, ensure it's not called or calls the new evaluateCondition for boolean results.
-  const evaluateExpression = (expression, config, sectionId) => {
-    // This is now a wrapper or should be deprecated.
-    // For boolean results, which is what modifiers/excludes often need:
-    // console.warn(`evaluateExpression is being called for "${expression}". This may need to use evaluateCondition's context.`);
-    
-    // If the expression is intended to resolve to a string (e.g. for replacement), this needs different handling.
-    // For now, assuming it's for a boolean check as part of a condition structure.
-    return evaluateCondition(expression, config, sectionId);
-  };
-
-  // Function to generate commands based on configuration
-  const generateCommandList = (config, globalDropdowns) => {
-    const commands = [];
-    const generatedCommandSectionIds = new Set(); // Initialize Set to track generated commands
-    
-    console.log('generateCommandList - Full config state:', JSON.stringify(config, null, 2));
-    console.log('generateCommandList - attachState:', attachState);
-    console.log('generateCommandList - showTestSections prop:', showTestSections);
-    
-    configSidebarCommands.forEach((commandDef, index) => {
-      const { sectionId: cmdSectionId, conditions, command } = commandDef; // Renamed to cmdSectionId
-      const commandDefinitionId = index;
-      
-      // Step 1: Check if cmdSectionId corresponds to a real, displayable section or sub-section in configSidebarSectionsActual
-      const isDisplayableSectionOrSubSection = configSidebarSectionsActual.some(s =>
-        s.id === cmdSectionId || (s.components?.subSections?.some(sub => sub.id === cmdSectionId))
-      );
-
-      if (!isDisplayableSectionOrSubSection) {
-        console.log(`Command ${cmdSectionId} (Def ID: ${commandDefinitionId}) does not match a displayable section/sub-section. Assuming it's for a custom button or other non-"Run ISO" trigger. Skipping.`);
-        return; // Skip this commandDef for "Run ISO"
-      }
-
-      // Step 2: For displayable sections, determine the effective section for testSection flag checking
-      // (A sub-section's test status is determined by its main parent section)
-      let effectiveSectionDefForTestCheck = configSidebarSectionsActual.find(s => s.id === cmdSectionId);
-      if (!effectiveSectionDefForTestCheck) { // If not a top-level section, it must be a sub-section
-        const parentSection = configSidebarSectionsActual.find(s => s.components?.subSections?.some(sub => sub.id === cmdSectionId));
-        if (parentSection) {
-          effectiveSectionDefForTestCheck = parentSection; 
-          // console.log(`Command for sub-section ${cmdSectionId}. Parent for testSection check: ${parentSection.id}`);
-        }
-      }
-
-      // Now, apply the testSection logic using effectiveSectionDefForTestCheck
-      if (effectiveSectionDefForTestCheck?.testSection && !showTestSections) {
-        console.log(`Skipping command for section: ${cmdSectionId} (effective parent for test check: ${effectiveSectionDefForTestCheck.id}) because it's a test section and showTestSections is false.`);
-        return; 
-      }
-
-      console.log(`\nProcessing command for displayable section: ${cmdSectionId} (Def ID: ${commandDefinitionId})`);
-      console.log('Conditions:', conditions);
-      
-      let shouldInclude = true;
-      let isSubSectionCommand = false;
-      
-      if (conditions) {
-        Object.entries(conditions).forEach(([key, expectedValue]) => {
-          let actualValue;
-          isSubSectionCommand = key.includes('Config'); // A simple heuristic for now
-          
-          // Updated Condition Evaluation Logic
-          if (key.includes('.')) {
-            const [leftPart, propertyToAccess] = key.split('.', 2); // E.g., leftPart="alphaConfig", propertyToAccess="enabled"
-            if(leftPart.endsWith('attachState')) {
-              actualValue = attachState?.[propertyToAccess];
-              console.log(`    Condition ${key}: looked up in global attachState`);
-            } else if (leftPart.endsWith('Config')) {
-              const configObjectName = leftPart; // e.g., "frontendConfig" or "alphaConfig"
-              
-              // Case 1: Condition is like "someSectionConfig.enabled"
-              // This should refer to the main 'enabled' status of the section derived from 'someSectionConfig'
-              if (propertyToAccess === 'enabled') {
-                const sectionIdToEvaluate = configObjectName.replace('Config', ''); // e.g., "alpha" or "frontend"
-                
-                // Check if 'sectionIdToEvaluate' is a top-level section
-                if (config[sectionIdToEvaluate] !== undefined) {
-                  actualValue = config[sectionIdToEvaluate]?.enabled;
-                  console.log(`    Condition ${key} (sectionConfig.enabled): Evaluated ${sectionIdToEvaluate}.enabled`);
-                } else {
-                  // If not top-level, it might be a sub-section. Find its parent and evaluate its own 'enabled' state.
-                  let parentSectionIdForSub = null;
-                  let subSectionActualConfigObject = null;
-                  for (const topLvlId in config) {
-                    if (config[topLvlId] && typeof config[topLvlId] === 'object' && configObjectName in config[topLvlId]) {
-                      parentSectionIdForSub = topLvlId;
-                      subSectionActualConfigObject = config[parentSectionIdForSub]?.[configObjectName];
-                      break;
-                    }
-                  }
-                  if (subSectionActualConfigObject) {
-                    actualValue = subSectionActualConfigObject.enabled; // a sub-section's own enabled state
-                    console.log(`    Condition ${key} (subSectionConfig.enabled): Evaluated ${parentSectionIdForSub}.${configObjectName}.enabled`);
-                  } else {
-                    actualValue = undefined;
-                    console.warn(`    Warning: Could not resolve ${key}. Section ${sectionIdToEvaluate} not found as top-level, and ${configObjectName} not found as sub-config object.`);
-                  }
-                }
-              } else {
-                // Case 2: Condition is like "subSectionConfig.someOtherProperty" (e.g., frontendConfig.deploymentType)
-                let parentSectionIdForConfigObject = null;
-                for (const topLevelSectionIdInState in config) {
-                  if (config[topLevelSectionIdInState] && typeof config[topLevelSectionIdInState] === 'object' && configObjectName in config[topLevelSectionIdInState]) {
-                    parentSectionIdForConfigObject = topLevelSectionIdInState;
-                    break;
-                  }
-                }
-                if (parentSectionIdForConfigObject) {
-                  actualValue = config[parentSectionIdForConfigObject]?.[configObjectName]?.[propertyToAccess];
-                  console.log(`    Condition ${key} (subConfig.property): Evaluated ${parentSectionIdForConfigObject}.${configObjectName}.${propertyToAccess}`);
-                } else {
-                  actualValue = undefined;
-                  console.warn(`    Warning: Could not resolve ${key}. Could not find parent for ${configObjectName}.`);
-                }
-              }
-            } else {
-              // Generic dot notation, not ending with Config before the dot.
-              actualValue = key.split('.').reduce((obj, prop) => obj?.[prop], config[cmdSectionId]);
-              console.log(`    Condition ${key} (generic dot): Evaluated in context of ${cmdSectionId}`);
-            }
-          } else {
-            // Simple key (no dot), e.g., "enabled" or "threatIntelPodSelected"
-            let targetObjectForSimpleKey;
-            let parentOfCmdSection = null; 
-
-            // Find parent of command's sectionId if it's a sub-section
-            configSidebarSectionsActual.forEach(s => {
-                if (s.components?.subSections?.some(sub => sub.id === cmdSectionId)) {
-                    parentOfCmdSection = s.id;
-                }
-            });
-
-            if (key.endsWith('Selected') && parentOfCmdSection) {
-                // For keys like "threatIntelPodSelected", the state is on the parent section's config
-                // because the dropdown's state (including its {dropdownId}Selected flag) is managed under the parent section in configState
-                targetObjectForSimpleKey = config[parentOfCmdSection];
-                console.log(`    Condition ${key} (Selected flag for sub-section's dropdown): Looking in parent ${parentOfCmdSection} for ${key}`);
-            } else if (parentOfCmdSection) {
-                // For other simple keys of a sub-section command (like its own 'enabled' state),
-                // use its own config object which is nested under the parent
-                const subConfigObjectName = `${cmdSectionId.replace(/-sub$/, '')}Config`;
-                targetObjectForSimpleKey = config[parentOfCmdSection]?.[subConfigObjectName];
-                console.log(`    Targeting sub-config: ${parentOfCmdSection}.${subConfigObjectName} for simple key '${key}'`);
-            } else {
-                // For simple keys of a top-level section command
-                targetObjectForSimpleKey = config[cmdSectionId];
-            }
-            actualValue = targetObjectForSimpleKey?.[key];
-            console.log(`    Condition ${key} (simple key for cmdSection ${cmdSectionId}): Evaluated. Parent: ${parentOfCmdSection}`);
-          }
-          
-          console.log(`  FINAL CHECK: Condition: ${key} === ${expectedValue}, Actual: ${actualValue}`);
-          shouldInclude = shouldInclude && actualValue === expectedValue;
-        });
-      }
-      
-      console.log(`  Should include: ${shouldInclude}, Is sub-section: ${isSubSectionCommand}`);
-      
-      if (!shouldInclude) return;
-      
-      let finalCommand = command.base;
-      
-      if (command.modifiers) {
-        command.modifiers.forEach(modifier => {
-          const conditionMet = evaluateCondition(modifier.condition, config, cmdSectionId);
-          if (conditionMet) {
-            if (modifier.append) {
-              finalCommand += modifier.append;
-            } else if (modifier.replace) {
-              finalCommand = modifier.replace;
-            }
-          }
-        });
-      }
-      
-      if (command.postModifiers) {
-        finalCommand += command.postModifiers;
-      }
-      
-      if (command.excludes) {
-        command.excludes.forEach(exclude => {
-          const conditionMet = evaluateCondition(exclude.condition, config, cmdSectionId);
-          if (conditionMet && exclude.append) {
-            finalCommand += exclude.append;
-          }
-        });
-      }
-      
-      if (command.finalAppend) {
-        finalCommand += command.finalAppend;
-      }
-      
-      if (command.prefix) {
-        finalCommand = command.prefix + finalCommand;
-      }
-      
-      // Replace variables dynamically
-      finalCommand = finalCommand.replace(/\$\{(\w+)\}/g, (match, varName) => {
-        let replacementValue = match; // Default to original match if not found
-        let found = false;
-
-        // Determine if the current command's sectionId is a sub-section and find its parent
-        let parentSectionId = null;
-        let subSectionConfigObjectName = null;
-        const currentCommandSectionIsSubSection = configSidebarSectionsActual.some(s => {
-            if (s.components?.subSections?.some(sub => sub.id === cmdSectionId)) {
-                parentSectionId = s.id;
-                subSectionConfigObjectName = `${cmdSectionId.replace(/-sub$/, '')}Config`;
-                return true;
-            }
-            return false;
-        });
-
-        if (currentCommandSectionIsSubSection && parentSectionId) {
-          // For sub-sections, first check parent section's direct properties (e.g., for dropdowns defined in parent or sibling sub-sections)
-          if (config[parentSectionId]?.[varName] !== undefined) {
-            replacementValue = config[parentSectionId][varName];
-            found = true;
-            console.log(`    Var ${varName} (for sub-section ${cmdSectionId}): Found in parent ${parentSectionId} direct properties.`);
-          } else if (subSectionConfigObjectName && config[parentSectionId]?.[subSectionConfigObjectName]?.[varName] !== undefined) {
-            // Then check the sub-section's own config object
-            replacementValue = config[parentSectionId][subSectionConfigObjectName][varName];
-            found = true;
-            console.log(`    Var ${varName} (for sub-section ${cmdSectionId}): Found in own config ${parentSectionId}.${subSectionConfigObjectName}`);
-          }
-        } else {
-          // For top-level sections, check its direct properties
-          if (config[cmdSectionId]?.[varName] !== undefined) {
-            replacementValue = config[cmdSectionId][varName];
-            found = true;
-            console.log(`    Var ${varName} (for top-level section ${cmdSectionId}): Found in section direct properties.`);
-          }
-        }
-
-        // If not found yet, check global dropdown values
-        if (!found && globalDropdowns?.[varName] !== undefined) {
-          replacementValue = globalDropdowns[varName];
-          found = true;
-          console.log(`    Var ${varName}: Found in globalDropdowns.`);
-        }
-        
-        // Special case for mode, ensuring context (top-level or sub-section)
-        if (!found && varName === 'mode') {
-          if (currentCommandSectionIsSubSection && parentSectionId && subSectionConfigObjectName) {
-            replacementValue = config[parentSectionId]?.[subSectionConfigObjectName]?.mode || match;
-            if (replacementValue !== match) found = true;
-            console.log(`    Var 'mode' (for sub-section ${cmdSectionId}): Looked up in ${parentSectionId}.${subSectionConfigObjectName}`);
-          } else if (config[cmdSectionId]?.mode !== undefined) {
-            replacementValue = config[cmdSectionId]?.mode || match;
-            if (replacementValue !== match) found = true;
-            console.log(`    Var 'mode' (for top-level section ${cmdSectionId}): Looked up in section direct properties.`);
-          }
-        }
-        
-        console.log(`    Replacing \$\{${varName}\} with: ${replacementValue}`);
-        return replacementValue;
-      });
-      
-      let tabTitle = command.tabTitle;
-      if (typeof tabTitle === 'object') {
-        tabTitle = command.tabTitle.base;
-        if (command.tabTitle.conditionalAppends) {
-          command.tabTitle.conditionalAppends.forEach(append => {
-            const conditionMet = evaluateCondition(append.condition, config, cmdSectionId);
-            if (conditionMet) {
-              tabTitle += append.append;
-            }
-            });
-        }
-      }
-      
-      const resolvedAssociatedContainers = [];
-      if (command.associatedContainers) {
-        command.associatedContainers.forEach(containerAssoc => {
-          if (typeof containerAssoc === 'string') {
-            resolvedAssociatedContainers.push(containerAssoc);
-          } else if (typeof containerAssoc === 'object' && containerAssoc.name) {
-            if (!containerAssoc.condition || evaluateCondition(containerAssoc.condition, config, cmdSectionId)) {
-              resolvedAssociatedContainers.push(containerAssoc.name);
-            }
-          }
-        });
-      }
-      
-      commands.push({ 
-        section: tabTitle,
-        command: finalCommand,
-        sectionId: cmdSectionId,
-        commandDefinitionId: commandDefinitionId,
-        isSubSectionCommand: isSubSectionCommand,
-        associatedContainers: resolvedAssociatedContainers,
-        refreshConfig: command.refreshConfig
-      });
-      generatedCommandSectionIds.add(cmdSectionId); // Add sectionId if command was added
-    });
-
-    // Add error tabs for sections/sub-sections that are enabled but have no command
-    configSidebarSectionsActual.forEach(sectionDef => {
-      const sectionId = sectionDef.id;
-      const sectionTitle = sectionDef.title;
-
-      // Handle Parent Sections
-      if (configState[sectionId]?.enabled) {
-        const hasCommandConfig = configSidebarCommands.some(cmd => cmd.sectionId === sectionId);
-
-        if (hasCommandConfig) {
-          // Scenario 1.a (Error for parent - configured but no command)
-          if (!generatedCommandSectionIds.has(sectionId)) {
-            commands.push({
-              title: sectionTitle,
-              sectionId: sectionId,
-              type: 'error',
-              message: 'No suitable command found for the current configuration.',
-              id: `error-${sectionId}-${Date.now()}`
-            });
-          }
-        } else {
-          // Scenario 1.b (Error for parent - not configured OR no valid sub-sections)
-          let sectionError = true;
-          let sectionErrorMessage = 'No commands configured for this section and no active/valid sub-sections.';
-
-          if (sectionDef.components?.subSections && sectionDef.components.subSections.length > 0) {
-            for (const subSectionDef of sectionDef.components.subSections) {
-              const subSectionId = subSectionDef.id;
-              const subSectionConfigKey = `${subSectionId.replace(/-sub$/, '')}Config`;
-
-              if (configState[sectionId]?.[subSectionConfigKey]?.enabled) {
-                if (generatedCommandSectionIds.has(subSectionId)) {
-                  // This enabled sub-section has a valid command, so parent error (1.b) is not needed.
-                  sectionError = false;
-                  break;
-                }
-                // If the sub-section is enabled but didn't generate a command,
-                // it might get its own error tab (handled below).
-                // The parent error (1.b) might still apply if no *other* sub-section is valid.
-                // If !subHasCommandConfig for this enabled sub-section, it contributes to parent error.
-                // If subHasCommandConfig for this enabled sub-section (but no generated command),
-                // it will get its own error, parent error might still be shown.
-              }
-            }
-          }
-
-          // Add error for parent (Scenario 1.b) only if sectionError is still true
-          // AND this parent section itself didn't somehow generate a command.
-          if (sectionError && !generatedCommandSectionIds.has(sectionId)) {
-            commands.push({
-              title: sectionTitle,
-              sectionId: sectionId,
-              type: 'error',
-              message: sectionErrorMessage,
-              id: `error-${sectionId}-${Date.now()}`
-            });
-          }
-        }
-      }
-
-      // Handle Sub-Sections Specifically (for Scenario 2.a type errors on sub-sections)
-      if (sectionDef.components?.subSections) {
-        sectionDef.components.subSections.forEach(subSectionDef => {
-          const subSectionId = subSectionDef.id;
-          const subSectionTitle = subSectionDef.title;
-          const parentSectionId = sectionDef.id; // This is 'sectionId' from the outer loop
-          const subSectionConfigKey = `${subSectionId.replace(/-sub$/, '')}Config`;
-
-          if (configState[parentSectionId]?.[subSectionConfigKey]?.enabled) {
-            const subHasCommandConfig = configSidebarCommands.some(cmd => cmd.sectionId === subSectionId);
-
-            // Scenario 2.a (Error for sub-section - configured but no command)
-            if (subHasCommandConfig && !generatedCommandSectionIds.has(subSectionId)) {
-              commands.push({
-                title: subSectionTitle,
-                sectionId: subSectionId,
-                type: 'error',
-                message: 'No suitable command found for the current configuration.',
-                id: `error-${subSectionId}-${Date.now()}`
-              });
-            }
-          }
-        });
-      }
-    });
-    
-    return commands;
-  };
   
   // Helper function to get the correct path verification status for a section
   const getSectionPathStatus = (sectionId, statuses) => {
@@ -1001,7 +560,20 @@ const IsoConfiguration = ({ projectName, globalDropdownValues, terminalRef, veri
             isStopping ? 'stopping' : isRunning ? 'stop' : ''
           }`}
           onClick={runIsoConfiguration}
-          disabled={isStopping || (!isRunning && generateCommandList(configState, globalDropdownValues).length === 0)}
+          disabled={
+            isStopping ||
+            (!isRunning &&
+              generateCommandList(
+                configState,
+                globalDropdownValues,
+                {
+                  attachState,
+                  configSidebarCommands,
+                  configSidebarSectionsActual,
+                  showTestSections
+                }
+              ).length === 0)
+          }
         >
           {isStopping ? (
             <>
