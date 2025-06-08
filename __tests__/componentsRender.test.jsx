@@ -167,12 +167,6 @@ describe('Component render tests', () => {
     );
   });
 
-  test('DropdownSelector renders', () => {
-    render(
-      <DropdownSelector id="d1" command="cmd" onChange={() => {}} />
-    );
-  });
-
   test('EnvironmentVerification renders', () => {
     render(
       <EnvironmentVerification
@@ -245,6 +239,12 @@ describe('Component render tests', () => {
   test('TerminalContainer renders', () => {
     render(
       <TerminalContainer noRunMode={false} configState={{}} projectName="Proj" isReadOnly={false} />
+    );
+  });
+
+  test('DropdownSelector renders', () => {
+    render(
+      <DropdownSelector id="d1" command="cmd" onChange={() => {}} />
     );
   });
 });

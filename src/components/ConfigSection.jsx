@@ -271,7 +271,6 @@ const ConfigSection = ({
             {/* Mode selector */}
             {section.components.modeSelector && config.mode && isAttached && (
               <div className="mode-selector-container" style={{ padding: '8px 12px' }}>
-                <label className="mode-selector-label">Mode:</label>
                 <div className="deployment-toggle-container compact">
                   {section.components.modeSelector.options.map(option => (
                     <button

@@ -536,27 +536,27 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
       
       <div id="config-sections">
         {visibleSections.map(section => (
-            <ConfigSection
-              key={section.id}
-              section={section}
+          <ConfigSection
+            key={section.id}
+            section={section}
             config={configState[section.id] || {}}
-              toggleEnabled={toggleSectionEnabled}
+            toggleEnabled={toggleSectionEnabled}
             setDeploymentType={setDeploymentType}
             setMode={setMode}
-              setSectionDropdownValue={setSectionDropdownValue}
-              globalDropdownValues={globalDropdownValues}
-              isAttached={attachState[section.id] || false}
-              onAttachToggle={(attached) => handleAttachToggle(section.id, attached)}
-              isAttachWarning={warningState[section.id] || false}
-              isLocked={isRunning}
-              sectionPathStatus={getSectionPathStatus(section.id, verificationStatuses)}
-              sectionGitBranch={getSectionGitBranch(section.id, verificationStatuses)}
-              onTriggerRefresh={onTriggerRefresh}
+            setSectionDropdownValue={setSectionDropdownValue}
+            globalDropdownValues={globalDropdownValues}
+            isAttached={attachState[section.id] || false}
+            onAttachToggle={(attached) => handleAttachToggle(section.id, attached)}
+            isAttachWarning={warningState[section.id] || false}
+            isLocked={isRunning}
+            sectionPathStatus={getSectionPathStatus(section.id, verificationStatuses)}
+            sectionGitBranch={getSectionGitBranch(section.id, verificationStatuses)}
+            onTriggerRefresh={onTriggerRefresh}
             attachState={attachState}
             configState={configState}
             toggleSubSectionEnabled={toggleSubSectionEnabled}
             setSubSectionDeploymentType={setSubSectionDeploymentType}
-            openFloatingTerminal={openFloatingTerminal} // Pass it down
+            openFloatingTerminal={openFloatingTerminal}
           />
         ))}
       </div>
@@ -609,6 +609,6 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
       </div>
     </div>
   );
-};
+});
 
 export default IsoConfiguration;
