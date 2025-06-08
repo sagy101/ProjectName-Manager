@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
 import ConfigSection from './ConfigSection';
 import Notification from './Notification';
 import StoppingStatusScreen from './StoppingStatusScreen';
@@ -12,7 +12,7 @@ import { evaluateCondition, generateCommandList } from '../utils/evalUtils';
 const { sections: configSidebarSectionsActual } = configSidebarSections;
 
 // Props now include globalDropdownValues from App.jsx and terminalRef from TerminalManager.jsx
-const IsoConfiguration = ({ projectName, globalDropdownValues, terminalRef, verificationStatuses, onTriggerRefresh, showTestSections = false, onConfigStateChange, onIsRunningChange, openFloatingTerminal }) => {
+const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, terminalRef, verificationStatuses, onTriggerRefresh, showTestSections = false, onConfigStateChange, onIsRunningChange, openFloatingTerminal }, ref) => {
   // Initialize config state with default values
   const [configState, setConfigState] = useState({});
   // Track if an ISO is currently running
@@ -509,6 +509,14 @@ const IsoConfiguration = ({ projectName, globalDropdownValues, terminalRef, veri
       onConfigStateChange(configState);
     }
   }, [configState, onConfigStateChange, initialized]);
+
+  useImperativeHandle(ref, () => ({
+    getCurrentState: () => ({ configState, attachState }),
+    setStateFromImport: ({ configState: newConfig, attachState: newAttach }) => {
+      if (newConfig) setConfigState(newConfig);
+      if (newAttach) setAttachState(newAttach);
+    }
+  }));
 
   return (
     <div className="config-container">

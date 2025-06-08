@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import '../styles/app-control-sidebar.css'; // Renamed CSS
 // Import XMarkIcon as CloseIcon for clarity, or use XMarkIcon directly if no conflict
-import { Bars3Icon, XMarkIcon, EyeIcon, EyeSlashIcon, InformationCircleIcon, XMarkIcon as CloseIcon, Cog6ToothIcon, ArrowPathIcon, ComputerDesktopIcon, TrashIcon } from '@heroicons/react/24/outline'; // Example icons
+import { Bars3Icon, XMarkIcon, EyeIcon, EyeSlashIcon, InformationCircleIcon, XMarkIcon as CloseIcon, Cog6ToothIcon, ArrowPathIcon, ComputerDesktopIcon, TrashIcon, ArrowDownTrayIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 
 const AppControlSidebar = ({
   floatingTerminals,
@@ -20,7 +20,9 @@ const AppControlSidebar = ({
   onToggleNoRunMode,
   showAppNotification, // Though showAppNotification might not be directly used by buttons here, it was part of DebugPanel
   isMainTerminalWritable, // New prop
-  onToggleMainTerminalWritable // New prop
+  onToggleMainTerminalWritable, // New prop
+  onExportConfig,
+  onImportConfig
 }) => {
   const sidebarRef = useRef(null);
   const [isDebugSectionOpen, setIsDebugSectionOpen] = useState(false);
@@ -190,6 +192,14 @@ const AppControlSidebar = ({
               <path fillRule="evenodd" d="M2 5a1 1 0 00-1 1v8a1 1 0 001 1h16a1 1 0 001-1V6a1 1 0 00-1-1H2zm3.293 2.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414L11.414 12l3.293 3.293a1 1 0 01-1.414 1.414L10 13.414l-3.293 3.293a1 1 0 01-1.414-1.414L8.586 12 5.293 8.707a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
             <span>{isMainTerminalWritable ? 'Terminals Writable' : 'Terminals Read-Only'}</span>
+          </button>
+          <button onClick={onExportConfig} title="Export Configuration">
+            <ArrowDownTrayIcon className="icon" />
+            <span>Export Config</span>
+          </button>
+          <button onClick={onImportConfig} title="Import Configuration">
+            <ArrowUpTrayIcon className="icon" />
+            <span>Import Config</span>
           </button>
         </div>
       )}

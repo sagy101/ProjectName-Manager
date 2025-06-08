@@ -207,6 +207,9 @@ contextBridge.exposeInMainWorld('electron', {
   // Container management
   stopContainers: (containerNames) => ipcRenderer.invoke('stop-containers', containerNames),
   getContainerStatus: (containerName) => ipcRenderer.invoke('get-container-status', containerName),
+
+  exportConfig: (data) => ipcRenderer.invoke('export-config', data),
+  importConfig: () => ipcRenderer.invoke('import-config'),
   
   // Container cleanup event handlers
   onStopAllContainersBeforeQuit: (callback) => {

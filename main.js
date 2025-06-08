@@ -1,10 +1,11 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const os = require('os');
 const { exec, execSync } = require('child_process'); // Added execSync
 const fs = require('fs').promises;
 const fsSync = require('fs');
 const pty = require('node-pty'); // Added node-pty
+const { exportConfigToFile, importConfigFromFile } = require('./configIO');
 
 // Import shared constants
 const { projectSelectorFallbacks } = require('./src/constants/selectors');
@@ -825,6 +826,41 @@ ipcMain.handle('git-list-local-branches', async (event, { projectPath }) => {
   });
 });
 
+
+ipcMain.handle('export-config', async (event, data) => {
+  try {
+    const { canceled, filePath } = await dialog.showSaveDialog({
+      title: 'Export Configuration',
+      defaultPath: 'config.json',
+      filters: [{ name: 'JSON', extensions: ['json'] }]
+    });
+    if (canceled || !filePath) {
+      return { success: false, canceled: true };
+    }
+    return await exportConfigToFile(data, filePath);
+  } catch (error) {
+    console.error('Error exporting config:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('import-config', async () => {
+  try {
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      title: 'Import Configuration',
+      properties: ['openFile'],
+      filters: [{ name: 'JSON', extensions: ['json'] }]
+    });
+    if (canceled || filePaths.length === 0) {
+      return { success: false, canceled: true };
+    }
+    return await importConfigFromFile(filePaths[0]);
+  } catch (error) {
+    console.error('Error importing config:', error);
+    return { success: false, error: error.message };
+  }
+});
+
 ipcMain.on('pty-spawn', (event, { command, terminalId, cols, rows }) => {
   if (activeProcesses[terminalId]) {
     console.warn(`Terminal ${terminalId} already has an active process.`);
@@ -935,4 +971,9 @@ app.on('will-quit', async (event) => {
   
   // Now really quit
   app.exit(0);
-}); 
+});
+
+module.exports = {
+  exportConfigToFile,
+  importConfigFromFile,
+};
