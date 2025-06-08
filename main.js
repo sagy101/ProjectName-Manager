@@ -34,44 +34,8 @@ const CONFIG_SIDEBAR_ABOUT_PATH = path.join(__dirname, 'src', 'configurationSide
 // Path to the configuration file that includes display settings
 const CONFIG_SIDEBAR_SECTIONS_PATH = path.join(__dirname, 'src', 'configurationSidebarSections.json');
 
-// Helper function to resolve environment variables in a string
-const resolveEnvVars = (str) => {
-  if (!str) return '';
-  // Resolve $HOME and other common vars like $GOPATH if set
-  let resolvedStr = str.replace(/\$HOME/g, os.homedir());
-  if (process.env.GOPATH) {
-    resolvedStr = resolvedStr.replace(/\$GOPATH/g, process.env.GOPATH);
-  }
-  // Add more replacements if needed, e.g., process.env[varName]
-  return resolvedStr;
-};
-
-const checkPathExists = async (relativePath, pathType = 'directory') => {
-  const absolutePath = path.join(projectRoot, relativePath);
-  try {
-    const stats = await fs.stat(absolutePath); // Use fs.stat to get path details
-    if (pathType === 'directory' && stats.isDirectory()) {
-      console.log(`Path check (directory): ${absolutePath} - valid`);
-      return 'valid';
-    } else if (pathType === 'file' && stats.isFile()) {
-      console.log(`Path check (file): ${absolutePath} - valid`);
-      return 'valid';
-    } else if (!pathType && (stats.isFile() || stats.isDirectory())) {
-      console.log(`Path check (any): ${absolutePath} - valid`);
-      return 'valid';
-    } else {
-      console.log(`Path check (${pathType}): ${absolutePath} - invalid (wrong type)`);
-      return 'invalid';
-    }
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      console.log(`Path check (${pathType}): ${absolutePath} - invalid (does not exist)`);
-    } else {
-      console.error(`Path check (${pathType}): ${absolutePath} - error accessing path:`, error);
-    }
-    return 'invalid';
-  }
-};
+// Utility helpers
+const { resolveEnvVars, checkPathExists } = require('./src/mainUtils');
 
 // Helper function to get Git branch with caching
 const gitBranchCache = {};
@@ -366,7 +330,7 @@ async function verifyEnvironment() {
                 ? path.join(projectRoot, pathValue.slice(2))
                 : resolveEnvVars(pathValue);
               
-              const pathStatus = await checkPathExists(pathValue.slice(2), pathType);
+              const pathStatus = await checkPathExists(projectRoot, pathValue.slice(2), pathType);
               result = pathStatus;
               break;
               
