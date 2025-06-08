@@ -1,345 +1,386 @@
 [
   {
-    "sectionId": "engineZeta_log_command",
+    "sectionId": "testAnalyticsLogCommand",
     "command": {
-      "base": "echo 'Displaying logs for Analytics Engine Zeta'",
-      "tabTitle": "Analytics Engine Zeta Logs"
+      "base": "echo 'Floating terminal for Test Analytics Logs'",
+      "tabTitle": "Test Analytics Logs"
     }
   },
   {
-    "sectionId": "serviceAlpha",
+    "sectionId": "mirror",
     "conditions": {
       "enabled": true,
-      "attachState.serviceAlpha": false
+      "attachState.mirror": false
     },
     "command": {
-      "base": "echo 'Execute Service Alpha command'",
+      "base": "nvm use 15.5.1 && cd ./weblifemirror && ./gradlew bootRun --info -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
       "associatedContainers": [
-        "generic_container_a1",
-        "generic_container_a2"
+        "wiremock",
+        "weblifemirror-db-replica-1",
+        "weblifemirror-db-master-1",
+        "weblifemirror-redis-1",
+        "weblifemirror-localdb-1"
       ],
       "tabTitle": {
-        "base": "Service Alpha + DB Alpha"
+        "base": "Mirror + MariaDB"
       }
     }
   },
   {
-    "sectionId": "serviceAlpha",
+    "sectionId": "mirror",
     "conditions": {
       "enabled": true,
-      "attachState.serviceAlpha": true
+      "attachState.mirror": true,
+      "mode": "suspend"
     },
     "command": {
-      "base": "echo 'Execute Service Alpha command (Debug mode)'",
+      "base": "nvm use 15.5.1 && cd ./weblifemirror && ./gradlew bootRun --debug-jvm --info -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
       "associatedContainers": [
-        "generic_container_a1",
-        "generic_container_a2"
+        "wiremock",
+        "weblifemirror-db-replica-1",
+        "weblifemirror-db-master-1",
+        "weblifemirror-redis-1",
+        "weblifemirror-localdb-1"
       ],
       "tabTitle": {
-        "base": "Service Alpha + DB Alpha (Debug)"
+        "base": "Mirror + MariaDB (Debug Suspend)"
       }
     }
   },
   {
-    "sectionId": "serviceAlpha_uiComponent",
-    "conditions": {
-      "serviceAlphaConfig.enabled": true,
-      "serviceAlpha_uiComponentConfig.enabled": true,
-      "serviceAlpha_uiComponentConfig.deploymentType": "developer"
-    },
-    "command": {
-      "base": "echo 'Execute UI Component Alpha command (Developer Mode)'",
-      "prefix": "echo 'Setup for UI Component Alpha...' && ",
-      "tabTitle": "UI Component Alpha (Developer Mode)"
-    }
-  },
-  {
-    "sectionId": "serviceAlpha_uiComponent",
-    "conditions": {
-      "serviceAlphaConfig.enabled": true,
-      "serviceAlpha_uiComponentConfig.enabled": true,
-      "serviceAlpha_uiComponentConfig.deploymentType": "standard"
-    },
-    "command": {
-      "base": "echo 'Execute UI Component Alpha command (Standard Mode)'",
-      "prefix": "echo 'Setup for UI Component Alpha...' && ",
-      "tabTitle": "UI Component Alpha (Standard Mode)"
-    }
-  },
-  {
-    "sectionId": "serviceBeta",
+    "sectionId": "mirror",
     "conditions": {
       "enabled": true,
-      "deploymentType": "runtime_option_2"
+      "attachState.mirror": true,
+      "mode": "run"
     },
     "command": {
-      "base": "echo 'Execute Service Beta command (Runtime Option 2)'",
-      "prefix": "echo 'Setup for Service Beta...' && ",
-      "tabTitle": "Service Beta (Runtime Option 2)",
+      "base": "nvm use 15.5.1 && cd ./weblifemirror && ./gradlew bootRun --debug-jvm -Dorg.gradle.debug.suspend=false --info -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
+      "associatedContainers": [
+        "wiremock",
+        "weblifemirror-db-replica-1",
+        "weblifemirror-db-master-1",
+        "weblifemirror-redis-1",
+        "weblifemirror-localdb-1"
+      ],
+      "tabTitle": {
+        "base": "Mirror + MariaDB (Debug Run)"
+      }
+    }
+  },
+  {
+    "sectionId": "frontend",
+    "conditions": {
+      "mirrorConfig.enabled": true,
+      "frontendConfig.enabled": true,
+      "frontendConfig.deploymentType": "dev"
+    },
+    "command": {
+      "base": "cd ./weblifemirror && webpack --watch",
+      "prefix": "nvm use 15.5.1 && ",
+      "tabTitle": "Frontend (Dev Mode)"
+    }
+  },
+  {
+    "sectionId": "frontend",
+    "conditions": {
+      "mirrorConfig.enabled": true,
+      "frontendConfig.enabled": true,
+      "frontendConfig.deploymentType": "normal"
+    },
+    "command": {
+      "base": "cd ./weblifemirror && webpack --bail",
+      "prefix": "nvm use 15.5.1 && ",
+      "tabTitle": "Frontend"
+    }
+  },
+  {
+    "sectionId": "gopm",
+    "conditions": {
+      "enabled": true,
+      "deploymentType": "process"
+    },
+    "command": {
+      "base": "cd ./gopm && make run-local",
+      "prefix": "nvm use 15.5.1 && ",
+      "tabTitle": "gopm (Process)",
       "refreshConfig": {
         "prependCommands": [
           {
-            "command": "echo 'Preprocessing for Service Beta...' && "
+            "command": "cd ./weblifemirror/agent/src && make darwin-dev && mv bin/agent-darwin-amd64-dev ../bin && cd ../../.. && "
           }
         ]
       }
     }
   },
   {
-    "sectionId": "serviceBeta",
+    "sectionId": "gopm",
     "conditions": {
       "enabled": true,
-      "deploymentType": "runtime_option_1"
+      "deploymentType": "container"
     },
     "command": {
-      "base": "echo 'Execute Service Beta command (Runtime Option 1)'",
-      "associatedContainers": ["generic_container_b1"],
-      "prefix": "echo 'Setup for Service Beta...' && ",
-      "tabTitle": "Service Beta (Runtime Option 1)"
+      "base": "cd ./gopm && make run-local-docker",
+      "associatedContainers": ["serverbrowseragent"],
+      "prefix": "nvm use 15.5.1 && ",
+      "tabTitle": "gopm (Container)"
     }
   },
   {
-    "sectionId": "serviceGamma_analysisSubService",
+    "sectionId": "url-intelligence-sub",
     "conditions": {
       "enabled": true,
-      "serviceGammaConfig.enabled": true,
-      "serviceGamma_analysisSubServiceConfig.deploymentType": "modeZ"
+      "url-intelligenceConfig.enabled": true,
+      "url-intelligenceConfig.deploymentType": "mock"
     },
     "command": {
-      "base": "echo 'Execute Analysis Sub-Service Gamma.1 command (Mode Z)'",
-      "prefix": "echo 'Setup for Sub-Service Gamma.1...' && ",
+      "base": "cd ./ThreatIntelligenceMock && node inteligence.js",
+      "prefix": "nvm use 15.5.1 && ",
       "tabTitle": {
-        "base": "Analysis Sub-Service Gamma.1 (Mode Z)"
+        "base": "URL Intelligence (Mock)"
       }
     }
   },
   {
-    "sectionId": "serviceGamma_analysisSubService",
+    "sectionId": "url-intelligence-sub",
     "conditions": {
       "enabled": true,
-      "serviceGammaConfig.enabled": true,
-      "serviceGamma_analysisSubServiceConfig.deploymentType": "modeY"
+      "url-intelligenceConfig.enabled": true,
+      "url-intelligenceConfig.deploymentType": "process"
     },
     "command": {
-      "base": "echo 'Execute Analysis Sub-Service Gamma.1 command (Mode Y) with context ${contextSelectorGammaValue} and secret ${secretValue1}'",
-      "prefix": "echo 'Setup for Sub-Service Gamma.1...' && ",
+      "base": "kubectx ${kubectlContext} && PROOFPOINT_AUTH_CLIENT_SECRET=$(./infrastructure/scripts/decode-secret.sh default env-url-intelligence client_secret) PROOFPOINT_AUTH_CLIENT_ID=$(./infrastructure/scripts/decode-secret.sh default env-url-intelligence client_id) PROOFPOINT_SCORER_CUSTOMER_ID=$(./infrastructure/scripts/decode-secret.sh default env-url-intelligence customer_id) cd ./threatintelligence/url-intelligence && ./gradlew bootRun --args='--spring.profiles.active=staging --proofpoint.proxy.url= --server.port=8083 --threatintelligence.url=http://127.0.0.1:8084'",
+      "prefix": "nvm use 15.5.1 && ",
       "tabTitle": {
-        "base": "Analysis Sub-Service Gamma.1 (Mode Y)"
+        "base": "URL Intelligence (Process)"
       }
     }
   },
   {
-    "sectionId": "serviceGamma_analysisSubService",
+    "sectionId": "url-intelligence-sub",
     "conditions": {
       "enabled": true,
-      "serviceGammaConfig.enabled": true,
-      "serviceGamma_analysisSubServiceConfig.deploymentType": "modeX",
-      "podGamma1Selected": true
+      "url-intelligenceConfig.enabled": true,
+      "url-intelligenceConfig.deploymentType": "forwarding",
+      "urlIntelPodSelected": true
     },
     "command": {
-      "base": "echo 'Execute port-forward for Analysis Sub-Service Gamma.1 to pod ${podSelectorGamma1Value} in context ${contextSelectorGammaValue}'",
-      "prefix": "echo 'Setup for Sub-Service Gamma.1...' && ",
+      "base": "cd ./threatintelligence && kubectx ${kubectlContext} && kubectl port-forward ${urlIntelPod} 8083:8080",
+      "prefix": "nvm use 15.5.1 && ",
       "tabTitle": {
-        "base": "Analysis Sub-Service Gamma.1",
+        "base": "URL Intelligence",
         "conditionalAppends": [
           {
-            "condition": "serviceGamma_analysisSubServiceConfig.deploymentType === 'modeX' && podGamma1Selected === true",
-            "append": " (Mode X: ${podSelectorGamma1Value})"
+            "condition": "url-intelligenceConfig.deploymentType === 'forwarding' && urlIntelPodSelected === true",
+            "append": " (Forwarding ${urlIntelPod})"
           }
         ]
       }
     }
   },
   {
-    "sectionId": "serviceGamma_apiSubService",
+    "sectionId": "threat-intelligence-sub",
     "conditions": {
       "enabled": true,
-      "serviceGammaConfig.enabled": true,
-      "podGamma2Selected": true
+      "url-intelligenceConfig.enabled": true,
+      "threatIntelPodSelected": true
     },
     "command": {
-      "base": "echo 'Execute port-forward for External API Sub-Service Gamma.2 to pod ${podSelectorGamma2Value} in context ${contextSelectorGammaValue}'",
-      "prefix": "echo 'Setup for Sub-Service Gamma.2...' && ",
+      "base": "kubectx ${kubectlContext} && kubectl port-forward ${threatIntelPod} 8084:8080",
+      "prefix": "nvm use 15.5.1 && ",
       "tabTitle": {
-        "base": "External API Sub-Service Gamma.2"
+        "base": "Threat Intelligence"
       }
     }
   },
   {
-    "sectionId": "serviceDelta",
+    "sectionId": "activity-logger",
     "conditions": {
       "enabled": true,
-      "attachState.serviceDelta": false
+      "attachState.activity-logger": false
     },
     "command": {
-      "base": "echo 'Execute Logging Service Delta command with project ${globalConfigKey1Value}'",
-      "tabTitle": "Logging Service Delta"
+      "base": "nvm use 15.5.1 && cd ./activity-logger && ./gradlew bootRun -Dspring.profiles.active=dev -Dgcloud.project=${gcloudProject}",
+      "tabTitle": "Activity Logger"
     }
   },
   {
-    "sectionId": "serviceDelta",
+    "sectionId": "activity-logger",
     "conditions": {
       "enabled": true,
-      "attachState.serviceDelta": true
+      "attachState.activity-logger": true,
+      "mode": "suspend"
     },
     "command": {
-      "base": "echo 'Execute Logging Service Delta command (Debug mode) with project ${globalConfigKey1Value}'",
-      "tabTitle": "Logging Service Delta (Debug)"
+      "base": "nvm use 15.5.1 && cd ./activity-logger && ./gradlew bootRun --debug-jvm -Dspring.profiles.active=dev -Dgcloud.project=${gcloudProject}",
+      "tabTitle": "Activity Logger (Debug Suspend)"
     }
   },
   {
-    "sectionId": "serviceEpsilon",
+    "sectionId": "activity-logger",
     "conditions": {
       "enabled": true,
-      "deploymentType": "runtime_option_2"
+      "attachState.activity-logger": true,
+      "mode": "run"
     },
     "command": {
-      "base": "echo 'Execute Processing Engine Epsilon command (Runtime Option 2)'",
+      "base": "nvm use 15.5.1 && cd ./activity-logger && ./gradlew bootRun --debug-jvm -Dorg.gradle.debug.suspend=false -Dspring.profiles.active=dev -Dgcloud.project=${gcloudProject}",
+      "tabTitle": "Activity Logger (Debug Run)"
+    }
+  },
+  {
+    "sectionId": "rule-engine",
+    "conditions": {
+      "enabled": true,
+      "deploymentType": "process"
+    },
+    "command": {
+      "base": "cd rule-engine && ./out/rule-engine",
       "tabTitle": {
-        "base": "Processing Engine Epsilon (Runtime Option 2)"
+        "base": "Rule Engine (Process)"
       },
       "refreshConfig": {
         "prependCommands": [
           {
-            "command": "echo 'Preprocessing for Epsilon...' && "
+            "command": "make run-local && "
           }
         ]
       }
     }
   },
   {
-    "sectionId": "serviceEpsilon",
+    "sectionId": "rule-engine",
     "conditions": {
       "enabled": true,
-      "deploymentType": "runtime_option_1"
+      "deploymentType": "container"
     },
     "command": {
-      "base": "echo 'Execute Processing Engine Epsilon command (Runtime Option 1)'",
-      "associatedContainers": ["generic_container_e1"],
-      "prefix": "echo 'Setup for Epsilon...' && ",
-      "tabTitle": "Processing Engine Epsilon (Runtime Option 1)"
+      "base": "cd ./weblifemirror && ./gradlew runDockerComposeRuleEngine",
+      "associatedContainers": ["rule-engine"],
+      "prefix": "nvm use 15.5.1 && ",
+      "tabTitle": "Rule Engine (Container)"
     }
   },
   {
-    "sectionId": "engineZeta",
+    "sectionId": "test-analytics",
     "conditions": {
       "enabled": true,
-      "mode": "env_dev"
+      "mode": "development"
     },
     "command": {
-      "base": "echo 'Execute Analytics Engine Zeta (Dev Mode: ${selectedModeValue})'",
+      "base": "cd test-analytics && npm run dev -- --analytics-mode",
       "tabTitle": {
-        "base": "Analytics Engine Zeta (Dev)"
+        "base": "Test Analytics (Dev)"
       }
     }
   },
   {
-    "sectionId": "engineZeta",
+    "sectionId": "test-analytics",
     "conditions": {
       "enabled": true,
-      "mode": "env_stg"
+      "mode": "staging"
     },
     "command": {
-      "base": "echo 'Execute Analytics Engine Zeta (Staging Mode: ${selectedModeValue})'",
+      "base": "cd test-analytics && npm run staging -- --analytics-mode",
       "tabTitle": {
-        "base": "Analytics Engine Zeta (Staging)"
+        "base": "Test Analytics (Staging)"
       }
     }
   },
   {
-    "sectionId": "engineZeta",
+    "sectionId": "test-analytics",
     "conditions": {
       "enabled": true,
-      "mode": "env_prod"
+      "mode": "production"
     },
     "command": {
-      "base": "echo 'Execute Analytics Engine Zeta (Production Mode: ${selectedModeValue})'",
+      "base": "cd test-analytics && npm run prod -- --analytics-mode",
       "tabTitle": {
-        "base": "Analytics Engine Zeta (Prod)"
+        "base": "Test Analytics (Prod)"
       }
     }
   },
   {
-    "sectionId": "engineZeta",
+    "sectionId": "test-analytics",
     "conditions": {
       "enabled": true,
-      "engineZeta_dataHandlerConfig.enabled": true,
-      "engineZeta_dataHandlerConfig.deploymentType": "process_type_A"
+      "dataProcessorConfig.enabled": true,
+      "dataProcessorConfig.deploymentType": "batch"
     },
     "command": {
-      "base": "echo 'Execute Data Handler Zeta.1 (Type A) for mode ${selectedModeValue}'",
+      "base": "cd test-analytics/data-processor && python batch_processor.py --mode=${mode}",
       "tabTitle": {
-        "base": "Data Handler Zeta.1 (Type A)"
+        "base": "Data Processor (Batch)"
       }
     }
   },
   {
-    "sectionId": "engineZeta",
+    "sectionId": "test-analytics",
     "conditions": {
       "enabled": true,
-      "engineZeta_dataHandlerConfig.enabled": true,
-      "engineZeta_dataHandlerConfig.deploymentType": "process_type_B"
+      "dataProcessorConfig.enabled": true,
+      "dataProcessorConfig.deploymentType": "stream"
     },
     "command": {
-      "base": "echo 'Execute Data Handler Zeta.1 (Type B) for mode ${selectedModeValue}'",
+      "base": "cd test-analytics/data-processor && python stream_processor.py --mode=${mode}",
       "tabTitle": {
-        "base": "Data Handler Zeta.1 (Type B)"
+        "base": "Data Processor (Stream)"
       }
     }
   },
   {
-    "sectionId": "engineZeta",
+    "sectionId": "test-analytics",
     "conditions": {
       "enabled": true,
-      "engineZeta_dataHandlerConfig.enabled": true,
-      "engineZeta_dataHandlerConfig.deploymentType": "process_type_C"
+      "dataProcessorConfig.enabled": true,
+      "dataProcessorConfig.deploymentType": "hybrid"
     },
     "command": {
-      "base": "echo 'Execute Data Handler Zeta.1 (Type C) for mode ${selectedModeValue}'",
+      "base": "cd test-analytics/data-processor && python hybrid_processor.py --mode=${mode}",
       "tabTitle": {
-        "base": "Data Handler Zeta.1 (Type C)"
+        "base": "Data Processor (Hybrid)"
       }
     }
   },
   {
-    "sectionId": "engineZeta",
+    "sectionId": "test-analytics",
     "conditions": {
       "enabled": true,
-      "engineZeta_mlModuleConfig.enabled": true,
-      "engineZeta_mlModuleConfig.deploymentType": "ml_framework_1"
+      "mlEngineConfig.enabled": true,
+      "mlEngineConfig.deploymentType": "tensorflow"
     },
     "command": {
-      "base": "echo 'Execute ML Module Zeta.2 (Framework 1) for env ${selectedModeValue}'",
+      "base": "cd test-analytics/ml-engine && python run_tf_model.py --env=${mode}",
       "tabTitle": {
-        "base": "ML Module Zeta.2 (Framework 1)"
+        "base": "ML Engine (TensorFlow)"
       }
     }
   },
   {
-    "sectionId": "engineZeta",
+    "sectionId": "test-analytics",
     "conditions": {
       "enabled": true,
-      "engineZeta_mlModuleConfig.enabled": true,
-      "engineZeta_mlModuleConfig.deploymentType": "ml_framework_2"
+      "mlEngineConfig.enabled": true,
+      "mlEngineConfig.deploymentType": "pytorch"
     },
     "command": {
-      "base": "echo 'Execute ML Module Zeta.2 (Framework 2) for env ${selectedModeValue}'",
+      "base": "cd test-analytics/ml-engine && python run_pytorch_model.py --env=${mode}",
       "tabTitle": {
-        "base": "ML Module Zeta.2 (Framework 2)"
+        "base": "ML Engine (PyTorch)"
       }
     }
   },
   {
-    "sectionId": "engineZeta",
+    "sectionId": "test-analytics",
     "conditions": {
       "enabled": true,
-      "engineZeta_mlModuleConfig.enabled": true,
-      "engineZeta_mlModuleConfig.deploymentType": "ml_framework_3"
+      "mlEngineConfig.enabled": true,
+      "mlEngineConfig.deploymentType": "sklearn"
     },
     "command": {
-      "base": "echo 'Execute ML Module Zeta.2 (Framework 3) for env ${selectedModeValue}'",
+      "base": "cd test-analytics/ml-engine && python run_sklearn_model.py --env=${mode}",
       "tabTitle": {
-        "base": "ML Module Zeta.2 (Framework 3)"
+        "base": "ML Engine (Scikit-learn)"
       }
     }
   }
