@@ -22,8 +22,6 @@ const Notification = ({
 
   if (!isVisible) return null;
   
-  console.log('Notification: Rendering with props:', { message, type, isVisible, autoCloseTime }); // Log props
-
   return (
     <div className={`notification notification-${type}`}>
       <div className="notification-content">

@@ -21,8 +21,6 @@ const DebugPanel = ({
   });
   const panelRef = useRef(null);
 
-  console.log('DebugPanel: Props received - isIsoRunning:', isIsoRunning, 'showTestSections:', showTestSections, 'noRunMode:', noRunMode);
-
   // Close the panel when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
@@ -157,25 +155,18 @@ const DebugPanel = ({
 
   const clearLocalStorage = () => {
     localStorage.clear();
-    console.log('Local storage cleared');
   };
 
   const handleToggleTestSectionsClick = useCallback(() => {
-    console.log('DebugPanel: handleToggleTestSectionsClick, isIsoRunning:', isIsoRunning);
     if (isIsoRunning) {
-      console.log('DebugPanel: ISO is running, calling showAppNotification for test sections.');
     } else {
-      console.log('DebugPanel: ISO not running, calling onToggleTestSections.');
       onToggleTestSections();
     }
   }, [isIsoRunning, onToggleTestSections]);
 
   const handleToggleNoRunModeClick = useCallback(() => {
-    console.log('DebugPanel: handleToggleNoRunModeClick, isIsoRunning:', isIsoRunning);
     if (isIsoRunning) {
-      console.log('DebugPanel: ISO is running, calling showAppNotification for no run mode.');
     } else {
-      console.log('DebugPanel: ISO not running, calling onToggleNoRunMode.');
       onToggleNoRunMode();
     }
   }, [isIsoRunning, onToggleNoRunMode]);

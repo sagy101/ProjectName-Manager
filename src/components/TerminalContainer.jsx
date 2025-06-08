@@ -114,12 +114,6 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
       const containerWidth = tabsContainerRef.current.clientWidth;
       const tabElements = Array.from(tabsContainerRef.current.querySelectorAll('.tab:not(.overflow-indicator)'));
       
-      console.log('Recalculating tabs:', { 
-        containerWidth, 
-        tabElementsCount: tabElements.length, 
-        terminalsCount: terminals.length 
-      });
-      
       let width = 0;
       let visibleCount = 0;
       
@@ -135,13 +129,10 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
         }
       }
       
-      console.log('Tab calculation:', { width, maxWidth, visibleCount, terminalsLength: terminals.length });
-      
       // If all tabs fit, don't show overflow indicator
       if (visibleCount >= terminals.length) {
         setVisibleTabs(terminals);
         setOverflowTabs([]);
-        console.log('All tabs fit, no overflow needed');
       } else {
         // Make sure active tab is visible if possible
         const activeTabIndex = terminals.findIndex(t => t.id === activeTerminalId);
@@ -160,7 +151,6 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
           
           setVisibleTabs(newVisibleTabs);
           setOverflowTabs(newOverflowTabs);
-          console.log('Active tab adjustment:', { newVisibleTabs, newOverflowTabs });
         } else {
           // Normal case: show first N tabs
           const newVisibleTabs = terminals.slice(0, visibleCount);
@@ -168,7 +158,6 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
           
           setVisibleTabs(newVisibleTabs);
           setOverflowTabs(newOverflowTabs);
-          console.log('Normal overflow case:', { newVisibleTabs, newOverflowTabs });
         }
       }
     }, 0);
@@ -308,18 +297,13 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
 
   // Toggle overflow tabs dropdown - simpler version
   const toggleOverflowTabs = (e) => {
-    console.log('toggleOverflowTabs called', { overflowTabsOpen, overflowTabsLength: overflowTabs.length });
-    
     if (e) {
       e.stopPropagation();
       e.preventDefault();
     }
     
     // Use callback form to ensure we're working with the latest state
-    setOverflowTabsOpen(prev => {
-      console.log('Setting overflowTabsOpen from', prev, 'to', !prev);
-      return !prev;
-    });
+    setOverflowTabsOpen(prev => !prev);
   };
 
   // Close overflow tabs when clicking outside
@@ -472,15 +456,12 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
   // Handle tab refresh (re-run command with potential modifications)
   const handleRefreshTab = async (terminalId) => {
     const terminal = terminals.find(t => t.id === terminalId);
-    // Add error check here
-    if (!terminal || noRunMode || (terminal.status === 'error' && terminal.errorType === 'config')) return;
+    if (!terminal) return;
 
-    // Stop associated containers before refresh
+    // First, stop any associated containers if needed
     if (terminal.associatedContainers && terminal.associatedContainers.length > 0) {
-      if (window.electron && window.electron.stopContainers) {
-        console.log(`Refreshing tab ${terminalId}, stopping containers:`, terminal.associatedContainers);
-        await window.electron.stopContainers(terminal.associatedContainers);
-      }
+      const containersToStop = terminal.associatedContainers.map(c => c.name);
+      await window.electron.stopContainers(containersToStop);
     }
 
     let commandToRun = terminal.originalCommand || terminal.command;
@@ -566,8 +547,6 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
 
   // Render dropdown separately using portal
   const renderOverflowDropdown = React.useCallback(() => {
-    // console.log('renderOverflowDropdown called', { overflowTabsOpen, overflowTabsLength: overflowTabs.length });
-    
     if (!overflowTabsOpen) return null;
     
     // Calculate position based on overflow button
@@ -687,26 +666,16 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
     getTerminals: () => terminals, // Expose current terminals
     killAllTerminals: async () => {
       console.log('TerminalContainer: killAllTerminals called for', terminals.length, 'terminals');
-      // First, collect all unique containers to stop them efficiently
-      const allContainersToStop = new Set();
-      terminals.forEach(terminal => {
-        if (terminal.associatedContainers) {
-          terminal.associatedContainers.forEach(container => allContainersToStop.add(container));
-        }
-      });
-
-      if (allContainersToStop.size > 0) {
-        console.log('TerminalContainer: Stopping all associated containers:', Array.from(allContainersToStop));
-        if (window.electron && window.electron.stopContainers) {
-          try {
-            await window.electron.stopContainers(Array.from(allContainersToStop));
-          } catch (error) {
-            console.error('Error stopping containers during killAllTerminals:', error);
-          }
-        }
+      // Stop all associated containers from all terminals
+      const allContainersToStop = terminals.flatMap(t => t.associatedContainers || [])
+                                           .map(c => c.name) // This was missing
+                                           .filter((v, i, a) => a.indexOf(v) === i); // Unique names
+      
+      if (allContainersToStop.length > 0) {
+        await window.electron.stopContainers(allContainersToStop);
       }
 
-      // Then, kill all PTY processes
+      // Kill all PTYs
       terminals.forEach(terminal => {
         if (window.electron && window.electron.killProcess) {
           console.log('TerminalContainer: Killing PTY for terminal', terminal.id);

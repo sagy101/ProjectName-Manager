@@ -8,7 +8,9 @@
     "build": "webpack --mode development",
     "watch": "webpack --mode development --watch",
     "rebuild": "npx @electron/rebuild -f -w node-pty",
-    "test": "jest"
+    "pretest": "npm rebuild node-pty",
+    "test": "jest",
+    "posttest": "npm run rebuild"
   },
   "author": "",
   "license": "ISC",

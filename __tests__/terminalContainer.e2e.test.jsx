@@ -24,7 +24,7 @@ describe('TerminalContainer container cleanup', () => {
     const { ref, stopContainers, getByTitle, getByText } = setup();
     await React.act(async () => {
       ref.current.openTabs([
-        { sectionId: 'sec', title: 'Tab1', command: 'echo hi', associatedContainers: ['cont1'] }
+        { sectionId: 'sec', title: 'Tab1', command: 'echo hi', associatedContainers: [{ name: 'cont1' }] }
       ]);
     });
     fireEvent.click(getByTitle('Tab Information'));
@@ -36,7 +36,7 @@ describe('TerminalContainer container cleanup', () => {
     const { ref, stopContainers } = setup();
     await React.act(async () => {
       ref.current.openTabs([
-        { sectionId: 'sec', title: 'Tab1', command: 'echo hi', associatedContainers: ['cont2', 'cont3'] }
+        { sectionId: 'sec', title: 'Tab1', command: 'echo hi', associatedContainers: [{ name: 'cont2' }, { name: 'cont3' }] }
       ]);
     });
     await React.act(async () => {

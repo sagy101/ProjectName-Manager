@@ -96,7 +96,6 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
         }
       });
       
-      console.log('IsoConfiguration: Initialized configState', JSON.stringify(initialConfig));
       setConfigState(initialConfig);
       setAttachState(initialAttachState);
       setInitialized(true);
@@ -106,7 +105,6 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
   // Update dropdown values in configState when global dropdown values change
   useEffect(() => {
     if (initialized && globalDropdownValues && Object.keys(globalDropdownValues).length > 0) {
-      console.log('IsoConfiguration: Global dropdown values changed:', globalDropdownValues);
       setConfigState(prevState => {
         const newState = { ...prevState };
         let changed = false;
@@ -179,14 +177,12 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
     
     if (window.electron) {
       const processStartedHandler = (data) => {
-        console.log('Process started:', data);
         if (isMounted.current) {
           updateIsRunning(true);
         }
       };
       
       const processEndedHandler = (data) => {
-        console.log('Process ended:', data);
         if (data.terminalId === currentTerminalId && isMounted.current) {
           updateIsRunning(false);
           setCurrentTerminalId(null);
@@ -194,7 +190,6 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
       };
       
       const processKilledHandler = (data) => {
-        console.log('Process killed:', data);
         if (data.terminalId === currentTerminalId && isMounted.current) {
           updateIsRunning(false);
           setCurrentTerminalId(null);
@@ -373,7 +368,6 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
 
   // Generic dropdown value setter for sections
   const setSectionDropdownValue = useCallback((sectionId, dropdownId, value) => {
-    console.log(`IsoConfiguration: setSectionDropdownValue called for section '${sectionId}', dropdown '${dropdownId}', value: '${value}'`);
     setConfigState(prevState => {
       // Find the placeholder for this dropdown to correctly set the 'Selected' flag
       let placeholder = 'Select...'; // Default generic placeholder
@@ -416,31 +410,24 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
 
   // Stop the currently running ISO
   const stopIsoExecution = async () => {
-    console.log('IsoConfiguration: stopIsoExecution called');
     setIsStopping(true); // Set stopping state
     setShowStoppingScreen(true); // Show the stopping screen
     
     if (terminalRef.current && terminalRef.current.killAllTerminals) {
       try {
-        console.log('IsoConfiguration: Calling killAllTerminals');
         await terminalRef.current.killAllTerminals(); // Await completion
-        console.log('IsoConfiguration: killAllTerminals completed');
       } catch (error) {
-        console.error('IsoConfiguration: Error during killAllTerminals:', error);
       }
     }
     
     // Clear tabs after ensuring processes and containers are handled
     if (terminalRef.current && terminalRef.current.clearTabs) {
-      console.log('IsoConfiguration: Calling clearTabs');
       terminalRef.current.clearTabs();
-      console.log('IsoConfiguration: clearTabs completed');
     }
 
     updateIsRunning(false);
     setCurrentTerminalId(null); // Clear current terminal ID as all are stopped
     setIsStopping(false); // Reset stopping state
-    console.log('IsoConfiguration: stopIsoExecution finished');
   };
 
   // Handle closing the stopping screen
@@ -468,7 +455,6 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
       );
       if (terminalRef && terminalRef.current) {
         updateIsRunning(true);
-        console.log('runIsoConfiguration: Calling openTabs with commandList:', commandList);
         terminalRef.current.openTabs(commandList);
       }
     }
