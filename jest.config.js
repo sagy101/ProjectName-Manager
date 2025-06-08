@@ -1,3 +1,7 @@
 module.exports = {
-  testEnvironment: 'node'
+  testEnvironment: 'jsdom',
+  setupFilesAfterEnv: ['@testing-library/jest-dom'],
+  moduleNameMapper: {
+    '\\.(css|less)$': 'identity-obj-proxy'
+  }
 };
