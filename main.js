@@ -137,7 +137,7 @@ async function verifyEnvironment() {
 
   // For generalResults, we'll populate statuses directly. The config will be stored alongside.
   const generalResultsStatuses = {};
-  let parsedVerificationsConfig = []; // To store the config read from JSON
+  let parsedVerificationsConfig = {}; // To store the config read from JSON
 
   // Load configuration sidebar verifications
   let configSidebarAbout = [];
@@ -213,7 +213,7 @@ async function verifyEnvironment() {
   try {
     // --- General Environment Checks from JSON ---
     console.log('Verifying General Tools from JSON configuration...');
-    let parsedVerificationsConfig = {};
+    parsedVerificationsConfig = {};
     try {
       const configFile = await fs.readFile(VERIFICATIONS_CONFIG_PATH, 'utf-8');
       parsedVerificationsConfig = JSON.parse(configFile); // Store the parsed config
