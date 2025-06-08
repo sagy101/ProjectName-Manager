@@ -100,6 +100,7 @@ const App = () => {
   const [globalDropdownValues, setGlobalDropdownValues] = useState({});
 
   const terminalRef = useRef(null);
+  const isoConfigRef = useRef(null);
 
   // Floating Terminal Manager Functions
 
@@ -489,6 +490,51 @@ const App = () => {
     setIsMainTerminalWritable(prev => !prev);
   }, []);
 
+  const handleExportConfig = useCallback(async () => {
+    if (window.electron && isoConfigRef.current?.getCurrentState) {
+      const state = isoConfigRef.current.getCurrentState();
+      try {
+        const result = await window.electron.exportConfig({
+          configState: state.configState,
+          attachState: state.attachState,
+          globalDropdownValues
+        });
+        if (result?.success) {
+          showAppNotification('Configuration exported', 'info');
+        } else if (result?.error) {
+          showAppNotification(`Export failed: ${result.error}`, 'error');
+        }
+      } catch (err) {
+        console.error('Export config error', err);
+        showAppNotification('Export failed', 'error');
+      }
+    }
+  }, [globalDropdownValues, showAppNotification]);
+
+  const handleImportConfig = useCallback(async () => {
+    if (window.electron && isoConfigRef.current?.setStateFromImport) {
+      try {
+        const result = await window.electron.importConfig();
+        if (result?.success && result.configState) {
+          isoConfigRef.current.setStateFromImport({
+            configState: result.configState,
+            attachState: result.attachState
+          });
+          if (result.globalDropdownValues) {
+            setGlobalDropdownValues(result.globalDropdownValues);
+          }
+          setConfigState(result.configState);
+          showAppNotification('Configuration imported', 'info');
+        } else if (result?.error) {
+          showAppNotification(`Import failed: ${result.error}`, 'error');
+        }
+      } catch (err) {
+        console.error('Import config error', err);
+        showAppNotification('Import failed', 'error');
+      }
+    }
+  }, [showAppNotification]);
+
   // Update document title with projectName
   useEffect(() => {
     document.title = `${projectName} Manager`;
@@ -528,6 +574,7 @@ const App = () => {
         >
           <div className="sidebar"> {/* IsoConfiguration's wrapper */}
             <IsoConfiguration
+              ref={isoConfigRef}
               projectName={projectName}
               globalDropdownValues={globalDropdownValues}
               terminalRef={terminalRef}
@@ -579,6 +626,8 @@ const App = () => {
             showAppNotification={showAppNotification}
             isMainTerminalWritable={isMainTerminalWritable}
             onToggleMainTerminalWritable={toggleMainTerminalWritable}
+            onExportConfig={handleExportConfig}
+            onImportConfig={handleImportConfig}
           />
         )}
       </div> {/* End of the main flex container for isLoading=false case */}
