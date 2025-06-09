@@ -7,12 +7,14 @@
     "node": "22.16.0"
   },
   "scripts": {
-    "start": "electron .",
+    "start": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npx @electron/rebuild -f -w node-pty && electron .",
     "build": "webpack --mode development",
     "watch": "webpack --mode development --watch",
+    "setNode": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use",
     "rebuild": "npx @electron/rebuild -f -w node-pty",
     "pretest": "npm rebuild node-pty",
     "test": "jest",
+    "test:all": "./scripts/run-all-tests.sh",
     "pretest:e2e": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npm run rebuild",
     "test:e2e": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npx playwright test",
     "posttest": "npm run rebuild"
