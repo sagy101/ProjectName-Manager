@@ -1,19 +1,4 @@
-/* Modern deployment options styles */
-.deployment-options {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  align-items: center;
-}
-
-.deployment-options-label {
-  font-size: 0.85rem;
-  color: #CCC;
-  margin-bottom: 2px;
-  text-align: center;
-  width: 100%;
-}
-
+/* Modern deployment toggle styles */
 .deployment-toggle-container {
   display: flex;
   background-color: #2D2E2C;
@@ -67,12 +52,6 @@
 
 .deployment-toggle-btn:disabled {
   cursor: not-allowed;
-}
-
-.radio-option {
-  display: flex;
-  align-items: center;
-  gap: 3px;
 }
 
 /* Mode selector specific styles */

@@ -37,8 +37,8 @@ Commands are defined in `src/configurationSidebarCommands.json`:
           "append": "npm start"
         },
         {
-          "condition": "mode === 'production'",
-          "append": " --production"
+          "condition": "mode === 'run'",
+          "append": " --run"
         }
       ],
       "postModifiers": " --verbose",
@@ -47,16 +47,12 @@ Commands are defined in `src/configurationSidebarCommands.json`:
         "base": "Frontend",
         "conditionalAppends": [
           {
-            "condition": "mode === 'development'",
-            "append": " (Dev)"
+            "condition": "mode === 'run'",
+            "append": " (Running)"
           },
           {
-            "condition": "mode === 'staging'",
-            "append": " (Staging)"
-          },
-          {
-            "condition": "mode === 'production'",
-            "append": " (Prod)"
+            "condition": "mode === 'suspend'",
+            "append": " (Suspended)"
           }
         ]
       }
@@ -108,12 +104,12 @@ Use separate command objects when handling multiple command variants. They:
     "sectionId": "your-analytics-section",
     "conditions": {
       "enabled": true,
-      "mode": "development"
+      "mode": "run"
     },
     "command": {
-      "base": "cd your-analytics-section && npm run dev -- --analytics-mode",
+      "base": "cd your-analytics-section && npm run start -- --analytics-mode",
       "tabTitle": {
-        "base": "Test Analytics (Dev)"
+        "base": "Test Analytics (Running)"
       }
     }
   },
@@ -121,25 +117,12 @@ Use separate command objects when handling multiple command variants. They:
     "sectionId": "your-analytics-section",
     "conditions": {
       "enabled": true,
-      "mode": "staging"
+      "mode": "suspend"
     },
     "command": {
-      "base": "cd your-analytics-section && npm run staging -- --analytics-mode",
+      "base": "cd your-analytics-section && npm run suspend -- --analytics-mode",
       "tabTitle": {
-        "base": "Test Analytics (Staging)"
-      }
-    }
-  },
-  {
-    "sectionId": "your-analytics-section",
-    "conditions": {
-      "enabled": true,
-      "mode": "production"
-    },
-    "command": {
-      "base": "cd your-analytics-section && npm run prod -- --analytics-mode",
-      "tabTitle": {
-        "base": "Test Analytics (Prod)"
+        "base": "Test Analytics (Suspended)"
       }
     }
   }

@@ -306,9 +306,12 @@ interface SectionConfig {
     toggle?: boolean;
     infoButton?: boolean;
     gitBranch?: boolean;
-    deploymentOptions?: string[]; // Array of deployment option strings
-    labels?: string[]; // Optional labels for deploymentOptions
-    modeSelector?: { options: string[], default: string };
+    deploymentOptions?: boolean; // When true, adds container/process deployment selector
+    modeSelector?: {
+      options: string[],
+      labels?: string[], // Optional display labels for options
+      default?: string
+    };
     attachToggle?: { enabled: boolean, mutuallyExclusiveWith?: string[] } | boolean;
     subSections?: SubSectionConfig[];
     dropdownSelectors?: DropdownSelectorConfig[];

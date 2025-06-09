@@ -198,11 +198,75 @@
   width: 100%;
   padding: 8px 0px 0px 0px; /* Top padding, no horizontal padding as the parent .config-sub-section has it */
   margin-top: 5px;
+}
+
+/* Sub-section mode selector styling - Higher specificity to override existing styles */
+.config-sub-section .sub-section-mode-selector {
+  width: 90%; /* Match main section width */
+  margin: 8px auto; /* Center with proper spacing */
+}
+
+.config-sub-section .sub-section-mode-selector .deployment-toggle-container {
+  width: 100%; /* Take full width of parent */
+  background-color: #2D2E2C;
+  padding: 2px;
+  border-radius: 6px;
   display: flex;
-  flex-direction: column;
-  align-items: center; /* Center dropdowns horizontally */
-  background: none;
+  margin: 0;
+}
+
+.config-sub-section .sub-section-mode-selector .deployment-toggle-btn {
+  flex: 1;
+  background: transparent;
   border: none;
+  color: #CCC;
+  padding: 5px 0;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  line-height: normal;
+}
+
+.config-sub-section .sub-section-mode-selector .deployment-toggle-btn:hover:not(:disabled) {
+  color: white;
+}
+
+.config-sub-section .sub-section-mode-selector .deployment-toggle-btn.active {
+  color: #2D2E2C;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.config-sub-section .sub-section-mode-selector .deployment-toggle-btn.active:first-child {
+  background-color: #B3E33B; /* Green for first option */
+}
+
+.config-sub-section .sub-section-mode-selector .deployment-toggle-btn.active:nth-child(2) {
+  background-color: #FEB32E; /* Orange for second option */
+}
+
+.config-sub-section .sub-section-mode-selector .deployment-toggle-btn.active:last-child {
+  background-color: #9C65F5; /* Purple for third option (if exists) */
+}
+
+/* Remove any old/conflicting styles */
+.config-sub-section {
+  width: 100%;
+}
+
+.config-sub-section .deployment-toggle-container {
+  width: 100%;
+}
+
+.config-sub-section .deployment-toggle-btn {
+  /* Remove old styles that might conflict */
+  font-size: inherit;
+  padding: inherit;
+  line-height: inherit;
 }
 
 /* Ensure dropdowns don't overflow the sub-section visually */
@@ -210,45 +274,6 @@
   width: 95%;
   margin: 0 auto 8px auto;
   box-sizing: border-box;
-}
-
-/* Specific styling for URL Intelligence sub-section's 3-button toggle */
-.url-intelligence-sub-container {
-  width: 100%; /* Ensure it takes full width */
-}
-
-.url-intelligence-sub-container .deployment-toggle-container {
-  width: 100%; /* Ensure the button container itself also takes full width */
-}
-
-.url-intelligence-sub-container .deployment-toggle-btn {
-  font-size: 0.7rem; /* Even smaller buttons for compactness */
-  padding: 2px 0; /* Reduced padding */
-  line-height: 1.4; /* Adjust line height for smaller font */
-}
-
-/* Styling for Frontend sub-section (if specific needs arise) */
-.frontend-sub-section {
-  /* Inherits .config-sub-section styles */
-  /* Add specific overrides here if needed */
-}
-
-
-.frontend-sub-section .deployment-toggle-container {
-  width: 100%; /* Ensure full width like URLI sub-section */
-}
-
-.frontend-sub-section .deployment-toggle-btn {
-  font-size: 0.7rem; /* Match URLI sub-section button size */
-  padding: 2px 0; /* Match URLI sub-section button padding */
-  line-height: 1.4; /* Match URLI sub-section button line-height */
-}
-
-
-
-/* If dropdown selectors are directly under git branch, and then drawer is open, avoid double borders */
-.dropdown-selectors-container + .config-section-drawer {
-  border-top: none;
 }
 
 /* Logs button style adjustments for compactness if needed */

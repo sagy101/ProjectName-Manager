@@ -3,6 +3,7 @@ import Toggle from './Toggle';
 import AttachToggle from './AttachToggle';
 import DeploymentOptions from './DeploymentOptions';
 import DropdownSelector from './DropdownSelector';
+import ModeSelector from './ModeSelector';
 import { InformationCircleIcon } from '@heroicons/react/24/outline';
 import { STATUS } from '../constants/verificationConstants';
 import VerificationIndicator from './VerificationIndicator';
@@ -270,21 +271,13 @@ const ConfigSection = ({
           <div className="section-content compact">
             {/* Mode selector */}
             {section.components.modeSelector && config.mode && isAttached && (
-              <div className="mode-selector-container" style={{ padding: '8px 12px' }}>
-                <div className="deployment-toggle-container compact">
-                  {section.components.modeSelector.options.map(option => (
-                    <button
-                      key={option}
-                      className={`deployment-toggle-btn ${config.mode === option ? 'active' : ''}`}
-                      onClick={() => !isLocked && setMode(section.id, option)}
-                      disabled={isLocked || !config.enabled}
-                      aria-pressed={config.mode === option}
-                    >
-                      {option.charAt(0).toUpperCase() + option.slice(1)}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <ModeSelector
+                sectionId={section.id}
+                options={section.components.modeSelector.options}
+                currentMode={config.mode}
+                onModeChange={setMode}
+                disabled={isLocked || !config.enabled}
+              />
             )}
             
             {/* Deployment options */}
@@ -305,7 +298,7 @@ const ConfigSection = ({
                   const subConfig = config[configKey] || {};
                   
                   return (
-                    <div key={subSection.id} className={`config-sub-section ${subSection.id} compact`}>
+                    <div key={subSection.id} className="config-sub-section compact">
                       <div className="sub-section-header compact">
                         <h4>{subSection.title}</h4>
                         <Toggle
@@ -316,28 +309,21 @@ const ConfigSection = ({
                           disabled={isLocked || !config.enabled} 
                         />
                       </div>
-                      {/* Sub-section content: deployment options and dropdowns */}
-                      {(subConfig.enabled && (subSection.components.deploymentOptions || subSection.components.dropdownSelectors)) && (
+                      {/* Sub-section content: mode selector and dropdowns */}
+                      {(subConfig.enabled && (subSection.components.modeSelector || subSection.components.dropdownSelectors)) && (
                         <div className="sub-section-content compact">
-                          {/* Deployment options */}
-                          {subSection.components.deploymentOptions && (
-                            <div className={`deployment-toggle-container compact ${subSection.components.deploymentOptions.length === 3 ? 'mode-selector-container' : ''}`}>
-                              {subSection.components.deploymentOptions.map((option, index) => {
-                                const label = subSection.components.labels?.[index] || 
-                                             option.charAt(0).toUpperCase() + option.slice(1);
-                                return (
-                                  <button
-                                    key={option}
-                                    className={`deployment-toggle-btn ${subConfig.deploymentType === option ? 'active' : ''}`}
-                                    onClick={() => !isLocked && setSubSectionDeploymentType(section.id, subSection.id, option)}
-                                    disabled={isLocked || !config.enabled}
-                                    aria-pressed={subConfig.deploymentType === option}
-                                  >
-                                    {label}
-                                  </button>
-                                );
-                              })}
-                            </div>
+                          {/* Mode selector for sub-sections */}
+                          {subSection.components.modeSelector && (
+                            <ModeSelector
+                              sectionId={`${section.id}-${subSection.id}`}
+                              options={subSection.components.modeSelector.options}
+                              currentMode={subConfig.deploymentType}
+                              onModeChange={(_, option) => setSubSectionDeploymentType(section.id, subSection.id, option)}
+                              disabled={isLocked || !config.enabled}
+                              className="sub-section-mode-selector"
+                              labels={subSection.components.modeSelector.labels}
+                              style={{ padding: '0' }}
+                            />
                           )}
                           {/* Dropdown Selectors for Sub-section */}
                           {subSection.components.dropdownSelectors && (

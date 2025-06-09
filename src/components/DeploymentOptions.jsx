@@ -1,27 +1,24 @@
 import React from 'react';
+import ModeSelector from './ModeSelector.jsx';
 
 const DeploymentOptions = ({ sectionId, currentType, onChange, disabled = false }) => {
+  // Adapter function to convert ModeSelector's callback to DeploymentOptions' expected format
+  const handleModeChange = (_, option) => {
+    if (onChange) {
+      onChange(option);
+    }
+  };
+
   return (
-    <div className="deployment-options" style={{ opacity: disabled ? 0.6 : 1 }}>
-      <div className="deployment-toggle-container">
-        <button
-          className={`deployment-toggle-btn ${currentType === 'container' ? 'active' : ''}`}
-          onClick={() => !disabled && onChange('container')}
-          disabled={disabled}
-          aria-pressed={currentType === 'container'}
-        >
-          Container
-        </button>
-        <button
-          className={`deployment-toggle-btn ${currentType === 'process' ? 'active' : ''}`}
-          onClick={() => !disabled && onChange('process')}
-          disabled={disabled}
-          aria-pressed={currentType === 'process'}
-        >
-          Process
-        </button>
-      </div>
-    </div>
+    <ModeSelector
+      sectionId={sectionId}
+      options={['container', 'process']}
+      currentMode={currentType}
+      onModeChange={handleModeChange}
+      disabled={disabled}
+      className=""
+      style={{ opacity: disabled ? 0.6 : 1 }}
+    />
   );
 };
 

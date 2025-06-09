@@ -140,11 +140,12 @@ Define the main section, any sub-sections, and components like `customButton`.
         "toggle": true,
         "infoButton": true,
         "gitBranch": true,
-        "deploymentOptions": ["container", "process"],
-        "modeSelector": {
-          "options": ["development", "staging", "production"],
-          "default": "development"
-        },
+        "deploymentOptions": true,
+                  "modeSelector": {
+            "options": ["run", "suspend"],
+            "labels": ["Run", "Suspend"],
+            "default": "suspend"
+          },
         "attachToggle": {
           "enabled": true,
           "mutuallyExclusiveWith": ["other-section-id"]
@@ -309,8 +310,8 @@ git init
 | `toggle` | Main enable/disable toggle | `true/false` |
 | `infoButton` | Shows section description | `true/false` |
 | `gitBranch` | Git branch switcher | `true/false` |
-| `deploymentOptions` | Deployment mode selector | Array of strings |
-| `modeSelector` | Multi-option mode selector | `{ options: [], default: "" }` |
+| `deploymentOptions` | Container/Process deployment selector | `true/false` |
+| `modeSelector` | Multi-option mode selector | `{ options: [], labels: [], default: "" }` |
 | `attachToggle` | Attach debugger toggle | `{ enabled: true, mutuallyExclusiveWith: [] }` |
 | `dropdownSelectors` | Generic command-driven dropdowns with default value support | Array of dropdown configs |
 | `subSections` | Nested sub-sections | Array of sub-section configs |

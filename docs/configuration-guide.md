@@ -132,18 +132,24 @@ Adds a git branch selector dropdown for the section's directory.
 
 #### Deployment Options
 ```json
-"deploymentOptions": ["container", "process"]
+"deploymentOptions": true
 ```
-Adds radio buttons for deployment mode selection. Array of option values.
+Adds a standardized container/process deployment selector. When set to `true`, it adds a two-button toggle for selecting between container and process deployment modes. This is the preferred way to handle deployment type selection for consistency across the application.
 
 #### Mode Selector
 ```json
 "modeSelector": {
-  "options": ["development", "staging", "production"],
-  "default": "development"
+  "options": ["run", "suspend"],
+  "labels": ["Run", "Suspend"],
+  "default": "suspend"
 }
 ```
-Adds a multi-option selector for environment modes. Useful for selecting between development, staging, and production environments.
+Adds a multi-option selector for environment modes. The configuration supports:
+- `options`: Array of mode values (required)
+- `labels`: Array of display labels matching the options (optional, will capitalize options if not provided)
+- `default`: Default mode value (optional)
+
+Use this for any custom mode selection beyond the standard container/process deployment options.
 
 #### Attach Toggle
 ```json
