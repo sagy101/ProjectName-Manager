@@ -32,42 +32,98 @@ This document provides a comprehensive overview of the {ProjectName} Manager's a
 ```mermaid
 graph TB
     subgraph "Electron Application"
-        subgraph "Main Process (Node.js)"
-            A[main.js] --> B[Environment Verification]
-            A --> C[Terminal Management PTY]
-            A --> D[Command Execution]
-            A --> E[Docker Container Management]
-            A --> F[Git Operations]
-            A --> G[Dropdown Cache Management]
+        subgraph "Main Process (Node.js) - Modular Architecture"
+            A[main.js<br/>Orchestration Layer] --> B[environmentVerification.js<br/>Environment Checks & Caching]
+            A --> C[ptyManagement.js<br/>Terminal Process Management]
+            A --> D[dropdownManagement.js<br/>Command Execution & Parsing]
+            A --> E[containerManagement.js<br/>Docker Operations]
+            A --> F[gitManagement.js<br/>Git Branch & Repo Operations]
+            A --> G[configurationManagement.js<br/>Config Import/Export & Loading]
+            A --> H[windowManagement.js<br/>Window Creation & Management]
         end
         
         subgraph "Preload Script"
-            H[electron-preload.js<br/>IPC Bridge]
+            I[electron-preload.js<br/>IPC Bridge]
         end
         
         subgraph "Renderer Process (React)"
-            I[App.jsx] --> J[IsoConfiguration]
-            I --> K[TerminalContainer]
-            I --> L[EnvironmentVerification]
-            I --> M[FloatingTerminals]
-            I --> N[AppControlSidebar]
+            J[App.jsx] --> K[IsoConfiguration]
+            J --> L[TerminalContainer]
+            J --> M[EnvironmentVerification]
+            J --> N[FloatingTerminals]
+            J --> O[AppControlSidebar]
         end
     end
     
     subgraph "Configuration Files"
-        O[configurationSidebarSections.json<br/>UI Structure & Components]
-        P[configurationSidebarCommands.json<br/>Command Generation Logic]
-        Q[configurationSidebarAbout.json<br/>Descriptions & Info]
-        R[generalEnvironmentVerifications.json<br/>Tool Verification Config]
+        P[configurationSidebarSections.json<br/>UI Structure & Components]
+        Q[configurationSidebarCommands.json<br/>Command Generation Logic]
+        R[configurationSidebarAbout.json<br/>Descriptions & Info]
+        S[generalEnvironmentVerifications.json<br/>Tool Verification Config]
     end
     
-    A -.->|IPC| H
-    H -.->|Context Bridge| I
-    I -.->|Reads| O
-    I -.->|Reads| P
-    I -.->|Reads| Q
-    A -.->|Reads| R
+    A -.->|IPC| I
+    I -.->|Context Bridge| J
+    J -.->|Reads| P
+    J -.->|Reads| Q
+    J -.->|Reads| R
+    A -.->|Reads| S
 ```
+
+## Main Process Modular Architecture
+
+The main process has been refactored into a modular architecture for better maintainability, testing, and separation of concerns. Each module handles a specific domain of functionality:
+
+### Core Modules
+
+#### `main.js` - Orchestration Layer
+- **Purpose**: Application lifecycle management and IPC handler registration
+- **Responsibilities**: Window creation, IPC routing, startup coordination
+- **Dependencies**: All other modules as imports
+
+#### `environmentVerification.js` - Environment Management
+- **Purpose**: System environment checking and verification
+- **Responsibilities**: Tool validation, path checking, environment variables, caching
+- **Key Functions**: `verifyEnvironment()`, `refreshEnvironmentVerification()`, `getEnvironmentVerification()`
+
+#### `ptyManagement.js` - Terminal Process Management
+- **Purpose**: PTY (pseudo-terminal) process lifecycle management
+- **Responsibilities**: Process spawning, I/O handling, cleanup, tracking
+- **Key Functions**: `spawnPTY()`, `killProcess()`, `writeToPTY()`, `resizePTY()`
+
+#### `containerManagement.js` - Docker Operations
+- **Purpose**: Docker container lifecycle management
+- **Responsibilities**: Container status checking, stopping, event emission
+- **Key Functions**: `getContainerStatus()`, `stopContainers()`, container status monitoring
+
+#### `gitManagement.js` - Git Repository Operations
+- **Purpose**: Git branch management and repository operations
+- **Responsibilities**: Branch switching, listing, caching, path resolution
+- **Key Functions**: `checkoutGitBranch()`, `listLocalGitBranches()`, `getGitBranch()`, cache management
+
+#### `dropdownManagement.js` - Command Execution & Parsing
+- **Purpose**: Dynamic dropdown population and command parsing
+- **Responsibilities**: Command execution, response parsing, caching, dependency handling
+- **Key Functions**: `executeDropdownCommand()`, `fetchDropdownOptions()`, cache management
+
+#### `configurationManagement.js` - Configuration Management
+- **Purpose**: Application configuration loading, import/export
+- **Responsibilities**: File I/O, JSON parsing, dialog handling, settings management
+- **Key Functions**: `loadDisplaySettings()`, `importConfiguration()`, `exportConfiguration()`, `getAboutConfig()`
+
+#### `windowManagement.js` - Window Management
+- **Purpose**: Electron window creation and management
+- **Responsibilities**: Window options, DevTools handling, display settings integration
+- **Key Functions**: `createWindow()`, window lifecycle management
+
+### Benefits of Modular Architecture
+
+- **Separation of Concerns**: Each module has a single, well-defined responsibility
+- **Testability**: Individual modules can be tested in isolation with proper mocking
+- **Maintainability**: Easier to locate and modify specific functionality
+- **Reusability**: Modules can be imported and used across different parts of the application
+- **Error Isolation**: Issues in one module don't cascade to others
+- **Performance**: Lazy loading and efficient resource management per module
 
 ## Communication Flow
 

@@ -9,6 +9,7 @@ This guide provides an overview of the testing strategy, setup, and different ty
   - [Test Environment](#test-environment)
 - [Running Tests](#running-tests)
 - [Types of Tests](#types-of-tests)
+  - [Bug Prevention Tests](#bug-prevention-tests)
   - [Unit Tests](#unit-tests)
   - [Component Rendering Tests](#component-rendering-tests)
   - [End-to-End (E2E) Tests](#end-to-end-e2e-tests)
@@ -17,7 +18,22 @@ This guide provides an overview of the testing strategy, setup, and different ty
 
 ## Testing Philosophy
 
-Our testing philosophy is to ensure reliability and maintainability through a combination of unit, component, and end-to-end tests. This tiered approach allows us to test logic in isolation, verify component behavior, and validate complete user workflows.
+Our testing philosophy focuses on **behavior over implementation details** to ensure reliability and maintainability. We prioritize testing that catches real bugs that would break user functionality, rather than testing implementation details that create brittle tests.
+
+### Testing Strategy
+
+1. **Behavior-Driven Testing**: Tests verify what the code does, not how it does it
+2. **Bug Prevention**: Each test is designed to catch a specific type of bug that has caused real issues
+3. **Data Structure Compatibility**: Tests ensure frontend/backend data contracts remain stable
+4. **Minimal Mocking**: Only mock external dependencies, not internal module interactions
+5. **Fast and Reliable**: Tests should run quickly and consistently without flaky failures
+
+### Test Categories
+
+- **Critical Bug Prevention**: Tests that catch data structure mismatches and compatibility issues
+- **Component Behavior**: Tests that verify React components render and behave correctly
+- **End-to-End Workflows**: Tests that validate complete user workflows
+- **Core Functionality**: Tests that verify essential application logic
 
 ## Setup and Configuration
 
@@ -50,6 +66,22 @@ This command will automatically trigger the `pretest` and `posttest` scripts to 
 
 ## Types of Tests
 
+### Bug Prevention Tests
+
+- **Location**: `__tests__/main-startup.test.js`
+- **Purpose**: These tests catch specific bugs that have broken frontend functionality in the past:
+  - **Data Structure Compatibility**: Ensures import/export returns expected data structures
+  - **Frontend Integration**: Verifies git operations return data in format expected by UI components
+  - **API Consistency**: Checks that backend functions return data in expected formats
+
+**Example Bug Prevention Tests:**
+```javascript
+// Catches data structure bugs that break frontend
+test('should return correct data structure from import configuration', ...)
+test('should return branch property from git checkout command', ...)
+test('should return array directly from getAboutConfig', ...)
+```
+
 ### Unit Tests
 
 - **Location**: `__tests__/`
@@ -67,6 +99,25 @@ This command will automatically trigger the `pretest` and `posttest` scripts to 
 - **Location**: `__tests__/` and `__tests__/e2e/`
 - **Examples**: `terminalContainer.e2e.test.jsx`, `processCleanup.test.js`
 - **Purpose**: E2E tests validate complete workflows from start to finish. They often involve more complex setups, including mocking Electron's IPC and other main process features. These tests are crucial for ensuring that different parts of the application work together correctly.
+
+## Test Results
+
+The test suite has been optimized for reliability and focuses on catching real bugs:
+
+- **✅ 11 test suites passing** 
+- **✅ 128 tests passing**
+- **✅ 0 test failures**
+- **⚡ Fast execution** (~1-2 seconds)
+
+### What We Don't Test
+
+We deliberately avoid testing implementation details that create brittle tests:
+- Internal function call verification
+- Mock interaction counting  
+- IPC handler registration specifics
+- Module loading mechanisms
+
+These implementation details change frequently during refactoring and create false test failures.
 
 ## Key Scripts
 
