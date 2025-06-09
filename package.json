@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "{ProjectName} Manager with terminal integration",
   "main": "main.js",
+  "engines": {
+    "node": "22.16.0"
+  },
   "scripts": {
     "start": "electron .",
     "build": "webpack --mode development",
@@ -10,6 +13,8 @@
     "rebuild": "npx @electron/rebuild -f -w node-pty",
     "pretest": "npm rebuild node-pty",
     "test": "jest",
+    "pretest:e2e": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npm run rebuild",
+    "test:e2e": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npx playwright test",
     "posttest": "npm run rebuild"
   },
   "author": "",
@@ -19,7 +24,7 @@
     "@heroicons/react": "^2.1.3",
     "@xterm/addon-fit": "^0.10.0",
     "@xterm/xterm": "^5.3.0",
-    "electron": "^30.0.1",
+    "electron": "^15.0.0",
     "node-pty": "^1.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
@@ -29,15 +34,18 @@
     "@babel/preset-env": "^7.27.2",
     "@babel/preset-react": "^7.27.1",
     "@electron/rebuild": "^3.6.0",
+    "@playwright/test": "^1.45.3",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
-    "babel-jest": "^30.0.0-beta.3",
+    "babel-jest": "^29.7.0",
     "babel-loader": "^9.1.3",
     "css-loader": "^7.1.1",
+    "entities": "^5.0.0",
     "html-webpack-plugin": "^5.6.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^29.7.0",
-    "jest-environment-jsdom": "^30.0.0-beta.3",
+    "jest-environment-jsdom": "^29.7.0",
+    "playwright": "^1.45.3",
     "style-loader": "^4.0.0",
     "webpack": "^5.91.0",
     "webpack-cli": "^5.1.4"

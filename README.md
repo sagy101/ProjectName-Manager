@@ -1,3 +1,7 @@
+# ProjectName Manager
+
+> **Note:** This project requires Node.js version 22.16.0. It is recommended to use [nvm](https://github.com/nvm-sh/nvm) to manage your Node.js versions. Once you have `nvm` installed, you can run `nvm use` in the project directory to automatically switch to the correct Node.js version.
+
 # {ProjectName} Manager
 
 [![Electron](https://img.shields.io/badge/Electron-30.0.1-47848F?style=flat&logo=electron&logoColor=white)](https://electronjs.org/)

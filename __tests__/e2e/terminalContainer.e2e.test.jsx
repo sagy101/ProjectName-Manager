@@ -4,9 +4,8 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react';
 global.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
-import { act } from "react-dom/test-utils";
-jest.mock("../src/components/Terminal", () => () => <div data-testid="mock-term"></div>);
-import TerminalContainer from "../src/components/TerminalContainer";
+jest.mock("../../src/components/Terminal", () => () => <div data-testid="mock-term"></div>);
+import TerminalContainer from "../../src/components/TerminalContainer";
 
 describe('TerminalContainer container cleanup', () => {
   function setup() {

@@ -1,7 +1,7 @@
 /** @jest-environment jsdom */
 
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react';
+import { render, fireEvent, waitFor, act } from '@testing-library/react';
 import AppControlSidebar from '../src/components/AppControlSidebar.jsx';
 import AttachToggle from '../src/components/AttachToggle.jsx';
 import ConfigSection from '../src/components/ConfigSection.jsx';
@@ -53,6 +53,121 @@ beforeAll(() => {
       }
       return target[prop];
     }
+  });
+});
+
+describe('AppControlSidebar', () => {
+  it('should call onToggleExpand when the expand button is clicked', () => {
+    const onToggleExpand = jest.fn();
+    const { getByTitle } = render(
+      <AppControlSidebar
+        isExpanded={false}
+        onToggleExpand={onToggleExpand}
+        floatingTerminals={[]}
+        onShowTerminal={() => {}}
+        onCloseTerminal={() => {}}
+        onToggleMinimize={() => {}}
+        onOpenAbout={() => {}}
+        activeFloatingTerminalId={null}
+        showTestSections={false}
+        noRunMode={false}
+        isIsoRunning={false}
+        onToggleTestSections={() => {}}
+        onToggleNoRunMode={() => {}}
+        showAppNotification={() => {}}
+        isMainTerminalWritable={true}
+        onToggleMainTerminalWritable={() => {}}
+      />
+    );
+    fireEvent.click(getByTitle('Expand Sidebar'));
+    expect(onToggleExpand).toHaveBeenCalled();
+  });
+});
+
+describe('ConfigSection', () => {
+  const section = {
+    id: 'testSection',
+    title: 'Test Section',
+    components: {
+      subsections: [{ id: 'sub', title: 'Sub Section' }]
+    }
+  };
+  const config = { enabled: true, subsections: { sub: { enabled: true } } };
+
+  it('should call toggleEnabled when the section is toggled', () => {
+    const toggleEnabled = jest.fn();
+    const { getByRole } = render(
+      <ConfigSection
+        section={section}
+        config={config}
+        toggleEnabled={toggleEnabled}
+        setDeploymentType={() => {}}
+        setMode={() => {}}
+        setSectionDropdownValue={() => {}}
+        globalDropdownValues={{}}
+        isAttached={false}
+        onAttachToggle={() => {}}
+        isAttachWarning={false}
+        isLocked={false}
+        sectionPathStatus={''}
+        sectionGitBranch={'main'}
+        onTriggerRefresh={() => {}}
+        attachState={{}}
+        configState={{}}
+        toggleSubSectionEnabled={() => {}}
+        setSubSectionDeploymentType={() => {}}
+        onDropdownChange={() => {}}
+        openFloatingTerminal={() => {}}
+      />
+    );
+    fireEvent.click(getByRole('checkbox'));
+    expect(toggleEnabled).toHaveBeenCalledWith('testSection', false);
+  });
+});
+
+describe('DropdownSelector', () => {
+  it('should render with placeholder text', async () => {
+    window.electron.executeDropdownCommand = jest.fn().mockResolvedValue({ options: [] });
+    const { findByText } = render(
+      <DropdownSelector
+        id="test-dropdown"
+        command="test-command"
+        onChange={() => {}}
+        value={null}
+      />
+    );
+    await findByText('No options available');
+  });
+});
+
+describe('GitBranchSwitcher', () => {
+  it('should call onBranchChangeSuccess when a different branch is selected', async () => {
+    const onBranchChangeSuccess = jest.fn();
+    const mockBranches = ['main', 'dev'];
+    window.electron.gitListLocalBranches = jest.fn().mockResolvedValue({ success: true, branches: mockBranches });
+    window.electron.gitCheckoutBranch = jest.fn().mockResolvedValue({ success: true });
+
+    const { getByText, findByText } = render(
+      <GitBranchSwitcher
+        projectPath="/test/path"
+        currentBranch="main"
+        onBranchChangeSuccess={onBranchChangeSuccess}
+      />
+    );
+
+    // Open the dropdown by clicking the button showing the current branch
+    fireEvent.click(getByText('main'));
+
+    // Wait for the other branch to be visible
+    const devBranch = await findByText('dev');
+
+    // Click the 'dev' branch
+    fireEvent.click(devBranch);
+
+    // Wait for the checkout to complete and the callback to be called
+    await waitFor(() => {
+      expect(onBranchChangeSuccess).toHaveBeenCalled();
+    });
   });
 });
 

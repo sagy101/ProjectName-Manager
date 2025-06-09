@@ -514,7 +514,7 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
     if (terminalToClose.associatedContainers && terminalToClose.associatedContainers.length > 0) {
       if (window.electron && window.electron.stopContainers) {
         console.log(`Closing tab ${terminalId}, stopping containers:`, terminalToClose.associatedContainers);
-        await window.electron.stopContainers(terminalToClose.associatedContainers);
+        await window.electron.stopContainers(terminalToClose.associatedContainers.map(c => c.name));
       }
     }
     
@@ -666,16 +666,26 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
     getTerminals: () => terminals, // Expose current terminals
     killAllTerminals: async () => {
       console.log('TerminalContainer: killAllTerminals called for', terminals.length, 'terminals');
-      // Stop all associated containers from all terminals
-      const allContainersToStop = terminals.flatMap(t => t.associatedContainers || [])
-                                           .map(c => c.name) // This was missing
-                                           .filter((v, i, a) => a.indexOf(v) === i); // Unique names
-      
-      if (allContainersToStop.length > 0) {
-        await window.electron.stopContainers(allContainersToStop);
+      // First, collect all unique containers to stop them efficiently
+      const allContainersToStop = new Set();
+      terminals.forEach(terminal => {
+        if (terminal.associatedContainers) {
+          terminal.associatedContainers.forEach(container => allContainersToStop.add(container.name));
+        }
+      });
+
+      if (allContainersToStop.size > 0) {
+        console.log('TerminalContainer: Stopping all associated containers:', Array.from(allContainersToStop));
+        if (window.electron && window.electron.stopContainers) {
+          try {
+            await window.electron.stopContainers(Array.from(allContainersToStop));
+          } catch (error) {
+            console.error('Error stopping containers during killAllTerminals:', error);
+          }
+        }
       }
 
-      // Kill all PTYs
+      // Then, kill all PTY processes
       terminals.forEach(terminal => {
         if (window.electron && window.electron.killProcess) {
           console.log('TerminalContainer: Killing PTY for terminal', terminal.id);
@@ -693,7 +703,7 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
       const allContainers = new Set();
       terminals.forEach(terminal => {
         if (terminal.associatedContainers) {
-          terminal.associatedContainers.forEach(container => allContainers.add(container));
+          terminal.associatedContainers.forEach(container => allContainers.add(container.name));
         }
       });
       
