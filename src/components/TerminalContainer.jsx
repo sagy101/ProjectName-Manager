@@ -460,7 +460,7 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
 
     // First, stop any associated containers if needed
     if (terminal.associatedContainers && terminal.associatedContainers.length > 0) {
-      const containersToStop = terminal.associatedContainers.map(c => c.name);
+      const containersToStop = terminal.associatedContainers.filter(c => c && typeof c === 'string'); // Filter out undefined/null and non-strings
       await window.electron.stopContainers(containersToStop);
     }
 
@@ -514,7 +514,8 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
     if (terminalToClose.associatedContainers && terminalToClose.associatedContainers.length > 0) {
       if (window.electron && window.electron.stopContainers) {
         console.log(`Closing tab ${terminalId}, stopping containers:`, terminalToClose.associatedContainers);
-        await window.electron.stopContainers(terminalToClose.associatedContainers.map(c => c.name));
+        const containersToStop = terminalToClose.associatedContainers.filter(c => c && typeof c === 'string'); // Filter out undefined/null and non-strings
+        await window.electron.stopContainers(containersToStop);
       }
     }
     
@@ -670,7 +671,11 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
       const allContainersToStop = new Set();
       terminals.forEach(terminal => {
         if (terminal.associatedContainers) {
-          terminal.associatedContainers.forEach(container => allContainersToStop.add(container.name));
+          terminal.associatedContainers.forEach(container => {
+            if (container && typeof container === 'string') { // Only add valid string containers
+              allContainersToStop.add(container);
+            }
+          });
         }
       });
 
@@ -703,7 +708,11 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
       const allContainers = new Set();
       terminals.forEach(terminal => {
         if (terminal.associatedContainers) {
-          terminal.associatedContainers.forEach(container => allContainers.add(container.name));
+          terminal.associatedContainers.forEach(container => {
+            if (container && typeof container === 'string') { // Only add valid string containers
+              allContainers.add(container);
+            }
+          });
         }
       });
       

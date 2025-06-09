@@ -1,7 +1,7 @@
 module.exports = {
   testEnvironment: 'node',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  testPathIgnorePatterns: ['/node_modules/', '/__tests__/e2e/.*\\.spec\\.js$'],
+  testPathIgnorePatterns: ['/node_modules/', '/__tests__/e2e/.*\\.spec\\.js$', '/__tests__/e2e/test-helpers\\.js$'],
   testEnvironmentOptions: {
     jsdom: {
       customExportConditions: ['node', 'node-addons'],

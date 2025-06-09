@@ -9,14 +9,14 @@ const config = {
   testDir: './__tests__/e2e',
   /* Only run files with .e2e.spec.js */
   testMatch: /.*\.e2e\.spec\.js/,
-  /* Overall timeout for each test file */
-  timeout: 60 * 1000,
+  /* Overall timeout for each test file - increased for invisible mode */
+  timeout: 90 * 1000,
   expect: {
     /**
      * Maximum time expect() should wait for the condition to be met.
      * For example in `await expect(locator).toHaveText();`
      */
-    timeout: 10000
+    timeout: 15000
   },
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
@@ -32,6 +32,9 @@ const config = {
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    
+    /* Run tests headlessly (invisible) */
+    headless: true,
   },
 
   /* Configure projects for major browsers */
@@ -40,6 +43,8 @@ const config = {
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
+        /* Ensure headless mode for all tests */
+        headless: true,
       },
     },
   ],

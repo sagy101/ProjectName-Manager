@@ -12,12 +12,14 @@
     "watch": "webpack --mode development --watch",
     "setNode": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use",
     "rebuild": "npx @electron/rebuild -f -w node-pty",
-    "pretest": "npm rebuild node-pty",
-    "test": "jest",
+    "pretest": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npm rebuild node-pty",
+    "test": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && jest",
     "test:all": "./scripts/run-all-tests.sh",
+    "test:all:no-report": "./scripts/run-all-tests.sh --no-report",
     "pretest:e2e": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npm run rebuild",
     "test:e2e": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npx playwright test",
-    "posttest": "npm run rebuild"
+    "test:e2e:no-report": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npx playwright test --reporter=list",
+    "posttest": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npm run rebuild"
   },
   "author": "",
   "license": "ISC",

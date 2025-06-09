@@ -145,9 +145,9 @@ const AppControlSidebar = ({
       {/* Debug Section Toggle Button - always visible at the bottom */}
       <div className="sidebar-bottom-controls">
         <button
-          className={`debug-section-toggle-button ${isExpanded ? 'expanded' : 'collapsed'} ${((showTestSections && !isIsoRunning) || (noRunMode && !isIsoRunning)) ? 'has-active-options' : ''}`}
+          className={`debug-section-toggle-button ${isExpanded ? 'expanded' : 'collapsed'} ${(showTestSections || noRunMode) ? 'has-active-options' : ''}`}
           onClick={toggleDebugSection}
-          title={isDebugSectionOpen ? "Hide Debug Tools" : `Show Debug Tools${((showTestSections && !isIsoRunning) || (noRunMode && !isIsoRunning)) ? ' (Active Options)' : ''}`}
+          title={isDebugSectionOpen ? "Hide Debug Tools" : `Show Debug Tools${(showTestSections || noRunMode) ? ' (Active Options)' : ''}`}
         >
           <Cog6ToothIcon className="icon" />
           {isExpanded && <span className="debug-toggle-text">{isDebugSectionOpen ? "Hide Debug" : "Debug"}</span>}

@@ -11,6 +11,7 @@ import DropdownSelector from '../src/components/DropdownSelector.jsx';
 import EnvironmentVerification from '../src/components/EnvironmentVerification.jsx';
 import FloatingTerminal from '../src/components/FloatingTerminal.jsx';
 import GitBranchSwitcher from '../src/components/GitBranchSwitcher.jsx';
+import ImportStatusScreen from '../src/components/ImportStatusScreen.jsx';
 import IsoConfiguration from '../src/components/IsoConfiguration.jsx';
 import LoadingScreen from '../src/components/LoadingScreen.jsx';
 import Notification from '../src/components/Notification.jsx';
@@ -77,10 +78,144 @@ describe('AppControlSidebar', () => {
         showAppNotification={() => {}}
         isMainTerminalWritable={true}
         onToggleMainTerminalWritable={() => {}}
+        onExportConfig={() => {}}
+        onImportConfig={() => {}}
       />
     );
     fireEvent.click(getByTitle('Expand Sidebar'));
     expect(onToggleExpand).toHaveBeenCalled();
+  });
+
+  describe('Debug button highlighting', () => {
+    const defaultProps = {
+      floatingTerminals: [],
+      onShowTerminal: () => {},
+      onCloseTerminal: () => {},
+      onToggleMinimize: () => {},
+      onOpenAbout: () => {},
+      activeFloatingTerminalId: null,
+      isExpanded: false,
+      onToggleExpand: () => {},
+      onToggleTestSections: () => {},
+      onToggleNoRunMode: () => {},
+      showAppNotification: () => {},
+      isMainTerminalWritable: true,
+      onToggleMainTerminalWritable: () => {},
+      onExportConfig: () => {},
+      onImportConfig: () => {}
+    };
+
+    it('should show orange highlight when showTestSections is enabled', () => {
+      const { container } = render(
+        <AppControlSidebar
+          {...defaultProps}
+          showTestSections={true}
+          noRunMode={false}
+          isIsoRunning={false}
+        />
+      );
+      
+      const debugButton = container.querySelector('.debug-section-toggle-button');
+      expect(debugButton).toHaveClass('has-active-options');
+    });
+
+    it('should show orange highlight when noRunMode is enabled', () => {
+      const { container } = render(
+        <AppControlSidebar
+          {...defaultProps}
+          showTestSections={false}
+          noRunMode={true}
+          isIsoRunning={false}
+        />
+      );
+      
+      const debugButton = container.querySelector('.debug-section-toggle-button');
+      expect(debugButton).toHaveClass('has-active-options');
+    });
+
+    it('should show orange highlight when both showTestSections and noRunMode are enabled', () => {
+      const { container } = render(
+        <AppControlSidebar
+          {...defaultProps}
+          showTestSections={true}
+          noRunMode={true}
+          isIsoRunning={false}
+        />
+      );
+      
+      const debugButton = container.querySelector('.debug-section-toggle-button');
+      expect(debugButton).toHaveClass('has-active-options');
+    });
+
+    it('should NOT show orange highlight when neither debug option is enabled', () => {
+      const { container } = render(
+        <AppControlSidebar
+          {...defaultProps}
+          showTestSections={false}
+          noRunMode={false}
+          isIsoRunning={false}
+        />
+      );
+      
+      const debugButton = container.querySelector('.debug-section-toggle-button');
+      expect(debugButton).not.toHaveClass('has-active-options');
+    });
+
+    it('should KEEP orange highlight when showTestSections is enabled and ISO is running', () => {
+      const { container } = render(
+        <AppControlSidebar
+          {...defaultProps}
+          showTestSections={true}
+          noRunMode={false}
+          isIsoRunning={true}
+        />
+      );
+      
+      const debugButton = container.querySelector('.debug-section-toggle-button');
+      expect(debugButton).toHaveClass('has-active-options');
+    });
+
+    it('should KEEP orange highlight when noRunMode is enabled and ISO is running', () => {
+      const { container } = render(
+        <AppControlSidebar
+          {...defaultProps}
+          showTestSections={false}
+          noRunMode={true}
+          isIsoRunning={true}
+        />
+      );
+      
+      const debugButton = container.querySelector('.debug-section-toggle-button');
+      expect(debugButton).toHaveClass('has-active-options');
+    });
+
+    it('should update tooltip to show "Active Options" when debug options are enabled', () => {
+      const { container } = render(
+        <AppControlSidebar
+          {...defaultProps}
+          showTestSections={true}
+          noRunMode={false}
+          isIsoRunning={false}
+        />
+      );
+      
+      const debugButton = container.querySelector('.debug-section-toggle-button');
+      expect(debugButton.getAttribute('title')).toContain('(Active Options)');
+    });
+
+    it('should NOT show "Active Options" in tooltip when no debug options are enabled', () => {
+      const { container } = render(
+        <AppControlSidebar
+          {...defaultProps}
+          showTestSections={false}
+          noRunMode={false}
+          isIsoRunning={false}
+        />
+      );
+      
+      const debugButton = container.querySelector('.debug-section-toggle-button');
+      expect(debugButton.getAttribute('title')).not.toContain('(Active Options)');
+    });
   });
 });
 
@@ -235,6 +370,8 @@ describe('Component render tests', () => {
         showAppNotification={() => {}}
         isMainTerminalWritable={true}
         onToggleMainTerminalWritable={() => {}}
+        onExportConfig={() => {}}
+        onImportConfig={() => {}}
       />
     );
   });
@@ -306,6 +443,18 @@ describe('Component render tests', () => {
   test('GitBranchSwitcher renders', () => {
     render(
       <GitBranchSwitcher projectPath="/tmp" currentBranch="main" onBranchChangeSuccess={() => {}} />
+    );
+  });
+
+  test('ImportStatusScreen renders', () => {
+    render(
+      <ImportStatusScreen
+        isVisible={false}
+        projectName="Proj"
+        onClose={() => {}}
+        gitBranches={{}}
+        onImportComplete={() => {}}
+      />
     );
   });
 

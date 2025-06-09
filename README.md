@@ -47,6 +47,7 @@ This project is also an experiment in "vibe coding" mixed with solid code practi
 - [App Control Sidebar & Debug Tools](#🛠️-app-control-sidebar--debug-tools)
 - [Development](#🛠️-development)
 - [Troubleshooting](#🐛-troubleshooting)
+- [Configuration Export/Import](#configuration-exportimport)
 
 ## 🏃 Quick Start
 
@@ -534,3 +535,69 @@ The debug panel button changes appearance based on active options:
 <div align="center">
   <strong>{ProjectName} Manager</strong> - Streamlining environment management, one configuration at a time.
 </div>
+
+## Configuration Export/Import
+
+The application supports exporting and importing your complete configuration, including:
+
+- **Section Settings**: Which sections are enabled/disabled
+- **Deployment Types**: Container vs Process deployment modes
+- **Mode Selections**: Development, staging, production modes
+- **Dropdown Values**: Selected cloud projects, kubectl contexts, etc.
+- **Attach States**: Debug attach configurations
+- **Git Branches**: Current git branch for each service (NEW!)
+
+### How to Export Configuration
+
+1. Click the **Export Config** button in the app control sidebar (right side)
+2. Choose a location to save your configuration file
+3. The exported JSON will include all current settings and git branches
+
+### How to Import Configuration
+
+1. Click the **Import Config** button in the app control sidebar
+2. Select a previously exported configuration file
+3. The app will:
+   - Restore all configuration settings
+   - Attempt to switch each service to its saved git branch
+   - Show a notification with the results of branch switching
+
+### Git Branch Import Behavior
+
+When importing a configuration with git branches:
+
+- ✅ **Success**: If the branch exists and checkout succeeds
+- ⚠️ **Partial Success**: Some branches switch successfully, others fail
+- ❌ **Failure**: Branch doesn't exist or git errors occur
+
+The notification will show the count of successful vs total branch switches, e.g.:
+- `Configuration imported with all git branches switched (4/4)`
+- `Configuration imported with some git branches switched (2/4)`
+- `Configuration imported but git branch switching failed`
+
+### Example Exported Configuration
+
+```json
+{
+  "configState": {
+    "mirror": {
+      "enabled": true,
+      "mode": "suspend",
+      "deploymentType": "container"
+    }
+  },
+  "attachState": {
+    "mirror": false
+  },
+  "globalDropdownValues": {
+    "gcloudProject": "my-project-dev"
+  },
+  "gitBranches": {
+    "mirror": "feature/new-api",
+    "gopm": "main",
+    "rule-engine": "develop"
+  }
+}
+```
+
+This ensures your entire development environment can be quickly replicated across different machines or shared with team members.

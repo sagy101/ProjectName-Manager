@@ -57,6 +57,9 @@ contextBridge.exposeInMainWorld('electron', {
   gitCheckoutBranch: (projectPath, branchName) => ipcRenderer.invoke('git-checkout-branch', { projectPath, branchName }),
   gitListLocalBranches: (projectPath) => ipcRenderer.invoke('git-list-local-branches', { projectPath }),
 
+  // Configuration functions
+  getAboutConfig: () => ipcRenderer.invoke('get-about-config'),
+
   // Generic dropdown command execution
   executeDropdownCommand: (config) => ipcRenderer.invoke('execute-dropdown-command', config),
 

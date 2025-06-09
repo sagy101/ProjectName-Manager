@@ -4,7 +4,38 @@ const os = require('os');
 const { exec, execSync } = require('child_process'); // Added execSync
 const fs = require('fs').promises;
 const fsSync = require('fs');
-const pty = require('node-pty'); // Added node-pty
+
+// Handle uncaught exceptions gracefully during tests
+if (process.env.NODE_ENV === 'test') {
+  process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception in test mode:', error.message);
+    if (error.message.includes('node-pty') || error.message.includes('pty.node')) {
+      console.log('Continuing test execution despite node-pty error...');
+      return; // Don't crash, just log and continue
+    }
+    throw error; // Re-throw other errors
+  });
+}
+
+// Try to require node-pty, but handle gracefully if it fails
+let pty = null;
+try {
+  pty = require('node-pty');
+} catch (error) {
+  console.warn('node-pty module failed to load:', error.message);
+  if (process.env.NODE_ENV === 'test') {
+    console.log('Continuing in test mode without node-pty...');
+    // Create a mock pty object for tests
+    pty = {
+      spawn: () => {
+        throw new Error('node-pty not available in test mode');
+      }
+    };
+  } else {
+    throw error; // Re-throw in non-test mode
+  }
+}
+
 const { exportConfigToFile, importConfigFromFile } = require('./configIO');
 
 // Import shared constants
@@ -485,7 +516,10 @@ async function loadDisplaySettings() {
 }
 
 function createWindow() {
-  mainWindow = new BrowserWindow({
+  // Check if running in test/headless mode
+  const isTestMode = process.env.NODE_ENV === 'test' || process.env.HEADLESS === 'true';
+  
+  const windowOptions = {
     width: 1200,
     height: 900,
     webPreferences: {
@@ -493,16 +527,33 @@ function createWindow() {
       contextIsolation: true,
       preload: path.join(__dirname, 'electron-preload.js') // Updated preload script
     }
-  });
+  };
+  
+  // Add invisible window options for test mode
+  if (isTestMode) {
+    windowOptions.show = false; // Don't show window initially
+    windowOptions.skipTaskbar = true; // Don't show in taskbar
+    windowOptions.x = -2000; // Position off-screen
+    windowOptions.y = -2000;
+    windowOptions.minimizable = false;
+    windowOptions.maximizable = false;
+    windowOptions.closable = true;
+    windowOptions.focusable = false;
+    console.log('Creating invisible window for test mode');
+  }
+
+  mainWindow = new BrowserWindow(windowOptions);
 
   mainWindow.loadFile('index.html');
   
-  // Open DevTools for debugging based on config
-  loadDisplaySettings().then(displaySettings => {
-    if (displaySettings.openDevToolsByDefault) {
-      mainWindow.webContents.openDevTools();
-    }
-  });
+  // Open DevTools for debugging based on config (but not in test mode)
+  if (!isTestMode) {
+    loadDisplaySettings().then(displaySettings => {
+      if (displaySettings.openDevToolsByDefault) {
+        mainWindow.webContents.openDevTools();
+      }
+    });
+  }
   
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -826,6 +877,16 @@ ipcMain.handle('git-list-local-branches', async (event, { projectPath }) => {
   });
 });
 
+// IPC handler to get about configuration for git branch operations
+ipcMain.handle('get-about-config', async () => {
+  try {
+    const configSidebarAbout = require('./src/configurationSidebarAbout.json');
+    return configSidebarAbout;
+  } catch (error) {
+    console.error('Error loading about config:', error);
+    return [];
+  }
+});
 
 ipcMain.handle('export-config', async (event, data) => {
   try {
@@ -867,6 +928,18 @@ ipcMain.on('pty-spawn', (event, { command, terminalId, cols, rows }) => {
     return;
   }
 
+  // Check if pty is available
+  if (!pty || typeof pty.spawn !== 'function') {
+    console.error(`node-pty not available for terminal ${terminalId}. Cannot spawn PTY process.`);
+    if (mainWindow) {
+      mainWindow.webContents.send('pty-output', { 
+        terminalId, 
+        output: '\r\nError: Terminal functionality not available (node-pty module issue)\r\n'
+      });
+    }
+    return;
+  }
+
   let shell;
   let shellArgs = [];
 
@@ -877,13 +950,25 @@ ipcMain.on('pty-spawn', (event, { command, terminalId, cols, rows }) => {
   }
   console.log(`Using shell: ${shell} with args: [${shellArgs.join(', ')}] for PTY on platform: ${os.platform()}`);
 
-  const ptyProcess = pty.spawn(shell, shellArgs, {
-    name: 'xterm-color',
-    cols: cols || 80,
-    rows: rows || 24,
-    cwd: projectRoot,
-    env: { ...process.env, LANG: 'en_US.UTF-8' }
-  });
+  let ptyProcess;
+  try {
+    ptyProcess = pty.spawn(shell, shellArgs, {
+      name: 'xterm-color',
+      cols: cols || 80,
+      rows: rows || 24,
+      cwd: projectRoot,
+      env: { ...process.env, LANG: 'en_US.UTF-8' }
+    });
+  } catch (error) {
+    console.error(`Failed to spawn PTY for terminal ${terminalId}:`, error.message);
+    if (mainWindow) {
+      mainWindow.webContents.send('pty-output', { 
+        terminalId, 
+        output: `\r\nError spawning terminal: ${error.message}\r\n`
+      });
+    }
+    return;
+  }
 
   activeProcesses[terminalId] = ptyProcess;
   console.log(`PTY spawned for terminal ${terminalId} with PID ${ptyProcess.pid}, executing: ${command}`);

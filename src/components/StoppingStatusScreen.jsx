@@ -33,6 +33,11 @@ const StoppingStatusScreen = ({ terminals, isVisible, projectName, onClose }) =>
       // Initialize container status
       if (terminal.associatedContainers && terminal.associatedContainers.length > 0) {
         terminal.associatedContainers.forEach(container => {
+          // Skip undefined, null, or empty container names
+          if (!container || typeof container !== 'string' || container.trim() === '') {
+            return;
+          }
+          
           if (!initialStatus.containers[container]) {
             initialStatus.containers[container] = {
               name: container,
@@ -75,6 +80,11 @@ const StoppingStatusScreen = ({ terminals, isVisible, projectName, onClose }) =>
     };
 
     const handleContainerTerminating = (data) => {
+      // Skip if containerName is invalid
+      if (!data.containerName || typeof data.containerName !== 'string') {
+        return;
+      }
+      
       setTerminationStatus(prev => ({
         ...prev,
         containers: {
@@ -88,6 +98,11 @@ const StoppingStatusScreen = ({ terminals, isVisible, projectName, onClose }) =>
     };
 
     const handleContainerTerminated = (data) => {
+      // Skip if containerName is invalid
+      if (!data.containerName || typeof data.containerName !== 'string') {
+        return;
+      }
+      
       setTerminationStatus(prev => ({
         ...prev,
         containers: {
@@ -226,7 +241,7 @@ const StoppingStatusScreen = ({ terminals, isVisible, projectName, onClose }) =>
                     <span className="item-name">
                       {container.name}
                       <span className="item-detail">
-                        ({container.terminals.join(', ')})
+                        ({(container.terminals || []).join(', ')})
                       </span>
                     </span>
                     <span className={`status-label ${container.status}`}>

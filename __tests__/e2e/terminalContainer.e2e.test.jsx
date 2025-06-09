@@ -7,6 +7,11 @@ global.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
 jest.mock("../../src/components/Terminal", () => () => <div data-testid="mock-term"></div>);
 import TerminalContainer from "../../src/components/TerminalContainer";
 
+// Helper function to convert containers like evalUtils.js does
+function processContainers(containers) {
+  return containers.map(c => typeof c === 'string' ? c : c.name).filter(c => c);
+}
+
 describe('TerminalContainer container cleanup', () => {
   function setup() {
     const stopContainers = jest.fn().mockResolvedValue(undefined);
@@ -23,7 +28,7 @@ describe('TerminalContainer container cleanup', () => {
     const { ref, stopContainers, getByTitle, getByText } = setup();
     await React.act(async () => {
       ref.current.openTabs([
-        { sectionId: 'sec', title: 'Tab1', command: 'echo hi', associatedContainers: [{ name: 'cont1' }] }
+        { sectionId: 'sec', title: 'Tab1', command: 'echo hi', associatedContainers: processContainers([{ name: 'cont1' }]) }
       ]);
     });
     fireEvent.click(getByTitle('Tab Information'));
@@ -35,7 +40,7 @@ describe('TerminalContainer container cleanup', () => {
     const { ref, stopContainers } = setup();
     await React.act(async () => {
       ref.current.openTabs([
-        { sectionId: 'sec', title: 'Tab1', command: 'echo hi', associatedContainers: [{ name: 'cont2' }, { name: 'cont3' }] }
+        { sectionId: 'sec', title: 'Tab1', command: 'echo hi', associatedContainers: processContainers([{ name: 'cont2' }, { name: 'cont3' }]) }
       ]);
     });
     await React.act(async () => {

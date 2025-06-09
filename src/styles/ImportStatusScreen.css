@@ -1,0 +1,355 @@
+/* Import Status Screen Overlay */
+.import-status-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.import-status-container {
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  max-width: 500px;
+  width: 90%;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  animation: scaleIn 0.3s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Header */
+.import-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #333;
+}
+
+.import-header h2 {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+
+.import-progress {
+  display: flex;
+  gap: 24px;
+}
+
+.progress-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.progress-label {
+  color: #999;
+  font-size: 13px;
+}
+
+.progress-value {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Content */
+.import-content {
+  padding: 16px 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.status-section {
+  margin-bottom: 20px;
+}
+
+.status-section:last-child {
+  margin-bottom: 0;
+}
+
+.status-section h3 {
+  color: #ccc;
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background-color: #252525;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.status-item.switching,
+.status-item.importing {
+  background-color: #2a2a2a;
+}
+
+.status-item.success {
+  background-color: #1e2e1e;
+}
+
+.status-item.skipped {
+  background-color: #2a2a1e;
+}
+
+.status-item.error {
+  background-color: #2e1e1e;
+}
+
+/* Status Icons */
+.status-icon {
+  flex-shrink: 0;
+}
+
+.status-icon.waiting {
+  color: #666;
+}
+
+.status-icon.importing,
+.status-icon.switching {
+  color: #4a9eff;
+}
+
+.status-icon.success {
+  color: #4ade80;
+}
+
+.status-icon.skipped {
+  color: #fbbf24;
+}
+
+.status-icon.error {
+  color: #f87171;
+}
+
+/* Spinning animation for importing/switching status */
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Item content */
+.item-name {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-detail {
+  color: #999;
+  font-weight: 400;
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.status-label {
+  color: #999;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.status-label.waiting {
+  color: #666;
+}
+
+.status-label.importing,
+.status-label.switching {
+  color: #4a9eff;
+}
+
+.status-label.success {
+  color: #4ade80;
+}
+
+.status-label.skipped {
+  color: #fbbf24;
+}
+
+.status-label.error {
+  color: #f87171;
+}
+
+/* Footer */
+.import-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #ccc;
+  font-size: 14px;
+}
+
+.import-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
+  color: #4a9eff;
+  animation: spin 1s linear infinite;
+}
+
+/* Import Complete State */
+.import-complete {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #4ade80;
+  font-weight: 500;
+}
+
+.complete-icon {
+  color: #4ade80;
+  flex-shrink: 0;
+}
+
+/* Close Button */
+button.close-button,
+.import-footer .close-button,
+.import-complete .close-button {
+  background-color: #ff8b3d !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 10px 24px !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+  letter-spacing: 0.5px;
+  min-width: 90px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.4;
+  outline: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  font-family: inherit;
+  margin-left: 10px;
+}
+
+button.close-button:hover,
+.import-footer .close-button:hover,
+.import-complete .close-button:hover {
+  background-color: #ff7a24 !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+  transform: translateY(-1px);
+}
+
+button.close-button:active,
+.import-footer .close-button:active,
+.import-complete .close-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+  background-color: #ff6a14 !important;
+}
+
+button.close-button:focus,
+.import-footer .close-button:focus,
+.import-complete .close-button:focus {
+  box-shadow: 0 0 0 3px rgba(255, 139, 61, 0.4) !important;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .import-status-container {
+    width: 95%;
+    max-height: 85vh;
+  }
+
+  .import-header,
+  .import-content,
+  .import-footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .import-header h2 {
+    font-size: 18px;
+  }
+
+  .import-progress {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .status-item {
+    padding: 6px 10px;
+  }
+  
+  .import-complete {
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .close-button {
+    margin-left: 0;
+    margin-top: 8px;
+    width: 100%;
+  }
+} 

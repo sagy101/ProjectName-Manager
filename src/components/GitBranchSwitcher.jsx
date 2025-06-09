@@ -19,6 +19,11 @@ const GitBranchSwitcher = ({
   const wrapperRef = useRef(null); // Ref for the entire component for outside click
   const inputRef = useRef(null); // Ref for the search/create input
 
+  // Debug: Log when currentBranch changes
+  useEffect(() => {
+    console.log(`GitBranchSwitcher [${projectPath}]: currentBranch changed to "${currentBranch}"`);
+  }, [currentBranch, projectPath]);
+
   // Update newBranchName when currentBranch prop changes (e.g., after successful checkout)
   useEffect(() => {
     setNewBranchName(currentBranch);
@@ -118,16 +123,20 @@ const GitBranchSwitcher = ({
   // Determine if the search term could be a new branch
   const canCreateNewBranch = searchTerm.trim() !== '' && !localBranches.includes(searchTerm.trim());
 
+  // Determine the display text and loading state
+  const isLoading = checkoutLoading;
+  const displayText = checkoutLoading ? 'Switching...' : currentBranch;
+
   return (
     <div className="git-branch-switcher-wrapper" ref={wrapperRef}>
       <button 
         className={`git-branch-switcher-display-button ${isOpen ? 'open' : ''}`}
         onClick={handleToggleDropdown}
         title={`Current branch: ${currentBranch}. Click to switch.`}
-        disabled={checkoutLoading || disabled}
+        disabled={isLoading || disabled}
       >
         <CodeBracketIcon className="icon display-icon" />
-        <span>{checkoutLoading ? 'Switching...' : currentBranch}</span>
+        <span>{displayText}</span>
         <ChevronUpDownIcon className="icon chevron-icon" />
       </button>
 
