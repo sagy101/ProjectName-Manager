@@ -125,6 +125,16 @@ The main process has been refactored into a modular architecture for better main
 - **Error Isolation**: Issues in one module don't cascade to others
 - **Performance**: Lazy loading and efficient resource management per module
 
+### Renderer Process Component Architecture
+
+The renderer process is built with React and follows a modern, modular architecture centered around components and hooks. This mirrors the modularity of the main process, ensuring the codebase is scalable and maintainable.
+
+-   **Container Components**: High-level components like `IsoConfiguration` and `TerminalContainer` manage state and orchestrate their children.
+-   **Presentational Components**: Smaller, reusable components like `RunButton`, `TerminalPlaceholder`, and `ConfigSection` focus on rendering specific pieces of the UI.
+-   **Custom Hooks**: Complex, reusable stateful logic is extracted into custom hooks. For example, `useIsoConfig` encapsulates all configuration state management, simplifying the `IsoConfiguration` component and making the logic reusable and testable in isolation.
+
+This separation of concerns makes the UI code easier to test, debug, and refactor.
+
 ## Communication Flow
 
 The application uses Electron's IPC (Inter-Process Communication) system for secure communication between the main process and renderer process.

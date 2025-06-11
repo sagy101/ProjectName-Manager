@@ -40,6 +40,13 @@ const ConfigSection = ({
   const [popoverStyle, setPopoverStyle] = useState({});
   const [dropdownValues, setDropdownValues] = useState({});
 
+  let buttonsToRender = [];
+  if (section.components.customButtons) {
+    buttonsToRender = section.components.customButtons;
+  } else if (section.components.customButton) {
+    buttonsToRender = [section.components.customButton];
+  }
+
   // Helper function to determine component visibility based on config state
   const isComponentVisible = (visibleWhenRule, baseConfig) => {
     if (!visibleWhenRule || !baseConfig) {
@@ -291,17 +298,24 @@ const ConfigSection = ({
           )}
 
           {/* Custom buttons */}
-          {section.components.customButtons && (
+          {buttonsToRender.length > 0 && (
             <div className="custom-buttons-container">
-              {section.components.customButtons.map(button => {
+              {buttonsToRender.map(button => {
                 const commandDef = configSidebarCommands.find(c => c.commandId === button.commandId);
-                const commandToRun = commandDef ? commandDef.command : 'echo "Command not found"';
+                const commandToRun = commandDef ? (commandDef.command.base || commandDef.command) : `echo "Command not found: ${button.commandId}"`;
+                
+                const isDisabled = isLocked || !config.enabled || (button.id === 'viewLogs' && isLogsDisabled());
+
                 return (
                   <button
                     key={button.id}
                     className="custom-button"
-                    onClick={() => openFloatingTerminal(button.commandId, button.label, commandToRun)}
-                    disabled={isLocked || (button.id === 'viewLogs' && isLogsDisabled())}
+                    onClick={() => {
+                        if(openFloatingTerminal) {
+                            openFloatingTerminal(button.commandId, button.label, commandToRun)
+                        }
+                    }}
+                    disabled={isDisabled}
                   >
                     {button.label}
                   </button>

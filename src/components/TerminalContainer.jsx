@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import ReactDOM from 'react-dom';
 import TerminalTab from './TerminalTab';
 import TerminalComponent from './Terminal';
 import TabInfoPanel from './TabInfoPanel';
-import { ClockIcon } from '@heroicons/react/24/outline';
+import TerminalPlaceholder from './TerminalPlaceholder';
+import OverflowTabsDropdown from './OverflowTabsDropdown';
 import '@xterm/xterm/css/xterm.css';
-import configSidebarCommands from '../configurationSidebarCommands.json'; // Import command definitions
+import configSidebarCommands from '../configurationSidebarCommands.json';
 
 const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectName, isReadOnly }, ref) => {
   const [terminals, setTerminals] = useState([]);
@@ -15,11 +15,10 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
   const [overflowTabs, setOverflowTabs] = useState([]);
   const [tabInfoPanel, setTabInfoPanel] = useState(null);
   const [detailsPopup, setDetailsPopup] = useState({ open: false, terminalId: null });
-  // Use a ref to track if we've already set up IPC listeners
-  const ipcListenersSet = useRef(false);
-  // Store cleanup functions
   const cleanupFunctions = useRef([]);
   const tabsContainerRef = useRef(null);
+  // Use a ref to track if we've already set up IPC listeners
+  const ipcListenersSet = useRef(false);
   
   // Set up a direct listener for command outputs
   useEffect(() => {
@@ -295,29 +294,24 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
     };
   }, [activeTerminalId]);
 
-  // Toggle overflow tabs dropdown - simpler version
   const toggleOverflowTabs = (e) => {
     if (e) {
       e.stopPropagation();
       e.preventDefault();
     }
-    
-    // Use callback form to ensure we're working with the latest state
     setOverflowTabsOpen(prev => !prev);
   };
 
   // Close overflow tabs when clicking outside
   useEffect(() => {
-    // Only add listener when dropdown is open
     if (!overflowTabsOpen) return;
     
     const handleClickOutside = (e) => {
       const overflowButton = tabsContainerRef.current?.querySelector('.overflow-indicator');
-      const dropdownEl = document.querySelector('[data-testid="overflow-dropdown"]'); // More specific selector
+      const dropdownEl = document.querySelector('[data-testid="overflow-dropdown"]');
       const tabInfoPanelEl = document.querySelector('.tab-info-panel');
       const commandPopupEl = document.querySelector('.command-popup-overlay');
 
-      // Check if the click is on any of the elements that should keep the dropdown open
       const clickedOnKeeperElement = 
         (overflowButton && overflowButton.contains(e.target)) ||
         (dropdownEl && dropdownEl.contains(e.target)) ||
@@ -329,7 +323,6 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
       }
     };
     
-    // Add listener with a small delay to avoid the current click being caught
     const timerId = setTimeout(() => {
       document.addEventListener('mousedown', handleClickOutside);
     }, 10);
@@ -546,72 +539,6 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
     }
   };
 
-  // Render dropdown separately using portal
-  const renderOverflowDropdown = React.useCallback(() => {
-    if (!overflowTabsOpen) return null;
-    
-    // Calculate position based on overflow button
-    const overflowButton = tabsContainerRef.current?.querySelector('.overflow-indicator');
-    if (!overflowButton) return null;
-    
-    const rect = overflowButton.getBoundingClientRect();
-    const dropdownStyle = {
-      position: 'fixed',
-      top: rect.bottom + 2,
-      right: window.innerWidth - rect.right,
-      zIndex: 99999,
-      backgroundColor: '#303030',
-      border: '1px solid #444',
-      borderRadius: '4px',
-      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.5)',
-      minWidth: '220px',
-      maxHeight: '350px',
-      overflowY: 'auto',
-      padding: '6px 0',
-      animation: 'dropdown-appear 0.15s ease-out',
-      transformOrigin: 'top right'
-    };
-    
-    const dropdownContent = (
-      <div 
-        style={dropdownStyle}
-        onClick={e => e.stopPropagation()}
-        data-testid="overflow-dropdown"
-      >
-        {overflowTabs.length > 0 ? (
-          overflowTabs.map(terminal => (
-            <div 
-              key={terminal.id}
-              className={`overflow-tab ${terminal.id === activeTerminalId ? 'active' : ''}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSelectTab(terminal.id);
-              }}
-            >
-              <span className={`tab-status status-${terminal.status}`} />
-              <span className="tab-title">{terminal.title}</span>
-              <button 
-                className="tab-info-button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleShowTabInfo(terminal.id, e);
-                }}
-                title="Tab Information"
-              >
-                ℹ
-              </button>
-            </div>
-          ))
-        ) : (
-          <div className="overflow-tab">No additional tabs</div>
-        )}
-      </div>
-    );
-    
-    // Render using portal to document body
-    return ReactDOM.createPortal(dropdownContent, document.body);
-  }, [overflowTabsOpen, terminals, activeTerminalId, handleSelectTab, handleShowTabInfo]);
-
   // Expose a method to open multiple tabs with custom titles and commands
   React.useImperativeHandle(ref, () => ({
     openTabs: (tabConfigs) => {
@@ -739,7 +666,7 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
             onSelect={handleSelectTab}
             onClose={handleCloseTab}
             onInfo={(id) => handleShowTabInfo(id)}
-            isError={terminal.status === 'error' && terminal.errorType === 'config'} // New prop
+            isError={terminal.status === 'error' && terminal.errorType === 'config'}
           />
         ))}
         
@@ -757,27 +684,16 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
       </div>
       <div className="terminal-container">
         {terminals.length === 0 ? (
-          <div className="terminal-placeholder">
-            <div className="placeholder-content">
-              <ClockIcon style={{ width: 50, height: 50, color: 'var(--pfpt-primary-orange)', marginBottom: 20 }} />
-              <h2 style={{ color: 'var(--pfpt-neutral-white)', fontSize: '24px', marginBottom: '10px' }}>
-                Waiting to Run {projectName ? projectName.toUpperCase() : 'ISO'}
-              </h2>
-              <p style={{ color: 'var(--pfpt-neutral-300)', fontSize: '16px' }}>
-                Press <b>RUN {projectName ? projectName.toUpperCase() : 'ISO'}</b> to start your configuration and see output here.
-              </p>
-            </div>
-          </div>
+          <TerminalPlaceholder projectName={projectName} />
         ) : (
           terminals.map(terminal => (
             <TerminalComponent
               key={`${terminal.id}-${terminal.refreshCount || 0}`}
               id={terminal.id}
               active={terminal.id === activeTerminalId}
-              initialCommand={terminal.command} // Will be undefined for error tabs
+              initialCommand={terminal.command}
               noRunMode={noRunMode}
               isReadOnly={isReadOnly}
-              // Add new props for error tabs:
               isErrorTab={terminal.status === 'error' && terminal.errorType === 'config'}
               errorMessage={terminal.errorMessage}
             />
@@ -788,7 +704,7 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
       {(() => {
         if (!tabInfoPanel) return null;
         const liveTerminal = terminals.find(t => t.id === tabInfoPanel.terminal.id);
-        if (!liveTerminal) return null; // Terminal might have been closed
+        if (!liveTerminal) return null;
 
         return (
           <TabInfoPanel
@@ -805,8 +721,14 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
         );
       })()}
       
-      {/* Render overflow dropdown using portal */}
-      {renderOverflowDropdown()}
+      <OverflowTabsDropdown
+        isOpen={overflowTabsOpen}
+        tabs={overflowTabs}
+        activeTerminalId={activeTerminalId}
+        onSelectTab={handleSelectTab}
+        onShowTabInfo={handleShowTabInfo}
+        containerRef={tabsContainerRef}
+      />
     </div>
   );
 });
