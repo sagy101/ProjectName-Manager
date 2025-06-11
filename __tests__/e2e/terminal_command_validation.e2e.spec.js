@@ -57,18 +57,19 @@ test.describe('Terminal Command Validation', () => {
     await runButton.click();
 
     // Verify that the correct tab appears
-    const terminalTab = window.locator('.tab', { hasText: new RegExp(runnableSection.title) });
-    await expect(terminalTab).toBeVisible({ timeout: 15000 });
-    await terminalTab.click();
+    const terminalTabTitle = window.locator('.tab-title').filter({ hasText: /Mirror \+ MariaDB/ });
+    await expect(terminalTabTitle).toBeVisible({ timeout: 15000 });
+    await terminalTabTitle.click();
 
     // In no-run mode, verify the command is displayed but not run
-    const expectedCommand = getMockCommand(runnableSection.id, configState[runnableSection.id]);
+    // const expectedCommand = getMockCommand(runnableSection.id, configState[runnableSection.id]); // Removed undefined function
 
     const terminalTabs = await window.locator('.tab');
     await expect(terminalTabs.first()).toBeVisible({ timeout: 30000 });
 
-    const sectionTab = await window.locator('.tab').filter({ hasText: new RegExp(runnableSection.title, 'i') });
-    await expect(sectionTab).toBeVisible({ timeout: 15000 });
+    const sectionTabTitle = await window.locator('.tab-title').filter({ hasText: /Mirror \+ MariaDB/ });
+    await expect(sectionTabTitle).toBeVisible({ timeout: 15000 });
+
   });
 
   test('should validate terminal tab about information shows correct containers', async () => {
@@ -89,15 +90,15 @@ test.describe('Terminal Command Validation', () => {
     await runButton.click();
     
     // The tab name may include deployment type, so we find it by the section title
-    const terminalTab = window.locator('.tab', { hasText: new RegExp(sectionWithContainers.title) });
-    await terminalTab.waitFor({ state: 'visible', timeout: 10000 });
+    const terminalTabTitle2 = window.locator('.tab-title').filter({ hasText: /gopm/i });
+    await terminalTabTitle2.waitFor({ state: 'visible', timeout: 5000 });
 
     const terminalTabs = await window.locator('.tab');
     expect(await terminalTabs.count()).toBeGreaterThan(0);
 
-    const sectionTab = window.locator('.tab').filter({ hasText: new RegExp(sectionWithContainers.title, 'i') });
-    if (await sectionTab.count() > 0) {
-      const infoButton = await sectionTab.locator('.info-button, [title*="about"], [title*="info"]').first();
+    const sectionTabTitle2 = window.locator('.tab-title').filter({ hasText: /gopm/i });
+    if (await sectionTabTitle2.count() > 0) {
+      const infoButton = await sectionTabTitle2.locator('.info-button, [title*="about"], [title*="info"]').first();
       if (await infoButton.count() > 0) {
         await infoButton.click();
         await window.waitForTimeout(1000);
@@ -137,13 +138,14 @@ test.describe('Terminal Command Validation', () => {
     await runButton.click();
     
     // Wait for tab to appear before proceeding
-    await window.waitForSelector(`[data-testid="terminal-tab-${runnableSection.id}"]`, { timeout: 10000 });
+    const mirrorTab = window.locator('.tab').filter({ has: window.locator('.tab-title', { hasText: /Mirror \+ MariaDB/ }) });
+    await expect(mirrorTab).toBeVisible({ timeout: 5000 });
 
     const terminalTabs = await window.locator('.tab');
     expect(await terminalTabs.count()).toBeGreaterThan(0);
 
     const stopButton = await window.locator('button').filter({ hasText: /STOP|KILL/i }).or(window.locator('button').filter({ hasText: new RegExp(`STOP.*${displaySettings.projectName}`, 'i') }));
-    await expect(stopButton).toBeVisible({ timeout: 10000 });
+    await expect(stopButton).toBeVisible({ timeout: 5000 });
     await stopButton.click();
 
     await window.waitForTimeout(3000);
@@ -175,8 +177,9 @@ test.describe('Terminal Command Validation', () => {
     await window.waitForTimeout(3000);
 
     const tabTitle = sectionWithOptions.title;
-    let tab = await window.locator('.tab').filter({ hasText: new RegExp(tabTitle, 'i') });
-    await expect(tab.first()).toBeVisible({ timeout: 15000 });
+    const allTabTitles3 = await window.locator('.tab-title').allTextContents();
+    let tabTitleLocator = await window.locator('.tab-title').filter({ hasText: /gopm/i });
+    await expect(tabTitleLocator.first()).toBeVisible({ timeout: 5000 });
 
     const stopButton = window.locator('button').filter({ hasText: /STOP|KILL/i }).or(window.locator('button').filter({ hasText: new RegExp(`STOP.*${displaySettings.projectName}`, 'i') }));
     await stopButton.click();
@@ -190,7 +193,8 @@ test.describe('Terminal Command Validation', () => {
     await containerButton.click();
     await runButton.click();
     await window.waitForTimeout(3000);
-    tab = await window.locator('.tab').filter({ hasText: new RegExp(tabTitle, 'i') });
-    await expect(tab.first()).toBeVisible({ timeout: 15000 });
+    const allTabTitles4 = await window.locator('.tab-title').allTextContents();
+    tabTitleLocator = await window.locator('.tab-title').filter({ hasText: /gopm/i });
+    await expect(tabTitleLocator.first()).toBeVisible({ timeout: 5000 });
   });
 }); 

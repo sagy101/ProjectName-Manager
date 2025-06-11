@@ -12,7 +12,6 @@ const expectedTitle = `${sectionsConfig.displaySettings.projectName} Manager`;
 test('App starts and has correct title', async () => {
   const { electronApp, window } = await launchElectron();
   
-  await window.waitForSelector('.config-container', { timeout: 10000 });
   await window.waitForSelector('h1');
   const title = await window.title();
   expect(title).toBe(expectedTitle);

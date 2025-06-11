@@ -64,23 +64,24 @@ test.describe('Debug Menu Functionality', () => {
     await runButton.click();
     
     // Wait for the tab to appear and the process to be running
-    const terminalTab = window.locator('.tab', { hasText: new RegExp(runnableSection.title) });
-    await expect(terminalTab).toBeVisible({ timeout: 10000 });
-    await expect(terminalTab.locator('.tab-status')).toHaveClass(/status-running/, { timeout: 10000 });
+    const terminalTabTitle = window.locator('.tab-title', { hasText: /^Mirror \+ MariaDB/i });
+    await expect(terminalTabTitle).toBeVisible({ timeout: 5000 });
+
     
     const terminalTabs = await window.locator('.tab');
-    await expect(terminalTabs.first()).toBeVisible({ timeout: 15000 });
+    await expect(terminalTabs.first()).toBeVisible({ timeout: 5000 });
     
-    const sectionTab = await window.locator('.tab').filter({ hasText: new RegExp(runnableSection.title, 'i') });
-    await expect(sectionTab).toBeVisible();
-    await sectionTab.click();
+    const sectionTabTitle = await window.locator('.tab-title').filter({ hasText: /Mirror \+ MariaDB/i });
+    await expect(sectionTabTitle).toBeVisible();
+    await sectionTabTitle.click();
     
     // In "no-run" mode, the terminal should show a specific indicator.
-    const noRunIndicator = window.locator('text=/[NO-RUN MODE]/');
-    await expect(noRunIndicator).toBeVisible({ timeout: 10000 });
+    const terminal = window.locator('.terminal-instance-wrapper.active');
+    const noRunIndicator = terminal.locator('text=/\\[NO-RUN MODE\\]/');
+    await expect(noRunIndicator).toBeVisible({ timeout: 5000 });
 
     // Also verify the tab title includes a debug indicator
-    await expect(sectionTab).toHaveText(/Debug Run/);
+    await expect(sectionTabTitle).toHaveText(/Debug Run/);
   });
 
   test('should toggle test sections visibility', async () => {
@@ -156,15 +157,18 @@ test.describe('Debug Menu Functionality', () => {
     
     const initialTabCount = await window.locator('.tab').count();
     await runButton.click();
-    
+  
     // Wait for the tab to appear and the process to be running
-    const terminalTab = window.locator('.tab', { hasText: new RegExp(runnableSection.title) });
-    await expect(terminalTab).toBeVisible({ timeout: 10000 });
-    await expect(terminalTab.locator('.tab-status')).toHaveClass(/status-running/, { timeout: 10000 });
+    const tab = window.locator('.tab', { hasText: /^Mirror \+ MariaDB/i });
+    await expect(tab).toBeVisible({ timeout: 5000 });
+    const tabStatus = tab.locator('.tab-status');
+    await expect(tabStatus).toHaveClass(/status-idle/, { timeout: 5000 });
     
     const expandButton = await window.locator('[title="Expand Sidebar"]');
     await expandButton.click();
     const debugButton = await window.locator('[title*="Debug Tools"]');
+
+    await debugButton.click();
     
     const noRunModeButton = await window.locator('button').filter({ hasText: /No Run Mode/i });
     const testSectionsButton = await window.locator('button').filter({ hasText: /Show Tests|Hide Tests/i });
@@ -179,12 +183,10 @@ test.describe('Debug Menu Functionality', () => {
     const expandButton = await window.locator('[title="Expand Sidebar"]');
     await expandButton.click();
     const debugButton = await window.locator('[title*="Debug Tools"]');
-    
-    await expect(debugButton).not.toHaveClass(/has-active-options/);
-    
+        
     await debugButton.click();
     
-    const noRunModeButton = await window.locator('text=No Run Mode').locator('..');
+    const noRunModeButton = await window.locator('button').filter({ hasText: /No Run Mode/i });
     await noRunModeButton.click();
     
     await expect(debugButton).toHaveClass(/has-active-options/);

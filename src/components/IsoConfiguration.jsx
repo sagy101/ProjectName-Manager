@@ -300,7 +300,6 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
 
   // Set deployment type for sections
   const setMode = (sectionId, mode, subSectionId = null) => {
-    // Prevent changes if ISO is running
     if (isRunning) {
       showNotification(`Cannot change deployment type while ISO is running.`, 'error');
       return;
@@ -315,6 +314,7 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
           [configKey]: {
             ...prevState[sectionId][configKey],
             mode,
+            deploymentType: mode,
           },
         },
       }));
@@ -323,7 +323,8 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
         ...prevState,
         [sectionId]: {
           ...prevState[sectionId],
-          mode
+          mode,
+          deploymentType: mode,
         }
       }));
     }

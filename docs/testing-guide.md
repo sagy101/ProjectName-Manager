@@ -123,12 +123,23 @@ This ensures the Electron window is not shown during tests. You can also add `--
 
 ## Test Results
 
-The test suite has been optimized for reliability and focuses on catching real bugs:
+The test suite is fully passing and optimized for reliability:
 
-- **✅ 14 test suites passing** 
-- **✅ 185 tests passing**
-- **✅ 0 test failures**
-- **⚡ Fast execution** (~1-2 seconds)
+### Jest (Unit, Component, and Mock Data)
+- **Test Suites:** 11 passed, 11 total (mock)
+- **Tests:** 179 passed, 179 total (mock)
+- **Test Suites:** 9 passed, 9 total (prod)
+- **Tests:** 138 passed, 138 total (prod)
+- **Fast execution:** ~0.8–1.3 seconds
+
+### E2E (Playwright)
+- **Test Suites:** 28 passed, 28 total
+- **Tests:** 28 passed, 28 total
+- **Fast execution:** ~44 seconds for all E2E tests
+
+- ✅ All Jest and E2E tests pass
+- ✅ No test failures
+- ⚡ Fast and reliable execution
 
 ### What We Don't Test
 

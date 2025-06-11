@@ -82,9 +82,20 @@ test.describe('Full Configuration Workflow', () => {
     await expect(stopButton).toBeVisible();
     await stopButton.click();
 
+    // Log overlay state before waiting for it to disappear
+    const stoppingScreen = window.locator('.stopping-status-overlay');
+
+    await expect(stoppingScreen).toBeVisible({ timeout: 5000 });
+    // Wait for the Close button to appear (when isComplete is true)
+    const closeButton = stoppingScreen.locator('button.close-button');
+    await expect(closeButton).toBeVisible({ timeout: 30000 });
+    await closeButton.click();
+
+    await expect(stoppingScreen).not.toBeVisible({ timeout: 5000 });
+
     // The tabs should be gone
     const terminalTabs = await window.locator('.tab');
-    await expect(terminalTabs).toHaveCount(0, { timeout: 10000 });
+    await expect(terminalTabs).toHaveCount(0, { timeout: 5000 });
   });
 
   test('should handle individual section toggling during runtime', async () => {
@@ -118,15 +129,18 @@ test.describe('Full Configuration Workflow', () => {
     await expect(stoppingScreen).toBeVisible({ timeout: 5000 });
 
     // Wait for the screen to disappear on its own once processes are stopped
-    await expect(stoppingScreen).not.toBeVisible({ timeout: 30000 });
+    const closeButton2 = stoppingScreen.locator('button.close-button');
+    await expect(closeButton2).toBeVisible({ timeout: 15000 });
+    await closeButton2.click();
+    await expect(stoppingScreen).not.toBeVisible({ timeout: 5000 });
 
     // Change deployment option to process
-    const processButton = gopmLocator.locator('[data-testid="mode-selector-btn-gopm-process"]');
+    const processButton = window.locator('[data-testid="mode-selector-btn-gopm-process"]');
     await expect(processButton).toBeEnabled({ timeout: 5000 });
     await processButton.click();
 
     // Run again and verify new tab name
     await window.locator('#run-configuration-button').click();
-    await expect(window.locator('.tab', { hasText: /gopm \(Process\)/i })).toBeVisible();
+    await expect(window.locator('.tab-title').filter({ hasText: /gopm \(Process\)/i })).toBeVisible();
   });
 }); 
