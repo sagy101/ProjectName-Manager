@@ -87,10 +87,12 @@ const DropdownSelector = ({
 
   // Fetch options from backend
   const fetchOptions = async () => {
-    // Skip if we have a dependency that's not satisfied
     if (dependsOn && !dependencyValue) {
       setOptions([]);
-      setSelectedValue('');
+      // Do not reset selectedValue if it's controlled
+      if (value === null) {
+        setSelectedValue('');
+      }
       setError(null);
       return;
     }
@@ -99,14 +101,14 @@ const DropdownSelector = ({
     setError(null);
 
     try {
-      if (window.electron && window.electron.executeDropdownCommand) {
-        // Prepare command arguments, including dependency value if needed
+      if (window.electron && window.electron.getDropdownOptions) {
         const args = { ...commandArgs };
         if (dependsOn && dependencyValue) {
           args[dependsOn] = dependencyValue;
         }
 
-        const result = await window.electron.executeDropdownCommand({
+        const result = await window.electron.getDropdownOptions({
+          id,
           command,
           args,
           parseResponse
@@ -115,23 +117,28 @@ const DropdownSelector = ({
         if (result.error) {
           setError(result.error);
           setOptions([]);
-          // Don't clear selected value on error if we have a value prop
-          if (!value) {
+          if (value === null) {
             setSelectedValue('');
           }
         } else {
-          const parsedOptions = result.options || [];
-          setOptions(parsedOptions);
+          const newOptions = result.options || [];
+          setOptions(newOptions);
 
-          // Handle defaultValue prop
-          let defaultApplied = false;
-          if (parsedOptions.length > 0 && !value && defaultValueProp) { // Only apply if not controlled and defaultValue is provided
+          // Handle default value selection
+          if (newOptions.length > 0 && value === null) {
             let optionToSelect = null;
-            if (defaultValueProp.exact) {
-              optionToSelect = parsedOptions.find(opt => opt === defaultValueProp.exact);
+            if (defaultValueProp) {
+              if (defaultValueProp.exact) {
+                optionToSelect = newOptions.find(opt => opt === defaultValueProp.exact);
+              }
+              if (!optionToSelect && defaultValueProp.contains) {
+                optionToSelect = newOptions.find(opt => typeof opt === 'string' && opt.includes(defaultValueProp.contains));
+              }
             }
-            if (!optionToSelect && defaultValueProp.contains) {
-              optionToSelect = parsedOptions.find(opt => typeof opt === 'string' && opt.includes(defaultValueProp.contains));
+            
+            // Auto-select first option if no default is matched and no value is selected
+            if (!optionToSelect && !selectedValue) {
+              optionToSelect = newOptions[0];
             }
 
             if (optionToSelect) {
@@ -139,16 +146,6 @@ const DropdownSelector = ({
               if (onChangeRef.current) {
                 onChangeRef.current(optionToSelect);
               }
-              defaultApplied = true;
-            }
-          }
-          
-          // Only auto-select first option if no value is provided, no value is selected, and no default was applied
-          if (!defaultApplied && parsedOptions.length > 0 && !selectedValue && !value) {
-            const firstOption = parsedOptions[0];
-            setSelectedValue(firstOption);
-            if (onChangeRef.current) {
-              onChangeRef.current(firstOption);
             }
           }
         }

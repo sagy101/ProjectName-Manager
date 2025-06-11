@@ -1,12 +1,19 @@
 const { test, expect } = require('@playwright/test');
-const { launchElectronInvisibly } = require('./test-helpers');
+const { launchElectron, waitForElement } = require('./test-helpers');
+
+const isMock = process.env.E2E_ENV === 'mock';
+const config = isMock
+  ? require('../mock-data/mockConfigurationSidebarSections.json')
+  : require('../../src/configurationSidebarSections.json');
+
+const { sections, displaySettings } = config;
 
 test.describe('Configuration Interface', () => {
   let electronApp;
   let window;
 
   test.beforeEach(async () => {
-    const launchResult = await launchElectronInvisibly();
+    const launchResult = await launchElectron();
     electronApp = launchResult.electronApp;
     window = launchResult.window;
     // Wait for the main configuration interface to load
@@ -18,86 +25,70 @@ test.describe('Configuration Interface', () => {
   });
 
   test('should display main configuration sections', async () => {
-    // Check that main configuration sections are visible
-    await expect(window.locator('text=Mirror + MariaDB')).toBeVisible();
-    await expect(window.locator('text=GoPM + Agent + Chromium')).toBeVisible();
-    await expect(window.locator('text=URL Intelligence + TI (Cloud)')).toBeVisible();
-    await expect(window.locator('text=Activity Logger')).toBeVisible();
-    await expect(window.locator('text=Rule Engine')).toBeVisible();
+    for (const section of sections) {
+      if (section.testSection && !isMock) continue;
+      await expect(window.locator(`h2:has-text("${section.title}")`)).toBeVisible();
+    }
   });
 
   test('should allow toggling configuration sections', async () => {
-    // Find the first toggle checkbox (Mirror + MariaDB section)
-    const mirrorSection = await window.locator('text=Mirror + MariaDB').locator('..').locator('..'); // Navigate to parent section
-    const toggleCheckbox = await mirrorSection.locator('input[type="checkbox"]').first();
+    const firstSection = sections[0];
+    const sectionLocator = await window.locator(`h2:has-text("${firstSection.title}")`).locator('..').locator('..');
+    const toggleCheckbox = await sectionLocator.locator('input[type="checkbox"]').first();
     
-    // Get initial state
     const initialChecked = await toggleCheckbox.isChecked();
-    
-    // Click the toggle
     await toggleCheckbox.click();
-    
-    // Verify the state changed
-    const newChecked = await toggleCheckbox.isChecked();
-    expect(newChecked).toBe(!initialChecked);
+    expect(await toggleCheckbox.isChecked()).toBe(!initialChecked);
   });
 
   test('should allow enabling and disabling sections', async () => {
-    // Test with GoPM section
-    const gopmSection = await window.locator('text=GoPM + Agent + Chromium').locator('..').locator('..');
-    const toggleCheckbox = await gopmSection.locator('input[type="checkbox"]').first();
+    const sectionWithToggle = sections.find(s => s.components.toggle);
+    expect(sectionWithToggle, 'Test requires a section with a toggle').toBeDefined();
+
+    const sectionLocator = await window.locator(`h2:has-text("${sectionWithToggle.title}")`).locator('..').locator('..');
+    const toggleCheckbox = await sectionLocator.locator('input[type="checkbox"]').first();
     
-    // Ensure it starts disabled
     if (await toggleCheckbox.isChecked()) {
       await toggleCheckbox.click();
     }
+    await expect(toggleCheckbox).not.toBeChecked();
     
-    // Verify it's disabled
-    expect(await toggleCheckbox.isChecked()).toBe(false);
-    
-    // Enable it
     await toggleCheckbox.click();
-    
-    // Verify it's enabled
-    expect(await toggleCheckbox.isChecked()).toBe(true);
+    await expect(toggleCheckbox).toBeChecked();
   });
 
   test('should display environment verification section', async () => {
-    // Check that some form of environment verification is present
-    // This might be in the sidebar or main area
     const verificationElements = await window.locator('[class*="verification"], [class*="environment"]');
     await expect(verificationElements.first()).toBeVisible();
   });
 
-  test('should show RUN ISO button in correct initial state', async () => {
-    // Check that the main RUN button is visible
-    const runButton = await window.locator('button').filter({ hasText: /RUN.*ISO/i });
+  test('should show RUN button in correct initial state', async () => {
+    const runButton = await window.locator('button').filter({ hasText: new RegExp(`RUN.*${displaySettings.projectName}`, 'i') });
     await expect(runButton).toBeVisible();
-    
-    // The button should be disabled initially (this is correct behavior)
     await expect(runButton).toBeDisabled();
   });
 
   test('should show information buttons for sections', async () => {
-    // Check that sections have information buttons (these should always be visible)
     const infoButtons = await window.locator('[data-verification-btn="true"]');
     await expect(infoButtons.first()).toBeVisible();
   });
 
   test('should show subsections when parent section is enabled', async () => {
-    // Find Mirror section which has a Frontend subsection
-    const mirrorSection = await window.locator('text=Mirror + MariaDB').locator('..').locator('..');
-    const toggleCheckbox = await mirrorSection.locator('input[type="checkbox"]').first();
-    
-    // Enable the section if it's not enabled
-    if (!(await toggleCheckbox.isChecked())) {
+    const parentSection = sections.find(s => s.components.subSections && s.components.subSections.length > 0);
+    expect(parentSection, 'Test requires a section with subsections').toBeDefined();
+
+    const sectionLocator = window.locator(`h2:has-text("${parentSection.title}")`).locator('..').locator('..');
+    const toggleCheckbox = sectionLocator.locator('input[type="checkbox"]').first();
+
+    // Ensure the section is enabled
+    if (!await toggleCheckbox.isChecked()) {
       await toggleCheckbox.click();
     }
-    
-    // Wait a moment for subsections to appear
-    await window.waitForTimeout(500);
-    
-    // Check for Frontend subsection
-    await expect(window.locator('text=Frontend')).toBeVisible();
+    await expect(toggleCheckbox).toBeChecked();
+
+    // Now, verify that the subsection is visible
+    const subSection = parentSection.components.subSections[0];
+    const subSectionLocator = window.locator(`h4:has-text("${subSection.title}")`);
+    await expect(subSectionLocator).toBeVisible({ timeout: 10000 });
   });
 }); 

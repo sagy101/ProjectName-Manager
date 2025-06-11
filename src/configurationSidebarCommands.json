@@ -73,7 +73,7 @@
     "conditions": {
       "mirrorConfig.enabled": true,
       "frontendConfig.enabled": true,
-      "frontendConfig.deploymentType": "dev"
+      "frontendConfig.mode": "dev"
     },
     "command": {
       "base": "cd ./weblifemirror && webpack --watch",
@@ -86,7 +86,7 @@
     "conditions": {
       "mirrorConfig.enabled": true,
       "frontendConfig.enabled": true,
-      "frontendConfig.deploymentType": "normal"
+      "frontendConfig.mode": "normal"
     },
     "command": {
       "base": "cd ./weblifemirror && webpack --bail",
@@ -131,7 +131,7 @@
     "conditions": {
       "enabled": true,
       "url-intelligenceConfig.enabled": true,
-      "url-intelligenceConfig.deploymentType": "mock"
+      "url-intelligenceConfig.mode": "mock"
     },
     "command": {
       "base": "cd ./ThreatIntelligenceMock && node inteligence.js",
@@ -146,7 +146,7 @@
     "conditions": {
       "enabled": true,
       "url-intelligenceConfig.enabled": true,
-      "url-intelligenceConfig.deploymentType": "process"
+      "url-intelligenceConfig.mode": "process"
     },
     "command": {
       "base": "kubectx ${kubectlContext} && PROOFPOINT_AUTH_CLIENT_SECRET=$(./infrastructure/scripts/decode-secret.sh default env-url-intelligence client_secret) PROOFPOINT_AUTH_CLIENT_ID=$(./infrastructure/scripts/decode-secret.sh default env-url-intelligence client_id) PROOFPOINT_SCORER_CUSTOMER_ID=$(./infrastructure/scripts/decode-secret.sh default env-url-intelligence customer_id) cd ./threatintelligence/url-intelligence && ./gradlew bootRun --args='--spring.profiles.active=staging --proofpoint.proxy.url= --server.port=8083 --threatintelligence.url=http://127.0.0.1:8084'",
@@ -161,7 +161,7 @@
     "conditions": {
       "enabled": true,
       "url-intelligenceConfig.enabled": true,
-      "url-intelligenceConfig.deploymentType": "forwarding",
+      "url-intelligenceConfig.mode": "forwarding",
       "urlIntelPodSelected": true
     },
     "command": {
@@ -171,7 +171,7 @@
         "base": "URL Intelligence",
         "conditionalAppends": [
           {
-            "condition": "url-intelligenceConfig.deploymentType === 'forwarding' && urlIntelPodSelected === true",
+            "condition": "url-intelligenceConfig.mode === 'forwarding' && urlIntelPodSelected === true",
             "append": " (Forwarding ${urlIntelPod})"
           }
         ]
@@ -305,7 +305,7 @@
     "conditions": {
       "enabled": true,
       "dataProcessorConfig.enabled": true,
-      "dataProcessorConfig.deploymentType": "batch"
+      "dataProcessorConfig.mode": "batch"
     },
     "command": {
       "base": "cd test-analytics/data-processor && python batch_processor.py --mode=${mode}",
@@ -319,7 +319,7 @@
     "conditions": {
       "enabled": true,
       "dataProcessorConfig.enabled": true,
-      "dataProcessorConfig.deploymentType": "stream"
+      "dataProcessorConfig.mode": "stream"
     },
     "command": {
       "base": "cd test-analytics/data-processor && python stream_processor.py --mode=${mode}",
@@ -333,7 +333,7 @@
     "conditions": {
       "enabled": true,
       "dataProcessorConfig.enabled": true,
-      "dataProcessorConfig.deploymentType": "hybrid"
+      "dataProcessorConfig.mode": "hybrid"
     },
     "command": {
       "base": "cd test-analytics/data-processor && python hybrid_processor.py --mode=${mode}",
@@ -347,7 +347,7 @@
     "conditions": {
       "enabled": true,
       "mlEngineConfig.enabled": true,
-      "mlEngineConfig.deploymentType": "tensorflow"
+      "mlEngineConfig.mode": "tensorflow"
     },
     "command": {
       "base": "cd test-analytics/ml-engine && python run_tf_model.py --env=${mode}",
@@ -361,7 +361,7 @@
     "conditions": {
       "enabled": true,
       "mlEngineConfig.enabled": true,
-      "mlEngineConfig.deploymentType": "pytorch"
+      "mlEngineConfig.mode": "pytorch"
     },
     "command": {
       "base": "cd test-analytics/ml-engine && python run_pytorch_model.py --env=${mode}",
@@ -375,7 +375,7 @@
     "conditions": {
       "enabled": true,
       "mlEngineConfig.enabled": true,
-      "mlEngineConfig.deploymentType": "sklearn"
+      "mlEngineConfig.mode": "sklearn"
     },
     "command": {
       "base": "cd test-analytics/ml-engine && python run_sklearn_model.py --env=${mode}",

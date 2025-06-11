@@ -18,7 +18,7 @@
         "modeSelector": {
           "options": ["run", "suspend"],
           "labels": ["Run", "Suspend"],
-          "default": "suspend"
+          "default": "run"
         },
         "subSections": [
           {
@@ -26,8 +26,10 @@
             "title": "Frontend",
             "components": {
               "toggle": true,
-              "deploymentOptions": ["normal", "dev"],
-              "labels": ["Normal", "Dev Mode"]
+              "modeSelector": {
+                "options": ["normal", "dev"],
+                "labels": ["Normal", "Dev Mode"]
+              }
             }
           }
         ]
@@ -40,7 +42,7 @@
         "toggle": true,
         "infoButton": true,
         "gitBranch": true,
-        "deploymentOptions": ["container", "process"]
+        "deploymentOptions": true
       }
     },
     {
@@ -71,12 +73,14 @@
             "title": "URL Intelligence",
             "components": {
               "toggle": true,
-              "deploymentOptions": ["forwarding", "process", "mock"],
-              "labels": ["Forwarding", "Process", "Mock"],
+              "modeSelector": {
+                "options": ["forwarding", "process", "mock"],
+                "labels": ["Forwarding", "Process", "Mock"]
+              },
               "dropdownSelectors": [
                 {
                   "id": "urlIntelPod",
-                  "command": "kubectl get pods -l app=url-intelligence --no-headers -o custom-columns=\":metadata.name\"",
+                  "command": "kubectl --context ${kubectlContext} get pods -l app=url-intelligence --no-headers -o custom-columns=\":metadata.name\"",
                   "parseResponse": "lines",
                   "placeholder": "Select URL Intel pod (for Forwarding)...",
                   "loadingText": "Loading URL Intel pods...",
@@ -84,7 +88,7 @@
                   "noOptionsText": "No URL Intel pods found",
                   "dependsOn": "kubectlContext",
                   "visibleWhen": {
-                    "configKey": "deploymentType",
+                    "configKey": "mode",
                     "hasValue": "forwarding"
                   }
                 }
@@ -99,7 +103,7 @@
               "dropdownSelectors": [
                 {
                   "id": "threatIntelPod",
-                  "command": "kubectl get pods -l app=threat-intelligence --no-headers -o custom-columns=\":metadata.name\"",
+                  "command": "kubectl --context ${kubectlContext} get pods -l app=threat-intelligence --no-headers -o custom-columns=\":metadata.name\"",
                   "parseResponse": "lines",
                   "placeholder": "Select Threat Intel pod...",
                   "loadingText": "Loading pods...",
@@ -144,8 +148,7 @@
         "toggle": true,
         "infoButton": true,
         "gitBranch": true,
-        "deploymentOptions": ["container", "process"],
-        "labels": ["Container", "Process"]
+        "deploymentOptions": true
       }
     },
     {
@@ -166,7 +169,9 @@
             "title": "Data Processor",
             "components": {
               "toggle": true,
-              "deploymentOptions": ["batch", "stream", "hybrid"]
+              "modeSelector": {
+                "options": ["batch", "stream", "hybrid"]
+              }
             }
           },
           {
@@ -174,8 +179,10 @@
             "title": "ML Engine",
             "components": {
               "toggle": true,
-              "deploymentOptions": ["tensorflow", "pytorch", "sklearn"],
-              "labels": ["TensorFlow", "PyTorch", "Scikit-learn"]
+              "modeSelector": {
+                "options": ["tensorflow", "pytorch", "sklearn"],
+                "labels": ["TensorFlow", "PyTorch", "Scikit-learn"]
+              }
             }
           }
         ],

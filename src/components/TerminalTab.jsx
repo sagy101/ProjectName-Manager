@@ -78,6 +78,7 @@ const TerminalTab = ({ id, title, status, active, onSelect, onClose, onInfo, isE
       data-terminal-id={id}
       onClick={() => onSelect(id)}
       data-tab-id={id}
+      data-testid={`terminal-tab-${id}`}
       title={isOverflowing ? title : ''}
     >
       <span 

@@ -1,22 +1,37 @@
 const { exec } = require('child_process');
 const { resolveEnvVars } = require('../mainUtils');
+const fs = require('fs').promises;
+const path = require('path');
 
 // Generic dropdown cache
 let dropdownCache = {}; // Keyed by dropdown ID and args
 let dropdownLoadingState = {}; // Track loading state for each dropdown
 
-// Function to fetch dropdown options with caching
-async function fetchDropdownOptions(dropdownId, config) {
-  const cacheKey = `${dropdownId}:${JSON.stringify(config)}`;
-  
+async function getDropdownOptions(config) {
+  const { id, command, args, parseResponse } = config;
+
+  // Replace placeholders in the command with actual values
+  let processedCommand = command;
+  if (args && typeof args === 'object') {
+    for (const [key, value] of Object.entries(args)) {
+      const placeholder = new RegExp(`\\$\\{${key}\\}`, 'g');
+      processedCommand = processedCommand.replace(placeholder, value);
+    }
+  }
+
+  // Resolve environment variables
+  const resolvedCommand = resolveEnvVars(processedCommand);
+
+  // Use the resolved command for a unique cache key
+  const cacheKey = `${id}:${resolvedCommand}`;
+
   // Check if already loading
   if (dropdownLoadingState[cacheKey]) {
-    // Wait for the existing operation to complete
     return new Promise((resolve) => {
       const checkInterval = setInterval(() => {
         if (!dropdownLoadingState[cacheKey]) {
           clearInterval(checkInterval);
-          resolve(dropdownCache[cacheKey] || { options: [] });
+          resolve(dropdownCache[cacheKey] || { options: [], error: 'Loading timed out' });
         }
       }, 100);
     });
@@ -24,33 +39,19 @@ async function fetchDropdownOptions(dropdownId, config) {
 
   // Check cache first
   if (dropdownCache[cacheKey]) {
-    console.log(`Returning cached options for dropdown ${dropdownId}`);
+    console.log(`Returning cached options for dropdown ${id}`);
     return dropdownCache[cacheKey];
   }
 
   // Mark as loading
   dropdownLoadingState[cacheKey] = true;
+  console.log(`Fetching dropdown options for ${id} with command: ${resolvedCommand}`);
 
   try {
-    const { command, parseScript } = config;
-    
-    if (!command) {
-      console.warn(`No command specified for dropdown ${dropdownId}`);
-      dropdownCache[cacheKey] = { options: [] };
-      return dropdownCache[cacheKey];
-    }
-
-    // Resolve environment variables in the command
-    const resolvedCommand = resolveEnvVars(command);
-    console.log(`Fetching dropdown options for ${dropdownId} with command: ${resolvedCommand}`);
-
     const result = await new Promise((resolve) => {
-      exec(resolvedCommand, { 
-        timeout: 10000,
-        maxBuffer: 1024 * 1024 // 1MB buffer
-      }, (error, stdout, stderr) => {
+      exec(resolvedCommand, { timeout: 15000, maxBuffer: 1024 * 1024 }, (error, stdout, stderr) => {
         if (error) {
-          console.error(`Dropdown command failed for ${dropdownId}: ${stderr || error.message}`);
+          console.error(`Dropdown command failed for ${id}: ${stderr || error.message}`);
           resolve({ success: false, stdout: '', stderr: stderr || error.message });
         } else {
           resolve({ success: true, stdout: stdout.trim(), stderr: stderr.trim() });
@@ -59,124 +60,65 @@ async function fetchDropdownOptions(dropdownId, config) {
     });
 
     if (!result.success) {
-      console.error(`Failed to fetch dropdown options for ${dropdownId}:`, result.stderr);
-      dropdownCache[cacheKey] = { options: [], error: result.stderr };
-      return dropdownCache[cacheKey];
+      const errorResult = { options: [], error: result.stderr };
+      dropdownCache[cacheKey] = errorResult;
+      return errorResult;
     }
 
-    // Parse the output
     let options = [];
-    if (parseScript) {
-      try {
-        // Create a safe evaluation context
-        const parseFunction = new Function('stdout', 'stderr', parseScript);
-        options = parseFunction(result.stdout, result.stderr) || [];
-      } catch (parseError) {
-        console.error(`Error parsing dropdown output for ${dropdownId}:`, parseError);
-        options = [];
-      }
+    if (parseResponse === 'lines') {
+      options = result.stdout.split('\n').map(line => line.trim()).filter(line => line.length > 0);
     } else {
-      // Default parsing: split by lines and filter empty lines
-      options = result.stdout.split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0)
-        .map(line => ({ value: line, label: line }));
+      options = [result.stdout];
     }
-
+    
     const resultData = { options };
     dropdownCache[cacheKey] = resultData;
-    console.log(`Cached ${options.length} options for dropdown ${dropdownId}`);
-    
+    console.log(`Cached ${options.length} options for dropdown ${id}`);
     return resultData;
+
   } catch (error) {
-    console.error(`Error fetching dropdown options for ${dropdownId}:`, error);
-    dropdownCache[cacheKey] = { options: [], error: error.message };
-    return dropdownCache[cacheKey];
+    console.error(`Error in getDropdownOptions for ${id}:`, error);
+    const errorResult = { options: [], error: error.message };
+    dropdownCache[cacheKey] = errorResult;
+    return errorResult;
   } finally {
-    // Mark as no longer loading
     dropdownLoadingState[cacheKey] = false;
   }
 }
 
-// Function to execute dropdown commands
-async function executeDropdownCommand(command, args, parseResponse) {
-  try {
-    // Replace placeholders in the command with actual values
-    let processedCommand = command;
-    if (args && typeof args === 'object') {
-      for (const [key, value] of Object.entries(args)) {
-        const placeholder = new RegExp(`\\$\\{${key}\\}`, 'g');
-        processedCommand = processedCommand.replace(placeholder, value);
-      }
-    }
+async function precacheGlobalDropdowns() {
+    console.log('Starting global dropdown pre-caching...');
+    try {
+        const configPath = path.join(__dirname, '..', 'generalEnvironmentVerifications.json');
+        const configData = await fs.readFile(configPath, 'utf-8');
+        const config = JSON.parse(configData);
 
-    // Resolve environment variables
-    const resolvedCommand = resolveEnvVars(processedCommand);
-    console.log(`Executing dropdown command: ${resolvedCommand}`);
+        const globalDropdowns = config?.header?.dropdownSelectors || [];
 
-    const result = await new Promise((resolve) => {
-      exec(resolvedCommand, { 
-        timeout: 30000, // Longer timeout for commands that might take time
-        maxBuffer: 1024 * 1024 // 1MB buffer
-      }, (error, stdout, stderr) => {
-        if (error) {
-          console.error(`Dropdown command execution failed: ${stderr || error.message}`);
-          resolve({ success: false, stdout: stdout.trim(), stderr: stderr.trim() });
-        } else {
-          console.log(`Dropdown command executed successfully`);
-          resolve({ success: true, stdout: stdout.trim(), stderr: stderr.trim() });
+        if (globalDropdowns.length === 0) {
+            console.log('No global dropdowns found to pre-cache.');
+            return { success: true, precached: 0 };
         }
-      });
-    });
 
-    let parsedResponse = null;
-    if (parseResponse && result.success) {
-      try {
-        // Handle standard parsing modes
-        if (parseResponse === 'lines') {
-          // Split by lines and filter empty lines
-          parsedResponse = result.stdout.split('\n')
-            .map(line => line.trim())
-            .filter(line => line.length > 0);
-        } else if (parseResponse === 'json') {
-          // Parse as JSON
-          parsedResponse = JSON.parse(result.stdout);
-          if (!Array.isArray(parsedResponse)) {
-            console.warn('JSON response is not an array, wrapping in array');
-            parsedResponse = [parsedResponse];
-          }
-        } else if (typeof parseResponse === 'string' && parseResponse.startsWith('function')) {
-          // Custom parsing function (passed as string, we'll eval it - be careful!)
-          const parseFunc = eval(`(${parseResponse})`);
-          parsedResponse = parseFunc(result.stdout);
-        } else {
-          // Create a safe evaluation context for parsing response
-          const parseFunction = new Function('stdout', 'stderr', parseResponse);
-          parsedResponse = parseFunction(result.stdout, result.stderr);
-        }
-      } catch (parseError) {
-        console.error('Error parsing dropdown command response:', parseError);
-        parsedResponse = null;
-      }
+        const precachePromises = globalDropdowns.map(dropdownConfig => {
+            console.log(`Pre-caching a global dropdown: ${dropdownConfig.id}`);
+            return getDropdownOptions({
+                id: dropdownConfig.id,
+                command: dropdownConfig.command,
+                parseResponse: dropdownConfig.parseResponse,
+                args: {} 
+            });
+        });
+
+        await Promise.all(precachePromises);
+        console.log(`Global dropdown pre-caching complete. Cached ${globalDropdowns.length} dropdowns.`);
+        return { success: true, precached: globalDropdowns.length };
+
+    } catch (error) {
+        console.error('Failed to pre-cache global dropdowns:', error);
+        return { success: false, error: error.message };
     }
-
-    return {
-      success: result.success,
-      stdout: result.stdout,
-      stderr: result.stderr,
-      parsed: parsedResponse,
-      options: parsedResponse || [] // Add options field for compatibility
-    };
-  } catch (error) {
-    console.error('Error executing dropdown command:', error);
-    return {
-      success: false,
-      stdout: '',
-      stderr: error.message,
-      parsed: null,
-      options: []
-    };
-  }
 }
 
 // Function to handle dropdown value changes
@@ -224,8 +166,8 @@ function getDropdownCacheStats() {
 }
 
 module.exports = {
-  fetchDropdownOptions,
-  executeDropdownCommand,
+  getDropdownOptions,
+  precacheGlobalDropdowns,
   handleDropdownValueChange,
   clearDropdownCache,
   getDropdownCacheStats

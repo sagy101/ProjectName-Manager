@@ -17,8 +17,35 @@ const TabInfoPanel = ({
   const [isLoadingContainerStatuses, setIsLoadingContainerStatuses] = useState(false);
   const panelRef = useRef(null);
 
+  // Helper to get elapsed time as a string
+  const getElapsedTime = (startTime) => {
+    if (!startTime) return 'N/A';
+    const elapsed = Date.now() - startTime;
+    const seconds = Math.floor(elapsed / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes % 60}m ${seconds % 60}s`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${seconds % 60}s`;
+    } else {
+      return `${seconds}s`;
+    }
+  };
+
+  const [elapsedTime, setElapsedTime] = useState(getElapsedTime(terminal.startTime || terminal.id));
+
   // Memoize the stringified version of associatedContainers for stable dependency
   const associatedContainersString = JSON.stringify(terminal.associatedContainers);
+
+  // Effect for live-updating the elapsed time
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setElapsedTime(getElapsedTime(terminal.startTime || terminal.id));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [terminal.startTime, terminal.id]);
 
   // Fetch container statuses when popup is shown and terminal has associated containers
   useEffect(() => {
@@ -73,21 +100,6 @@ const TabInfoPanel = ({
   const formatStartTime = (timestamp) => {
     const date = new Date(timestamp);
     return date.toLocaleString();
-  };
-
-  const getElapsedTime = (startTime) => {
-    const elapsed = Date.now() - startTime;
-    const seconds = Math.floor(elapsed / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    
-    if (hours > 0) {
-      return `${hours}h ${minutes % 60}m ${seconds % 60}s`;
-    } else if (minutes > 0) {
-      return `${minutes}m ${seconds % 60}s`;
-    } else {
-      return `${seconds}s`;
-    }
   };
 
   const handleRefresh = () => {
@@ -191,14 +203,7 @@ const TabInfoPanel = ({
           
           <div className="info-row">
             <span className="info-label">Elapsed Time:</span>
-            <span className="info-value">{getElapsedTime(terminal.startTime || terminal.id)}</span>
-          </div>
-          
-          <div className="info-row">
-            <span className="info-label">Status:</span>
-            <span className={`info-value status-${terminal.status}`}>
-              {terminal.status.charAt(0).toUpperCase() + terminal.status.slice(1)}
-            </span>
+            <span className="info-value">{elapsedTime}</span>
           </div>
 
           {terminal.sectionId && (

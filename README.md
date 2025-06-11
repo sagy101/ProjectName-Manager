@@ -310,8 +310,8 @@ git init
 | `toggle` | Main enable/disable toggle | `true/false` |
 | `infoButton` | Shows section description | `true/false` |
 | `gitBranch` | Git branch switcher | `true/false` |
-| `deploymentOptions` | Container/Process deployment selector | `true/false` |
-| `modeSelector` | Multi-option mode selector | `{ options: [], labels: [], default: "" }` |
+| `deploymentOptions` | Standardized container/process selector | `true/false` |
+| `modeSelector` | Custom multi-option mode selector | `{ options: [], labels: [], default: "" }` |
 | `attachToggle` | Attach debugger toggle | `{ enabled: true, mutuallyExclusiveWith: [] }` |
 | `dropdownSelectors` | Generic command-driven dropdowns with default value support | Array of dropdown configs |
 | `subSections` | Nested sub-sections | Array of sub-section configs |

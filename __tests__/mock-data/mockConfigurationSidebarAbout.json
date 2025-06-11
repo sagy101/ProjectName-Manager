@@ -1,0 +1,45 @@
+[
+  {
+    "sectionId": "generic-section-1",
+    "directoryPath": "generic-section-1",
+    "description": "Description for generic section 1.",
+    "verifications": [
+      {
+        "id": "genericDirExists",
+        "title": "./generic-section-1 directory exists",
+        "checkType": "pathExists",
+        "pathValue": "./generic-section-1",
+        "pathType": "directory"
+      }
+    ]
+  },
+  {
+    "sectionId": "generic-section-2",
+    "directoryPath": "generic-section-2",
+    "description": "Description for generic section 2.",
+    "verifications": []
+  },
+  {
+    "sectionId": "section-with-dropdowns",
+    "directoryPath": "section-with-dropdowns",
+    "description": "Description for dropdown section.",
+    "verifications": []
+  },
+  {
+    "sectionId": "section-with-button",
+    "directoryPath": "section-with-button",
+    "description": "Description for button section.",
+    "verifications": []
+  },
+  {
+    "sectionId": "mock-button-command",
+    "description": "About info for the mock button's floating terminal command.",
+    "verifications": []
+  },
+  {
+    "sectionId": "test-section-generic",
+    "directoryPath": "test-section-generic",
+    "description": "Description for generic test section.",
+    "verifications": []
+  }
+] 

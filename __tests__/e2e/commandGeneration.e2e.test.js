@@ -1,3 +1,5 @@
+/** @jest-environment node */
+
 const { generateCommandList } = require('../../src/utils/evalUtils');
 const configSidebarCommands = require('../../src/configurationSidebarCommands.json');
 const { sections: configSidebarSectionsActual } = require('../../src/configurationSidebarSections.json');

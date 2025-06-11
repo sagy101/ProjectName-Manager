@@ -1,0 +1,91 @@
+{
+  "displaySettings": {
+    "projectName": "MockProject",
+    "openDevToolsByDefault": false
+  },
+  "sections": [
+    {
+      "id": "generic-section-1",
+      "title": "Generic Section 1",
+      "components": {
+        "toggle": true,
+        "attachToggle": {
+          "enabled": true,
+          "mutuallyExclusiveWith": ["generic-section-2"]
+        },
+        "infoButton": true,
+        "gitBranch": true,
+        "modeSelector": {
+          "options": ["run", "suspend"],
+          "labels": ["Run", "Suspend"],
+          "default": "suspend"
+        },
+        "subSections": [
+          {
+            "id": "generic-subsection-1",
+            "title": "Generic Subsection",
+            "components": {
+              "toggle": true,
+              "modeSelector": {
+                "options": ["normal", "dev"],
+                "labels": ["Normal", "Dev Mode"]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "generic-section-2",
+      "title": "Generic Section 2",
+      "components": {
+        "toggle": true,
+        "infoButton": true,
+        "gitBranch": true,
+        "deploymentOptions": true
+      }
+    },
+    {
+      "id": "section-with-dropdowns",
+      "title": "Section with Dropdowns",
+      "components": {
+        "toggle": true,
+        "infoButton": true,
+        "gitBranch": true,
+        "dropdownSelectors": [
+          {
+            "id": "mock-dropdown-1",
+            "command": "echo 'option1\noption2'",
+            "placeholder": "Select..."
+          }
+        ]
+      }
+    },
+    {
+      "id": "section-with-button",
+      "title": "Section with Button",
+      "components": {
+        "toggle": true,
+        "infoButton": true,
+        "customButton": {
+          "id": "mock-custom-button",
+          "label": "Mock Button",
+          "commandId": "mock-button-command"
+        }
+      }
+    },
+    {
+      "id": "test-section-generic",
+      "title": "Generic Test Section",
+      "testSection": true,
+      "components": {
+        "toggle": true,
+        "infoButton": true,
+        "modeSelector": {
+          "options": ["alpha", "beta"],
+          "default": "alpha"
+        }
+      }
+    }
+  ]
+} 

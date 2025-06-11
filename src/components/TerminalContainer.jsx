@@ -785,19 +785,25 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
         )}
       </div>
       
-      {tabInfoPanel && (
-        <TabInfoPanel
-          terminal={tabInfoPanel.terminal}
-          position={tabInfoPanel.position}
-          onClose={handleCloseTabInfo}
-          onRefresh={handleRefreshTab}
-          configState={configState}
-          noRunMode={noRunMode}
-          detailsPopupOpen={detailsPopup.open && detailsPopup.terminalId === tabInfoPanel.terminal.id}
-          onOpenDetailsPopup={handleOpenDetailsPopup}
-          onCloseDetailsPopup={handleCloseDetailsPopup}
-        />
-      )}
+      {(() => {
+        if (!tabInfoPanel) return null;
+        const liveTerminal = terminals.find(t => t.id === tabInfoPanel.terminal.id);
+        if (!liveTerminal) return null; // Terminal might have been closed
+
+        return (
+          <TabInfoPanel
+            terminal={liveTerminal}
+            position={tabInfoPanel.position}
+            onClose={handleCloseTabInfo}
+            onRefresh={handleRefreshTab}
+            configState={configState}
+            noRunMode={noRunMode}
+            detailsPopupOpen={detailsPopup.open && detailsPopup.terminalId === liveTerminal.id}
+            onOpenDetailsPopup={handleOpenDetailsPopup}
+            onCloseDetailsPopup={handleCloseDetailsPopup}
+          />
+        );
+      })()}
       
       {/* Render overflow dropdown using portal */}
       {renderOverflowDropdown()}

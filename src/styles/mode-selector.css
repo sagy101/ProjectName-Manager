@@ -1,0 +1,57 @@
+/* ModeSelector.css */
+.mode-selector-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.deployment-toggle-container {
+  display: flex;
+  background-color: #2D2E2C; /* Dark grey background */
+  border-radius: 6px;
+  padding: 2px;
+  width: 90%; /* Control the width of the toggle group */
+  margin: 0 auto; /* Center the container */
+}
+
+.deployment-toggle-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #CCC;
+  padding: 5px 0; /* Vertical padding, no horizontal */
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+  line-height: normal; /* Ensure text is vertically centered */
+  text-align: center;
+}
+
+.deployment-toggle-btn:hover:not(:disabled) {
+  color: white;
+}
+
+.deployment-toggle-btn.active {
+  color: #2D2E2C; /* Dark text for contrast on active */
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Specific background colors for active states */
+.deployment-toggle-btn.active:first-child {
+  background-color: #B3E33B; /* Green */
+}
+
+.deployment-toggle-btn.active:nth-child(2) {
+  background-color: #FEB32E; /* Orange */
+}
+
+.deployment-toggle-btn.active:last-child {
+  background-color: #5DADE2; /* Blue */
+}
+
+.deployment-toggle-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+} 

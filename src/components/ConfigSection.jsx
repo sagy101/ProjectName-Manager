@@ -9,7 +9,6 @@ import { STATUS } from '../constants/verificationConstants';
 import VerificationIndicator from './VerificationIndicator';
 import GitBranchSwitcher from './GitBranchSwitcher';
 import configSidebarAbout from '../configurationSidebarAbout.json';
-import configSidebarCommands from '../configurationSidebarCommands.json'; // Import commands
 import '../styles/config-section.css';
 
 const ConfigSection = ({ 
@@ -32,7 +31,8 @@ const ConfigSection = ({
   toggleSubSectionEnabled,
   setSubSectionDeploymentType,
   onDropdownChange,
-  openFloatingTerminal // Accept prop
+  openFloatingTerminal,
+  configSidebarCommands
 }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const verificationPopoverRef = useRef(null);
@@ -170,6 +170,7 @@ const ConfigSection = ({
 
   return (
     <div className={`config-section ${borderClass} ${!config.enabled ? 'collapsed' : ''}`} id={`section-${section.id}`}>
+      {console.log(`Rendering section: ${section.id}`, { config, isAttached })}
       <div className="section-header compact">
         <div className="section-header-left">
           <button
@@ -182,7 +183,7 @@ const ConfigSection = ({
           >
             <InformationCircleIcon style={{ width: 20, height: 20 }} />
           </button>
-          <h2>{section.title}</h2>
+          <h2 data-testid={`section-title-${section.id}`}>{section.title}</h2>
         </div>
         <div className="section-controls compact">
           {(section.components.attachToggle?.enabled || section.components.attachToggle === true) && (
@@ -230,29 +231,28 @@ const ConfigSection = ({
 
       {/* Only render the rest if enabled */}
       {config.enabled && (
-        <>
+        <div className="section-content compact">
           {/* Git Branch Info */}
           {(section.components.gitBranch || section.components.gitBranchSwitcher) && sectionGitBranch !== 'N/A' && (
             <div className="git-branch-info-header">
-              <GitBranchSwitcher 
+              <GitBranchSwitcher
                 projectPath={getSectionDirectoryPath(section.id)}
                 currentBranch={sectionGitBranch}
                 onBranchChangeSuccess={onTriggerRefresh}
-                disabled={isLocked || !config.enabled} 
+                disabled={isLocked || !config.enabled}
               />
             </div>
           )}
 
-          {/* Dropdown Selectors */}
-          {section.components.dropdownSelectors && config.enabled && (
+          {/* Dropdown Selectors for main section */}
+          {section.components.dropdownSelectors && (
             <div className="dropdown-selectors-container" style={{ padding: '8px 12px' }}>
               {section.components.dropdownSelectors
                 .filter(ddConfig => isComponentVisible(ddConfig.visibleWhen, config))
                 .map((dropdownConfig) => {
-                  const dependencyValue = dropdownConfig.dependsOn 
+                  const dependencyValue = dropdownConfig.dependsOn
                     ? (globalDropdownValues?.[dropdownConfig.dependsOn] || dropdownValues[dropdownConfig.dependsOn])
                     : null;
-
                   return (
                     <DropdownSelector
                       key={dropdownConfig.id}
@@ -261,135 +261,120 @@ const ConfigSection = ({
                       disabled={isLocked || !config.enabled}
                       dependencyValue={dependencyValue}
                       className="section-dropdown-selector"
-                      defaultValue={dropdownConfig.defaultValue} // Pass defaultValue for main section dropdowns
+                      defaultValue={dropdownConfig.defaultValue}
                     />
                   );
                 })}
             </div>
           )}
 
-          <div className="section-content compact">
-            {/* Mode selector */}
-            {section.components.modeSelector && config.mode && isAttached && (
-              <ModeSelector
-                sectionId={section.id}
-                options={section.components.modeSelector.options}
-                currentMode={config.mode}
-                onModeChange={setMode}
-                disabled={isLocked || !config.enabled}
-              />
-            )}
-            
-            {/* Deployment options */}
-            {section.components.deploymentOptions && !section.components.modeSelector && (
-              <DeploymentOptions 
-                sectionId={section.id}
-                currentType={config.deploymentType}
-                onChange={(type) => setDeploymentType(section.id, type)}
-                disabled={!config.enabled || isLocked}
-              />
-            )}
-            
-            {/* Sub-sections */}
-            {section.components.subSections && config.enabled && (
-              <div className="sub-sections-container compact">
-                {section.components.subSections.map(subSection => {
-                  const configKey = `${subSection.id.replace(/-sub$/, '')}Config`;
-                  const subConfig = config[configKey] || {};
-                  
-                  return (
-                    <div key={subSection.id} className="config-sub-section compact">
-                      <div className="sub-section-header compact">
-                        <h4>{subSection.title}</h4>
-                        <Toggle
-                          id={`toggle-${section.id}-${subSection.id}`}
-                          checked={subConfig.enabled || false}
-                          onChange={(checked) => toggleSubSectionEnabled(section.id, subSection.id, checked)}
-                          hideLabel={true}
-                          disabled={isLocked || !config.enabled} 
-                        />
-                      </div>
-                      {/* Sub-section content: mode selector and dropdowns */}
-                      {(subConfig.enabled && (subSection.components.modeSelector || subSection.components.dropdownSelectors)) && (
-                        <div className="sub-section-content compact">
-                          {/* Mode selector for sub-sections */}
-                          {subSection.components.modeSelector && (
-                            <ModeSelector
-                              sectionId={`${section.id}-${subSection.id}`}
-                              options={subSection.components.modeSelector.options}
-                              currentMode={subConfig.deploymentType}
-                              onModeChange={(_, option) => setSubSectionDeploymentType(section.id, subSection.id, option)}
-                              disabled={isLocked || !config.enabled}
-                              className="sub-section-mode-selector"
-                              labels={subSection.components.modeSelector.labels}
-                              style={{ padding: '0' }}
-                            />
-                          )}
-                          {/* Dropdown Selectors for Sub-section */}
-                          {subSection.components.dropdownSelectors && (
-                            <div className="sub-section-dropdown-selectors">
-                              {subSection.components.dropdownSelectors
-                                .filter(ddConfig => isComponentVisible(ddConfig.visibleWhen, subConfig))
-                                .map((dropdownConfig) => {
-                                  const dependencyValue = dropdownConfig.dependsOn 
-                                    ? (globalDropdownValues?.[dropdownConfig.dependsOn] || config[dropdownConfig.dependsOn]) 
-                                    : null;
-                                  return (
-                                    <DropdownSelector
-                                      key={dropdownConfig.id}
-                                      {...dropdownConfig}
-                                      onChange={(value) => handleDropdownChange(dropdownConfig.id, value)}
-                                      disabled={isLocked || !config.enabled || !subConfig.enabled}
-                                      dependencyValue={dependencyValue}
-                                      className="section-dropdown-selector"
-                                      defaultValue={dropdownConfig.defaultValue} // Pass defaultValue for sub-section dropdowns
-                                    />
-                                  );
-                                })}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-            
-            {/* Custom button */}
-            {section.components.customButton && config.enabled && (
-              <button
-                className="custom-button compact" // You might want to add specific styling for this class
-                onClick={() => {
-                  if (!openFloatingTerminal) {
-                    console.error('openFloatingTerminal function not provided to ConfigSection');
-                    return;
-                  }
-                  const buttonConfig = section.components.customButton;
-                  const commandId = buttonConfig.commandId;
-                  const commandDef = configSidebarCommands.find(cmd => cmd.sectionId === commandId);
+          {/* Deployment options for main section */}
+          {section.components.deploymentOptions && (
+            <DeploymentOptions
+              sectionId={section.id}
+              currentType={config.mode}
+              onChange={(id, type) => setMode(id, type)}
+              disabled={isLocked}
+            />
+          )}
 
-                  if (commandDef && commandDef.command) {
-                    // Use commandId from buttonConfig as the first argument,
-                    // commandDef.command.tabTitle as title,
-                    // and commandDef.command.base as command.
-                    openFloatingTerminal(commandId, commandDef.command.tabTitle, commandDef.command.base);
-                  } else {
-                    console.warn(`Command not found for commandId: ${commandId} in section: ${section.id}`);
-                    // Optionally, show a user-facing error or notification here
-                  }
-                }}
-                disabled={isLocked || !config.enabled || isLogsDisabled()} // Disable when logs are unavailable
-                title={section.components.customButton.label} // Use label for tooltip
-              >
-                <span className="custom-button-label">{section.components.customButton.label}</span>
-              </button>
-            )}
-          </div>
-        </>
+          {/* Mode selector for main section */}
+          {section.components.modeSelector && (!section.components.attachToggle?.enabled || isAttached) && (
+            <ModeSelector
+              sectionId={section.id}
+              options={section.components.modeSelector.options}
+              labels={section.components.modeSelector.labels}
+              currentMode={config.mode}
+              onModeChange={(id, mode) => setMode(id, mode)}
+              disabled={isLocked}
+            />
+          )}
+
+          {/* Custom buttons */}
+          {section.components.customButtons && (
+            <div className="custom-buttons-container">
+              {section.components.customButtons.map(button => {
+                const commandDef = configSidebarCommands.find(c => c.commandId === button.commandId);
+                const commandToRun = commandDef ? commandDef.command : 'echo "Command not found"';
+                return (
+                  <button
+                    key={button.id}
+                    className="custom-button"
+                    onClick={() => openFloatingTerminal(button.commandId, button.label, commandToRun)}
+                    disabled={isLocked || (button.id === 'viewLogs' && isLogsDisabled())}
+                  >
+                    {button.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Sub-sections */}
+          {section.components.subSections && (
+            <div className="sub-sections-container compact">
+              {section.components.subSections.map(subSection => {
+                const subSectionConfigKey = `${subSection.id.replace(/-sub$/, '')}Config`;
+                const subSectionConfig = config[subSectionConfigKey] || {};
+                return (
+                  <div key={subSection.id} className="config-sub-section compact">
+                    <div className="sub-section-header compact">
+                      <h4>{subSection.title}</h4>
+                      <Toggle
+                        id={`toggle-${section.id}-${subSection.id}`}
+                        checked={subSectionConfig.enabled || false}
+                        onChange={(checked) => toggleSubSectionEnabled(section.id, subSection.id, checked)}
+                        hideLabel={true}
+                        disabled={isLocked || !config.enabled}
+                      />
+                    </div>
+                    {subSectionConfig.enabled && subSection.components && (
+                      <div className="section-content compact">
+                        {subSection.components.modeSelector && (
+                          <div className="mode-selector-wrapper">
+                            <ModeSelector
+                              sectionId={subSection.id}
+                              options={subSection.components.modeSelector.options}
+                              labels={subSection.components.modeSelector.labels}
+                              currentMode={subSectionConfig.mode}
+                              onModeChange={(id, mode) => setMode(section.id, mode, subSection.id)}
+                              disabled={isLocked || !subSectionConfig.enabled}
+                            />
+                          </div>
+                        )}
+                        {subSection.components.dropdownSelectors && (
+                          <div className="dropdown-selectors-container" style={{ padding: '0 0 8px 0' }}>
+                            {subSection.components.dropdownSelectors
+                              .filter(ddConfig => isComponentVisible(ddConfig.visibleWhen, subSectionConfig))
+                              .map(dropdownConfig => {
+                                const dependencyValue = dropdownConfig.dependsOn
+                                  ? (globalDropdownValues?.[dropdownConfig.dependsOn] || dropdownValues[dropdownConfig.dependsOn])
+                                  : null;
+                                return (
+                                  <DropdownSelector
+                                    key={dropdownConfig.id}
+                                    {...dropdownConfig}
+                                    onChange={(value) => handleDropdownChange(dropdownConfig.id, value)}
+                                    disabled={isLocked}
+                                    dependencyValue={dependencyValue}
+                                    className="section-dropdown-selector"
+                                    defaultValue={dropdownConfig.defaultValue}
+                                  />
+                                );
+                              })}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
 };
 
-export default ConfigSection; 
+export default ConfigSection;

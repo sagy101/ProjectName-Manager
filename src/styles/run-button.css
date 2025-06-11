@@ -7,7 +7,12 @@
   padding-top: 8px;
 }
 
-.run-iso-button {
+:root {
+  --button-height: 50px;
+  --button-width: 200px;
+}
+
+.run-configuration-button {
   position: relative;
   background: linear-gradient(135deg, #B3E33B 0%, #8BC220 100%);
   color: #1A1A1A;
@@ -33,18 +38,18 @@
 }
 
 /* Stop button styles */
-.run-iso-button.stop {
+.run-configuration-button.stop {
   background: linear-gradient(135deg, #FC4384 0%, #E63473 100%);
   box-shadow: 0 6px 12px rgba(252, 67, 132, 0.3), 
               0 1px 3px rgba(0, 0, 0, 0.1), 
               inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-.run-iso-button.stop:before {
+.run-configuration-button.stop:before {
   background: linear-gradient(135deg, #FF5B97 0%, #FC4384 100%);
 }
 
-.run-iso-button.stop:hover {
+.run-configuration-button.stop:hover {
   transform: translateY(-3px) scale(1.02);
   box-shadow: 0 10px 20px rgba(252, 67, 132, 0.4), 
               0 3px 6px rgba(0, 0, 0, 0.1), 
@@ -58,7 +63,7 @@
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
 }
 
-.run-iso-button.stop:hover .stop-icon {
+.run-configuration-button.stop:hover .stop-icon {
   transform: scale(1.4);
 }
 
@@ -69,11 +74,11 @@
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
 }
 
-.run-iso-button:hover .run-icon {
+.run-configuration-button:hover .run-icon {
   transform: scale(1.4);
 }
 
-.run-iso-button:before {
+.run-configuration-button:before {
   content: '';
   position: absolute;
   top: 0;
@@ -86,17 +91,17 @@
   z-index: -1;
 }
 
-.run-iso-button:hover:before {
+.run-configuration-button:hover:before {
   opacity: 1;
 }
 
-.run-iso-button:active {
+.run-configuration-button:active {
   transform: translateY(-1px) scale(0.98);
   box-shadow: 0 3px 6px rgba(139, 194, 32, 0.2),
               0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.run-iso-button::after {
+.run-configuration-button::after {
   content: '';
   position: absolute;
   width: 30px;
@@ -108,7 +113,7 @@
   transition: transform 0.7s;
 }
 
-.run-iso-button:hover::after {
+.run-configuration-button:hover::after {
   transform: rotate(30deg) translateX(300%);
 }
 

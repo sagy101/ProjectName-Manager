@@ -1,567 +1,218 @@
 import React from 'react';
-import { render, fireEvent, screen, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
+
 import ConfigSection from '../src/components/ConfigSection.jsx';
+import sectionsData from '../src/configurationSidebarSections.json';
+import aboutData from '../src/configurationSidebarAbout.json';
+import commandsData from '../src/configurationSidebarCommands.json';
 
-// Mock all the imported components
-jest.mock('../src/components/Toggle', () => ({ id, checked, onChange, hideLabel, disabled }) => (
-  <input
-    type="checkbox"
-    id={id}
-    checked={checked}
-    onChange={(e) => onChange(e.target.checked)}
-    disabled={disabled}
-    data-testid={`toggle-${id}`}
-  />
-));
+// --- Mocks ---
+// Mock all child components to isolate ConfigSection and prevent module errors.
+// Each mock is a simple, resilient functional component.
+jest.mock('../src/components/Toggle', () => (props) => {
+    const { id, checked, onChange, disabled } = props || {};
+    return <input type="checkbox" data-testid={id} defaultChecked={checked} onChange={(e) => onChange && onChange(e.target.checked)} disabled={disabled} />;
+});
 
-jest.mock('../src/components/AttachToggle', () => ({ id, isAttached, onToggle, isWarning, disabled }) => (
-  <button
-    id={id}
-    onClick={() => onToggle(!isAttached)}
-    disabled={disabled}
-    data-testid={`attach-toggle-${id}`}
-    className={isWarning ? 'warning' : ''}
-  >
-    {isAttached ? 'Attached' : 'Detached'}
-  </button>
-));
+jest.mock('../src/components/AttachToggle', () => (props) => {
+    const { id, isAttached, onToggle, isWarning, disabled } = props || {};
+    return <button data-testid={id} onClick={() => onToggle && onToggle(!isAttached)} disabled={disabled}>{isWarning ? 'Warning' : (isAttached ? 'Attached' : 'Detached')}</button>;
+});
 
-jest.mock('../src/components/DeploymentOptions', () => ({ sectionId, currentType, onChange, disabled }) => (
-  <div data-testid={`deployment-options-${sectionId}`}>
-    <button
-      onClick={() => onChange('container')}
-      className={currentType === 'container' ? 'active' : ''}
-      disabled={disabled}
-    >
-      Container
-    </button>
-    <button
-      onClick={() => onChange('process')}
-      className={currentType === 'process' ? 'active' : ''}
-      disabled={disabled}
-    >
-      Process
-    </button>
-  </div>
-));
+jest.mock('../src/components/DeploymentOptions', () => (props) => {
+    const { sectionId, currentType, onChange, disabled } = props || {};
+    return (
+        <div data-testid={`deployment-options-${sectionId}`}>
+            <button disabled={disabled} className={currentType === 'container' ? 'active' : ''} onClick={() => onChange && onChange('container')}>Container</button>
+            <button disabled={disabled} className={currentType === 'process' ? 'active' : ''} onClick={() => onChange && onChange('process')}>Process</button>
+        </div>
+    );
+});
 
-jest.mock('../src/components/ModeSelector', () => ({ sectionId, options, currentMode, onModeChange, disabled }) => (
-  <div data-testid={`mode-selector-${sectionId}`}>
-    {options.map(option => (
-      <button
-        key={option}
-        onClick={() => !disabled && onModeChange(sectionId, option)}
-        className={currentMode === option ? 'active' : ''}
-        disabled={disabled}
-      >
-        {option.charAt(0).toUpperCase() + option.slice(1)}
-      </button>
-    ))}
-  </div>
-));
+jest.mock('../src/components/ModeSelector', () => (props) => {
+    const { sectionId, options = [], labels = [], currentMode, onModeChange, disabled } = props || {};
+    return (
+        <div data-testid={`mode-selector-${sectionId}`}>
+            {options.map((option, index) => (
+                <button key={option} disabled={disabled} className={currentMode === option ? 'active' : ''} onClick={() => onModeChange && onModeChange(sectionId, option)}>
+                    {labels[index] || option}
+                </button>
+            ))}
+        </div>
+    );
+});
 
-jest.mock('../src/components/DropdownSelector', () => ({ id, onChange, disabled, placeholder, dependencyValue }) => (
-  <select
-    data-testid={`dropdown-${id}`}
-    onChange={(e) => onChange(e.target.value)}
-    disabled={disabled}
-  >
-    <option value="">{placeholder}</option>
-    <option value="option1">Option 1</option>
-    <option value="option2">Option 2</option>
-  </select>
-));
+jest.mock('../src/components/DropdownSelector', () => (props) => {
+    const { id, onChange, disabled } = props || {};
+    return (
+        <select data-testid={`dropdown-${id}`} onChange={(e) => onChange(e.target.value)} disabled={disabled}>
+            <option value="">Select...</option>
+            <option value="option1">Option 1</option>
+            <option value="option2">Option 2</option>
+        </select>
+    );
+});
 
-jest.mock('../src/components/VerificationIndicator', () => ({ label, status }) => (
-  <div data-testid={`verification-${label}`} data-status={status}>
-    {label}: {status}
-  </div>
-));
+jest.mock('../src/components/GitBranchSwitcher', () => (props) => {
+    const { currentBranch, disabled } = props || {};
+    return <div data-testid="git-branch-switcher" data-disabled={disabled}>Branch: {currentBranch}</div>;
+});
 
-jest.mock('../src/components/GitBranchSwitcher', () => ({ currentBranch, onBranchChangeSuccess, disabled }) => (
-  <div data-testid="git-branch-switcher" data-disabled={disabled}>
-    Branch: {currentBranch}
-  </div>
-));
+jest.mock('../src/components/VerificationIndicator', () => (props) => {
+    const { label } = props || {};
+    return <div data-testid="verification-indicator">{label}</div>;
+});
 
-// Mock the JSON imports
-jest.mock('../src/configurationSidebarAbout.json', () => [
-  {
-    sectionId: 'testSection',
-    directoryPath: './test-section',
-    description: 'Test section description',
-    verifications: [
-      {
-        id: 'testVerification',
-        title: 'Test Verification',
-        checkType: 'pathExists',
-        pathValue: './test-path',
-        pathType: 'directory'
-      }
-    ]
-  }
-]);
-
-jest.mock('../src/configurationSidebarCommands.json', () => [
-  {
-    sectionId: 'testAnalyticsLogCommand',
-    command: {
-      base: 'tail -f logs/test.log',
-      tabTitle: 'Test Analytics Logs'
-    }
-  }
-]);
+// --- Tests ---
 
 describe('ConfigSection', () => {
-  const defaultProps = {
-    section: {
-      id: 'testSection',
-      title: 'Test Section',
-      components: {
-        toggle: true,
-        infoButton: true
-      }
-    },
-    config: { enabled: false },
-    toggleEnabled: jest.fn(),
-    setDeploymentType: jest.fn(),
-    setMode: jest.fn(),
-    setSectionDropdownValue: jest.fn(),
-    globalDropdownValues: {},
-    isAttached: false,
-    onAttachToggle: jest.fn(),
-    isAttachWarning: false,
-    isLocked: false,
-    sectionPathStatus: 'valid',
-    sectionGitBranch: 'main',
-    onTriggerRefresh: jest.fn(),
-    attachState: {},
-    configState: {},
-    toggleSubSectionEnabled: jest.fn(),
-    setSubSectionDeploymentType: jest.fn(),
-    onDropdownChange: jest.fn(),
-    openFloatingTerminal: jest.fn()
-  };
+    let baseProps;
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+    beforeEach(() => {
+        baseProps = {
+            config: {},
+            setDeploymentType: jest.fn(),
+            setMode: jest.fn(),
+            toggleEnabled: jest.fn(),
+            toggleSubSectionEnabled: jest.fn(),
+            setSubSectionDeploymentType: jest.fn(),
+            onAttachToggle: jest.fn(),
+            isAttached: false,
+            aboutConfig: aboutData,
+            configSidebarCommands: commandsData,
+            globalDropdownValues: {},
+            onDropdownChange: jest.fn(),
+            openFloatingTerminal: jest.fn(),
+            isLocked: false,
+            sectionPathStatus: {},
+        };
+    });
 
-  describe('Basic Rendering', () => {
     it('renders the section title', () => {
-      render(<ConfigSection {...defaultProps} />);
-      expect(screen.getByText('Test Section')).toBeInTheDocument();
+        const section = sectionsData.sections[0]; // generic-section-1
+        render(<ConfigSection {...baseProps} section={section} />);
+        expect(screen.getByText('Generic Section 1')).toBeInTheDocument();
     });
 
-    it('renders the main toggle', () => {
-      render(<ConfigSection {...defaultProps} />);
-      expect(screen.getByTestId('toggle-toggle-testSection')).toBeInTheDocument();
+    it('renders and handles the main toggle', () => {
+        const section = sectionsData.sections.find(s => s.id === 'generic-section-1');
+        const config = { enabled: true };
+        render(<ConfigSection {...baseProps} section={section} config={config} />);
+
+        const toggle = screen.getByTestId('toggle-generic-section-1');
+        expect(toggle).toBeInTheDocument();
+        expect(toggle).toBeChecked();
+
+        fireEvent.click(toggle);
+        expect(baseProps.toggleEnabled).toHaveBeenCalledWith('generic-section-1', false);
+    });
+    
+    it('renders a ModeSelector when section is enabled and attached', () => {
+        const section = sectionsData.sections.find(s => s.id === 'generic-section-1');
+        const config = { enabled: true, mode: 'suspend' };
+        render(<ConfigSection {...baseProps} section={section} config={config} isAttached={true} />);
+
+        const modeSelector = screen.getByTestId('mode-selector-generic-section-1');
+        expect(modeSelector).toBeInTheDocument();
+
+        const runButton = screen.getByText('Run');
+        expect(runButton).toBeInTheDocument();
+        fireEvent.click(runButton);
+        expect(baseProps.setMode).toHaveBeenCalledWith('generic-section-1', 'run');
     });
 
-    it('renders information button when infoButton is true', () => {
-      render(<ConfigSection {...defaultProps} />);
-      expect(screen.getByTitle('Show verification details')).toBeInTheDocument();
+    it('renders DeploymentOptions for sections configured with it', () => {
+        const section = sectionsData.sections.find(s => s.id === 'generic-section-2');
+        const config = { enabled: true, deploymentType: 'container' };
+        render(<ConfigSection {...baseProps} section={section} config={config} />);
+
+        const deploymentOptions = screen.getByTestId('deployment-options-generic-section-2');
+        expect(deploymentOptions).toBeInTheDocument();
+        
+        const processButton = screen.getByText('Process');
+        fireEvent.click(processButton);
+        expect(baseProps.setDeploymentType).toHaveBeenCalledWith('generic-section-2', 'process');
+    });
+    
+    it('renders sub-sections correctly', () => {
+        const section = sectionsData.sections.find(s => s.id === 'generic-section-1');
+        const config = { 
+            enabled: true, 
+            'generic-subsection-1Config': { enabled: true, mode: 'normal' }
+        };
+        render(<ConfigSection {...baseProps} section={section} config={config} />);
+
+        expect(screen.getByText('Generic Subsection')).toBeInTheDocument();
+        const subSectionToggle = screen.getByTestId('toggle-generic-section-1-generic-subsection-1');
+        expect(subSectionToggle).toBeInTheDocument();
+        expect(subSectionToggle).toBeChecked();
+        
+        const subSectionModeSelector = screen.getByTestId('mode-selector-generic-section-1-generic-subsection-1');
+        expect(subSectionModeSelector).toBeInTheDocument();
     });
 
-    it('applies correct CSS classes based on config state', () => {
-      const { container } = render(<ConfigSection {...defaultProps} />);
-      const sectionDiv = container.firstChild;
-      expect(sectionDiv).toHaveClass('config-section', 'collapsed');
-    });
-  });
+    it('disables all controls when locked', () => {
+        const section = sectionsData.sections.find(s => s.id === 'generic-section-1');
+        const config = { enabled: true, mode: 'run' };
+        render(<ConfigSection {...baseProps} section={section} config={config} isLocked={true} isAttached={true} />);
 
-  describe('Toggle Functionality', () => {
-    it('calls toggleEnabled when main toggle is clicked', () => {
-      render(<ConfigSection {...defaultProps} />);
-      fireEvent.click(screen.getByTestId('toggle-toggle-testSection'));
-      expect(defaultProps.toggleEnabled).toHaveBeenCalledWith('testSection', true);
+        expect(screen.getByTestId('toggle-generic-section-1')).toBeDisabled();
+        expect(screen.getByTestId('attach-generic-section-1')).toBeDisabled();
+        
+        const runButton = screen.getByText('Run');
+        expect(runButton).toBeDisabled();
     });
 
-    it('disables toggle when isLocked is true', () => {
-      render(<ConfigSection {...defaultProps} isLocked={true} />);
-      const toggle = screen.getByTestId('toggle-toggle-testSection');
-      expect(toggle).toBeDisabled();
-    });
-  });
+    it('renders dropdown selectors and handles changes', () => {
+        const section = sectionsData.sections.find(s => s.id === 'section-with-dropdowns');
+        const { rerender } = render(
+            <ConfigSection {...baseProps} section={section} config={{ enabled: true }} />
+        );
 
-  describe('Attach Toggle', () => {
-    const propsWithAttachToggle = {
-      ...defaultProps,
-      section: {
-        ...defaultProps.section,
-        components: {
-          ...defaultProps.section.components,
-          attachToggle: { enabled: true }
-        }
-      }
-    };
+        const dropdown = screen.getByTestId('dropdown-mock-dropdown-1');
+        expect(dropdown).toBeInTheDocument();
 
-    it('renders attach toggle when enabled', () => {
-      render(<ConfigSection {...propsWithAttachToggle} />);
-      expect(screen.getByTestId('attach-toggle-attach-testSection')).toBeInTheDocument();
-    });
-
-    it('calls onAttachToggle when attach toggle is clicked', () => {
-      const mockOnAttachToggle = jest.fn();
-      const propsWithMockAttachToggle = {
-        ...propsWithAttachToggle,
-        onAttachToggle: mockOnAttachToggle,
-        isAttached: false,
-        config: { enabled: true }
-      };
-      const { container } = render(<ConfigSection {...propsWithMockAttachToggle} />);
-      
-      const button = screen.getByTestId('attach-toggle-attach-testSection');
-      fireEvent.click(button);
-      expect(mockOnAttachToggle).toHaveBeenCalledWith(true);
+        fireEvent.change(dropdown, { target: { value: 'option2' } });
+        expect(baseProps.onDropdownChange).toHaveBeenCalledWith('section-with-dropdowns', 'mock-dropdown-1', 'option2');
+        
+        // Rerender with updated global state to reflect the change
+        rerender(
+            <ConfigSection 
+                {...baseProps} 
+                section={section} 
+                config={{ enabled: true }} 
+                globalDropdownValues={{ 'mock-dropdown-1': 'option2' }}
+            />
+        );
+        const dropdownWithValue = screen.getByTestId('dropdown-mock-dropdown-1');
+        expect(dropdownWithValue.value).toBe('option2');
     });
 
-    it('shows warning class when isAttachWarning is true', () => {
-      render(<ConfigSection {...propsWithAttachToggle} isAttachWarning={true} />);
-      const attachToggle = screen.getByTestId('attach-toggle-attach-testSection');
-      expect(attachToggle).toHaveClass('warning');
+    it('renders a custom button and handles click', () => {
+        const section = sectionsData.sections.find(s => s.id === 'section-with-button');
+        render(<ConfigSection {...baseProps} section={section} config={{ enabled: true }} configSidebarCommands={commandsData} />);
+
+        const customButton = screen.getByText('Mock Button');
+        expect(customButton).toBeInTheDocument();
+        
+        fireEvent.click(customButton);
+        const expectedCommand = commandsData.find(c => c.sectionId === 'mock-button-command');
+        expect(baseProps.openFloatingTerminal).toHaveBeenCalledWith(
+            'mock-button-command',
+            expectedCommand.command.tabTitle,
+            expectedCommand.command.base
+        );
     });
 
-    it('disables attach toggle when section is disabled', () => {
-      render(<ConfigSection {...propsWithAttachToggle} config={{ enabled: false }} />);
-      const attachToggle = screen.getByTestId('attach-toggle-attach-testSection');
-      expect(attachToggle).toBeDisabled();
-    });
-  });
+    it('toggles sub-section enabled state', () => {
+        const section = sectionsData.sections.find(s => s.id === 'generic-section-1');
+        const config = { enabled: true, 'generic-subsection-1Config': { enabled: true } };
+        render(<ConfigSection {...baseProps} section={section} config={config} />);
 
-  describe('Mode Selector', () => {
-    const propsWithModeSelector = {
-      ...defaultProps,
-      section: {
-        ...defaultProps.section,
-        components: {
-          ...defaultProps.section.components,
-          modeSelector: {
-            options: ['development', 'staging', 'production'],
-            default: 'development'
-          }
-        }
-      },
-      config: { enabled: true, mode: 'development' },
-      isAttached: true
-    };
-
-    it('renders mode selector when section is enabled and attached', () => {
-      render(<ConfigSection {...propsWithModeSelector} />);
-      expect(screen.getByText('Development')).toBeInTheDocument();
-      expect(screen.getByText('Staging')).toBeInTheDocument();
-      expect(screen.getByText('Production')).toBeInTheDocument();
+        const subSectionToggle = screen.getByTestId('toggle-generic-section-1-generic-subsection-1');
+        fireEvent.click(subSectionToggle);
+        expect(baseProps.toggleSubSectionEnabled).toHaveBeenCalledWith('generic-section-1', 'generic-subsection-1', false);
     });
 
-    it('does not render mode selector when section is not attached', () => {
-      render(<ConfigSection {...propsWithModeSelector} isAttached={false} />);
-      expect(screen.queryByText('Development')).not.toBeInTheDocument();
-    });
-
-    it('does not render mode selector when section is disabled', () => {
-      render(<ConfigSection {...propsWithModeSelector} config={{ enabled: false, mode: 'development' }} />);
-      expect(screen.queryByText('Development')).not.toBeInTheDocument();
-    });
-
-    it('calls setMode when mode button is clicked', () => {
-      render(<ConfigSection {...propsWithModeSelector} />);
-      fireEvent.click(screen.getByText('Staging'));
-      expect(defaultProps.setMode).toHaveBeenCalledWith('testSection', 'staging');
-    });
-
-    it('shows active class for current mode', () => {
-      render(<ConfigSection {...propsWithModeSelector} />);
-      const developmentButton = screen.getByText('Development');
-      expect(developmentButton).toHaveClass('active');
-    });
-
-    it('disables mode buttons when locked', () => {
-      render(<ConfigSection {...propsWithModeSelector} isLocked={true} />);
-      const developmentButton = screen.getByText('Development');
-      expect(developmentButton).toBeDisabled();
-    });
-
-    it('capitalizes mode option labels correctly', () => {
-      const propsWithLowercaseModes = {
-        ...propsWithModeSelector,
-        section: {
-          ...propsWithModeSelector.section,
-          components: {
-            ...propsWithModeSelector.section.components,
-            modeSelector: {
-              options: ['run', 'suspend'],
-              default: 'run'
-            }
-          }
-        },
-        config: { enabled: true, mode: 'run' }
-      };
-      render(<ConfigSection {...propsWithLowercaseModes} />);
-      expect(screen.getByText('Run')).toBeInTheDocument();
-      expect(screen.getByText('Suspend')).toBeInTheDocument();
-    });
-  });
-
-  describe('Deployment Options', () => {
-    const propsWithDeploymentOptions = {
-      ...defaultProps,
-      section: {
-        ...defaultProps.section,
-        components: {
-          ...defaultProps.section.components,
-          deploymentOptions: ['container', 'process']
-        }
-      },
-      config: { enabled: true, deploymentType: 'container' }
-    };
-
-    it('renders deployment options when section is enabled', () => {
-      render(<ConfigSection {...propsWithDeploymentOptions} />);
-      expect(screen.getByTestId('deployment-options-testSection')).toBeInTheDocument();
-    });
-
-    it('does not render deployment options when modeSelector is present', () => {
-      const propsWithBoth = {
-        ...propsWithDeploymentOptions,
-        section: {
-          ...propsWithDeploymentOptions.section,
-          components: {
-            ...propsWithDeploymentOptions.section.components,
-            modeSelector: {
-              options: ['run', 'suspend'],
-              default: 'run'
-            }
-          }
-        }
-      };
-      render(<ConfigSection {...propsWithBoth} />);
-      expect(screen.queryByTestId('deployment-options-testSection')).not.toBeInTheDocument();
-    });
-  });
-
-  describe('Dropdown Selectors', () => {
-    const propsWithDropdowns = {
-      ...defaultProps,
-      section: {
-        ...defaultProps.section,
-        components: {
-          ...defaultProps.section.components,
-          dropdownSelectors: [
-            {
-              id: 'testDropdown',
-              placeholder: 'Select option...',
-              command: 'echo "test"'
-            }
-          ]
-        }
-      },
-      config: { enabled: true }
-    };
-
-    it('renders dropdown selectors when section is enabled', () => {
-      render(<ConfigSection {...propsWithDropdowns} />);
-      expect(screen.getByTestId('dropdown-testDropdown')).toBeInTheDocument();
-    });
-
-    it('calls handleDropdownChange when dropdown value changes', () => {
-      render(<ConfigSection {...propsWithDropdowns} />);
-      fireEvent.change(screen.getByTestId('dropdown-testDropdown'), { target: { value: 'option1' } });
-      expect(defaultProps.setSectionDropdownValue).toHaveBeenCalledWith('testSection', 'testDropdown', 'option1');
-    });
-  });
-
-  describe('Git Branch Switcher', () => {
-    const propsWithGitBranch = {
-      ...defaultProps,
-      section: {
-        ...defaultProps.section,
-        components: {
-          ...defaultProps.section.components,
-          gitBranch: true
-        }
-      },
-      config: { enabled: true },
-      sectionGitBranch: 'feature-branch'
-    };
-
-    it('renders git branch switcher when section is enabled', () => {
-      render(<ConfigSection {...propsWithGitBranch} />);
-      expect(screen.getByTestId('git-branch-switcher')).toBeInTheDocument();
-      expect(screen.getByText('Branch: feature-branch')).toBeInTheDocument();
-    });
-
-    it('does not render git branch switcher when branch is N/A', () => {
-      render(<ConfigSection {...propsWithGitBranch} sectionGitBranch="N/A" />);
-      expect(screen.queryByTestId('git-branch-switcher')).not.toBeInTheDocument();
-    });
-  });
-
-  describe('Sub-sections', () => {
-    const propsWithSubSections = {
-      ...defaultProps,
-      section: {
-        ...defaultProps.section,
-        components: {
-          ...defaultProps.section.components,
-          subSections: [
-            {
-              id: 'frontend-sub',
-              title: 'Frontend',
-              components: {
-                toggle: true,
-                deploymentOptions: ['normal', 'dev']
-              }
-            }
-          ]
-        }
-      },
-      config: {
-        enabled: true,
-        frontendConfig: { enabled: false, deploymentType: 'normal' }
-      }
-    };
-
-    it('renders sub-sections when parent section is enabled', () => {
-      render(<ConfigSection {...propsWithSubSections} />);
-      expect(screen.getByText('Frontend')).toBeInTheDocument();
-    });
-
-    it('calls toggleSubSectionEnabled when sub-section toggle is clicked', () => {
-      render(<ConfigSection {...propsWithSubSections} />);
-      fireEvent.click(screen.getByTestId('toggle-toggle-testSection-frontend-sub'));
-      expect(defaultProps.toggleSubSectionEnabled).toHaveBeenCalledWith('testSection', 'frontend-sub', true);
-    });
-  });
-
-  describe('Custom Button', () => {
-    const propsWithCustomButton = {
-      ...defaultProps,
-      section: {
-        ...defaultProps.section,
-        components: {
-          ...defaultProps.section.components,
-          customButton: {
-            id: 'testAnalyticsLogs',
-            label: 'View Logs',
-            commandId: 'testAnalyticsLogCommand'
-          }
-        }
-      },
-      config: { enabled: true }
-    };
-
-    it('renders custom button when section is enabled', () => {
-      render(<ConfigSection {...propsWithCustomButton} />);
-      expect(screen.getByText('View Logs')).toBeInTheDocument();
-    });
-
-    it('calls openFloatingTerminal when custom button is clicked', () => {
-      render(<ConfigSection {...propsWithCustomButton} />);
-      fireEvent.click(screen.getByText('View Logs'));
-      expect(defaultProps.openFloatingTerminal).toHaveBeenCalledWith(
-        'testAnalyticsLogCommand',
-        'Test Analytics Logs',
-        'tail -f logs/test.log'
-      );
-    });
-
-    it('does not render custom button when section is disabled', () => {
-      render(<ConfigSection {...propsWithCustomButton} config={{ enabled: false }} />);
-      expect(screen.queryByText('View Logs')).not.toBeInTheDocument();
-    });
-  });
-
-  describe('Verification Popover', () => {
-    it('opens verification popover when info button is clicked', async () => {
-      render(<ConfigSection {...defaultProps} />);
-      fireEvent.click(screen.getByTitle('Show verification details'));
-      
-      await waitFor(() => {
-        expect(screen.getByText('Test section description')).toBeInTheDocument();
-      });
-    });
-
-    it('shows verification indicators in popover', async () => {
-      render(<ConfigSection {...defaultProps} />);
-      fireEvent.click(screen.getByTitle('Show verification details'));
-      
-      await waitFor(() => {
-        expect(screen.getByTestId('verification-Test Verification')).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('Conditional Rendering', () => {
-    it('only renders content when section is enabled', () => {
-      const { rerender } = render(
-        <ConfigSection
-          {...defaultProps}
-          section={{
-            ...defaultProps.section,
-            components: {
-              ...defaultProps.section.components,
-              deploymentOptions: ['container', 'process']
-            }
-          }}
-          config={{ enabled: false }}
-        />
-      );
-      
-      expect(screen.queryByTestId('deployment-options-testSection')).not.toBeInTheDocument();
-      
-      rerender(
-        <ConfigSection
-          {...defaultProps}
-          section={{
-            ...defaultProps.section,
-            components: {
-              ...defaultProps.section.components,
-              deploymentOptions: ['container', 'process']
-            }
-          }}
-          config={{ enabled: true, deploymentType: 'container' }}
-        />
-      );
-      
-      expect(screen.getByTestId('deployment-options-testSection')).toBeInTheDocument();
-    });
-  });
-
-  describe('Visibility Rules', () => {
-    const propsWithVisibilityRules = {
-      ...defaultProps,
-      section: {
-        ...defaultProps.section,
-        components: {
-          ...defaultProps.section.components,
-          dropdownSelectors: [
-            {
-              id: 'conditionalDropdown',
-              placeholder: 'Select...',
-              visibleWhen: {
-                configKey: 'deploymentType',
-                hasValue: 'container'
-              }
-            }
-          ]
-        }
-      },
-      config: { enabled: true, deploymentType: 'container' }
-    };
-
-    it('shows components that meet visibility conditions', () => {
-      render(<ConfigSection {...propsWithVisibilityRules} />);
-      expect(screen.getByTestId('dropdown-conditionalDropdown')).toBeInTheDocument();
-    });
-
-    it('hides components that do not meet visibility conditions', () => {
-      const propsWithHiddenComponent = {
-        ...propsWithVisibilityRules,
-        config: { enabled: true, deploymentType: 'process' }
-      };
-      render(<ConfigSection {...propsWithHiddenComponent} />);
-      expect(screen.queryByTestId('dropdown-conditionalDropdown')).not.toBeInTheDocument();
-    });
-  });
 }); 

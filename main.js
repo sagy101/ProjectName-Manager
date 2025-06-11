@@ -1,6 +1,7 @@
 const { app, ipcMain, dialog, BrowserWindow } = require('electron');
 const path = require('path');
 const { exec } = require('child_process');
+const { generateCommandList } = require('./src/utils/evalUtils');
 
 // Handle uncaught exceptions gracefully during tests
 if (process.env.NODE_ENV === 'test') {
@@ -33,7 +34,7 @@ const projectRoot = path.resolve(app.getAppPath(), '..'); // Define projectRoot 
 // Function to create the main window (corrected version)
 function createWindow() {
   // Check if running in test/headless mode
-  const isTestMode = process.env.NODE_ENV === 'test' || process.env.HEADLESS === 'true';
+  const isTestMode = process.env.HEADLESS === 'true';
   
   const windowOptions = {
     width: 1200,
@@ -91,8 +92,12 @@ async function loadDisplaySettings() {
 // ==================== IPC HANDLERS ====================
 
 // Environment verification handlers
-ipcMain.handle('fetch-dropdown-options', async (event, { dropdownId, config }) => {
-  return await dropdownManagement.fetchDropdownOptions(dropdownId, config);
+ipcMain.handle('get-dropdown-options', async (event, config) => {
+  return await dropdownManagement.getDropdownOptions(config);
+});
+
+ipcMain.handle('precache-global-dropdowns', async () => {
+  return await dropdownManagement.precacheGlobalDropdowns();
 });
 
 ipcMain.handle('get-environment-verification', async () => {
@@ -103,9 +108,17 @@ ipcMain.handle('refresh-environment-verification', async () => {
   return await environmentVerification.refreshEnvironmentVerification(mainWindow);
 });
 
-ipcMain.handle('execute-dropdown-command', async (event, data) => {
-  const { command, args, parseResponse } = data;
-  return await dropdownManagement.executeDropdownCommand(command, args, parseResponse);
+ipcMain.handle('get-command-for-section', async (event, { config, globalDropdowns, attachState, showTestSections }) => {
+  // This handler regenerates the command list based on the latest state from the frontend
+  const configSidebarCommands = await configurationManagement.loadCommandsConfig();
+  const configSidebarSectionsActual = await configurationManagement.loadSectionsConfig();
+  
+  return generateCommandList(config, globalDropdowns, {
+    attachState,
+    configSidebarCommands,
+    configSidebarSectionsActual,
+    showTestSections
+  });
 });
 
 // Process management - corrected to match original signature
@@ -199,7 +212,6 @@ app.whenReady().then(async () => {
   // Perform environment verification first
   try {
     const allVerificationResults = await environmentVerification.verifyEnvironment(mainWindow);
-    console.log('Environment verification completed');
     if (mainWindow) {
       mainWindow.webContents.send('environment-verification-complete', allVerificationResults);
     }

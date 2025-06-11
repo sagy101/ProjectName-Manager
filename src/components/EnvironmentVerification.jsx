@@ -110,7 +110,7 @@ const EnvironmentVerification = ({
   }
 
   return (
-    <div className="environment-verification-container">
+    <div className="environment-verification-container" data-testid="environment-verification-container">
       <div className={`verification-header ${overallStatus}`}>
         <div className="header-left" onClick={toggleExpanded}>
           <h2>{title}</h2>

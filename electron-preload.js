@@ -14,8 +14,12 @@ const eventListeners = {
 let directOutputCallback = null;
 
 contextBridge.exposeInMainWorld('electron', {
+  // Add the new command generation handler
+  getCommandForSection: (data) => ipcRenderer.invoke('get-command-for-section', data),
+
   // Generic dropdown functions
-  fetchDropdownOptions: (dropdownId, config) => ipcRenderer.invoke('fetch-dropdown-options', { dropdownId, config }),
+  getDropdownOptions: (config) => ipcRenderer.invoke('get-dropdown-options', config),
+  precacheGlobalDropdowns: () => ipcRenderer.invoke('precache-global-dropdowns'),
   dropdownValueChanged: (dropdownId, value) => ipcRenderer.send('dropdown-value-changed', { dropdownId, value }),
 
   onBackendProgress: (callback) => {
@@ -59,9 +63,6 @@ contextBridge.exposeInMainWorld('electron', {
 
   // Configuration functions
   getAboutConfig: () => ipcRenderer.invoke('get-about-config'),
-
-  // Generic dropdown command execution
-  executeDropdownCommand: (config) => ipcRenderer.invoke('execute-dropdown-command', config),
 
   // PTY terminal functions
   ptySpawn: (command, terminalId, cols, rows) => {

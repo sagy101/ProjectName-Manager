@@ -7,9 +7,10 @@ import { STATUS } from '../constants/verificationConstants';
 import configSidebarSections from '../configurationSidebarSections.json';
 import configSidebarCommands from '../configurationSidebarCommands.json';
 import { evaluateCondition, generateCommandList } from '../utils/evalUtils';
+import '../styles/iso-configuration.css';
 
 // Destructure after import to get the actual sections array
-const { sections: configSidebarSectionsActual } = configSidebarSections;
+const configSidebarSectionsActual = configSidebarSections.sections;
 
 // Props now include globalDropdownValues from App.jsx and terminalRef from TerminalManager.jsx
 const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, terminalRef, verificationStatuses, onTriggerRefresh, showTestSections = false, onConfigStateChange, onIsRunningChange, openFloatingTerminal }, ref) => {
@@ -83,6 +84,9 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
             if (subSection.components.deploymentOptions) {
               const defaultType = subSection.components.deploymentOptions[0];
               initialConfig[section.id][configKey].deploymentType = defaultType;
+            }
+            if (subSection.components.modeSelector) {
+              initialConfig[section.id][configKey].mode = subSection.components.modeSelector.default || subSection.components.modeSelector.options[0];
             }
             // Initialize dropdown states for sub-sections, including 'Selected' flags
             if (subSection.components.dropdownSelectors) {
@@ -267,57 +271,62 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
     }
   };
 
-  // Generic sub-section toggle handler
+  // Toggle sub-section enabled state
   const toggleSubSectionEnabled = (sectionId, subSectionId, enabled) => {
-    const configKey = `${subSectionId.replace(/-sub$/, '')}Config`;
-    setConfigState(prevState => ({
-      ...prevState,
-      [sectionId]: {
-        ...prevState[sectionId],
-        [configKey]: {
-          ...prevState[sectionId][configKey],
-          enabled,
-        },
-      },
-    }));
-  };
+    // Prevent changes if ISO is running
+    if (isRunning) {
+      showNotification(`Cannot change settings while ISO is running.`, 'error');
+      return;
+    }
 
-  // Generic sub-section deployment type handler
-  const setSubSectionDeploymentType = (sectionId, subSectionId, deploymentType) => {
     const configKey = `${subSectionId.replace(/-sub$/, '')}Config`;
-    setConfigState(prevState => ({
-      ...prevState,
-      [sectionId]: {
-        ...prevState[sectionId],
-        [configKey]: {
-          ...prevState[sectionId][configKey],
-          deploymentType,
+
+    setConfigState(prevState => {
+      const parentConfig = prevState[sectionId] || {};
+      const subSectionConfig = parentConfig[configKey] || {};
+      
+      return {
+        ...prevState,
+        [sectionId]: {
+          ...parentConfig,
+          [configKey]: {
+            ...subSectionConfig,
+            enabled: enabled,
+          },
         },
-      },
-    }));
+      };
+    });
   };
 
   // Set deployment type for sections
-  const setDeploymentType = (sectionId, deploymentType) => {
-    setConfigState(prevState => ({
-      ...prevState,
-      [sectionId]: {
-        ...prevState[sectionId],
-        deploymentType
-      }
-    }));
-  };
+  const setMode = (sectionId, mode, subSectionId = null) => {
+    // Prevent changes if ISO is running
+    if (isRunning) {
+      showNotification(`Cannot change deployment type while ISO is running.`, 'error');
+      return;
+    }
 
-  // Set mode for sections with mode selector
-  const setMode = (sectionId, mode) => {
-    setConfigState(prevState => ({
-      ...prevState,
-      [sectionId]: {
-        ...prevState[sectionId],
-        enabled: true,
-        mode
-      }
-    }));
+    if (subSectionId) {
+      const configKey = `${subSectionId.replace(/-sub$/, '')}Config`;
+      setConfigState(prevState => ({
+        ...prevState,
+        [sectionId]: {
+          ...prevState[sectionId],
+          [configKey]: {
+            ...prevState[sectionId][configKey],
+            mode,
+          },
+        },
+      }));
+    } else {
+      setConfigState(prevState => ({
+        ...prevState,
+        [sectionId]: {
+          ...prevState[sectionId],
+          mode
+        }
+      }));
+    }
   };
 
   // Handle attach toggle with mutual exclusivity
@@ -527,7 +536,6 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
             section={section}
             config={configState[section.id] || {}}
             toggleEnabled={toggleSectionEnabled}
-            setDeploymentType={setDeploymentType}
             setMode={setMode}
             setSectionDropdownValue={setSectionDropdownValue}
             globalDropdownValues={globalDropdownValues}
@@ -541,16 +549,16 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
             attachState={attachState}
             configState={configState}
             toggleSubSectionEnabled={toggleSubSectionEnabled}
-            setSubSectionDeploymentType={setSubSectionDeploymentType}
             openFloatingTerminal={openFloatingTerminal}
+            configSidebarCommands={configSidebarCommands}
           />
         ))}
       </div>
       
       <div className="run-button-container">
         <button 
-          id="run-iso-button" 
-          className={`run-iso-button ${
+          id="run-configuration-button" 
+          className={`run-configuration-button ${
             isStopping ? 'stopping' : isRunning ? 'stop' : ''
           }`}
           onClick={runIsoConfiguration}

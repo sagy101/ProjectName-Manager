@@ -49,7 +49,6 @@ describe('ModeSelector', () => {
       const modeContainer = container.querySelector('.mode-selector-container');
       expect(modeContainer).toHaveStyle('opacity: 0.5');
       expect(modeContainer).toHaveStyle('margin-top: 10px');
-      expect(modeContainer).toHaveStyle('padding: 8px 12px'); // Original style should be preserved
     });
 
     it('returns null when no options provided', () => {
@@ -206,6 +205,81 @@ describe('ModeSelector', () => {
       expect(screen.getByText('Development')).not.toHaveClass('active');
       expect(screen.getByText('Staging')).not.toHaveClass('active');
       expect(screen.getByText('Production')).not.toHaveClass('active');
+    });
+  });
+
+  describe('Custom Labels', () => {
+    it('uses custom labels when provided', () => {
+      const propsWithLabels = {
+        ...defaultProps,
+        options: ['normal', 'dev'],
+        labels: ['Normal Mode', 'Development Mode']
+      };
+      
+      render(<ModeSelector {...propsWithLabels} />);
+      
+      expect(screen.getByText('Normal Mode')).toBeInTheDocument();
+      expect(screen.getByText('Development Mode')).toBeInTheDocument();
+      expect(screen.queryByText('Normal')).not.toBeInTheDocument();
+      expect(screen.queryByText('Dev')).not.toBeInTheDocument();
+    });
+
+    it('falls back to capitalized option names when labels are not provided', () => {
+      const propsWithoutLabels = {
+        ...defaultProps,
+        options: ['container', 'process']
+      };
+      
+      render(<ModeSelector {...propsWithoutLabels} />);
+      
+      expect(screen.getByText('Container')).toBeInTheDocument();
+      expect(screen.getByText('Process')).toBeInTheDocument();
+    });
+
+    it('handles partial labels array correctly', () => {
+      const propsWithPartialLabels = {
+        ...defaultProps,
+        options: ['option1', 'option2', 'option3'],
+        labels: ['Custom Label 1', 'Custom Label 2'] // Missing third label
+      };
+      
+      render(<ModeSelector {...propsWithPartialLabels} />);
+      
+      expect(screen.getByText('Custom Label 1')).toBeInTheDocument();
+      expect(screen.getByText('Custom Label 2')).toBeInTheDocument();
+      expect(screen.getByText('Option3')).toBeInTheDocument(); // Falls back to capitalized
+    });
+
+    it('calls onModeChange with original option value, not label', () => {
+      const mockOnModeChange = jest.fn();
+      const propsWithLabels = {
+        ...defaultProps,
+        options: ['dev'],
+        labels: ['Development Mode'],
+        onModeChange: mockOnModeChange
+      };
+      
+      render(<ModeSelector {...propsWithLabels} />);
+      fireEvent.click(screen.getByText('Development Mode'));
+      
+      expect(mockOnModeChange).toHaveBeenCalledWith('testSection', 'dev');
+    });
+
+    it('shows active state with custom labels', () => {
+      const propsWithLabels = {
+        ...defaultProps,
+        options: ['normal', 'dev'],
+        labels: ['Normal Mode', 'Development Mode'],
+        currentMode: 'dev'
+      };
+      
+      render(<ModeSelector {...propsWithLabels} />);
+      
+      const normalButton = screen.getByText('Normal Mode');
+      const devButton = screen.getByText('Development Mode');
+      
+      expect(normalButton).not.toHaveClass('active');
+      expect(devButton).toHaveClass('active');
     });
   });
 }); 

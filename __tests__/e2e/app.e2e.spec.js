@@ -1,11 +1,20 @@
+const { launchElectron } = require('./test-helpers');
 const { test, expect } = require('@playwright/test');
-const { launchElectronInvisibly } = require('./test-helpers');
+const { displaySettings } = require('../../src/configurationSidebarSections.json');
+
+const isMock = process.env.E2E_ENV === 'mock';
+const sectionsConfig = isMock
+  ? require('../mock-data/mockConfigurationSidebarSections.json')
+  : require('../../src/configurationSidebarSections.json');
+
+const expectedTitle = `${sectionsConfig.displaySettings.projectName} Manager`;
 
 test('App starts and has correct title', async () => {
-  const { electronApp, window } = await launchElectronInvisibly();
+  const { electronApp, window } = await launchElectron();
   
+  await window.waitForSelector('.config-container', { timeout: 10000 });
   await window.waitForSelector('h1');
   const title = await window.title();
-  expect(title).toBe('ISO Manager');
+  expect(title).toBe(expectedTitle);
   await electronApp.close();
 }); 

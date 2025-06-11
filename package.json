@@ -12,14 +12,12 @@
     "watch": "webpack --mode development --watch",
     "setNode": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use",
     "rebuild": "npx @electron/rebuild -f -w node-pty",
-    "pretest": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npm rebuild node-pty",
-    "test": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && jest",
-    "test:all": "./scripts/run-all-tests.sh",
-    "test:all:no-report": "./scripts/run-all-tests.sh --no-report",
-    "pretest:e2e": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npm run rebuild",
-    "test:e2e": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npx playwright test",
-    "test:e2e:no-report": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npx playwright test --reporter=list",
-    "posttest": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npm run rebuild"
+    "test": "npm run test:jest && npm run test:e2e",
+    "test:jest": "npm run test:jest:prod && npm run test:jest:mock",
+    "test:jest:prod": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && jest --config=jest.config.js",
+    "test:jest:mock": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && jest --config=jest.config.mock.js",
+    "test:e2e": "npm run build && unset PREFIX && source ~/.nvm/nvm.sh && nvm use && E2E_ENV=prod npx playwright test --reporter=list",
+    "test:e2e:report": "npm run build && unset PREFIX && source ~/.nvm/nvm.sh && nvm use && E2E_ENV=prod npx playwright test"
   },
   "author": "",
   "license": "ISC",
@@ -31,7 +29,8 @@
     "electron": "^15.0.0",
     "node-pty": "^1.0.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "simple-git": "^3.28.0"
   },
   "devDependencies": {
     "@babel/core": "^7.24.5",

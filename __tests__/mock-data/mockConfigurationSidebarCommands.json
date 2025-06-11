@@ -1,0 +1,54 @@
+[
+  {
+    "sectionId": "generic-section-1",
+    "conditions": {
+      "enabled": true,
+      "mode": "run"
+    },
+    "command": {
+      "base": "echo 'Running generic section 1'",
+      "tabTitle": "Generic Section 1"
+    }
+  },
+  {
+    "sectionId": "generic-subsection-1",
+    "conditions": {
+      "generic-section-1Config.enabled": true,
+      "generic-subsection-1Config.enabled": true,
+      "generic-subsection-1Config.deploymentType": "dev"
+    },
+    "command": {
+      "base": "echo 'Running generic subsection 1 in dev mode'",
+      "tabTitle": "Generic Subsection (Dev)"
+    }
+  },
+  {
+    "sectionId": "generic-section-2",
+    "conditions": {
+      "enabled": true,
+      "deploymentType": "container"
+    },
+    "command": {
+      "base": "echo 'Running generic section 2 in container mode'",
+      "tabTitle": "Generic Section 2 (Container)"
+    }
+  },
+  {
+    "sectionId": "mock-button-command",
+    "command": {
+      "base": "echo 'Floating terminal for mock button'",
+      "tabTitle": "Mock Button Logs"
+    }
+  },
+  {
+    "sectionId": "test-section-generic",
+    "conditions": {
+      "enabled": true,
+      "mode": "alpha"
+    },
+    "command": {
+      "base": "echo 'Running generic test section in alpha mode'",
+      "tabTitle": "Generic Test (Alpha)"
+    }
+  }
+] 

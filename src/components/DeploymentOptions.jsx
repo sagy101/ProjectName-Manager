@@ -5,7 +5,7 @@ const DeploymentOptions = ({ sectionId, currentType, onChange, disabled = false 
   // Adapter function to convert ModeSelector's callback to DeploymentOptions' expected format
   const handleModeChange = (_, option) => {
     if (onChange) {
-      onChange(option);
+      onChange(sectionId, option);
     }
   };
 
@@ -13,7 +13,7 @@ const DeploymentOptions = ({ sectionId, currentType, onChange, disabled = false 
     <ModeSelector
       sectionId={sectionId}
       options={['container', 'process']}
-      currentMode={currentType}
+      currentMode={currentType || 'container'}
       onModeChange={handleModeChange}
       disabled={disabled}
       className=""

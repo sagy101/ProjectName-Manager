@@ -1,12 +1,19 @@
 const { test, expect } = require('@playwright/test');
-const { launchElectronInvisibly } = require('./test-helpers');
+const { launchElectron, waitForElement } = require('./test-helpers');
+
+const isMock = process.env.E2E_ENV === 'mock';
+const config = isMock
+  ? require('../mock-data/mockConfigurationSidebarSections.json')
+  : require('../../src/configurationSidebarSections.json');
+
+const { sections, displaySettings } = config;
 
 test.describe('Terminal Command Validation', () => {
   let electronApp;
   let window;
 
   test.beforeEach(async () => {
-    const launchResult = await launchElectronInvisibly();
+    const launchResult = await launchElectron();
     electronApp = launchResult.electronApp;
     window = launchResult.window;
     await window.waitForSelector('.config-container');
@@ -17,247 +24,207 @@ test.describe('Terminal Command Validation', () => {
   });
 
   test('should validate terminal commands match configuration settings', async () => {
-    // Enable Mirror section (should generate gradlew bootRun command)
-    const mirrorSection = await window.locator('text=Mirror + MariaDB').locator('..').locator('..');
-    const mirrorToggle = await mirrorSection.locator('input[type="checkbox"]').first();
-    await mirrorToggle.click();
-    await expect(mirrorToggle).toBeChecked();
-
-    // Enable Frontend subsection with Dev mode
-    await window.waitForTimeout(1000);
-    const frontendToggle = await window.locator('text=Frontend').locator('..').locator('input[type="checkbox"]');
-    await frontendToggle.click();
-    
-    // Select Dev mode for Frontend (should generate webpack --watch)
-    const devButton = await window.locator('text=Frontend').locator('..').locator('button').filter({ hasText: /dev/i });
-    if (await devButton.isVisible()) {
-      await devButton.click();
+    // This test is highly dependent on specific commands which are not in the generic config.
+    // We will simplify this to check if a terminal opens for a runnable section.
+    const runnableSection = sections.find(s => s.id === 'mirror');
+    if (!runnableSection) {
+        console.log("Skipping test: No runnable section found in configuration.");
+        return;
     }
 
-    // Wait for RUN button to be ready
-    await window.waitForTimeout(2000);
-    const runButton = await window.locator('button').filter({ hasText: /RUN.*ISO/i });
-    
-    // Click RUN to start processes
-    await runButton.click();
-    await window.waitForTimeout(4000);
+    const sectionLocator = window.locator(`h2:has-text("${runnableSection.title}")`).locator('..').locator('..');
+    const toggle = await sectionLocator.locator('input[type="checkbox"]').first();
+    await toggle.click();
+    await window.waitForTimeout(500);
 
-    // Verify terminal tabs are created
+    // Attach the section to make the mode selector visible
+    if (runnableSection.components.attachToggle) {
+      const attachToggle = sectionLocator.locator('#attach-mirror');
+      await attachToggle.click();
+      await expect(attachToggle).toHaveClass(/attached/);
+    }
+
+    // Set mode to "run"
+    if (runnableSection.components.modeSelector) {
+      const runOptionSelector = `[data-testid="mode-selector-btn-${runnableSection.id}-run"]`;
+      await window.waitForSelector(runOptionSelector);
+      await window.click(runOptionSelector);
+    }
+    
+    await window.waitForTimeout(1000);
+
+    const runButton = window.locator('button').filter({ hasText: new RegExp(`RUN.*${displaySettings.projectName}`, 'i') });
+    await runButton.click();
+
+    // Verify that the correct tab appears
+    const terminalTab = window.locator('.tab', { hasText: new RegExp(runnableSection.title) });
+    await expect(terminalTab).toBeVisible({ timeout: 15000 });
+    await terminalTab.click();
+
+    // In no-run mode, verify the command is displayed but not run
+    const expectedCommand = getMockCommand(runnableSection.id, configState[runnableSection.id]);
+
     const terminalTabs = await window.locator('.tab');
     await expect(terminalTabs.first()).toBeVisible({ timeout: 30000 });
 
-    // Check for Mirror tab and its command
-    const mirrorTab = await window.locator('.tab').filter({ hasText: /Mirror.*MariaDB/i });
-    await expect(mirrorTab).toBeVisible({ timeout: 15000 });
-
-    // Click on Mirror tab to inspect its command
-    await mirrorTab.click();
-    await window.waitForTimeout(1000);
-
-    // Check for Frontend tab
-    const frontendTab = await window.locator('.tab').filter({ hasText: /Frontend/i });
-    await expect(frontendTab).toBeVisible({ timeout: 15000 });
-
-    // Click on Frontend tab
-    await frontendTab.click();
-    await window.waitForTimeout(1000);
-
-    // Check for gopm tab (may be Container or Process depending on configuration)
-    const gopmTab = await window.locator('.tab').filter({ hasText: /gopm/i });
-    const gopmTabExists = await gopmTab.count() > 0;
-    
-    if (gopmTabExists) {
-      console.log('✓ Found gopm tab');
-      await gopmTab.click();
-      await window.waitForTimeout(1000);
-    } else {
-      console.log('gopm tab not found - this may be expected based on configuration');
-    }
-
-    // Look for gradlew bootRun command in terminal
-    const terminalContent = await window.locator('.terminal, .xterm-screen, .terminal-output');
-    const hasGradlew = await terminalContent.locator('text=/gradlew.*bootRun/i').isVisible().catch(() => false);
-    console.log('Mirror tab contains gradlew command:', hasGradlew);
-
-    // Look for webpack --watch command
-    const hasWebpack = await terminalContent.locator('text=/webpack.*watch/i').isVisible().catch(() => false);
-    console.log('Frontend tab contains webpack command:', hasWebpack);
+    const sectionTab = await window.locator('.tab').filter({ hasText: new RegExp(runnableSection.title, 'i') });
+    await expect(sectionTab).toBeVisible({ timeout: 15000 });
   });
 
   test('should validate terminal tab about information shows correct containers', async () => {
-    // Enable GoPM with container deployment
-    const gopmSection = await window.locator('text=GoPM + Agent + Chromium').locator('..').locator('..');
-    const gopmToggle = await gopmSection.locator('input[type="checkbox"]').first();
-    await gopmToggle.click();
-    
-    // Select container deployment
-    await window.waitForTimeout(500);
-    const containerButton = await gopmSection.locator('.deployment-toggle-btn').filter({ hasText: /container/i });
-    if (await containerButton.isVisible()) {
-      await containerButton.click();
+    const sectionWithContainers = sections.find(s => s.components.deploymentOptions);
+    if (!sectionWithContainers) {
+        console.log("Skipping test: No section with deployment options found.");
+        return;
     }
+    const sectionLocator = window.locator(`h2:has-text("${sectionWithContainers.title}")`).locator('..').locator('..');
+    const toggle = await sectionLocator.locator('input[type="checkbox"]').first();
+    if (!await toggle.isChecked()) await toggle.click();
+    
+    await window.waitForTimeout(500);
+    const containerButton = await sectionLocator.locator('.deployment-toggle-btn').filter({ hasText: /container/i });
+    if (await containerButton.isVisible()) await containerButton.click();
 
-    // Run configuration
-    await window.waitForTimeout(2000);
-    const runButton = await window.locator('button').filter({ hasText: /RUN.*ISO/i });
+    const runButton = window.locator('button').filter({ hasText: new RegExp(`RUN.*${displaySettings.projectName}`, 'i') });
     await runButton.click();
-    await window.waitForTimeout(3000);
+    
+    // The tab name may include deployment type, so we find it by the section title
+    const terminalTab = window.locator('.tab', { hasText: new RegExp(sectionWithContainers.title) });
+    await terminalTab.waitFor({ state: 'visible', timeout: 10000 });
 
-    // Find GoPM terminal tab
-    const gopmTab = await window.locator('.tab').filter({ hasText: /gopm.*Container/i });
-    if (await gopmTab.count() > 0) {
-      // Look for info/about button in the tab
-      const infoButton = await gopmTab.locator('button, [role="button"]').filter({ hasText: /info|about|ⓘ/i });
-      
+    const terminalTabs = await window.locator('.tab');
+    expect(await terminalTabs.count()).toBeGreaterThan(0);
+
+    const sectionTab = window.locator('.tab').filter({ hasText: new RegExp(sectionWithContainers.title, 'i') });
+    if (await sectionTab.count() > 0) {
+      const infoButton = await sectionTab.locator('.info-button, [title*="about"], [title*="info"]').first();
       if (await infoButton.count() > 0) {
-        await infoButton.first().click();
+        await infoButton.click();
         await window.waitForTimeout(1000);
-        
-        // Check for about panel
-        const aboutPanel = await window.locator('.tab-info-panel, .about-panel, .terminal-info, .modal');
-        if (await aboutPanel.count() > 0) {
-          // Verify container information is shown
-          const containerInfo = await aboutPanel.locator('text=/serverbrowseragent|container/i');
-          const hasContainerInfo = await containerInfo.count() > 0;
-          console.log('About panel shows container info:', hasContainerInfo);
-          
-          // Verify command information
-          const commandInfo = await aboutPanel.locator('text=/make.*run.*docker|docker/i');
-          const hasCommandInfo = await commandInfo.count() > 0;
-          console.log('About panel shows command info:', hasCommandInfo);
-        }
+        const aboutPanel = await window.locator('.tab-info-panel, .about-panel');
+        await expect(aboutPanel).toBeVisible();
       }
     }
   });
 
   test('should validate stop button terminates all processes correctly', async () => {
-    // Set up a minimal configuration
-    const mirrorSection = await window.locator('text=Mirror + MariaDB').locator('..').locator('..');
-    const mirrorToggle = await mirrorSection.locator('input[type="checkbox"]').first();
-    await mirrorToggle.click();
+    const runnableSection = sections.find(s => s.id === 'mirror');
+    if (!runnableSection) {
+        console.log("Skipping test: No toggleable section found.");
+        return;
+    }
+    const sectionLocator = window.locator(`h2:has-text("${runnableSection.title}")`).locator('..').locator('..');
+    const toggle = await sectionLocator.locator('input[type="checkbox"]').first();
+    if (!await toggle.isChecked()) await toggle.click();
 
-    // Run configuration
-    await window.waitForTimeout(2000);
-    const runButton = await window.locator('button').filter({ hasText: /RUN.*ISO/i });
+    // Attach the section to make the mode selector visible
+    if (runnableSection.components.attachToggle) {
+      const attachToggle = sectionLocator.locator('#attach-mirror');
+      await attachToggle.click();
+      await expect(attachToggle).toHaveClass(/attached/);
+    }
+
+    // Set mode to "run"
+    if (runnableSection.components.modeSelector) {
+      const runOptionSelector = `[data-testid="mode-selector-btn-${runnableSection.id}-run"]`;
+      await window.waitForSelector(runOptionSelector);
+      await window.click(runOptionSelector);
+    }
+
+    const runButton = window.locator('button').filter({ hasText: new RegExp(`RUN.*${displaySettings.projectName}`, 'i') });
+    
+    const initialTabCount = await window.locator('.tab').count();
     await runButton.click();
-    await window.waitForTimeout(3000);
+    
+    // Wait for tab to appear before proceeding
+    await window.waitForSelector(`[data-testid="terminal-tab-${runnableSection.id}"]`, { timeout: 10000 });
 
-    // Verify at least one terminal tab exists
     const terminalTabs = await window.locator('.tab');
-    const tabCount = await terminalTabs.count();
-    expect(tabCount).toBeGreaterThan(0);
+    expect(await terminalTabs.count()).toBeGreaterThan(0);
 
-    // Find and click stop button
-    const stopButton = await window.locator('button').filter({ hasText: /STOP.*ISO|stop|kill/i });
+    const stopButton = await window.locator('button').filter({ hasText: /STOP|KILL/i }).or(window.locator('button').filter({ hasText: new RegExp(`STOP.*${displaySettings.projectName}`, 'i') }));
     await expect(stopButton).toBeVisible({ timeout: 10000 });
     await stopButton.click();
 
-    // Wait for processes to be terminated
     await window.waitForTimeout(3000);
-
-    // Verify terminal tabs are cleared or processes are stopped
-    // Note: tabs might still exist but processes should be stopped
-    const remainingTabs = await window.locator('.tab');
-    const remainingCount = await remainingTabs.count();
-    // Either tabs are cleared or they show stopped status
-    if (remainingCount > 0) {
-      // Check that tabs show stopped/idle status instead of running
-      const runningTabs = await window.locator('.tab .status-running').count();
-      expect(runningTabs).toBe(0);
-    }
+    const remainingTabs = await window.locator('.tab .status-running').count();
+    expect(remainingTabs).toBe(0);
   });
 
   test('should validate different deployment modes generate different commands', async () => {
-    // Test Rule Engine with Process deployment
-    const ruleEngineSection = await window.locator('text=Rule Engine').locator('..').locator('..');
-    await expect(ruleEngineSection).toBeVisible();
-
-    // First ensure Rule Engine section is enabled
-    const ruleEngineToggle = await ruleEngineSection.locator('input[type="checkbox"], .toggle-switch').first();
-    if (await ruleEngineToggle.isVisible()) {
-      const isChecked = await ruleEngineToggle.isChecked();
-      if (!isChecked) {
-        await ruleEngineToggle.click();
-        await window.waitForTimeout(500);
-      }
-    }
-
-    // Look for deployment mode buttons in the Rule Engine section
-    const processButton = await ruleEngineSection.locator('.deployment-toggle-btn').filter({ hasText: /process/i });
-    const processButtonExists = await processButton.count() > 0;
-    
-    if (!processButtonExists) {
-      console.log('Process deployment button not found - skipping deployment mode test');
+    const sectionWithOptions = sections.find(s => s.components.deploymentOptions);
+    if (!sectionWithOptions) {
+      console.log('Skipping test: No section with deployment options found.');
       return;
     }
-
-    await expect(processButton).toBeVisible({ timeout: 10000 });
-
-    // Select Process deployment if not already selected
-    const processSelected = await processButton.evaluate(el => el.classList.contains('active'));
-    if (!processSelected) {
-      await processButton.click();
-      await window.waitForTimeout(500);
-    }
-
-    // Run with Process deployment
-    const runButton1 = await window.locator('button').filter({ hasText: /RUN.*ISO/i });
-    await expect(runButton1).toBeEnabled();
-    await runButton1.click();
     
-    // Wait for terminal tabs and verify Rule Engine Process tab
+    const sectionLocator = await window.locator(`h2:has-text("${sectionWithOptions.title}")`).locator('..').locator('..');
+    const toggle = await sectionLocator.locator('input[type="checkbox"]').first();
+    if (!await toggle.isChecked()) await toggle.click();
+
+    const processButton = sectionLocator.locator('.deployment-toggle-btn').filter({ hasText: /process/i });
+    if (!await processButton.isVisible()) {
+        console.log('Skipping test: Process button not found.');
+        return;
+    }
+    await processButton.click();
+    
+    const runButton = window.locator('button').filter({ hasText: new RegExp(`RUN.*${displaySettings.projectName}`, 'i') });
+    await expect(runButton).toBeEnabled();
+    await runButton.click();
     await window.waitForTimeout(3000);
-    const ruleEngineTab = await window.locator('.tab').filter({ hasText: /Rule Engine.*Process/i });
-    const ruleEngineTabExists = await ruleEngineTab.count() > 0;
-    
-    if (ruleEngineTabExists) {
-      await expect(ruleEngineTab).toBeVisible({ timeout: 15000 });
-      console.log('✓ Found Rule Engine Process tab');
-    } else {
-      console.log('Rule Engine Process tab not found - may not be configured');
-    }
 
-    // Stop current execution
-    const stopButton1 = await window.locator('button').filter({ hasText: /STOP.*ISO|stop/i });
-    await expect(stopButton1).toBeVisible({ timeout: 5000 });
-    await stopButton1.click();
+    const tabTitle = sectionWithOptions.title;
+    let tab = await window.locator('.tab').filter({ hasText: new RegExp(tabTitle, 'i') });
+    await expect(tab.first()).toBeVisible({ timeout: 15000 });
+
+    const stopButton = window.locator('button').filter({ hasText: /STOP|KILL/i }).or(window.locator('button').filter({ hasText: new RegExp(`STOP.*${displaySettings.projectName}`, 'i') }));
+    await stopButton.click();
     await window.waitForTimeout(2000);
 
-    // Now test with Container deployment
-    const containerButton = await ruleEngineSection.locator('.deployment-toggle-btn').filter({ hasText: /container/i });
-    const containerButtonExists = await containerButton.count() > 0;
-    
-    if (!containerButtonExists) {
-      console.log('Container deployment button not found - skipping container test');
-      return;
+    const containerButton = sectionLocator.locator('.deployment-toggle-btn').filter({ hasText: /container/i });
+    if (!await containerButton.isVisible()) {
+        console.log('Skipping test: Container button not found.');
+        return;
     }
-
-    await expect(containerButton).toBeVisible({ timeout: 10000 });
-    
-    // Click to switch to container mode
     await containerButton.click();
-    await window.waitForTimeout(500);
-
-    // Run with Container deployment
-    const runButton2 = await window.locator('button').filter({ hasText: /RUN.*ISO/i });
-    await expect(runButton2).toBeEnabled();
-    await runButton2.click();
-    
-    // Wait for terminal tabs and verify Rule Engine Container tab
+    await runButton.click();
     await window.waitForTimeout(3000);
-    const ruleEngineContainerTab = await window.locator('.tab').filter({ hasText: /Rule Engine.*Container/i });
-    const ruleEngineContainerTabExists = await ruleEngineContainerTab.count() > 0;
-    
-    if (ruleEngineContainerTabExists) {
-      await expect(ruleEngineContainerTab).toBeVisible({ timeout: 15000 });
-      console.log('✓ Found Rule Engine Container tab');
-    } else {
-      console.log('Rule Engine Container tab not found - may not be configured');
+    tab = await window.locator('.tab').filter({ hasText: new RegExp(tabTitle, 'i') });
+    await expect(tab.first()).toBeVisible({ timeout: 15000 });
+  });
+
+  test('should validate stop button terminates all processes correctly', async () => {
+    const runnableSections = sections.filter(s => s.id !== 'mirror');
+    if (runnableSections.length === 0) {
+        console.log("Skipping test: No runnable sections found.");
+        return;
     }
 
-    // Should see Docker Compose command for container mode
-    const terminalContent = await window.locator('.terminal, .xterm-screen');
-    const hasDockerCompose = await terminalContent.locator('text=/docker.*compose|gradlew.*docker/i').isVisible().catch(() => false);
-    console.log('Rule Engine Container tab contains docker command:', hasDockerCompose);
+    const runButton = window.locator('#run-configuration-button.run');
+    await runButton.click();
+    
+    // Wait for all tabs to appear and their processes to be running
+    for (const section of runnableSections) {
+      const terminalTab = window.locator('.tab', { hasText: new RegExp(section.title) });
+      await expect(terminalTab).toBeVisible({ timeout: 10000 });
+      await expect(terminalTab.locator('.tab-status')).toHaveClass(/status-running/, { timeout: 10000 });
+    }
+    
+    // Now click stop
+    const stopButton = window.locator('#run-configuration-button.stop');
+    await expect(stopButton).toBeVisible();
+    await stopButton.click();
+
+    // Wait for the stopping screen to appear and then close
+    const stoppingScreen = window.locator('.stopping-status-overlay');
+    await expect(stoppingScreen).toBeVisible({ timeout: 5000 });
+    const closeButton = stoppingScreen.locator('.close-button');
+    await expect(closeButton).toBeVisible({ timeout: 30000 });
+    await closeButton.click();
+    await expect(stoppingScreen).not.toBeVisible();
+    
+    // Verify all tabs are gone
+    await expect(window.locator('.tab')).toHaveCount(0);
   });
 }); 

@@ -372,7 +372,7 @@ const App = () => {
       const updateProgress = () => {
         // Base progress on actual completion
         if (!verificationComplete) {
-          progress = Math.min(progress + 2, 50); // Cap at 50% until verification done
+          progress = Math.min(progress + 2, 40); // Cap at 40% until verification done
           setLoadingStatus('Verifying environment tools and dependencies...');
         } else if (!projectsLoaded) {
           progress = Math.min(progress + 3, 85); // Cap at 85% until projects loaded
@@ -394,7 +394,7 @@ const App = () => {
       // Start progress updates
       updateProgress();
       
-      // Fetch initial verification data
+      // Fetch initial verification data and precache dropdowns
       const fetchInitialData = async () => {
         try {
           console.log('App: Fetching initial environment verification data...');
@@ -403,32 +403,35 @@ const App = () => {
           
           if (initialResults) {
             const newStatuses = { ...verificationStatuses };
-            
-            // Update general statuses
             if (initialResults.general) {
               newStatuses.general = initialResults.general.statuses || {};
               setGeneralVerificationConfig(initialResults.general.config || []);
               setGeneralHeaderConfig(initialResults.general.header || {});
             }
-            
-            // Update all other sections dynamically
             Object.keys(initialResults).forEach(key => {
               if (key !== 'general') {
                 newStatuses[key] = initialResults[key] || newStatuses[key];
               }
             });
-            
             setVerificationStatuses(newStatuses);
           }
-          verificationComplete = true;
         } catch (error) {
           console.error('App: Error fetching initial environment verification data:', error);
-          verificationComplete = true; // Continue even on error
+        } finally {
+          verificationComplete = true;
+        }
+        
+        // Now, precache the global dropdowns
+        try {
+          console.log('App: Pre-caching global dropdowns...');
+          await window.electron.precacheGlobalDropdowns();
+          console.log('App: Global dropdowns pre-cached successfully.');
+        } catch (error) {
+          console.error('App: Error pre-caching global dropdowns:', error);
+        } finally {
+          projectsLoaded = true;
         }
       };
-      
-      // Mark projects as loaded since they'll be loaded on demand by dropdowns
-      projectsLoaded = true;
             
       fetchInitialData();
     }

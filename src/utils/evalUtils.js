@@ -1,8 +1,26 @@
 function evaluateCondition(conditionStr, currentConfig, currentSectionId, attachState = {}, globalDropdownValues = {}) {
   const context = {};
 
+  let parentSection = null;
+  let subSectionConfig = null;
+
+  for (const section of Object.values(currentConfig)) {
+    if (section && typeof section === 'object') {
+      for (const prop in section) {
+        if (prop.endsWith('Config') && section[prop] && section[prop].id === currentSectionId) {
+          parentSection = section;
+          subSectionConfig = section[prop];
+          break;
+        }
+      }
+    }
+    if (parentSection) break;
+  }
+  
   if (currentConfig[currentSectionId]) {
     Object.assign(context, currentConfig[currentSectionId]);
+  } else if (subSectionConfig) {
+    Object.assign(context, subSectionConfig);
   }
 
   for (const sectionKey in currentConfig) {
@@ -25,16 +43,49 @@ function evaluateCondition(conditionStr, currentConfig, currentSectionId, attach
   }
 
   try {
-    let safeConditionStr = conditionStr;
-    safeConditionStr = safeConditionStr.replace(/config\./g, '').replace(/currentConfig\./g, '');
+    let safeConditionStr = conditionStr.replace(/config\./g, '').replace(/currentConfig\./g, '');
 
     const conditionFunction = new Function(...Object.keys(context), `return !!(${safeConditionStr});`);
-    const result = conditionFunction(...Object.values(context));
-    return result;
+    return conditionFunction(...Object.values(context));
   } catch (e) {
+    console.error(`Error evaluating condition "${conditionStr}":`, e);
     return false;
   }
 }
+
+const findParentSection = (subSectionId, sectionsConfig) => {
+  return sectionsConfig.find(s => s.components?.subSections?.some(sub => sub.id === subSectionId));
+};
+
+const getValueFromState = (key, cmdSectionId, config, sectionsConfig) => {
+  const parentSection = findParentSection(cmdSectionId, sectionsConfig);
+
+  if (key.includes('.')) {
+    const [configName, prop] = key.split('.');
+    
+    const topLevelSectionId = configName.replace('Config', '');
+    if (config[topLevelSectionId] && config[topLevelSectionId][prop] !== undefined) {
+      return config[topLevelSectionId][prop];
+    }
+
+    for (const section of Object.values(config)) {
+      if (section && typeof section === 'object' && section[configName] && section[configName][prop] !== undefined) {
+        return section[configName][prop];
+      }
+    }
+    return undefined;
+  }
+  
+  if (parentSection) {
+    const subConfigName = `${cmdSectionId.replace(/-sub$/, '')}Config`;
+    if (config[parentSection.id]?.[subConfigName]?.[key] !== undefined) {
+      return config[parentSection.id][subConfigName][key];
+    }
+    return config[parentSection.id]?.[key];
+  }
+
+  return config[cmdSectionId]?.[key];
+};
 
 function generateCommandList(config, globalDropdowns, {
   attachState = {},
@@ -50,21 +101,15 @@ function generateCommandList(config, globalDropdowns, {
     const commandDefinitionId = index;
 
     const isDisplayableSectionOrSubSection = configSidebarSectionsActual.some(s =>
-      s.id === cmdSectionId || (s.components?.subSections?.some(sub => sub.id === cmdSectionId))
+      s.id === cmdSectionId || s.components?.subSections?.some(sub => sub.id === cmdSectionId)
     );
 
     if (!isDisplayableSectionOrSubSection) {
       return;
     }
 
-    let effectiveSectionDefForTestCheck = configSidebarSectionsActual.find(s => s.id === cmdSectionId);
-    if (!effectiveSectionDefForTestCheck) {
-      const parentSection = configSidebarSectionsActual.find(s => s.components?.subSections?.some(sub => sub.id === cmdSectionId));
-      if (parentSection) {
-        effectiveSectionDefForTestCheck = parentSection;
-      }
-    }
-
+    let effectiveSectionDefForTestCheck = configSidebarSectionsActual.find(s => s.id === cmdSectionId) 
+      || findParentSection(cmdSectionId, configSidebarSectionsActual);
     if (effectiveSectionDefForTestCheck?.testSection && !showTestSections) {
       return;
     }
@@ -73,74 +118,19 @@ function generateCommandList(config, globalDropdowns, {
     let isSubSectionCommand = false;
 
     if (conditions) {
-      Object.entries(conditions).forEach(([key, expectedValue]) => {
+      for (const [key, expectedValue] of Object.entries(conditions)) {
         let actualValue;
-        isSubSectionCommand = key.includes('Config');
-
-        if (key.includes('.')) {
-          const [leftPart, propertyToAccess] = key.split('.', 2);
-          if (leftPart.endsWith('attachState')) {
-            actualValue = attachState?.[propertyToAccess];
-          } else if (leftPart.endsWith('Config')) {
-            const configObjectName = leftPart;
-            if (propertyToAccess === 'enabled') {
-              const sectionIdToEvaluate = configObjectName.replace('Config', '');
-              if (config[sectionIdToEvaluate] !== undefined) {
-                actualValue = config[sectionIdToEvaluate]?.enabled;
-              } else {
-                let parentSectionIdForSub = null;
-                let subSectionActualConfigObject = null;
-                for (const topLvlId in config) {
-                  if (config[topLvlId] && typeof config[topLvlId] === 'object' && configObjectName in config[topLvlId]) {
-                    parentSectionIdForSub = topLvlId;
-                    subSectionActualConfigObject = config[parentSectionIdForSub]?.[configObjectName];
-                    break;
-                  }
-                }
-                if (subSectionActualConfigObject) {
-                  actualValue = subSectionActualConfigObject.enabled;
-                } else {
-                  actualValue = undefined;
-                }
-              }
-            } else {
-              let parentSectionIdForConfigObject = null;
-              for (const topLevelSectionIdInState in config) {
-                if (config[topLevelSectionIdInState] && typeof config[topLevelSectionIdInState] === 'object' && configObjectName in config[topLevelSectionIdInState]) {
-                  parentSectionIdForConfigObject = topLevelSectionIdInState;
-                  break;
-                }
-              }
-              if (parentSectionIdForConfigObject) {
-                actualValue = config[parentSectionIdForConfigObject]?.[configObjectName]?.[propertyToAccess];
-              } else {
-                actualValue = undefined;
-              }
-            }
-          } else {
-            actualValue = key.split('.').reduce((obj, prop) => obj?.[prop], config[cmdSectionId]);
-          }
+        if (key.startsWith('attachState.')) {
+          actualValue = attachState[key.substring(12)];
         } else {
-          let targetObjectForSimpleKey;
-          let parentOfCmdSection = null;
-          configSidebarSectionsActual.forEach(s => {
-            if (s.components?.subSections?.some(sub => sub.id === cmdSectionId)) {
-              parentOfCmdSection = s.id;
-            }
-          });
-
-          if (key.endsWith('Selected') && parentOfCmdSection) {
-            targetObjectForSimpleKey = config[parentOfCmdSection];
-          } else if (parentOfCmdSection) {
-            const subConfigObjectName = `${cmdSectionId.replace(/-sub$/, '')}Config`;
-            targetObjectForSimpleKey = config[parentOfCmdSection]?.[subConfigObjectName];
-          } else {
-            targetObjectForSimpleKey = config[cmdSectionId];
-          }
-          actualValue = targetObjectForSimpleKey?.[key];
+          actualValue = getValueFromState(key, cmdSectionId, config, configSidebarSectionsActual);
         }
-        shouldInclude = shouldInclude && actualValue === expectedValue;
-      });
+
+        if (actualValue !== expectedValue) {
+          shouldInclude = false;
+          break;
+        }
+      }
     }
 
     if (!shouldInclude) return;

@@ -377,7 +377,7 @@ async function verifyEnvironment(mainWindow = null) {
   
   // Send completion event to frontend
   if (mainWindow) {
-    mainWindow.webContents.send('environment-verification-complete', environmentCaches);
+    mainWindow.webContents.send('environment-setup-complete', environmentCaches);
   }
   
   return environmentCaches;
@@ -385,21 +385,24 @@ async function verifyEnvironment(mainWindow = null) {
 
 // Function to refresh environment verification
 async function refreshEnvironmentVerification(mainWindow = null) {
-  // Clear all caches
-  environmentCaches = { general: null };
+  console.log('Forcefully refreshing all environment verification data...');
+
+  // Reset verification state flag to ensure the process runs
   isVerifyingEnvironment = false;
-  
-  // Clear git branch cache to ensure fresh branch data
+
+  // Clear all verification caches to force re-fetching
+  environmentCaches = { general: null };
   clearGitBranchCache();
-  
-  // Re-run verification with mainWindow parameter
+
+  // Re-run the entire verification process to get fresh data
   const newResults = await verifyEnvironment(mainWindow);
-  
-  // Explicitly send the complete event with new results to ensure frontend gets updated
+
+  // After verification is complete, send the new composite results to the renderer
   if (mainWindow) {
     mainWindow.webContents.send('environment-verification-complete', newResults);
   }
-  
+
+  console.log('Environment verification refresh has fully completed.');
   return newResults;
 }
 

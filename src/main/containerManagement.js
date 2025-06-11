@@ -11,30 +11,25 @@ async function stopContainers(containerNames, mainWindow = null) {
   }
 
   console.log('Attempting to stop containers:', containerNames);
-  const results = [];
 
-  for (const containerName of containerNames) {
-    try {
-      const result = await stopSingleContainer(containerName, mainWindow);
-      results.push({ containerName, ...result });
-    } catch (error) {
-      console.error(`Error stopping container ${containerName}:`, error);
-      // Emit container terminated event with error
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.send('container-terminated', { 
-          containerName, 
-          success: false, 
-          error: error.message 
-        });
-      }
-      results.push({ 
-        containerName, 
-        success: false, 
-        error: error.message 
+  const stopPromises = containerNames.map(containerName => {
+    return stopSingleContainer(containerName, mainWindow)
+      .catch(error => {
+        console.error(`Error stopping container ${containerName}:`, error);
+        // Ensure that even a rejected promise provides a consistent result shape
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('container-terminated', {
+            containerName,
+            success: false,
+            error: error.message
+          });
+        }
+        return { containerName, success: false, error: error.message };
       });
-    }
-  }
+  });
 
+  const results = await Promise.all(stopPromises);
+  
   const successCount = results.filter(r => r.success).length;
   const failureCount = results.length - successCount;
 

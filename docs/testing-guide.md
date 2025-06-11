@@ -45,6 +45,7 @@ The main Jest configuration is in `jest.config.js`. It's set up to:
 - Use `node` as the default test environment.
 - Use `<rootDir>/jest.setup.js` to import `@testing-library/jest-dom` matchers for all tests.
 - Mock CSS and other static assets to prevent errors during tests.
+- Use `moduleNameMapper` to redirect imports of production configuration files (`*.json`) to their mock counterparts in the `__tests__/mock-data/` directory. This ensures tests run against a stable, generic dataset.
 
 ### Test Environment
 
@@ -53,6 +54,20 @@ The main Jest configuration is in `jest.config.js`. It's set up to:
   ```javascript
   /** @jest-environment jsdom */
   ```
+- **Data Structure Compatibility**: Ensures import/export returns expected data structures
+- **Frontend Integration**: Verifies git operations return data in format expected by UI components
+- **API Consistency**: Checks that backend functions return data in expected formats
+- **Isolated Configuration**: Tests run against a dedicated set of mock configuration files (`__tests__/mock-data/*.json`), making them independent of production configuration changes. This prevents tests from breaking when the real configuration is modified.
+
+### Mock Data
+
+Tests run against a stable, generic set of mock configuration files located in `__tests__/mock-data/`. This ensures that tests are not dependent on the production configuration, which can change frequently. The mock data is designed to cover a variety of component configurations and features.
+
+-   **`mockConfigurationSidebarSections.json`**: Defines the UI structure for the tests. It includes sections with different component configurations, such as `deploymentOptions`, `modeSelector`, sub-sections, dropdowns, and custom buttons. It also includes a `testSection` that is hidden by default.
+-   **`mockConfigurationSidebarAbout.json`**: Provides the "About" information and verifications for the mock sections.
+-   **`mockConfigurationSidebarCommands.json`**: Contains the command definitions for the mock sections, including commands for main sections, sub-sections, and custom buttons.
+
+By using this mock data, we can write tests that are stable, predictable, and easy to maintain.
 
 ## Running Tests
 
@@ -104,14 +119,14 @@ test('should return array directly from getAboutConfig', ...)
 
 The test suite has been optimized for reliability and focuses on catching real bugs:
 
-- **✅ 11 test suites passing** 
-- **✅ 128 tests passing**
+- **✅ 14 test suites passing** 
+- **✅ 185 tests passing**
 - **✅ 0 test failures**
 - **⚡ Fast execution** (~1-2 seconds)
 
 ### What We Don't Test
 
-We deliberately avoid testing implementation details that create brittle tests:
+We deliberately avoid testing implementation details that can create brittle tests:
 - Internal function call verification
 - Mock interaction counting  
 - IPC handler registration specifics

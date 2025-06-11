@@ -22,6 +22,7 @@ import TerminalContainer from '../src/components/TerminalContainer.jsx';
 import TerminalTab from '../src/components/TerminalTab.jsx';
 import Toggle from '../src/components/Toggle.jsx';
 import VerificationIndicator from '../src/components/VerificationIndicator.jsx';
+import sectionsData from '../src/configurationSidebarSections.json';
 
 jest.mock('@xterm/xterm', () => ({
   Terminal: jest.fn().mockImplementation(() => ({
@@ -220,43 +221,45 @@ describe('AppControlSidebar', () => {
 });
 
 describe('ConfigSection', () => {
-  const section = {
-    id: 'testSection',
-    title: 'Test Section',
-    components: {
-      subsections: [{ id: 'sub', title: 'Sub Section' }]
-    }
+  const section = sectionsData.sections.find(s => s.id === 'generic-section-1');
+  const config = {
+    enabled: true,
+    'generic-subsection-1Config': { enabled: true }
   };
-  const config = { enabled: true, subsections: { sub: { enabled: true } } };
+  const commonProps = {
+    setDeploymentType: jest.fn(),
+    setMode: jest.fn(),
+    setSectionDropdownValue: jest.fn(),
+    globalDropdownValues: {},
+    isAttached: false,
+    onAttachToggle: jest.fn(),
+    isAttachWarning: false,
+    isLocked: false,
+    sectionPathStatus: 'valid',
+    sectionGitBranch: 'main',
+    onTriggerRefresh: jest.fn(),
+    attachState: {},
+    configState: {},
+    toggleSubSectionEnabled: jest.fn(),
+    setSubSectionDeploymentType: jest.fn(),
+    onDropdownChange: jest.fn(),
+    openFloatingTerminal: jest.fn()
+  };
 
   it('should call toggleEnabled when the section is toggled', () => {
     const toggleEnabled = jest.fn();
-    const { getByRole } = render(
+    const { getAllByRole } = render(
       <ConfigSection
         section={section}
         config={config}
         toggleEnabled={toggleEnabled}
-        setDeploymentType={() => {}}
-        setMode={() => {}}
-        setSectionDropdownValue={() => {}}
-        globalDropdownValues={{}}
-        isAttached={false}
-        onAttachToggle={() => {}}
-        isAttachWarning={false}
-        isLocked={false}
-        sectionPathStatus={''}
-        sectionGitBranch={'main'}
-        onTriggerRefresh={() => {}}
-        attachState={{}}
-        configState={{}}
-        toggleSubSectionEnabled={() => {}}
-        setSubSectionDeploymentType={() => {}}
-        onDropdownChange={() => {}}
-        openFloatingTerminal={() => {}}
+        {...commonProps}
       />
     );
-    fireEvent.click(getByRole('checkbox'));
-    expect(toggleEnabled).toHaveBeenCalledWith('testSection', false);
+    // The main section toggle is the first checkbox
+    fireEvent.click(getAllByRole('checkbox')[0]);
+    // The section is initially enabled (true), so clicking it toggles to false
+    expect(toggleEnabled).toHaveBeenCalledWith(section.id, false);
   });
 });
 

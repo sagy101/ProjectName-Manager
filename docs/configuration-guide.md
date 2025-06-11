@@ -81,9 +81,10 @@ Defines the UI structure and components for each section in the configuration si
         "toggle": true,
         "infoButton": true,
         "gitBranch": true,
-        "deploymentOptions": ["normal", "dev"],
+        "deploymentOptions": true,
         "modeSelector": {
           "options": ["development", "staging", "production"],
+          "labels": ["Development", "Staging", "Production"],
           "default": "development"
         },
         "attachToggle": {
@@ -136,12 +137,14 @@ Adds a git branch selector dropdown for the section's directory.
 ```
 Adds a standardized container/process deployment selector. When set to `true`, it adds a two-button toggle for selecting between container and process deployment modes. This is the preferred way to handle deployment type selection for consistency across the application.
 
+The deploymentOptions is actually implemented using the ModeSelector component internally with fixed options for "Container" and "Process", providing a consistent UI pattern for deployment selection.
+
 #### Mode Selector
 ```json
 "modeSelector": {
-  "options": ["run", "suspend"],
-  "labels": ["Run", "Suspend"],
-  "default": "suspend"
+  "options": ["development", "staging", "production"],
+  "labels": ["Development", "Staging", "Production"],
+  "default": "development"
 }
 ```
 Adds a multi-option selector for environment modes. The configuration supports:
@@ -149,7 +152,25 @@ Adds a multi-option selector for environment modes. The configuration supports:
 - `labels`: Array of display labels matching the options (optional, will capitalize options if not provided)
 - `default`: Default mode value (optional)
 
-Use this for any custom mode selection beyond the standard container/process deployment options.
+Use this for any custom mode selection beyond the standard container/process deployment options. While both deploymentOptions and modeSelector use the same underlying ModeSelector component, they serve different purposes in the configuration:
+- `deploymentOptions`: Specifically for container/process selection, using the `.deploymentType` state property
+- `modeSelector`: For any other type of mode selection, using the `.mode` state property
+
+These should be used correctly in the command conditions:
+```json
+{
+  "conditions": {
+    "deploymentType": "container" // For deploymentOptions
+  }
+}
+```
+```json
+{
+  "conditions": {
+    "mode": "development" // For modeSelector
+  }
+}
+```
 
 #### Attach Toggle
 ```json
@@ -168,8 +189,10 @@ Adds an attach debugger toggle. Can be mutually exclusive with other sections.
     "title": "Frontend Features",
     "components": {
       "toggle": true,
-      "deploymentOptions": ["optionA", "optionB"],
-      "labels": ["Option A", "Option B"],
+      "modeSelector": {
+        "options": ["optionA", "optionB"],
+        "labels": ["Option A", "Option B"]
+      },
       "dropdownSelectors": [
         {
           "id": "subSectionDropdownExample",

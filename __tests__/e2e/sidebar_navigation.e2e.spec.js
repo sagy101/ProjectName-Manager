@@ -1,12 +1,13 @@
 const { test, expect } = require('@playwright/test');
-const { launchElectronInvisibly } = require('./test-helpers');
+const { launchElectron } = require('./test-helpers');
+const { sections } = require('../../src/configurationSidebarSections.json');
 
 test.describe('Sidebar Navigation', () => {
   let electronApp;
   let window;
 
   test.beforeEach(async () => {
-    const launchResult = await launchElectronInvisibly();
+    const launchResult = await launchElectron();
     electronApp = launchResult.electronApp;
     window = launchResult.window;
     await window.waitForSelector('.app-control-sidebar');

@@ -8,7 +8,7 @@ function createWindow() {
   console.log('Creating main window...');
   
   // Check if running in test/headless mode
-  const isTestMode = process.env.NODE_ENV === 'test' || process.env.HEADLESS === 'true';
+  const isTestMode = process.env.HEADLESS === 'true';
   
   const windowOptions = {
     width: 1200,

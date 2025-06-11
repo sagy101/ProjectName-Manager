@@ -1,8 +1,11 @@
+const { launchElectron } = require('./test-helpers');
 const { test, expect } = require('@playwright/test');
-const { launchElectronInvisibly } = require('./test-helpers');
 
 test('Terminal container shows placeholder on startup', async () => {
-  const { electronApp, window } = await launchElectronInvisibly();
+  const { electronApp, window } = await launchElectron();
+  
+  // Wait for the terminal container to be ready
+  await window.waitForSelector('[data-testid="terminal-container"]');
   
   // Wait for terminal container to be visible
   await window.waitForSelector('.terminal-container');

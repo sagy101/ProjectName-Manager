@@ -1,10 +1,10 @@
 const { _electron: electron } = require('playwright');
 
 /**
- * Launch Electron invisibly for E2E tests
+ * Launch Electron for E2E tests
  * @returns {Promise<{electronApp: any, window: any}>}
  */
-async function launchElectronInvisibly() {
+async function launchElectron() {
   const electronApp = await electron.launch({ 
     args: [
       '.', 
@@ -19,8 +19,7 @@ async function launchElectronInvisibly() {
     env: {
       ...process.env,
       ELECTRON_DISABLE_SECURITY_WARNINGS: 'true',
-      NODE_ENV: 'test',
-      HEADLESS: 'true'
+      NODE_ENV: 'test'
     }
   });
   
@@ -32,4 +31,15 @@ async function launchElectronInvisibly() {
   return { electronApp, window };
 }
 
-module.exports = { launchElectronInvisibly }; 
+/**
+ * Waits for an element to be visible with a longer timeout and polling.
+ * @param {any} window - The Playwright window object.
+ * @param {string} selector - The CSS selector for the element.
+ * @param {number} timeout - The maximum time to wait in milliseconds.
+ * @returns {Promise<void>}
+ */
+async function waitForElement(window, selector, timeout = 30000) {
+  await window.waitForSelector(selector, { state: 'visible', timeout });
+}
+
+module.exports = { launchElectron, waitForElement }; 
