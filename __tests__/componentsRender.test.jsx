@@ -321,7 +321,7 @@ describe('Component render tests', () => {
     const handle = jest.fn();
     const { getAllByRole } = render(<DeploymentOptions sectionId="s" currentType="container" onChange={handle} />);
     fireEvent.click(getAllByRole('button')[1]);
-    expect(handle).toHaveBeenCalledWith('process');
+    expect(handle).toHaveBeenCalledWith('s', 'process');
   });
 
   test('Toggle checkbox works', () => {

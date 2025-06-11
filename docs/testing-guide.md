@@ -3,7 +3,6 @@
 This guide provides an overview of the testing strategy, setup, and different types of tests used in the {ProjectName} Manager application.
 
 ## Table of Contents
-- [Testing Philosophy](#testing-philosophy)
 - [Setup and Configuration](#setup-and-configuration)
   - [Jest Configuration](#jest-configuration)
   - [Test Environment](#test-environment)
@@ -16,9 +15,6 @@ This guide provides an overview of the testing strategy, setup, and different ty
 - [Key Scripts](#key-scripts)
 - [Troubleshooting](#troubleshooting)
 
-## Testing Philosophy
-
-Our testing philosophy focuses on **behavior over implementation details** to ensure reliability and maintainability. We prioritize testing that catches real bugs that would break user functionality, rather than testing implementation details that create brittle tests.
 
 ### Testing Strategy
 
@@ -115,6 +111,16 @@ test('should return array directly from getAboutConfig', ...)
 - **Examples**: `terminalContainer.e2e.test.jsx`, `processCleanup.test.js`
 - **Purpose**: E2E tests validate complete workflows from start to finish. They often involve more complex setups, including mocking Electron's IPC and other main process features. These tests are crucial for ensuring that different parts of the application work together correctly.
 
+### Running E2E Tests Headless (Electron)
+
+For end-to-end (E2E) tests that launch the Electron app, you should run tests in headless mode to avoid opening windows during CI or automated runs. This is done by setting the `HEADLESS` environment variable:
+
+```sh
+HEADLESS=true npm run test:e2e
+```
+
+This ensures the Electron window is not shown during tests. You can also add `-- --headless` to explicitly run Playwright in headless mode, but by default Playwright is headless unless configured otherwise.
+
 ## Test Results
 
 The test suite has been optimized for reliability and focuses on catching real bugs:
@@ -136,9 +142,14 @@ These implementation details change frequently during refactoring and create fal
 
 ## Key Scripts
 
-- `npm test`: Runs the main test suite.
+- `npm test`: Runs the main test suite (all Jest and E2E tests).
 - `npm run pretest`: Rebuilds `node-pty` for the `node` environment before tests run.
 - `npm run posttest`: Rebuilds `node-pty` for the `electron` environment after tests complete, ensuring the application remains runnable.
+- `npm run test:jest`: Runs all Jest tests (unit, component, and mock data tests).
+- `npm run test:jest:prod`: Runs Jest tests using production configuration/data files.
+- `npm run test:jest:mock`: Runs Jest tests using mock configuration/data files for stable, generic test coverage.
+- `npm run test:e2e`: Builds the app and runs Playwright E2E tests (set `HEADLESS=true` for headless Electron window).
+- `npm run test:e2e:report`: Builds the app and runs Playwright E2E tests with the default Playwright reporter (for HTML or CI reports).
 
 ## Troubleshooting
 

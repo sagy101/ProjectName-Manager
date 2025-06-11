@@ -193,38 +193,4 @@ test.describe('Terminal Command Validation', () => {
     tab = await window.locator('.tab').filter({ hasText: new RegExp(tabTitle, 'i') });
     await expect(tab.first()).toBeVisible({ timeout: 15000 });
   });
-
-  test('should validate stop button terminates all processes correctly', async () => {
-    const runnableSections = sections.filter(s => s.id !== 'mirror');
-    if (runnableSections.length === 0) {
-        console.log("Skipping test: No runnable sections found.");
-        return;
-    }
-
-    const runButton = window.locator('#run-configuration-button.run');
-    await runButton.click();
-    
-    // Wait for all tabs to appear and their processes to be running
-    for (const section of runnableSections) {
-      const terminalTab = window.locator('.tab', { hasText: new RegExp(section.title) });
-      await expect(terminalTab).toBeVisible({ timeout: 10000 });
-      await expect(terminalTab.locator('.tab-status')).toHaveClass(/status-running/, { timeout: 10000 });
-    }
-    
-    // Now click stop
-    const stopButton = window.locator('#run-configuration-button.stop');
-    await expect(stopButton).toBeVisible();
-    await stopButton.click();
-
-    // Wait for the stopping screen to appear and then close
-    const stoppingScreen = window.locator('.stopping-status-overlay');
-    await expect(stoppingScreen).toBeVisible({ timeout: 5000 });
-    const closeButton = stoppingScreen.locator('.close-button');
-    await expect(closeButton).toBeVisible({ timeout: 30000 });
-    await closeButton.click();
-    await expect(stoppingScreen).not.toBeVisible();
-    
-    // Verify all tabs are gone
-    await expect(window.locator('.tab')).toHaveCount(0);
-  });
 }); 

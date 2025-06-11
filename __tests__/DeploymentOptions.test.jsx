@@ -70,7 +70,7 @@ describe('DeploymentOptions', () => {
       const containerButton = screen.getByText('Container');
       const processButton = screen.getByText('Process');
       
-      expect(containerButton).not.toHaveClass('active');
+      expect(containerButton).toHaveClass('active');
       expect(processButton).not.toHaveClass('active');
     });
 
@@ -80,7 +80,7 @@ describe('DeploymentOptions', () => {
       const containerButton = screen.getByText('Container');
       const processButton = screen.getByText('Process');
       
-      expect(containerButton).not.toHaveClass('active');
+      expect(containerButton).toHaveClass('active');
       expect(processButton).not.toHaveClass('active');
     });
   });
@@ -115,7 +115,7 @@ describe('DeploymentOptions', () => {
       const containerButton = screen.getByText('Container');
       fireEvent.click(containerButton);
       
-      expect(onChange).toHaveBeenCalledWith('container');
+      expect(onChange).toHaveBeenCalledWith('testSection', 'container');
       expect(onChange).toHaveBeenCalledTimes(1);
     });
 
@@ -126,7 +126,7 @@ describe('DeploymentOptions', () => {
       const processButton = screen.getByText('Process');
       fireEvent.click(processButton);
       
-      expect(onChange).toHaveBeenCalledWith('process');
+      expect(onChange).toHaveBeenCalledWith('testSection', 'process');
       expect(onChange).toHaveBeenCalledTimes(1);
     });
 
@@ -138,7 +138,7 @@ describe('DeploymentOptions', () => {
       fireEvent.click(containerButton);
       fireEvent.click(containerButton);
       
-      expect(onChange).toHaveBeenCalledWith('container');
+      expect(onChange).toHaveBeenCalledWith('testSection', 'container');
       expect(onChange).toHaveBeenCalledTimes(2);
     });
   });
@@ -195,7 +195,7 @@ describe('DeploymentOptions', () => {
       const containerButton = screen.getByText('Container');
       fireEvent.click(containerButton);
       
-      expect(onChange).toHaveBeenCalledWith('container');
+      expect(onChange).toHaveBeenCalledWith('testSection', 'container');
     });
   });
 
@@ -244,12 +244,22 @@ describe('DeploymentOptions', () => {
       const containerButton = screen.getByText('Container');
       const processButton = screen.getByText('Process');
       
-      expect(containerButton).not.toHaveClass('active');
+      expect(containerButton).toHaveClass('active');
       expect(processButton).not.toHaveClass('active');
     });
 
     it('handles invalid currentType value', () => {
       render(<DeploymentOptions {...defaultProps} currentType="invalid" />);
+      
+      const containerButton = screen.getByText('Container');
+      const processButton = screen.getByText('Process');
+      
+      expect(containerButton).not.toHaveClass('active');
+      expect(processButton).not.toHaveClass('active');
+    });
+
+    it('handles numeric value for currentType without crashing', () => {
+      render(<DeploymentOptions {...defaultProps} currentType={123} />);
       
       const containerButton = screen.getByText('Container');
       const processButton = screen.getByText('Process');
