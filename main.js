@@ -2,7 +2,6 @@ const { app, ipcMain, dialog, BrowserWindow } = require('electron');
 const path = require('path');
 const { exec } = require('child_process');
 const { generateCommandList } = require('./src/utils/evalUtils');
-const fs = require('fs').promises;
 
 // Handle uncaught exceptions gracefully during tests
 if (process.env.NODE_ENV === 'test') {
@@ -193,27 +192,8 @@ ipcMain.handle('import-config', async () => {
   return await configurationManagement.importConfiguration();
 });
 
-ipcMain.handle('export-environment', async () => {
-  try {
-    const verificationResults = environmentVerification.getEnvironmentVerification();
-    const content = JSON.stringify(verificationResults, null, 2);
-
-    const { canceled, filePath } = await dialog.showSaveDialog(mainWindow, {
-      title: 'Export Environment Verification',
-      defaultPath: 'environment-verification.json',
-      filters: [{ name: 'JSON Files', extensions: ['json'] }]
-    });
-
-    if (canceled || !filePath) {
-      return { success: false, reason: 'cancelled' };
-    }
-
-    await fs.writeFile(filePath, content, 'utf-8');
-    return { success: true };
-  } catch (error) {
-    console.error('Failed to export environment verification:', error);
-    return { success: false, error: error.message };
-  }
+ipcMain.handle('export-environment-data', async () => {
+  return environmentVerification.getEnvironmentExportData();
 });
 
 // PTY/Terminal management - corrected to match original signature

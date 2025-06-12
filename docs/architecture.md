@@ -83,8 +83,9 @@ The main process has been refactored into a modular architecture for better main
 
 #### `environmentVerification.js` - Environment Management
 - **Purpose**: System environment checking and verification
-- **Responsibilities**: Tool validation, path checking, environment variables, caching
-- **Key Functions**: `verifyEnvironment()`, `refreshEnvironmentVerification()`, `getEnvironmentVerification()`
+- **Responsibilities**: Tool validation, path checking, environment variables, caching, command output capture
+- **Key Functions**: `verifyEnvironment()`, `refreshEnvironmentVerification()`, `getEnvironmentVerification()`, `getEnvironmentExportData()`
+- **Export Feature**: Captures and exports all verification command outputs with status for debugging
 
 #### `ptyManagement.js` - Terminal Process Management
 - **Purpose**: PTY (pseudo-terminal) process lifecycle management

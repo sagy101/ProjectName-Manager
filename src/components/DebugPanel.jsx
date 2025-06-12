@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import '../styles/debug-panel.css';
-import { ArrowUpOnSquareIcon, ArrowDownOnSquareIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline';
 
 const DebugPanel = ({ 
   onToggleVerificationStatus, 
@@ -11,10 +10,7 @@ const DebugPanel = ({
   isIsoRunning,
   showAppNotification,
   isOpen,
-  onClose,
-  onExportConfig,
-  onImportConfig,
-  onExportEnvironment
+  onClose
 }) => {
   const [sectionStatuses, setSectionStatuses] = useState({
     cloud: 'waiting',
@@ -161,6 +157,38 @@ const DebugPanel = ({
     localStorage.clear();
   };
 
+  const exportEnvironment = async () => {
+    if (window.electron && window.electron.exportEnvironmentData) {
+      try {
+        const environmentData = await window.electron.exportEnvironmentData();
+        
+        // Create a blob with the JSON data
+        const jsonString = JSON.stringify(environmentData, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        
+        // Create a download link
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        a.href = url;
+        a.download = `environment-export-${timestamp}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        if (showAppNotification) {
+          showAppNotification('Environment data exported successfully', 'info');
+        }
+      } catch (error) {
+        console.error('Error exporting environment data:', error);
+        if (showAppNotification) {
+          showAppNotification('Failed to export environment data', 'error');
+        }
+      }
+    }
+  };
+
   const handleToggleTestSectionsClick = useCallback(() => {
     if (isIsoRunning) {
     } else {
@@ -189,6 +217,7 @@ const DebugPanel = ({
               <button onClick={openDevTools}>Open Dev Tools</button>
               <button onClick={reloadApp}>Reload App</button>
               <button onClick={clearLocalStorage}>Clear Local Storage</button>
+              <button onClick={exportEnvironment}>Export Environment</button>
             </section>
             
             <section className="debug-section">
@@ -210,35 +239,6 @@ const DebugPanel = ({
                 disabled={isIsoRunning}
               >
                 {'No Run Mode'}
-              </button>
-            </section>
-            <section className="debug-section">
-              <h4>Configuration</h4>
-              <button 
-                className="debug-button"
-                onClick={onExportConfig}
-                disabled={isIsoRunning}
-                title="Export the current run configuration to a JSON file."
-              >
-                <ArrowUpOnSquareIcon className="debug-button-icon" />
-                Export Config
-              </button>
-              <button 
-                className="debug-button"
-                onClick={onImportConfig}
-                disabled={isIsoRunning}
-                title="Import a run configuration from a JSON file."
-              >
-                <ArrowDownOnSquareIcon className="debug-button-icon" />
-                Import Config
-              </button>
-              <button 
-                className="debug-button"
-                onClick={onExportEnvironment}
-                title="Export the environment verification results to a JSON file."
-              >
-                <DocumentArrowDownIcon className="debug-button-icon" />
-                Export Environment
               </button>
             </section>
           </div>

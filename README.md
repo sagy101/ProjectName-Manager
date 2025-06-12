@@ -409,6 +409,7 @@ When any debug options are active, the gear icon will show an orange border.
 **Developer Utilities**
 - **Open Dev Tools**: Opens Chrome Developer Tools.
 - **Reload App**: Reloads the entire application.
+- **Export Environment**: Exports comprehensive environment verification data including command outputs and system information.
 
 **Visibility Options**
 - **Show/Hide Test Sections**: Toggle visibility of sections marked `testSection: true`.
@@ -463,6 +464,7 @@ The debug panel (gear icon in bottom right) provides powerful development and te
 - **Open Dev Tools**: Opens Chrome Developer Tools for debugging
 - **Reload App**: Reloads the entire application
 - **Clear Local Storage**: Clears all locally stored data
+- **Export Environment**: Exports all environment verification data with command outputs
 
 **Visibility Options**
 - **Show/Hide Test Sections**: Toggle visibility of sections marked as `testSection: true` in configuration
@@ -553,6 +555,17 @@ The application supports exporting and importing your complete configuration, in
 1. Click the **Export Config** button in the app control sidebar (right side)
 2. Choose a location to save your configuration file
 3. The exported JSON will include all current settings and git branches
+
+### How to Export Environment Data
+
+1. Click the **Export Environment** button in the app control sidebar (right side)
+2. The app will generate a comprehensive JSON file containing:
+   - Platform information (OS type, release, architecture)
+   - All environment verification results (valid/invalid status)
+   - Command outputs from verification checks
+   - Discovered tool versions
+   - Timestamp of the export
+3. This is useful for debugging environment issues or sharing system state
 
 ### How to Import Configuration
 

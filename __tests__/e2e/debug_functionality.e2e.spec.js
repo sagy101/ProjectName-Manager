@@ -218,19 +218,30 @@ test.describe('Debug Menu Functionality', () => {
     const debugButton = await window.locator('[title*="Debug Tools"]');
     await debugButton.click();
     
-    const exportButton = await window.locator('button').filter({ hasText: /Export/i });
-    const importButton = await window.locator('button').filter({ hasText: /Import/i });
+    // Be more specific to avoid matching "Export Environment" button
+    const exportConfigButton = await window.locator('button').filter({ hasText: 'Export Config' });
+    const importConfigButton = await window.locator('button').filter({ hasText: 'Import Config' });
+    const exportEnvButton = await window.locator('button').filter({ hasText: 'Export Environment' });
     
-    if (await exportButton.count() > 0) {
-      await expect(exportButton).toBeVisible();
-      await expect(exportButton).toBeEnabled();
+    // Test Export Config button
+    if (await exportConfigButton.count() > 0) {
+      await expect(exportConfigButton).toBeVisible();
+      await expect(exportConfigButton).toBeEnabled();
       console.log('✓ Export configuration button found and enabled');
     }
     
-    if (await importButton.count() > 0) {
-      await expect(importButton).toBeVisible();
-      await expect(importButton).toBeEnabled();
+    // Test Import Config button
+    if (await importConfigButton.count() > 0) {
+      await expect(importConfigButton).toBeVisible();
+      await expect(importConfigButton).toBeEnabled();
       console.log('✓ Import configuration button found and enabled');
+    }
+    
+    // Test Export Environment button
+    if (await exportEnvButton.count() > 0) {
+      await expect(exportEnvButton).toBeVisible();
+      await expect(exportEnvButton).toBeEnabled();
+      console.log('✓ Export environment button found and enabled');
     }
   });
 }); 

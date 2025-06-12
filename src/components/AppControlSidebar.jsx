@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import '../styles/app-control-sidebar.css'; // Renamed CSS
 // Import XMarkIcon as CloseIcon for clarity, or use XMarkIcon directly if no conflict
 import { Bars3Icon, XMarkIcon, EyeIcon, EyeSlashIcon, InformationCircleIcon, XMarkIcon as CloseIcon, Cog6ToothIcon, ArrowPathIcon, ComputerDesktopIcon, TrashIcon, ArrowDownTrayIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
-import FloatingTerminalIcon from './FloatingTerminalIcon';
-import DebugPanel from './DebugPanel.jsx';
 
 const AppControlSidebar = ({
   floatingTerminals,
@@ -24,12 +22,10 @@ const AppControlSidebar = ({
   isMainTerminalWritable, // New prop
   onToggleMainTerminalWritable, // New prop
   onExportConfig,
-  onImportConfig,
-  onExportEnvironment
+  onImportConfig
 }) => {
   const sidebarRef = useRef(null);
   const [isDebugSectionOpen, setIsDebugSectionOpen] = useState(false);
-  const [isDebugPanelOpen, setIsDebugPanelOpen] = useState(false);
 
   // Click away to collapse
   useEffect(() => {
@@ -68,6 +64,38 @@ const AppControlSidebar = ({
   const reloadApp = () => {
     if (window.electron) window.electron.reloadApp();
     else window.location.reload();
+  };
+
+  const exportEnvironment = async () => {
+    if (window.electron && window.electron.exportEnvironmentData) {
+      try {
+        const environmentData = await window.electron.exportEnvironmentData();
+        
+        // Create a blob with the JSON data
+        const jsonString = JSON.stringify(environmentData, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        
+        // Create a download link
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        a.href = url;
+        a.download = `environment-export-${timestamp}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        if (showAppNotification) {
+          showAppNotification('Environment data exported successfully', 'info');
+        }
+      } catch (error) {
+        console.error('Error exporting environment data:', error);
+        if (showAppNotification) {
+          showAppNotification('Failed to export environment data', 'error');
+        }
+      }
+    }
   };
 
   const handleToggleTestSectionsClick = useCallback(() => {
@@ -205,22 +233,12 @@ const AppControlSidebar = ({
             <ArrowUpTrayIcon className="icon" />
             <span>Import Config</span>
           </button>
+          <button onClick={exportEnvironment} title="Export Environment Data">
+            <ArrowDownTrayIcon className="icon" />
+            <span>Export Environment</span>
+          </button>
         </div>
       )}
-
-      <DebugPanel
-        isOpen={isDebugPanelOpen}
-        onClose={() => setIsDebugPanelOpen(false)}
-        onToggleTestSections={onToggleTestSections}
-        showTestSections={showTestSections}
-        onToggleNoRunMode={onToggleNoRunMode}
-        noRunMode={noRunMode}
-        isIsoRunning={isIsoRunning}
-        showAppNotification={showAppNotification}
-        onExportConfig={onExportConfig}
-        onImportConfig={onImportConfig}
-        onExportEnvironment={onExportEnvironment}
-      />
     </div>
   );
 };

@@ -12,6 +12,7 @@ let environmentCaches = {
   // All other sections will be added dynamically from JSON
 };
 let discoveredVersions = {}; // To store dynamically found versions
+let verificationOutputs = {}; // To store command outputs for export
 
 let isVerifyingEnvironment = false; // Global flag for the whole process
 
@@ -166,7 +167,6 @@ async function verifyEnvironment(mainWindow = null) {
             pathValue, pathType 
           } = verification;
           let result = 'invalid';
-          let details = {}; // To store command output or other context
 
           try {
             // General checkType logic for all verifications
@@ -178,7 +178,14 @@ async function verifyEnvironment(mainWindow = null) {
                 if (command) {
                   const execResult = await execCommand(command);
                   result = execResult.success ? 'valid' : 'invalid';
-                  details = { stdout: execResult.stdout, stderr: execResult.stderr, command };
+                  // Store the output for export
+                  verificationOutputs[id] = {
+                    command,
+                    stdout: execResult.stdout,
+                    stderr: execResult.stderr,
+                    status: result,
+                    title
+                  };
                 } else {
                   console.warn(`Verification ID [${id}] is commandSuccess but no command provided.`);
                   result = 'invalid';
@@ -187,7 +194,6 @@ async function verifyEnvironment(mainWindow = null) {
               case 'outputContains':
                 if (command) {
                   const execResult = await execCommand(command);
-                  details = { stdout: execResult.stdout, stderr: execResult.stderr, command };
                   // For outputContains, we check the output regardless of exit code
                   // because some commands return non-zero exit codes even when successful
                   let output = '';
@@ -220,6 +226,16 @@ async function verifyEnvironment(mainWindow = null) {
                         discoveredVersions[verification.versionId] = resolvedExpectedValue;
                     }
                   }
+                  // Store the output for export
+                  verificationOutputs[id] = {
+                    command,
+                    stdout: execResult.stdout,
+                    stderr: execResult.stderr,
+                    status: result,
+                    title,
+                    expectedValue: resolvedExpectedValue,
+                    outputStream
+                  };
                 } else {
                   console.warn(`Verification ID [${id}] is outputContains but no command provided.`);
                   result = 'invalid';
@@ -227,11 +243,9 @@ async function verifyEnvironment(mainWindow = null) {
                 break;
               case 'envVarExists':
                 result = (process.env[variableName] !== undefined && process.env[variableName] !== '') ? 'valid' : 'invalid';
-                details = { variable: variableName, value: process.env[variableName] || 'Not Set' };
                 break;
               case 'envVarEquals':
                 result = (process.env[variableName] === resolvedExpectedValue) ? 'valid' : 'invalid';
-                details = { variable: variableName, value: process.env[variableName] || 'Not Set', expected: resolvedExpectedValue };
                 break;
               case 'pathExists':
                 try {
@@ -243,7 +257,6 @@ async function verifyEnvironment(mainWindow = null) {
                 } catch (e) {
                   result = 'invalid';
                 }
-                details = { path: resolvedPathValue, pathType };
                 break;
               default:
                 console.warn(`Unknown checkType: ${checkType} for verification ID [${id}]`);
@@ -252,10 +265,9 @@ async function verifyEnvironment(mainWindow = null) {
           } catch (execError) {
             console.error(`Error executing verification for ${title} (ID: ${id}):`, execError);
             result = 'invalid';
-            details = { error: execError.message };
           }
           
-          generalResultsStatuses[id] = { status: result, details };
+          generalResultsStatuses[id] = result;
           
           // Update progress
           completedCount++;
@@ -313,7 +325,6 @@ async function verifyEnvironment(mainWindow = null) {
     const sectionVerificationPromises = (verifications || []).map(async (verification) => {
       const { id, checkType, pathValue, pathType, command, expectedValue, outputStream } = verification;
       let result = 'invalid';
-      let details = {};
       
       try {
         switch (checkType) {
@@ -324,14 +335,20 @@ async function verifyEnvironment(mainWindow = null) {
             
             const pathStatus = await checkPathExists(projectRoot, pathValue.slice(2), pathType);
             result = pathStatus;
-            details = { path: resolvedPath, pathType };
             break;
             
           case 'commandSuccess':
             try {
               const execResult = await execCommand(command);
               result = execResult.success ? 'valid' : 'invalid';
-              details = { stdout: execResult.stdout, stderr: execResult.stderr, command };
+              // Store the output for export
+              verificationOutputs[id] = {
+                command,
+                stdout: execResult.stdout,
+                stderr: execResult.stderr,
+                status: result,
+                sectionId
+              };
             } catch (e) {
               result = 'invalid';
             }
@@ -339,10 +356,19 @@ async function verifyEnvironment(mainWindow = null) {
             
           case 'outputContains':
             try {
-              const { stdout, stderr } = await execCommand(command);
-              const output = outputStream === 'stderr' ? stderr : stdout;
+              const execResult = await execCommand(command);
+              const output = outputStream === 'stderr' ? execResult.stderr : execResult.stdout;
               result = output.includes(expectedValue) ? 'valid' : 'invalid';
-              details = { stdout, stderr, command, expected: expectedValue };
+              // Store the output for export
+              verificationOutputs[id] = {
+                command,
+                stdout: execResult.stdout,
+                stderr: execResult.stderr,
+                status: result,
+                sectionId,
+                expectedValue,
+                outputStream
+              };
             } catch (e) {
               result = 'invalid';
             }
@@ -350,12 +376,10 @@ async function verifyEnvironment(mainWindow = null) {
             
           case 'envVarExists':
             result = process.env[verification.variableName] ? 'valid' : 'invalid';
-            details = { variable: verification.variableName, value: process.env[verification.variableName] || 'Not Set' };
             break;
             
           case 'envVarEquals':
             result = process.env[verification.variableName] === expectedValue ? 'valid' : 'invalid';
-            details = { variable: verification.variableName, value: process.env[verification.variableName] || 'Not Set', expected: expectedValue };
             break;
             
           default:
@@ -365,16 +389,15 @@ async function verifyEnvironment(mainWindow = null) {
       } catch (error) {
         console.error(`Error checking verification ${id}:`, error);
         result = 'invalid';
-        details = { error: error.message };
       }
       
-      return { id, result, details };
+      return { id, result };
     });
     
     // Wait for all verifications for this section
     const verificationResults = await Promise.all(sectionVerificationPromises);
-    verificationResults.forEach(({ id, result, details }) => {
-      sectionResults[id] = { status: result, details };
+    verificationResults.forEach(({ id, result }) => {
+      sectionResults[id] = result;
     });
     
     // Get git branch using directoryPath from JSON (can run in parallel with verifications)
@@ -425,6 +448,7 @@ async function refreshEnvironmentVerification(mainWindow = null) {
 
   // Clear all verification caches to force re-fetching
   environmentCaches = { general: null };
+  verificationOutputs = {}; // Clear outputs cache
   clearGitBranchCache();
 
   // Re-run the entire verification process to get fresh data
@@ -444,9 +468,30 @@ function getEnvironmentVerification() {
   return environmentCaches;
 }
 
+// Function to get environment export data with all outputs
+function getEnvironmentExportData() {
+  const timestamp = new Date().toISOString();
+  const platform = {
+    type: os.type(),
+    platform: os.platform(),
+    release: os.release(),
+    arch: os.arch(),
+    hostname: os.hostname()
+  };
+  
+  return {
+    timestamp,
+    platform,
+    environmentCaches,
+    verificationOutputs,
+    discoveredVersions
+  };
+}
+
 module.exports = {
   verifyEnvironment,
   refreshEnvironmentVerification,
   getEnvironmentVerification,
+  getEnvironmentExportData,
   execCommand
 }; 

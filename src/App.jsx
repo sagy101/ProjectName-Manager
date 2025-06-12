@@ -378,10 +378,6 @@ const App = () => {
     if (window.electron && window.electron.dropdownValueChanged) {
       window.electron.dropdownValueChanged(dropdownId, value);
     }
-
-    if (window.electron?.refreshGitStatus) {
-      window.electron.refreshGitStatus(dropdownId);
-    }
   }, []);
 
   // Handle loading process with real progress tracking
@@ -727,21 +723,6 @@ const App = () => {
     setIsPerformingImport(false);
   }, []);
 
-  const handleExportEnvironment = useCallback(async () => {
-    if (window.electron) {
-      try {
-        const result = await window.electron.exportEnvironment();
-        if (result.success) {
-          showAppNotification('Environment details exported successfully.', 'info');
-        } else if (result.reason !== 'cancelled') {
-          showAppNotification(`Export failed: ${result.error || 'Unknown error'}`, 'error');
-        }
-      } catch (err) {
-        showAppNotification(`Export failed: ${err.message}`, 'error');
-      }
-    }
-  }, [showAppNotification]);
-
   // Update document title with projectName
   useEffect(() => {
     document.title = `${projectName} Manager`;
@@ -838,7 +819,6 @@ const App = () => {
             onToggleMainTerminalWritable={toggleMainTerminalWritable}
             onExportConfig={handleExportConfig}
             onImportConfig={handleImportConfig}
-            onExportEnvironment={handleExportEnvironment}
           />
         )}
       </div> {/* End of the main flex container for isLoading=false case */}
