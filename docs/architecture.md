@@ -504,7 +504,6 @@ graph TB
 - [Terminal Features](terminal-features.md) - Terminal system capabilities
 - [Command System](command-system.md) - Command generation and execution
 - [Verification Types](verification-types.md) - Environment verification reference
-- [API Reference](api-reference.md) - Internal API documentation
 
 ---
 

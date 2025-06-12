@@ -1,6 +1,6 @@
 # ProjectName Manager
 
-> **Note:** This project requires Node.js version 22.16.0. It is recommended to use [nvm](https://github.com/nvm-sh/nvm) to manage your Node.js versions. Once you have `nvm` installed, you can run `nvm use` in the project directory to automatically switch to the correct Node.js version.
+> **Note:** The Electron app requires Node.js **22.16.0**. Terminal commands can run on Node.js **15** or **16**. It is recommended to use [nvm](https://github.com/nvm-sh/nvm) to manage multiple Node.js versions. Once you have `nvm` installed, you can run `nvm use` in the project directory to automatically switch to the correct version for the Electron runtime.
 
 # {ProjectName} Manager
 
@@ -51,9 +51,10 @@ This project is also an experiment in "vibe coding" mixed with solid code practi
 
 ## 🏃 Quick Start
 
-### Prerequisites
+-### Prerequisites
 
-- Node.js (v16 or higher)
+- Node.js 22.16.0 for the Electron app
+- Node.js 15 or 16 for command execution
 - npm or yarn
 - Git
 
@@ -218,7 +219,7 @@ Define commands for main sections and for `customButton` actions.
     },
     "command": {
       "base": "cd your-section && docker-compose up",
-      "prefix": "nvm use 15.5.1 && ",
+      "prefix": "nvm use 16 && ",
       "tabTitle": "Your Section (Container)"
     }
   },
@@ -230,7 +231,7 @@ Define commands for main sections and for `customButton` actions.
     },
     "command": {
       "base": "cd your-section && npm start",
-      "prefix": "nvm use 15.5.1 && ",
+      "prefix": "nvm use 16 && ",
       "tabTitle": "Your Section (Process)"
     }
   },
@@ -261,7 +262,7 @@ Define commands for main sections and for `customButton` actions.
       { "name": "conditional-container", "condition": "deploymentType === 'container'" }
     ],
     "postModifiers": " --verbose",
-    "prefix": "nvm use 15.5.1 && ",
+    "prefix": "nvm use 16 && ",
     "tabTitle": {
       "base": "Your Main Section",
       "conditionalAppends": [
@@ -343,10 +344,10 @@ Verifies command output contains specific text. Can also check for one of multip
 ```json
 {
   "id": "nodeVersionCheck",
-  "title": "Node.js 16+ or 18+",
+  "title": "Node.js 15.x or 16.x",
   "checkType": "outputContains",
   "command": "nvm ls",
-  "expectedValue": ["v16.", "v18."],
+  "expectedValue": ["v15.", "v16."],
   "versionId": "nodeVersion",
   "outputStream": "stderr"
 }
