@@ -213,6 +213,9 @@ async function verifyEnvironment(mainWindow = null) {
                   } else {
                     const regex = new RegExp(resolvedExpectedValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
                     result = regex.test(output) ? 'valid' : 'invalid';
+                    if (result === 'valid' && verification.versionId) {
+                        discoveredVersions[verification.versionId] = resolvedExpectedValue;
+                    }
                   }
                 } else {
                   console.warn(`Verification ID [${id}] is outputContains but no command provided.`);
