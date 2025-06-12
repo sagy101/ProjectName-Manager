@@ -85,6 +85,9 @@ const App = () => {
   // State for main terminal writability (default to read-only)
   const [isMainTerminalWritable, setIsMainTerminalWritable] = useState(false);
 
+  // State for versions
+  const [discoveredVersions, setDiscoveredVersions] = useState({});
+
   // Initialize verification statuses dynamically from JSON
   const initializeVerificationStatuses = () => {
     const statuses = {
@@ -327,6 +330,9 @@ const App = () => {
         });
         
         setVerificationStatuses(newStatuses);
+        if (results.discoveredVersions) {
+          setDiscoveredVersions(results.discoveredVersions);
+        }
       }
     });
     
@@ -759,6 +765,7 @@ const App = () => {
               ref={isoConfigRef}
               projectName={projectName}
               globalDropdownValues={globalDropdownValues}
+              discoveredVersions={discoveredVersions}
               terminalRef={terminalRef}
               verificationStatuses={verificationStatuses}
               onTriggerRefresh={triggerGitRefresh}

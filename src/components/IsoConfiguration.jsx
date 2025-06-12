@@ -12,7 +12,7 @@ import '../styles/iso-configuration.css';
 
 const configSidebarSectionsActual = configSidebarSections.sections;
 
-const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, terminalRef, verificationStatuses, onTriggerRefresh, showTestSections = false, onConfigStateChange, onIsRunningChange, openFloatingTerminal, onBranchChangeError }, ref) => {
+const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, terminalRef, verificationStatuses, onTriggerRefresh, showTestSections = false, onConfigStateChange, onIsRunningChange, openFloatingTerminal, discoveredVersions, onBranchChangeError }, ref) => {
   const [isRunning, setIsRunning] = useState(false);
   const [isStopping, setIsStopping] = useState(false);
   const [showStoppingScreen, setShowStoppingScreen] = useState(false);
@@ -107,7 +107,8 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
           attachState,
           configSidebarCommands,
           configSidebarSectionsActual,
-          showTestSections
+          showTestSections,
+          discoveredVersions
         }
       );
       if (terminalRef.current) {
@@ -223,7 +224,8 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
                   attachState,
                   configSidebarCommands,
                   configSidebarSectionsActual,
-                  showTestSections
+                  showTestSections,
+                  discoveredVersions
                 }
               ).length === 0)
           }

@@ -91,7 +91,8 @@ function generateCommandList(config, globalDropdowns, {
   attachState = {},
   configSidebarCommands = [],
   configSidebarSectionsActual = [],
-  showTestSections = false
+  showTestSections = false,
+  discoveredVersions = {}
 } = {}) {
   const commands = [];
   const generatedCommandSectionIds = new Set();
@@ -171,7 +172,10 @@ function generateCommandList(config, globalDropdowns, {
       finalCommand = command.prefix + finalCommand;
     }
 
-    finalCommand = finalCommand.replace(/\$\{(\w+)\}/g, (match, varName) => {
+    finalCommand = finalCommand.replace(/\${(\w+)}/g, (match, varName) => {
+      if (discoveredVersions[varName]) {
+        return discoveredVersions[varName];
+      }
       let replacementValue = match;
       let found = false;
 

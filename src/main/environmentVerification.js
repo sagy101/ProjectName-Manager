@@ -11,6 +11,7 @@ let environmentCaches = {
   general: null
   // All other sections will be added dynamically from JSON
 };
+let discoveredVersions = {}; // To store dynamically found versions
 
 let isVerifyingEnvironment = false; // Global flag for the whole process
 
@@ -192,8 +193,23 @@ async function verifyEnvironment(mainWindow = null) {
                   else output = `${execResult.stdout} ${execResult.stderr}`;
                   
                   // Handle empty expectedValue as "any non-empty output"
-                  if (expectedValue === '' || expectedValue === null || expectedValue === undefined) {
+                  if (!expectedValue || expectedValue.length === 0) {
                     result = output.trim() !== '' ? 'valid' : 'invalid';
+                  } else if (Array.isArray(expectedValue)) {
+                    // If expectedValue is an array, check if any value is contained
+                    let matchFound = false;
+                    for (const value of expectedValue) {
+                      const resolvedValue = resolveEnvVars(value);
+                      if (output.includes(resolvedValue)) {
+                        matchFound = true;
+                        // Store the discovered version if an ID is provided
+                        if (verification.versionId) {
+                            discoveredVersions[verification.versionId] = resolvedValue;
+                        }
+                        break; 
+                      }
+                    }
+                    result = matchFound ? 'valid' : 'invalid';
                   } else {
                     const regex = new RegExp(resolvedExpectedValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
                     result = regex.test(output) ? 'valid' : 'invalid';
@@ -377,10 +393,10 @@ async function verifyEnvironment(mainWindow = null) {
   
   // Send completion event to frontend
   if (mainWindow) {
-    mainWindow.webContents.send('environment-setup-complete', environmentCaches);
+    mainWindow.webContents.send('environment-setup-complete', { ...environmentCaches, discoveredVersions });
   }
   
-  return environmentCaches;
+  return { ...environmentCaches, discoveredVersions };
 }
 
 // Function to refresh environment verification
@@ -399,11 +415,11 @@ async function refreshEnvironmentVerification(mainWindow = null) {
 
   // After verification is complete, send the new composite results to the renderer
   if (mainWindow) {
-    mainWindow.webContents.send('environment-verification-complete', newResults);
+    mainWindow.webContents.send('environment-verification-complete', { ...newResults, discoveredVersions });
   }
 
   console.log('Environment verification refresh has fully completed.');
-  return newResults;
+  return { ...newResults, discoveredVersions };
 }
 
 // Function to get current environment verification results

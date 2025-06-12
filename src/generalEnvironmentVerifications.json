@@ -84,10 +84,11 @@
         "verifications": [
           {
             "id": "nodeJs",
-            "title": "Node.js 15.5.1",
-            "command": "nvm ls 15.5.1",
+            "title": "Node.js 15.5.1 or newer",
+            "command": "nvm ls",
             "checkType": "outputContains",
-            "expectedValue": "v15.5.1",
+            "expectedValue": ["v15.5.1", "v16.0.0", "v16.1.0"],
+            "versionId": "nodeVersion",
             "outputStream": "stdout"
           },
           {

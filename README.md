@@ -339,14 +339,15 @@ Checks if a command executes successfully:
 ```
 
 ### Output Contains (`outputContains`)
-Verifies command output contains specific text:
+Verifies command output contains specific text. Can also check for one of multiple values and capture the found value.
 ```json
 {
-  "id": "javaVersion",
-  "title": "Java 17 installed",
+  "id": "nodeVersionCheck",
+  "title": "Node.js 16+ or 18+",
   "checkType": "outputContains",
-  "command": "java -version",
-  "expectedValue": "openjdk version \"17.",
+  "command": "nvm ls",
+  "expectedValue": ["v16.", "v18."],
+  "versionId": "nodeVersion",
   "outputStream": "stderr"
 }
 ```

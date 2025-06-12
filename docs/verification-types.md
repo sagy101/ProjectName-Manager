@@ -430,4 +430,150 @@ The verification system handles various error conditions:
 - **Windows**: Use appropriate commands (e.g., `where` instead of `which`)
 - **macOS**: Consider Homebrew installation paths
 - **Linux**: Account for different distributions and package managers
-- **Shells**: Test with different shells (bash, zsh, fish) 
+- **Shells**: Test with different shells (bash, zsh, fish)
+
+`outputContains` checks are powerful for validating versions or specific configurations.
+
+```json
+{
+  "id": "gcloudVersionCheck",
+  "title": "gcloud CLI Installed",
+  "checkType": "outputContains",
+  "command": "gcloud --version",
+  "expectedValue": "Google Cloud SDK",
+  "outputStream": "stdout"
+}
+```
+
+#### Dynamic Version Checking with Arrays
+
+You can provide an array of strings for `expectedValue`. The verification will pass if any one of the strings is found in the command's output. This is useful for supporting multiple acceptable versions of a tool.
+
+When combined with the `versionId` property, the first value from the array that is found in the output will be captured and can be used as a variable in the command generation system.
+
+```json
+{
+  "id": "nodeVersionCheck",
+  "title": "Node.js (16, 18, or 20)",
+  "checkType": "outputContains",
+  "command": "nvm ls",
+  "expectedValue": ["v16.", "v18.", "v20."],
+  "versionId": "nodeVersion",
+  "outputStream": "stdout"
+}
+```
+
+In this example, if `nvm ls` outputs a line containing `v18.12.1`, the check will pass, and the value `v18.` will be stored with the ID `nodeVersion`. This can then be used in `configurationSidebarCommands.json` like so: `nvm use ${nodeVersion}`.
+
+### `envVarExists`
+
+Checks if an environment variable is set (has any value).
+
+**Properties:**
+- `variableName` (string, required): Name of the environment variable
+
+**Example:**
+```json
+{
+  "id": "homeSet",
+  "title": "$HOME environment variable set",
+  "checkType": "envVarExists",
+  "variableName": "HOME"
+}
+```
+
+**Use Cases:**
+- Verifying required environment variables are set
+- Checking shell configuration
+- Validating development environment setup
+
+### `envVarEquals`
+
+Checks if an environment variable has a specific value.
+
+**Properties:**
+- `variableName` (string, required): Name of the environment variable
+- `expectedValue` (string, required): Expected value of the variable
+
+**Example:**
+```json
+{
+  "id": "nodeEnv",
+  "title": "NODE_ENV set to development",
+  "checkType": "envVarEquals",
+  "variableName": "NODE_ENV",
+  "expectedValue": "development"
+}
+```
+
+**Use Cases:**
+- Verifying specific environment configurations
+- Checking deployment environment settings
+- Validating configuration values
+
+### `pathExists`
+
+Checks if a file or directory exists at the specified path.
+
+**Properties:**
+- `pathValue` (string, required): Path to check (supports environment variable substitution)
+- `pathType` (string, optional): Type of path to expect
+  - `"directory"`: Must be a directory
+  - `"file"`: Must be a file
+  - If not specified: Can be either file or directory
+
+**Environment Variable Substitution:**
+- `$HOME`: User's home directory
+- `$GOPATH`: Go workspace path (if set)
+
+**Examples:**
+
+**Directory check:**
+```json
+{
+  "id": "projectDir",
+  "title": "./frontend directory exists",
+  "checkType": "pathExists",
+  "pathValue": "./frontend",
+  "pathType": "directory"
+}
+```
+
+**File check:**
+```json
+{
+  "id": "gradlewExists",
+  "title": "gradlew exists",
+  "checkType": "pathExists",
+  "pathValue": "./gradlew",
+  "pathType": "file"
+}
+```
+
+**File check with environment variable:**
+```json
+{
+  "id": "bashProfile",
+  "title": "Bash profile exists",
+  "checkType": "pathExists",
+  "pathValue": "$HOME/.bash_profile",
+  "pathType": "file"
+}
+```
+
+**Any path type:**
+```json
+{
+  "id": "configExists",
+  "title": "Configuration file or directory exists",
+  "checkType": "pathExists",
+  "pathValue": "./config"
+}
+```
+
+**Use Cases:**
+- Verifying project directory structure
+- Checking for configuration files
+- Validating installation paths
+- Checking for build scripts (e.g., gradlew, package.json)
+- Verifying tool installations in specific locations 

@@ -8,6 +8,9 @@ const fs = require('fs').promises;
  * @returns {string} Resolved string.
  */
 function resolveEnvVars(str) {
+  if (typeof str !== 'string') {
+    return str; // Return the original value if it's not a string
+  }
   if (!str) return '';
   let resolvedStr = str.replace(/\$HOME/g, os.homedir());
   if (process.env.GOPATH) {
