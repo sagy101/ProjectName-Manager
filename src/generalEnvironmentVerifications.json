@@ -87,7 +87,7 @@
             "title": "Node.js 15.5.1 or newer",
             "command": "nvm ls",
             "checkType": "outputContains",
-            "expectedValue": ["v15.5.1", "v16.0.0", "v16.1.0"],
+            "expectedValue": "v15.5.1",
             "versionId": "nodeVersion",
             "outputStream": "stdout"
           },

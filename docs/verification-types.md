@@ -92,42 +92,44 @@ Checks if a command executes successfully (exit code 0).
 
 ### 2. Output Contains (`outputContains`)
 
-Verifies that command output contains specific text.
+Verifies that command output contains specific text. This check is highly flexible and supports both single string and array values for `expectedValue`.
 
 **Properties:**
 - `command` (string, required): Command to execute
-- `expectedValue` (string, optional): Text that must be present in output
-  - If empty or not provided: Checks for any non-empty output
-- `outputStream` (string, optional): Which output stream to check
-  - `"stdout"`: Check standard output
-  - `"stderr"`: Check standard error
-  - `"any"` (default): Check both stdout and stderr
+- `expectedValue` (string or array of strings, optional): The text to find in the output.
+  - **As a string:** Checks if this exact string is present.
+  - **As an array:** Checks if *any* of the strings in the array are present. This is ideal for dynamic version checking.
+  - If empty or not provided: Checks for any non-empty output.
+- `outputStream` (string, optional): Which output stream to check (`"stdout"`, `"stderr"`, or `"any"`).
+- `versionId` (string, optional): When using an array for `expectedValue`, the first matched value will be captured and stored with this ID for use in command generation (e.g., `${nodeVersion}`).
 
 **Examples:**
 
-**Basic version check:**
+**Basic String Check:**
 ```json
 {
-  "id": "nodeVersion",
-  "title": "Node.js v18+ installed",
+  "id": "gcloudVersionCheck",
+  "title": "gcloud CLI Installed",
   "checkType": "outputContains",
-  "command": "node --version",
-  "expectedValue": "v18."
+  "command": "gcloud --version",
+  "expectedValue": "Google Cloud SDK"
 }
 ```
 
-**Check for any output (tool installed):**
+**Dynamic Version Checking with an Array:**
 ```json
 {
-  "id": "nvmInstalled",
-  "title": "NVM installed",
+  "id": "nodeVersionCheck",
+  "title": "Node.js (16, 18, or 20)",
   "checkType": "outputContains",
-  "command": "nvm --version",
-  "expectedValue": ""
+  "command": "nvm ls",
+  "expectedValue": ["v16.", "v18.", "v20."],
+  "versionId": "nodeVersion"
 }
 ```
+*In this example, if `nvm ls` finds `v18.`, that value will be stored as `nodeVersion` and can be used in commands like `nvm use ${nodeVersion}`.*
 
-**Java version (stderr output):**
+**Java Version Check (stderr):**
 ```json
 {
   "id": "javaVersion",
