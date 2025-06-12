@@ -319,7 +319,11 @@ describe('Component render tests', () => {
 
   test('DeploymentOptions calls onChange', () => {
     const handle = jest.fn();
-    const { getAllByRole } = render(<DeploymentOptions sectionId="s" currentType="container" onChange={handle} />);
+    const options = [
+      { value: 'container' },
+      { value: 'process' }
+    ];
+    const { getAllByRole } = render(<DeploymentOptions sectionId="s" currentType="container" onChange={handle} options={options} />);
     fireEvent.click(getAllByRole('button')[1]);
     expect(handle).toHaveBeenCalledWith('s', 'process');
   });

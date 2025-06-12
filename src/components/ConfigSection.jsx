@@ -307,7 +307,7 @@ const ConfigSection = ({
           {buttonsToRender.length > 0 && (
             <div className="custom-buttons-container">
               {buttonsToRender.map(button => {
-                const commandDef = configSidebarCommands.find(c => c.commandId === button.commandId);
+                const commandDef = configSidebarCommands.find(c => c.sectionId === button.commandId);
                 const commandToRun = commandDef ? (commandDef.command.base || commandDef.command) : `echo "Command not found: ${button.commandId}"`;
                 
                 const isDisabled = isLocked || !config.enabled || (button.id === 'viewLogs' && isLogsDisabled());

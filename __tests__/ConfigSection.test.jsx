@@ -31,14 +31,32 @@ jest.mock('../src/components/DeploymentOptions', () => (props) => {
 });
 
 jest.mock('../src/components/ModeSelector', () => (props) => {
-    const { sectionId, options = [], labels = [], currentMode, onModeChange, disabled } = props || {};
+    const { sectionId, options = [], labels = [], currentMode, onModeChange, disabled, showAppNotification } = props || {};
     return (
         <div data-testid={`mode-selector-${sectionId}`}>
-            {options.map((option, index) => (
-                <button key={option} disabled={disabled} className={currentMode === option ? 'active' : ''} onClick={() => onModeChange && onModeChange(sectionId, option)}>
-                    {labels[index] || option}
-                </button>
-            ))}
+            {options.map((option, index) => {
+                const value = typeof option === 'object' ? option.value : option;
+                const status = typeof option === 'object' ? option.status : null;
+                const label = labels[index] || value;
+                const isTBD = status === 'TBD';
+                
+                return (
+                    <button 
+                        key={value} 
+                        disabled={disabled} 
+                        className={currentMode === value ? 'active' : ''} 
+                        onClick={() => {
+                            if (isTBD && showAppNotification) {
+                                showAppNotification('This feature is not yet implemented.', 'info');
+                            } else if (onModeChange) {
+                                onModeChange(sectionId, value);
+                            }
+                        }}
+                    >
+                        {label}
+                    </button>
+                );
+            })}
         </div>
     );
 });
@@ -238,7 +256,7 @@ describe('ConfigSection', () => {
         };
 
         const mockCommands = [{
-            "commandId": "testAnalyticsLogCommand",
+            "sectionId": "testAnalyticsLogCommand",
             "command": {
                 "base": "tail -f /var/log/analytics.log",
                 "tabTitle": "Analytics Logs"
