@@ -119,37 +119,7 @@ For end-to-end (E2E) tests that launch the Electron app, you should run tests in
 HEADLESS=true npm run test:e2e
 ```
 
-This ensures the Electron window is not shown during tests. You can also add `-- --headless` to explicitly run Playwright in headless mode, but by default Playwright is headless unless configured otherwise.
-
-## Test Results
-
-The test suite is fully passing and optimized for reliability:
-
-### Jest (Unit, Component, and Mock Data)
-- **Test Suites:** 11 passed, 11 total (mock)
-- **Tests:** 179 passed, 179 total (mock)
-- **Test Suites:** 9 passed, 9 total (prod)
-- **Tests:** 138 passed, 138 total (prod)
-- **Fast execution:** ~0.8–1.3 seconds
-
-### E2E (Playwright)
-- **Test Suites:** 28 passed, 28 total
-- **Tests:** 28 passed, 28 total
-- **Fast execution:** ~44 seconds for all E2E tests
-
-- ✅ All Jest and E2E tests pass
-- ✅ No test failures
-- ⚡ Fast and reliable execution
-
-### What We Don't Test
-
-We deliberately avoid testing implementation details that can create brittle tests:
-- Internal function call verification
-- Mock interaction counting  
-- IPC handler registration specifics
-- Module loading mechanisms
-
-These implementation details change frequently during refactoring and create false test failures.
+This ensures the Electron window is not shown during tests. You can also add `HEADLESS=true` to explicitly run Playwright in headless mode, but by default Playwright is headless unless configured otherwise.
 
 ## Key Scripts
 

@@ -32,7 +32,7 @@ let mainWindow; // This will be managed by windowManagement module
 const projectRoot = path.resolve(app.getAppPath(), '..'); // Define projectRoot globally for helpers
 
 // Function to create the main window (corrected version)
-function createWindow() {
+function createWindow(displaySettings = {}) {
   // Check if running in test/headless mode
   const isTestMode = process.env.HEADLESS === 'true';
   
@@ -64,12 +64,8 @@ function createWindow() {
   mainWindow.loadFile('index.html');
   
   // Open DevTools for debugging based on config (but not in test mode)
-  if (!isTestMode) {
-    loadDisplaySettings().then(displaySettings => {
-      if (displaySettings.openDevToolsByDefault) {
-        mainWindow.webContents.openDevTools();
-      }
-    });
+  if (!isTestMode && displaySettings.openDevToolsByDefault) {
+    mainWindow.webContents.openDevTools();
   }
   
   mainWindow.on('closed', () => {
@@ -87,7 +83,7 @@ async function loadDisplaySettings() {
     console.error('Error loading display settings:', error);
     return {}; // Return empty object on error
   }
-  }
+}
 
 // ==================== IPC HANDLERS ====================
 
@@ -142,6 +138,11 @@ ipcMain.on('open-dev-tools', (event) => {
   if (mainWindow) {
     mainWindow.webContents.openDevTools();
   }
+});
+
+ipcMain.handle('is-dev-tools-open', () => {
+    if (!mainWindow) return false;
+    return mainWindow.webContents.isDevToolsOpened();
 });
 
 ipcMain.on('reload-app', (event) => {
@@ -200,14 +201,21 @@ ipcMain.on('pty-resize', (event, { terminalId, cols, rows }) => {
   ptyManagement.resizePTY(terminalId, cols, rows);
 });
 
+ipcMain.on('process-exited', (event, data) => {
+    mainWindow.webContents.send('process-exited', data);
+});
+
 // ==================== APP LIFECYCLE ====================
 
 app.whenReady().then(async () => {
   console.log('=== APPLICATION STARTUP ===');
-  console.log('1. Starting environment verification...');
+  console.log('1. Loading display settings...');
+  const displaySettings = await loadDisplaySettings();
+
+  console.log('2. Starting environment verification...');
   
   // Create the main window
-  mainWindow = createWindow();
+  mainWindow = createWindow(displaySettings);
   
   // Perform environment verification first
   try {
@@ -228,9 +236,10 @@ app.on('window-all-closed', () => {
   }
 });
 
-app.on('activate', () => {
+app.on('activate', async () => {
   if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
+    const displaySettings = await loadDisplaySettings();
+    createWindow(displaySettings);
   }
 });
 

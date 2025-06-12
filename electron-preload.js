@@ -184,7 +184,42 @@ contextBridge.exposeInMainWorld('electron', {
       }
     };
   },
-  onProcessKilled: (callback) => ipcRenderer.on('process-killed', (event, data) => callback(data)),
+  onProcessKilled: (callback) => {
+    const wrapperFn = (event, data) => callback(data);
+    eventListeners['process-killed'].push({
+      callback: callback,
+      wrapper: wrapperFn
+    });
+    ipcRenderer.on('process-killed', wrapperFn);
+    
+    return () => {
+      ipcRenderer.removeListener('process-killed', wrapperFn);
+      const index = eventListeners['process-killed'].findIndex(
+        listener => listener.wrapper === wrapperFn
+      );
+      if (index !== -1) {
+        eventListeners['process-killed'].splice(index, 1);
+      }
+    };
+  },
+  onProcessEnded: (callback) => {
+    const wrapperFn = (event, data) => callback(data);
+    eventListeners['process-ended'].push({
+      callback: callback,
+      wrapper: wrapperFn
+    });
+    ipcRenderer.on('process-ended', wrapperFn);
+    
+    return () => {
+      ipcRenderer.removeListener('process-ended', wrapperFn);
+      const index = eventListeners['process-ended'].findIndex(
+        listener => listener.wrapper === wrapperFn
+      );
+      if (index !== -1) {
+        eventListeners['process-ended'].splice(index, 1);
+      }
+    };
+  },
   removeProcessKilledListener: (callback) => ipcRenderer.removeListener('process-killed', callback),
   
   // Termination status events
@@ -212,6 +247,7 @@ contextBridge.exposeInMainWorld('electron', {
   stopContainers: (containerNames) => ipcRenderer.invoke('stop-containers', containerNames),
   getContainerStatus: (containerName) => ipcRenderer.invoke('get-container-status', containerName),
 
+  isDevToolsOpen: () => ipcRenderer.invoke('is-dev-tools-open'),
   exportConfig: (data) => ipcRenderer.invoke('export-config', data),
   importConfig: () => ipcRenderer.invoke('import-config'),
   

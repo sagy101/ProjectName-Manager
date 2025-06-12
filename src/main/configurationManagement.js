@@ -10,13 +10,12 @@ const CONFIG_SIDEBAR_SECTIONS_PATH = path.join(__dirname, '../configurationSideb
 // Function to load display settings
 async function loadDisplaySettings() {
   try {
-    const aboutConfig = JSON.parse(await fs.readFile(CONFIG_SIDEBAR_ABOUT_PATH, 'utf-8'));
     const sectionsConfig = JSON.parse(await fs.readFile(CONFIG_SIDEBAR_SECTIONS_PATH, 'utf-8'));
     
-    // Extract display settings
+    // Extract display settings from the loaded config
     const displaySettings = {
-      openDevToolsByDefault: false, // Default value
-      // Add other display settings here as needed
+      openDevToolsByDefault: sectionsConfig?.displaySettings?.openDevToolsByDefault || false,
+      projectName: sectionsConfig?.displaySettings?.projectName || 'ISO',
     };
 
     console.log('Display settings loaded successfully');

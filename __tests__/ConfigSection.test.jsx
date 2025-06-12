@@ -221,4 +221,47 @@ describe('ConfigSection', () => {
         expect(baseProps.toggleSubSectionEnabled).toHaveBeenCalledWith('generic-section-1', 'generic-subsection-1', false);
     });
 
+    it('renders a single customButton and handles click', () => {
+        const mockSection = {
+            id: "test-analytics",
+            title: "Test Analytics Engine",
+            testSection: true,
+            components: {
+                toggle: true,
+                customButton: {
+                    id: "testAnalyticsLogs",
+                    label: "View Logs",
+                    commandId: "testAnalyticsLogCommand"
+                }
+            }
+        };
+
+        const mockCommands = [{
+            "commandId": "testAnalyticsLogCommand",
+            "command": {
+                "base": "tail -f /var/log/analytics.log",
+                "tabTitle": "Analytics Logs"
+            }
+        }];
+
+        render(
+            <ConfigSection 
+                {...baseProps} 
+                section={mockSection} 
+                config={{ enabled: true }} 
+                configSidebarCommands={mockCommands} 
+            />
+        );
+
+        const button = screen.getByText('View Logs');
+        expect(button).toBeInTheDocument();
+        fireEvent.click(button);
+
+        expect(baseProps.openFloatingTerminal).toHaveBeenCalledTimes(1);
+        expect(baseProps.openFloatingTerminal).toHaveBeenCalledWith(
+            'testAnalyticsLogCommand',
+            'View Logs',
+            'tail -f /var/log/analytics.log'
+        );
+    });
 }); 
