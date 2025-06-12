@@ -7,6 +7,7 @@ describe('ModeSelector', () => {
   const defaultProps = {
     sectionId: 'testSection',
     options: ['development', 'staging', 'production'],
+    labels: ['Development', 'Staging', 'Production'],
     currentMode: 'development',
     onModeChange: jest.fn(),
     disabled: false
@@ -135,10 +136,11 @@ describe('ModeSelector', () => {
   });
 
   describe('Label Formatting', () => {
-    it('capitalizes first letter of each option', () => {
+    it('capitalizes first letter of each option if no labels are provided', () => {
       const propsWithLowercaseOptions = {
         ...defaultProps,
         options: ['run', 'suspend', 'debug'],
+        labels: [], // No labels
         currentMode: 'run'
       };
       
@@ -158,9 +160,55 @@ describe('ModeSelector', () => {
       
       render(<ModeSelector {...propsWithMixedCaseOptions} />);
       
-      expect(screen.getByText('DevMode')).toBeInTheDocument();
-      expect(screen.getByText('TestMode')).toBeInTheDocument();
-      expect(screen.getByText('ProdMode')).toBeInTheDocument();
+      expect(screen.getByText('devMode')).toBeInTheDocument();
+      expect(screen.getByText('testMode')).toBeInTheDocument();
+      expect(screen.getByText('prodMode')).toBeInTheDocument();
+    });
+
+    it('handles partial labels array correctly', () => {
+      const propsWithPartialLabels = {
+        ...defaultProps,
+        options: ['option1', 'option2', 'option3'],
+        labels: ['Custom Label 1', 'Custom Label 2'] // Missing third label
+      };
+      
+      render(<ModeSelector {...propsWithPartialLabels} />);
+      
+      expect(screen.getByText('Custom Label 1')).toBeInTheDocument();
+      expect(screen.getByText('Custom Label 2')).toBeInTheDocument();
+      expect(screen.getByText('option3')).toBeInTheDocument(); // Falls back to raw value
+    });
+
+    it('calls onModeChange with original option value, not label', () => {
+      const mockOnModeChange = jest.fn();
+      const propsWithLabels = {
+        ...defaultProps,
+        options: ['dev'],
+        labels: ['Development Mode'],
+        onModeChange: mockOnModeChange
+      };
+      
+      render(<ModeSelector {...propsWithLabels} />);
+      fireEvent.click(screen.getByText('Development Mode'));
+      
+      expect(mockOnModeChange).toHaveBeenCalledWith('testSection', 'dev');
+    });
+
+    it('shows active state with custom labels', () => {
+      const propsWithLabels = {
+        ...defaultProps,
+        options: ['normal', 'dev'],
+        labels: ['Normal Mode', 'Development Mode'],
+        currentMode: 'dev'
+      };
+      
+      render(<ModeSelector {...propsWithLabels} />);
+      
+      const normalButton = screen.getByText('Normal Mode');
+      const devButton = screen.getByText('Development Mode');
+      
+      expect(normalButton).not.toHaveClass('active');
+      expect(devButton).toHaveClass('active');
     });
   });
 
@@ -174,7 +222,7 @@ describe('ModeSelector', () => {
       
       render(<ModeSelector {...propsWithSingleOption} />);
       
-      const button = screen.getByText('Only');
+      const button = screen.getByText('only');
       expect(button).toBeInTheDocument();
       expect(button).toHaveClass('active');
     });
@@ -247,7 +295,7 @@ describe('ModeSelector', () => {
       
       expect(screen.getByText('Custom Label 1')).toBeInTheDocument();
       expect(screen.getByText('Custom Label 2')).toBeInTheDocument();
-      expect(screen.getByText('Option3')).toBeInTheDocument(); // Falls back to capitalized
+      expect(screen.getByText('option3')).toBeInTheDocument(); // Falls back to raw value
     });
 
     it('calls onModeChange with original option value, not label', () => {

@@ -638,3 +638,40 @@ Dropdown selectors provide a generic, JSON-configurable way to create dynamic dr
   }
 }
 ```
+
+#### Marking Options as "TBD" (To Be Determined)
+
+You can mark a specific mode or deployment option as "not yet implemented" by changing the `options` array from a simple array of strings to an array of objects. This allows you to visually disable an option while keeping it in the UI as a placeholder for a future feature.
+
+-   **`value`**: The actual value of the option (e.g., "container", "run").
+-   **`status`**: (Optional) Set to `"TBD"` to mark the option as not yet implemented.
+
+When an option is marked as "TBD":
+-   It will be visually grayed out and will show a "wrench" icon.
+-   The default selection will automatically skip over it.
+-   Clicking it will show an informative notification to the user without changing the current selection.
+
+**Example:**
+```json
+"deploymentOptions": [
+  { "value": "container", "status": "TBD" },
+  { "value": "process" }
+],
+"modeSelector": {
+  "options": [
+    { "value": "run" },
+    { "value": "suspend" },
+    { "value": "debug", "status": "TBD" }
+  ],
+  "default": "run"
+}
+```
+
+### `attachToggle`
+```json
+"attachToggle": {
+  "enabled": true,
+  "mutuallyExclusiveWith": ["other-section-id"]
+}
+```
+Adds an attach debugger toggle. Can be mutually exclusive with other sections.

@@ -774,6 +774,7 @@ const App = () => {
               onIsRunningChange={handleIsoRunStateChange}
               openFloatingTerminal={openFloatingTerminal}
               onBranchChangeError={showAppNotification}
+              showAppNotification={showAppNotification}
             />
           </div>
           <div className="main-content"> {/* TerminalContainer etc. */}

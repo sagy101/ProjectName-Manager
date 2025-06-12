@@ -33,7 +33,8 @@ const ConfigSection = ({
   onDropdownChange,
   openFloatingTerminal,
   configSidebarCommands,
-  onBranchChangeError
+  onBranchChangeError,
+  showAppNotification
 }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const verificationPopoverRef = useRef(null);
@@ -284,6 +285,8 @@ const ConfigSection = ({
               currentType={config.mode}
               onChange={(id, type) => setMode(id, type)}
               disabled={isLocked}
+              options={section.components.deploymentOptions}
+              showAppNotification={showAppNotification}
             />
           )}
 
@@ -296,6 +299,7 @@ const ConfigSection = ({
               currentMode={config.mode}
               onModeChange={(id, mode) => setMode(id, mode)}
               disabled={isLocked}
+              showAppNotification={showAppNotification}
             />
           )}
 
@@ -355,6 +359,7 @@ const ConfigSection = ({
                               currentMode={subSectionConfig.mode}
                               onModeChange={(id, mode) => setMode(section.id, mode, subSection.id)}
                               disabled={isLocked || !subSectionConfig.enabled}
+                              showAppNotification={showAppNotification}
                             />
                           </div>
                         )}

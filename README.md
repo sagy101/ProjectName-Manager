@@ -310,8 +310,8 @@ git init
 | `toggle` | Main enable/disable toggle | `true/false` |
 | `infoButton` | Shows section description | `true/false` |
 | `gitBranch` | Git branch switcher | `true/false` |
-| `deploymentOptions` | Standardized container/process selector | `true/false` |
-| `modeSelector` | Custom multi-option mode selector | `{ options: [], labels: [], default: "" }` |
+| `deploymentOptions` | Standardized container/process selector | `true` or `[{ value: "container", status?: "TBD" }, { value: "process" }]` |
+| `modeSelector` | Custom multi-option mode selector | `{ options: (string[] | { value: string, status?: "TBD" }[]), labels?: string[], default: "" }` |
 | `attachToggle` | Attach debugger toggle | `{ enabled: true, mutuallyExclusiveWith: [] }` |
 | `dropdownSelectors` | Generic command-driven dropdowns with default value support | Array of dropdown configs |
 | `subSections` | Nested sub-sections | Array of sub-section configs |
@@ -522,7 +522,6 @@ The debug panel button changes appearance based on active options:
 - [Verification Types](docs/verification-types.md) - Complete verification reference
 - [Command System](docs/command-system.md) - Command generation and execution
 - [Terminal Features](docs/terminal-features.md) - Tab information panel
-- [API Reference](docs/api-reference.md) - Internal API documentation
 - [AI Coding Experiment](docs/llm-experiments.md) - Overview of vibe coding with various tools and models
 
 ## 🙏 Acknowledgments

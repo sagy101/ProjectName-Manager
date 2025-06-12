@@ -6,6 +6,10 @@ import DeploymentOptions from '../src/components/DeploymentOptions.jsx';
 describe('DeploymentOptions', () => {
   const defaultProps = {
     sectionId: 'testSection',
+    options: [
+      { value: 'container', label: 'Container' },
+      { value: 'process', label: 'Process' }
+    ],
     currentType: 'container',
     onChange: jest.fn(),
     disabled: false
@@ -226,6 +230,13 @@ describe('DeploymentOptions', () => {
       }).not.toThrow();
     });
 
+    it('handles missing options prop gracefully', () => {
+      const { options, ...propsWithoutOptions } = defaultProps;
+      expect(() => {
+        render(<DeploymentOptions {...propsWithoutOptions} />);
+      }).not.toThrow();
+    });
+
     it('does not crash when onChange is undefined and button is clicked', () => {
       const { onChange, ...propsWithoutOnChange } = defaultProps;
       
@@ -254,7 +265,7 @@ describe('DeploymentOptions', () => {
       const containerButton = screen.getByText('Container');
       const processButton = screen.getByText('Process');
       
-      expect(containerButton).not.toHaveClass('active');
+      expect(containerButton).toHaveClass('active');
       expect(processButton).not.toHaveClass('active');
     });
 

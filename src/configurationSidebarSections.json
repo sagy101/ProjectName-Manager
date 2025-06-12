@@ -42,7 +42,10 @@
         "toggle": true,
         "infoButton": true,
         "gitBranch": true,
-        "deploymentOptions": true
+        "deploymentOptions": [
+          { "value": "container", "status": "TBD" },
+          { "value": "process" }
+        ]
       }
     },
     {
@@ -75,7 +78,8 @@
               "toggle": true,
               "modeSelector": {
                 "options": ["forwarding", "process", "mock"],
-                "labels": ["Forwarding", "Process", "Mock"]
+                "labels": ["Forwarding", "Process", "Mock"],
+                "default": "Mock"
               },
               "dropdownSelectors": [
                 {
@@ -160,7 +164,12 @@
         "infoButton": true,
         "gitBranch": true,
         "modeSelector": {
-          "options": ["development", "staging", "production"],
+          "options": [
+            { "value": "development" },
+            { "value": "staging" },
+            { "value": "production" },
+            { "value": "mock", "status": "TBD" }
+          ],
           "default": "development"
         },
         "subSections": [

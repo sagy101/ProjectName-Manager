@@ -82,7 +82,10 @@
         "toggle": true,
         "infoButton": true,
         "modeSelector": {
-          "options": ["alpha", "beta"],
+          "options": [
+            { "value": "alpha" },
+            { "value": "beta", "status": "TBD" }
+          ],
           "default": "alpha"
         }
       }

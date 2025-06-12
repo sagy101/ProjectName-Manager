@@ -81,10 +81,18 @@ const getValueFromState = (key, cmdSectionId, config, sectionsConfig) => {
     if (config[parentSection.id]?.[subConfigName]?.[key] !== undefined) {
       return config[parentSection.id][subConfigName][key];
     }
-    return config[parentSection.id]?.[key];
+    const value = config[parentSection.id]?.[key];
+    if ((key === 'deploymentType' || key === 'mode') && typeof value === 'object' && value !== null && value.value) {
+      return value.value;
+    }
+    return value;
   }
 
-  return config[cmdSectionId]?.[key];
+  const value = config[cmdSectionId]?.[key];
+  if ((key === 'deploymentType' || key === 'mode') && typeof value === 'object' && value !== null && value.value) {
+    return value.value;
+  }
+  return value;
 };
 
 function generateCommandList(config, globalDropdowns, {
@@ -211,13 +219,20 @@ function generateCommandList(config, globalDropdowns, {
       }
 
       if (!found && varName === 'mode') {
+        let modeValue;
         if (currentCommandSectionIsSubSection && parentSectionId && subSectionConfigObjectName) {
-          replacementValue = config[parentSectionId]?.[subSectionConfigObjectName]?.mode || match;
-          if (replacementValue !== match) found = true;
-        } else if (config[cmdSectionId]?.mode !== undefined) {
-          replacementValue = config[cmdSectionId]?.mode || match;
-          if (replacementValue !== match) found = true;
+          modeValue = config[parentSectionId]?.[subSectionConfigObjectName]?.mode;
+        } else {
+          modeValue = config[cmdSectionId]?.mode;
         }
+        
+        if (typeof modeValue === 'object' && modeValue !== null) {
+            replacementValue = modeValue.value || match;
+        } else {
+            replacementValue = modeValue || match;
+        }
+
+        if (replacementValue !== match) found = true;
       }
 
       return replacementValue;

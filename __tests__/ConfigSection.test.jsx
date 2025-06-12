@@ -86,6 +86,7 @@ describe('ConfigSection', () => {
             openFloatingTerminal: jest.fn(),
             isLocked: false,
             sectionPathStatus: {},
+            showAppNotification: jest.fn(),
         };
     });
 
@@ -263,5 +264,27 @@ describe('ConfigSection', () => {
             'View Logs',
             'tail -f /var/log/analytics.log'
         );
+    });
+
+    it('handles TBD options in ModeSelector correctly', () => {
+        const section = sectionsData.sections.find(s => s.id === 'test-section-generic');
+        const config = { enabled: true, mode: 'alpha' };
+        baseProps.showAppNotification = jest.fn();
+
+        render(
+            <ConfigSection 
+                {...baseProps} 
+                section={section} 
+                config={config}
+            />
+        );
+
+        const tbdButton = screen.getByText('beta');
+        fireEvent.click(tbdButton);
+
+        // Check that the mode change was NOT called
+        expect(baseProps.setMode).not.toHaveBeenCalled();
+        // Check that a notification was shown
+        expect(baseProps.showAppNotification).toHaveBeenCalledWith('This feature is not yet implemented.', 'info');
     });
 }); 
