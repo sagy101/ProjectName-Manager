@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { launchElectron } = require('./test-utils');
+const { launchElectron } = require('./test-helpers');
 
 test.describe('TBD Mode Functionality', () => {
   let electronApp;
@@ -18,8 +18,14 @@ test.describe('TBD Mode Functionality', () => {
 
   test('should show TBD status and prevent switching', async () => {
     // Enable test sections to see the test-analytics section
-    await window.click('button[title="Show Debug Tools"]');
-    await window.click('button:has-text("Show Test Sections")');
+    const expandButton = await window.locator('[title="Expand Sidebar"]');
+    await expandButton.click();
+    
+    const debugButton = await window.locator('[title*="Debug Tools"]');
+    await debugButton.click();
+    
+    const showTestSectionsButton = await window.locator('button').filter({ hasText: /Show Tests/i });
+    await showTestSectionsButton.click();
 
     // Find the test-analytics section and enable it
     const testAnalyticsSection = window.locator('#section-test-analytics');
@@ -34,17 +40,17 @@ test.describe('TBD Mode Functionality', () => {
 
     // Get the initial active mode
     const initialMode = await testAnalyticsSection.locator('.deployment-toggle-btn.active').textContent();
-    expect(initialMode.trim()).toBe('development');
+    expect(initialMode.trim()).toBe('Development');
 
     // Click the TBD button
     await mockButton.click();
 
     // Verify the mode did NOT change
     const newMode = await testAnalyticsSection.locator('.deployment-toggle-btn.active').textContent();
-    expect(newMode.trim()).toBe('development');
+    expect(newMode.trim()).toBe('Development');
 
     // Verify the notification appeared
-    const notification = window.locator('.notification.info');
+    const notification = window.locator('.notification-info');
     await expect(notification).toBeVisible();
     await expect(notification).toContainText('This feature is not yet implemented.');
   });

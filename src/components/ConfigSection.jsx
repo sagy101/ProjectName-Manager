@@ -285,7 +285,11 @@ const ConfigSection = ({
               currentType={config.mode}
               onChange={(id, type) => setMode(id, type)}
               disabled={isLocked}
-              options={section.components.deploymentOptions}
+              options={
+                Array.isArray(section.components.deploymentOptions) 
+                  ? section.components.deploymentOptions 
+                  : [{ value: 'container' }, { value: 'process' }]
+              }
               showAppNotification={showAppNotification}
             />
           )}
