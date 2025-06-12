@@ -284,6 +284,59 @@ describe('ConfigSection', () => {
         );
     });
 
+    it('renders sub-section custom button and handles click', () => {
+        const mockSection = {
+            id: 'parent-section',
+            title: 'Parent Section',
+            components: {
+                toggle: true,
+                subSections: [
+                    {
+                        id: 'child-sub',
+                        title: 'Child Sub',
+                        components: {
+                            toggle: true,
+                            customButton: {
+                                id: 'childLogs',
+                                label: 'Sub Logs',
+                                commandId: 'childLogCommand'
+                            }
+                        }
+                    }
+                ]
+            }
+        };
+
+        const mockCommands = [{
+            sectionId: 'childLogCommand',
+            command: {
+                base: 'echo child log',
+                tabTitle: 'Child Logs'
+            }
+        }];
+
+        const config = { enabled: true, childConfig: { enabled: true } };
+
+        render(
+            <ConfigSection
+                {...baseProps}
+                section={mockSection}
+                config={config}
+                configSidebarCommands={mockCommands}
+            />
+        );
+
+        const button = screen.getByText('Sub Logs');
+        expect(button).toBeInTheDocument();
+        fireEvent.click(button);
+
+        expect(baseProps.openFloatingTerminal).toHaveBeenCalledWith(
+            'childLogCommand',
+            'Sub Logs',
+            'echo child log'
+        );
+    });
+
     it('handles TBD options in ModeSelector correctly', () => {
         const section = sectionsData.sections.find(s => s.id === 'test-section-generic');
         const config = { enabled: true, mode: 'alpha' };
