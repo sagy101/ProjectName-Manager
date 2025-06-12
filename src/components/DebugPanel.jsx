@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import '../styles/debug-panel.css';
+import { ArrowUpOnSquareIcon, ArrowDownOnSquareIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline';
 
 const DebugPanel = ({ 
   onToggleVerificationStatus, 
@@ -10,7 +11,10 @@ const DebugPanel = ({
   isIsoRunning,
   showAppNotification,
   isOpen,
-  onClose
+  onClose,
+  onExportConfig,
+  onImportConfig,
+  onExportEnvironment
 }) => {
   const [sectionStatuses, setSectionStatuses] = useState({
     cloud: 'waiting',
@@ -206,6 +210,35 @@ const DebugPanel = ({
                 disabled={isIsoRunning}
               >
                 {'No Run Mode'}
+              </button>
+            </section>
+            <section className="debug-section">
+              <h4>Configuration</h4>
+              <button 
+                className="debug-button"
+                onClick={onExportConfig}
+                disabled={isIsoRunning}
+                title="Export the current run configuration to a JSON file."
+              >
+                <ArrowUpOnSquareIcon className="debug-button-icon" />
+                Export Config
+              </button>
+              <button 
+                className="debug-button"
+                onClick={onImportConfig}
+                disabled={isIsoRunning}
+                title="Import a run configuration from a JSON file."
+              >
+                <ArrowDownOnSquareIcon className="debug-button-icon" />
+                Import Config
+              </button>
+              <button 
+                className="debug-button"
+                onClick={onExportEnvironment}
+                title="Export the environment verification results to a JSON file."
+              >
+                <DocumentArrowDownIcon className="debug-button-icon" />
+                Export Environment
               </button>
             </section>
           </div>

@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import '../styles/app-control-sidebar.css'; // Renamed CSS
 // Import XMarkIcon as CloseIcon for clarity, or use XMarkIcon directly if no conflict
 import { Bars3Icon, XMarkIcon, EyeIcon, EyeSlashIcon, InformationCircleIcon, XMarkIcon as CloseIcon, Cog6ToothIcon, ArrowPathIcon, ComputerDesktopIcon, TrashIcon, ArrowDownTrayIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
+import FloatingTerminalIcon from './FloatingTerminalIcon';
+import DebugPanel from './DebugPanel.jsx';
 
 const AppControlSidebar = ({
   floatingTerminals,
@@ -22,10 +24,12 @@ const AppControlSidebar = ({
   isMainTerminalWritable, // New prop
   onToggleMainTerminalWritable, // New prop
   onExportConfig,
-  onImportConfig
+  onImportConfig,
+  onExportEnvironment
 }) => {
   const sidebarRef = useRef(null);
   const [isDebugSectionOpen, setIsDebugSectionOpen] = useState(false);
+  const [isDebugPanelOpen, setIsDebugPanelOpen] = useState(false);
 
   // Click away to collapse
   useEffect(() => {
@@ -203,6 +207,20 @@ const AppControlSidebar = ({
           </button>
         </div>
       )}
+
+      <DebugPanel
+        isOpen={isDebugPanelOpen}
+        onClose={() => setIsDebugPanelOpen(false)}
+        onToggleTestSections={onToggleTestSections}
+        showTestSections={showTestSections}
+        onToggleNoRunMode={onToggleNoRunMode}
+        noRunMode={noRunMode}
+        isIsoRunning={isIsoRunning}
+        showAppNotification={showAppNotification}
+        onExportConfig={onExportConfig}
+        onImportConfig={onImportConfig}
+        onExportEnvironment={onExportEnvironment}
+      />
     </div>
   );
 };

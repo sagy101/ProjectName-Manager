@@ -1,7 +1,7 @@
 {
   "displaySettings": {
     "projectName": "ISO",
-    "openDevToolsByDefault": false
+    "openDevToolsByDefault": true
   },
   "sections": [
     {

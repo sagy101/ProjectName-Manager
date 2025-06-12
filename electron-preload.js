@@ -251,7 +251,8 @@ contextBridge.exposeInMainWorld('electron', {
   isDevToolsOpen: () => ipcRenderer.invoke('is-dev-tools-open'),
   exportConfig: (data) => ipcRenderer.invoke('export-config', data),
   importConfig: () => ipcRenderer.invoke('import-config'),
-  
+  exportEnvironment: () => ipcRenderer.invoke('export-environment'),
+
   // Container cleanup event handlers
   onStopAllContainersBeforeQuit: (callback) => {
     const wrapperFn = (event) => callback();
