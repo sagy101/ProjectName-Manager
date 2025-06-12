@@ -278,17 +278,29 @@ const App = () => {
     }
   }, []);
 
-  const triggerGlobalRefresh = async () => {
-    console.log('App: Triggering global environment verification refresh...');
-    if (window.electron && window.electron.refreshEnvironmentVerification) {
+  const triggerGitRefresh = useCallback(async () => {
+    console.log('App: Triggering targeted git status refresh...');
+    if (window.electron && window.electron.refreshGitStatuses) {
       try {
-        handleInitiateRefresh(); 
-        await window.electron.refreshEnvironmentVerification(); 
+        const newGitStatuses = await window.electron.refreshGitStatuses();
+        console.log('App: Received new git statuses:', newGitStatuses);
+        setVerificationStatuses(prev => {
+          const newStatuses = { ...prev };
+          for (const sectionKey in newGitStatuses) {
+            if (newStatuses[sectionKey]) {
+              newStatuses[sectionKey] = {
+                ...newStatuses[sectionKey],
+                gitBranch: newGitStatuses[sectionKey].gitBranch
+              };
+            }
+          }
+          return newStatuses;
+        });
       } catch (error) {
-        console.error('App: Error during triggered global refresh:', error);
+        console.error('App: Error during targeted git refresh:', error);
       }
     }
-  };
+  }, []);
 
   // Set up process-related event listeners
   useEffect(() => {
@@ -749,11 +761,12 @@ const App = () => {
               globalDropdownValues={globalDropdownValues}
               terminalRef={terminalRef}
               verificationStatuses={verificationStatuses}
-              onTriggerRefresh={triggerGlobalRefresh}
+              onTriggerRefresh={triggerGitRefresh}
               showTestSections={showTestSections}
               onConfigStateChange={handleConfigStateChange}
               onIsRunningChange={handleIsoRunStateChange}
-              openFloatingTerminal={openFloatingTerminal} // Pass down the function
+              openFloatingTerminal={openFloatingTerminal}
+              onBranchChangeError={showAppNotification}
             />
           </div>
           <div className="main-content"> {/* TerminalContainer etc. */}

@@ -104,6 +104,10 @@ ipcMain.handle('refresh-environment-verification', async () => {
   return await environmentVerification.refreshEnvironmentVerification(mainWindow);
 });
 
+ipcMain.handle('refresh-git-statuses', async () => {
+  return await gitManagement.refreshGitBranches();
+});
+
 ipcMain.handle('get-command-for-section', async (event, { config, globalDropdowns, attachState, showTestSections }) => {
   // This handler regenerates the command list based on the latest state from the frontend
   const configSidebarCommands = await configurationManagement.loadCommandsConfig();

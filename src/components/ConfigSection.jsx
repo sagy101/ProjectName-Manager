@@ -32,7 +32,8 @@ const ConfigSection = ({
   setSubSectionDeploymentType,
   onDropdownChange,
   openFloatingTerminal,
-  configSidebarCommands
+  configSidebarCommands,
+  onBranchChangeError
 }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const verificationPopoverRef = useRef(null);
@@ -246,6 +247,7 @@ const ConfigSection = ({
                 projectPath={getSectionDirectoryPath(section.id)}
                 currentBranch={sectionGitBranch}
                 onBranchChangeSuccess={onTriggerRefresh}
+                onBranchChangeError={onBranchChangeError}
                 disabled={isLocked || !config.enabled}
               />
             </div>

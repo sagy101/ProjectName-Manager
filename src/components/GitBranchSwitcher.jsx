@@ -6,6 +6,7 @@ const GitBranchSwitcher = ({
   projectPath,
   currentBranch,
   onBranchChangeSuccess,
+  onBranchChangeError,
   disabled
 }) => {
   const [isOpen, setIsOpen] = useState(false); // For dropdown visibility
@@ -106,12 +107,19 @@ const GitBranchSwitcher = ({
           onBranchChangeSuccess(); // Trigger global refresh
         }
       } else {
-        setError(result.error || 'Failed to checkout branch.');
-        // Keep dropdown open if checkout fails to show error
+        const errorMessage = result.error || 'Failed to checkout branch.';
+        setError(errorMessage);
+        if (onBranchChangeError) {
+          onBranchChangeError(`Branch switch failed: ${errorMessage}`, 'error');
+        }
       }
     } catch (err) {
       console.error('Error during git checkout IPC call:', err);
-      setError('IPC Error: ' + err.message);
+      const errorMessage = 'IPC Error: ' + err.message;
+      setError(errorMessage);
+      if (onBranchChangeError) {
+        onBranchChangeError(`Branch switch failed: ${errorMessage}`, 'error');
+      }
     }
     setCheckoutLoading(false);
   };
@@ -121,7 +129,7 @@ const GitBranchSwitcher = ({
   );
 
   // Determine if the search term could be a new branch
-  const canCreateNewBranch = searchTerm.trim() !== '' && !localBranches.includes(searchTerm.trim());
+  const isPotentialRemoteBranch = searchTerm.trim() !== '' && !localBranches.includes(searchTerm.trim());
 
   // Determine the display text and loading state
   const isLoading = checkoutLoading;
@@ -153,7 +161,7 @@ const GitBranchSwitcher = ({
             <input 
               ref={inputRef}
               type="text" 
-              placeholder="Find or create a branch..." 
+              placeholder="Find or checkout a branch..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleCheckout()} // Checkout on Enter
@@ -176,16 +184,13 @@ const GitBranchSwitcher = ({
                   <span className="branch-name-in-list">{branch}</span>
                 </li>
               ))}
-              {canCreateNewBranch && (
-                <li 
-                  className={`create-branch-item ${disabled ? 'disabled-item' : ''}`}
-                  onClick={() => !disabled && handleCheckout(searchTerm.trim())} // Prevent action if disabled
-                >
-                  Create branch: <strong>{searchTerm.trim()}</strong> from '{currentBranch}'
+              {isPotentialRemoteBranch && (
+                <li className="no-results-item">
+                  Not a local branch. Press Enter to checkout from remote.
                 </li>
               )}
-              {filteredBranches.length === 0 && !canCreateNewBranch && !branchesLoading && (
-                <li className="no-results-item">No branches found.</li>
+              {filteredBranches.length === 0 && !isPotentialRemoteBranch && !branchesLoading && (
+                <li className="no-results-item">No matching branches found.</li>
               )}
             </ul>
           )}

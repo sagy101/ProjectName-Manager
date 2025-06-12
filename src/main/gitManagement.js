@@ -1,10 +1,13 @@
 const path = require('path');
 const { exec } = require('child_process');
+const fs = require('fs').promises;
 
 const projectRoot = path.resolve(__dirname, '../../..'); // Adjusted for new location
 
 // Helper function to get Git branch with caching
 const gitBranchCache = {};
+
+const CONFIG_SIDEBAR_ABOUT_PATH = path.join(__dirname, '../configurationSidebarAbout.json');
 
 const getGitBranch = async (relativePath) => {
   // Check cache first
@@ -112,10 +115,38 @@ const getGitBranchCache = () => {
   return { ...gitBranchCache };
 };
 
+async function refreshGitBranches() {
+    console.log('Refreshing git branch statuses...');
+    clearGitBranchCache();
+
+    let configSidebarAbout = [];
+    try {
+        const configAboutFile = await fs.readFile(CONFIG_SIDEBAR_ABOUT_PATH, 'utf-8');
+        configSidebarAbout = JSON.parse(configAboutFile);
+    } catch (err) {
+        console.error('Error reading configurationSidebarAbout.json for git refresh:', err);
+        return {};
+    }
+    
+    const refreshedBranches = {};
+    const branchPromises = configSidebarAbout.map(async (sectionAbout) => {
+        if (sectionAbout.directoryPath) {
+            const cacheKey = sectionAbout.sectionId.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+            const branch = await getGitBranch(sectionAbout.directoryPath);
+            refreshedBranches[cacheKey] = { gitBranch: branch };
+        }
+    });
+
+    await Promise.all(branchPromises);
+    console.log('Git branch refresh complete.');
+    return refreshedBranches;
+}
+
 module.exports = {
   getGitBranch,
   checkoutGitBranch,
   listLocalGitBranches,
   clearGitBranchCache,
-  getGitBranchCache
+  getGitBranchCache,
+  refreshGitBranches
 }; 

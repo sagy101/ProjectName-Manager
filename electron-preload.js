@@ -44,6 +44,7 @@ contextBridge.exposeInMainWorld('electron', {
   // Environment verification handlers
   getEnvironmentVerification: () => ipcRenderer.invoke('get-environment-verification'),
   refreshEnvironmentVerification: () => ipcRenderer.invoke('refresh-environment-verification'),
+  refreshGitStatuses: () => ipcRenderer.invoke('refresh-git-statuses'),
   onEnvironmentVerificationComplete: (callback) => {
     ipcRenderer.on('environment-verification-complete', (event, data) => callback(data));
     return () => {
