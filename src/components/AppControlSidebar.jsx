@@ -14,7 +14,7 @@ const AppControlSidebar = ({
   onToggleExpand,  // New prop (or setIsExpanded)
   showTestSections, // New prop
   noRunMode, // New prop
-  isIsoRunning, // New prop
+  isProjectRunning, // New prop
   // Props for debug actions, formerly passed to DebugPanel
   onToggleTestSections,
   onToggleNoRunMode,
@@ -99,20 +99,20 @@ const AppControlSidebar = ({
   };
 
   const handleToggleTestSectionsClick = useCallback(() => {
-    if (isIsoRunning) {
-      if (showAppNotification) showAppNotification('Cannot change test section visibility while ISO is running.', 'warning');
+    if (isProjectRunning) {
+      if (showAppNotification) showAppNotification('Cannot change test section visibility while the project is running.', 'warning');
     } else {
       onToggleTestSections();
     }
-  }, [isIsoRunning, onToggleTestSections, showAppNotification]);
+  }, [isProjectRunning, onToggleTestSections, showAppNotification]);
 
   const handleToggleNoRunModeClick = useCallback(() => {
-    if (isIsoRunning) {
-      if (showAppNotification) showAppNotification('Cannot change No Run Mode while ISO is running.', 'warning');
+    if (isProjectRunning) {
+      if (showAppNotification) showAppNotification('Cannot change No Run Mode while the project is running.', 'warning');
     } else {
       onToggleNoRunMode();
     }
-  }, [isIsoRunning, onToggleNoRunMode, showAppNotification]);
+  }, [isProjectRunning, onToggleNoRunMode, showAppNotification]);
 
   return (
     <div ref={sidebarRef} className={`app-control-sidebar ${isExpanded ? 'expanded' : 'collapsed'}`}>
@@ -200,16 +200,16 @@ const AppControlSidebar = ({
           </button>
           <button
             onClick={handleToggleTestSectionsClick}
-            className={`${(showTestSections && !isIsoRunning) ? 'active' : ''} ${isIsoRunning ? 'disabled' : ''}`}
-            disabled={isIsoRunning}
+            className={`${(showTestSections && !isProjectRunning) ? 'active' : ''} ${isProjectRunning ? 'disabled' : ''}`}
+            disabled={isProjectRunning}
             title={showTestSections ? 'Hide Test Sections' : 'Show Test Sections'}
           >
             <span>{showTestSections ? 'Hide Tests' : 'Show Tests'}</span>
           </button>
           <button
             onClick={handleToggleNoRunModeClick}
-            className={`${(noRunMode && !isIsoRunning) ? 'active' : ''} ${isIsoRunning ? 'disabled' : ''}`}
-            disabled={isIsoRunning}
+            className={`${(noRunMode && !isProjectRunning) ? 'active' : ''} ${isProjectRunning ? 'disabled' : ''}`}
+            disabled={isProjectRunning}
             title={noRunMode ? 'Disable No Run Mode' : 'Enable No Run Mode'}
           >
             <span>No Run Mode</span>
@@ -217,8 +217,8 @@ const AppControlSidebar = ({
           <button
             onClick={onToggleMainTerminalWritable}
             title={isMainTerminalWritable ? 'Make Terminals Read-Only' : 'Enable Terminal Input'}
-            disabled={isIsoRunning}
-            className={`${isIsoRunning ? 'disabled' : ''}`}
+            disabled={isProjectRunning}
+            className={`${isProjectRunning ? 'disabled' : ''}`}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="icon">
               <path fillRule="evenodd" d="M2 5a1 1 0 00-1 1v8a1 1 0 001 1h16a1 1 0 001-1V6a1 1 0 00-1-1H2zm3.293 2.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414L11.414 12l3.293 3.293a1 1 0 01-1.414 1.414L10 13.414l-3.293 3.293a1 1 0 01-1.414-1.414L8.586 12 5.293 8.707a1 1 0 010-1.414z" clipRule="evenodd" />

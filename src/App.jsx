@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import IsoConfiguration from './components/IsoConfiguration';
+import ProjectConfiguration from './components/ProjectConfiguration';
 import TerminalContainer from './components/TerminalContainer';
 import EnvironmentVerification from './components/EnvironmentVerification';
 import LoadingScreen from './components/LoadingScreen';
@@ -42,8 +42,8 @@ const App = () => {
   // State for no-run mode
   const [noRunMode, setNoRunMode] = useState(false);
   
-  // State for ISO running status from IsoConfiguration
-  const [appIsIsoRunning, setAppIsIsoRunning] = useState(false);
+  // State for Project running status from ProjectConfiguration
+  const [appIsProjectRunning, setAppIsProjectRunning] = useState(false);
   
   // State for app-level notifications
   const [appNotification, setAppNotification] = useState({
@@ -53,7 +53,7 @@ const App = () => {
     autoCloseTime: 3000
   });
   
-  // State for configuration from IsoConfiguration
+  // State for configuration from ProjectConfiguration
   const [configState, setConfigState] = useState({});
 
   // State for floating terminals
@@ -110,7 +110,7 @@ const App = () => {
   const [globalDropdownValues, setGlobalDropdownValues] = useState({});
 
   const terminalRef = useRef(null);
-  const isoConfigRef = useRef(null);
+  const projectConfigRef = useRef(null);
 
   // Floating Terminal Manager Functions
 
@@ -478,15 +478,15 @@ const App = () => {
     setNoRunMode(prev => !prev);
   };
 
-  // Handle config state changes from IsoConfiguration
+  // Handle config state changes from ProjectConfiguration
   const handleConfigStateChange = (newConfigState) => {
     setConfigState(newConfigState);
   };
 
-  // Callback for IsoConfiguration to update App's isRunning state
-  const handleIsoRunStateChange = (isRunning) => {
-    console.log('App: ISO running state changed to:', isRunning);
-    setAppIsIsoRunning(isRunning);
+  // Callback for ProjectConfiguration to update App's isRunning state
+  const handleProjectRunStateChange = (isRunning) => {
+    console.log('App: Project running state changed to:', isRunning);
+    setAppIsProjectRunning(isRunning);
   };
 
   // Function to show an app-level notification
@@ -519,8 +519,8 @@ const App = () => {
   }, []);
 
   const handleExportConfig = useCallback(async () => {
-    if (window.electron && isoConfigRef.current?.getCurrentState) {
-      const state = isoConfigRef.current.getCurrentState();
+    if (window.electron && projectConfigRef.current?.getCurrentState) {
+      const state = projectConfigRef.current.getCurrentState();
       
       // Collect git branches for sections that support them
       const gitBranches = {};
@@ -565,7 +565,7 @@ const App = () => {
   }, [globalDropdownValues, showAppNotification, verificationStatuses, configSidebarSections]);
 
   const handleImportConfig = useCallback(async () => {
-    if (window.electron && isoConfigRef.current?.setStateFromImport) {
+    if (window.electron && projectConfigRef.current?.setStateFromImport) {
       try {
         const result = await window.electron.importConfig();
         if (result?.success && result.configState) {
@@ -606,7 +606,7 @@ const App = () => {
       updateConfigStatus('importing', 'Importing configuration...');
       
       // Set configuration state
-      isoConfigRef.current.setStateFromImport({
+      projectConfigRef.current.setStateFromImport({
         configState: result.configState,
         attachState: result.attachState
       });
@@ -760,9 +760,9 @@ const App = () => {
             overflow: 'hidden',
           }}
         >
-          <div className="sidebar"> {/* IsoConfiguration's wrapper */}
-            <IsoConfiguration
-              ref={isoConfigRef}
+          <div className="sidebar"> {/* ProjectConfiguration's wrapper */}
+            <ProjectConfiguration
+              ref={projectConfigRef}
               projectName={projectName}
               globalDropdownValues={globalDropdownValues}
               discoveredVersions={discoveredVersions}
@@ -771,7 +771,7 @@ const App = () => {
               onTriggerRefresh={triggerGitRefresh}
               showTestSections={showTestSections}
               onConfigStateChange={handleConfigStateChange}
-              onIsRunningChange={handleIsoRunStateChange}
+              onIsRunningChange={handleProjectRunStateChange}
               openFloatingTerminal={openFloatingTerminal}
               onBranchChangeError={showAppNotification}
               showAppNotification={showAppNotification}
@@ -811,7 +811,7 @@ const App = () => {
             onToggleExpand={toggleFloatingSidebarExpand}
             showTestSections={showTestSections}
             noRunMode={noRunMode}
-            isIsoRunning={appIsIsoRunning}
+            isProjectRunning={appIsProjectRunning}
             onToggleTestSections={handleToggleTestSections}
             onToggleNoRunMode={handleToggleNoRunMode}
             showAppNotification={showAppNotification}

@@ -6,13 +6,13 @@ import { STATUS } from '../constants/verificationConstants';
 import configSidebarSections from '../configurationSidebarSections.json';
 import configSidebarCommands from '../configurationSidebarCommands.json';
 import { generateCommandList } from '../utils/evalUtils';
-import { useIsoConfig } from '../hooks/useIsoConfig';
+import { useProjectConfig } from '../hooks/useProjectConfig';
 import RunButton from './RunButton';
-import '../styles/iso-configuration.css';
+import '../styles/project-configuration.css';
 
 const configSidebarSectionsActual = configSidebarSections.sections;
 
-const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, terminalRef, verificationStatuses, onTriggerRefresh, showTestSections = false, onConfigStateChange, onIsRunningChange, openFloatingTerminal, discoveredVersions, onBranchChangeError, showAppNotification }, ref) => {
+const ProjectConfiguration = forwardRef(({ projectName, globalDropdownValues, terminalRef, verificationStatuses, onTriggerRefresh, showTestSections = false, onConfigStateChange, onIsRunningChange, openFloatingTerminal, discoveredVersions, onBranchChangeError, showAppNotification }, ref) => {
   const [isRunning, setIsRunning] = useState(false);
   const [isStopping, setIsStopping] = useState(false);
   const [showStoppingScreen, setShowStoppingScreen] = useState(false);
@@ -32,7 +32,7 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
     setMode,
     handleAttachToggle,
     setSectionDropdownValue,
-  } = useIsoConfig(globalDropdownValues, showTestSections, setNotification);
+  } = useProjectConfig(globalDropdownValues, showTestSections, setNotification);
 
   const visibleSections = configSidebarSectionsActual.filter(section => showTestSections || !section.testSection);
 
@@ -73,7 +73,7 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
     setNotification(prev => ({ ...prev, isVisible: false }));
   };
 
-  const stopIsoExecution = async () => {
+  const stopProjectExecution = async () => {
     setIsStopping(true);
     setShowStoppingScreen(true);
     
@@ -94,11 +94,11 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
     setShowStoppingScreen(false);
   };
 
-  const runIsoConfiguration = () => {
+  const runProjectConfiguration = () => {
     if (isStopping) return;
 
     if (isRunning) {
-      stopIsoExecution(); 
+      stopProjectExecution();
     } else {
       const commandList = generateCommandList(
         configState,
@@ -171,14 +171,14 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
             config={configState[section.id] || {}}
             toggleEnabled={(sectionId, enabled) => {
               if (isRunning) {
-                setNotification({ message: 'Cannot change settings while ISO is running.', type: 'error', isVisible: true });
+                setNotification({ message: 'Cannot change settings while the project is running.', type: 'error', isVisible: true });
                 return;
               }
               toggleSectionEnabled(sectionId, enabled);
             }}
             setMode={(sectionId, mode, subSectionId) => {
               if (isRunning) {
-                setNotification({ message: 'Cannot change deployment type while ISO is running.', type: 'error', isVisible: true });
+                setNotification({ message: 'Cannot change deployment type while the project is running.', type: 'error', isVisible: true });
                 return;
               }
               setMode(sectionId, mode, subSectionId);
@@ -196,7 +196,7 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
             configState={configState}
             toggleSubSectionEnabled={(sectionId, subSectionId, enabled) => {
                 if (isRunning) {
-                  setNotification({ message: 'Cannot change settings while ISO is running.', type: 'error', isVisible: true });
+                  setNotification({ message: 'Cannot change settings while the project is running.', type: 'error', isVisible: true });
                   return;
                 }
                 toggleSubSectionEnabled(sectionId, subSectionId, enabled);
@@ -214,7 +214,7 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
           isStopping={isStopping}
           isRunning={isRunning}
           projectName={projectName}
-          onClick={runIsoConfiguration}
+          onClick={runProjectConfiguration}
           disabled={
             isStopping ||
             (!isRunning &&
@@ -236,4 +236,4 @@ const IsoConfiguration = forwardRef(({ projectName, globalDropdownValues, termin
   );
 });
 
-export default IsoConfiguration;
+export default ProjectConfiguration;
