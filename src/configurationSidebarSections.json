@@ -201,6 +201,73 @@
           "commandId": "testAnalyticsLogCommand"
         }
       }
+    },
+    {
+      "id": "e2e-test-floating",
+      "title": "E2E Floating Terminal Test",
+      "testSection": true,
+      "components": {
+        "toggle": true,
+        "infoButton": false,
+        "customButton": {
+          "id": "e2eTestFloatingBtn",
+          "label": "Launch E2E Floating Echo",
+          "commandId": "e2eTestFloatingEchoCmd"
+        },
+        "subSections": [
+          {
+            "id": "e2e-test-floating-sub",
+            "title": "E2E Floating Sub-Section",
+            "components": {
+              "toggle": true,
+              "customButton": {
+                "id": "e2eTestFloatingSubBtn",
+                "label": "Launch E2E Sub Floating Echo",
+                "commandId": "e2eTestFloatingSubEchoCmd"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "e2e-main-tab-info",
+      "title": "E2E Main Tab Info Test",
+      "testSection": true,
+      "components": {
+        "toggle": true,
+        "infoButton": true
+      }
+    },
+    {
+      "id": "e2e-failing-verify",
+      "title": "E2E Failing Verification Test",
+      "testSection": true,
+      "components": { "toggle": true, "infoButton": true }
+    },
+    {
+      "id": "e2e-missing-command",
+      "title": "E2E Missing Command Test",
+      "testSection": true,
+      "components": { "toggle": true, "infoButton": true }
+    },
+    {
+      "id": "e2e-req-dropdown",
+      "title": "E2E Required Dropdown Test",
+      "testSection": true,
+      "components": {
+        "toggle": true,
+        "infoButton": true,
+        "dropdownSelectors": [
+          {
+            "id": "e2eRequiredDropdown",
+            "command": "echo \"OptionA\nOptionB\"",
+            "parseResponse": "lines",
+            "placeholder": "Select to run...",
+            "isRequired": true
+          }
+        ]
+      }
     }
   ] 
 }

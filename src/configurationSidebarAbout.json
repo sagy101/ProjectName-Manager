@@ -133,5 +133,42 @@
     "sectionId": "testAnalyticsLogCommand",
     "description": "Displays logs for the Test Analytics Engine in a floating terminal.",
     "verifications": []
+  },
+  {
+    "sectionId": "e2eTestFloatingEchoCmd",
+    "description": "E2E test command for main floating terminals.",
+    "verifications": []
+  },
+  {
+    "sectionId": "e2eTestFloatingSubEchoCmd",
+    "description": "E2E test command for sub-section floating terminals.",
+    "verifications": []
+  },
+  {
+    "sectionId": "e2e-main-tab-info",
+    "description": "E2E test section for main tab information panel features.",
+    "verifications": []
+  },
+  {
+    "sectionId": "e2e-failing-verify",
+    "description": "E2E test for failing environment verifications.",
+    "verifications": [
+      {
+        "id": "e2eAlwaysFailCheck",
+        "title": "E2E Always Failing Check",
+        "checkType": "commandSuccess",
+        "command": "exit 1"
+      }
+    ]
+  },
+  {
+    "sectionId": "e2e-missing-command",
+    "description": "E2E test for missing command configuration.",
+    "verifications": []
+  },
+  {
+    "sectionId": "e2e-req-dropdown",
+    "description": "E2E test for command dependency on unselected dropdown.",
+    "verifications": []
   }
 ] 

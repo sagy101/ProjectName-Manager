@@ -89,6 +89,72 @@
           "default": "alpha"
         }
       }
+    },
+    {
+      "id": "test-floating",
+      "title": "Test Floating Terminals",
+      "components": {
+        "toggle": true,
+        "customButton": {
+          "id": "testFloatingBtn",
+          "label": "Launch Floating Echo",
+          "commandId": "testFloatingEchoCmd"
+        },
+        "subSections": [
+          {
+            "id": "test-floating-sub",
+            "title": "Floating Sub-Section",
+            "components": {
+              "toggle": true,
+              "customButton": {
+                "id": "testFloatingSubBtn",
+                "label": "Launch Sub Floating Echo",
+                "commandId": "testFloatingSubEchoCmd"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "test-main-tab-section",
+      "title": "Main Tab Test Section",
+      "components": {
+        "toggle": true,
+        "infoButton": true
+      }
+    },
+    {
+      "id": "test-failing-verify",
+      "title": "Failing Verification Test",
+      "components": {
+        "toggle": true,
+        "infoButton": true
+      }
+    },
+    {
+      "id": "test-missing-command",
+      "title": "Missing Command Test",
+      "components": {
+        "toggle": true,
+        "infoButton": true
+      }
+    },
+    {
+      "id": "test-req-dropdown",
+      "title": "Required Dropdown Test",
+      "components": {
+        "toggle": true,
+        "infoButton": true,
+        "dropdownSelectors": [
+          {
+            "id": "myRequiredDropdown",
+            "command": "echo 'Option 1\nOption 2'",
+            "placeholder": "Select to run...",
+            "isRequired": true
+          }
+        ]
+      }
     }
   ]
 } 

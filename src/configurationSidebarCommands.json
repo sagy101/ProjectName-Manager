@@ -383,5 +383,55 @@
         "base": "ML Engine (Scikit-learn)"
       }
     }
+  },
+  {
+    "sectionId": "e2eTestFloatingEchoCmd",
+    "command": {
+      "base": "echo E2E Floating Terminal Ready && read -p 'Input: ' VAR && echo $VAR",
+      "tabTitle": "E2E Floating Echo"
+    }
+  },
+  {
+    "sectionId": "e2eTestFloatingSubEchoCmd",
+    "command": {
+      "base": "echo E2E Sub Floating Terminal Ready",
+      "tabTitle": "E2E Sub Floating Echo"
+    }
+  },
+  {
+    "sectionId": "e2e-main-tab-info",
+    "conditions": {
+      "enabled": true
+    },
+    "command": {
+      "base": "echo E2E Main Tab Ready for Info Panel",
+      "tabTitle": "E2ETabInfoTest",
+      "refreshConfig": {
+        "prependCommands": [
+          {
+            "command": "echo E2E Main Tab Refreshed && "
+          }
+        ]
+      }
+    }
+  },
+  {
+    "sectionId": "e2e-failing-verify",
+    "conditions": {"enabled": true},
+    "command": {
+      "base": "echo 'This should ideally not execute due to failing verification.'",
+      "tabTitle": "E2EFailVerify"
+    }
+  },
+  {
+    "sectionId": "e2e-req-dropdown",
+    "conditions": {
+      "enabled": true,
+      "e2eRequiredDropdownValueSelected": true
+    },
+    "command": {
+      "base": "echo Dropdown selected: ${e2eRequiredDropdownValue}",
+      "tabTitle": "E2EReqDropdownRun"
+    }
   }
 ] 

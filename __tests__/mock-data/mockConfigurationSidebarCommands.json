@@ -50,5 +50,45 @@
       "base": "echo 'Running generic test section in alpha mode'",
       "tabTitle": "Generic Test (Alpha)"
     }
+  },
+  {
+    "sectionId": "testFloatingEchoCmd",
+    "command": {
+      "base": "echo 'Floating Terminal Ready' && read -p 'Input: ' VAR && echo $VAR",
+      "tabTitle": "Floating Echo Test"
+    }
+  },
+  {
+    "sectionId": "testFloatingSubEchoCmd",
+    "command": {
+      "base": "echo 'Sub Floating Terminal Ready'",
+      "tabTitle": "Sub Floating Echo"
+    }
+  },
+  {
+    "sectionId": "test-main-tab-section",
+    "command": {
+      "base": "echo 'Main Tab Ready'",
+      "tabTitle": "MainTabTest",
+      "onRefreshCommand": "echo 'Main Tab Refreshed'"
+    }
+  },
+  {
+    "sectionId": "test-failing-verify",
+    "command": {
+      "base": "echo 'This command should not run due to verification failure.'",
+      "tabTitle": "VerifyFailTest"
+    }
+  },
+  {
+    "sectionId": "test-req-dropdown",
+    "conditions": {
+      "enabled": true,
+      "myRequiredDropdownValueSelected": true
+    },
+    "command": {
+      "base": "echo 'Dropdown option selected: ${myRequiredDropdownValue}'",
+      "tabTitle": "ReqDropdownTest"
+    }
   }
 ] 

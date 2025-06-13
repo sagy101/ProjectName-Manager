@@ -41,5 +41,27 @@
     "directoryPath": "test-section-generic",
     "description": "Description for generic test section.",
     "verifications": []
+  },
+  {
+    "sectionId": "testFloatingEchoCmd",
+    "description": "A test command for floating terminals.",
+    "verifications": []
+  },
+  {
+    "sectionId": "testFloatingSubEchoCmd",
+    "description": "A test command for sub-section floating terminals.",
+    "verifications": []
+  },
+  {
+    "sectionId": "test-failing-verify",
+    "description": "This section has a verification that always fails.",
+    "verifications": [
+      {
+        "id": "alwaysFail",
+        "title": "Always Failing Check",
+        "checkType": "commandSuccess",
+        "command": "exit 1"
+      }
+    ]
   }
 ] 
