@@ -33,7 +33,7 @@ describe('Debug Functionality Unit Tests', () => {
       showTestSections: false,
       onToggleNoRunMode: jest.fn(),
       noRunMode: false,
-      isIsoRunning: false,
+      isProjectRunning: false,
       showAppNotification: jest.fn(),
       isOpen: true,
       onClose: jest.fn()
@@ -88,8 +88,8 @@ describe('Debug Functionality Unit Tests', () => {
       expect(testSectionsButton).toHaveClass('active');
     });
 
-    test('should disable buttons when ISO is running', () => {
-      const { getByText } = render(<DebugPanel {...defaultProps} isIsoRunning={true} />);
+    test('should disable buttons when project is running', () => {
+      const { getByText } = render(<DebugPanel {...defaultProps} isProjectRunning={true} />);
       
       const noRunModeButton = getByText('No Run Mode');
       const testSectionsButton = getByText(/Show.*Test Sections/);
@@ -140,7 +140,7 @@ describe('Debug Functionality Unit Tests', () => {
       onToggleExpand: jest.fn(),
       showTestSections: false,
       noRunMode: false,
-      isIsoRunning: false,
+      isProjectRunning: false,
       onToggleTestSections: jest.fn(),
       onToggleNoRunMode: jest.fn(),
       showAppNotification: jest.fn(),
@@ -251,7 +251,7 @@ describe('Debug Functionality Unit Tests', () => {
       onToggleExpand: jest.fn(),
       showTestSections: false,
       noRunMode: false,
-      isIsoRunning: false,
+      isProjectRunning: false,
       onToggleTestSections: jest.fn(),
       onToggleNoRunMode: jest.fn(),
       showAppNotification: jest.fn(),
@@ -261,7 +261,7 @@ describe('Debug Functionality Unit Tests', () => {
       onImportConfig: jest.fn()
     };
 
-    test('should prevent debug mode changes when ISO is running', () => {
+    test('should prevent debug mode changes when project is running', () => {
       const onToggleNoRunMode = jest.fn();
       const onToggleTestSections = jest.fn();
       const showAppNotification = jest.fn();
@@ -269,7 +269,7 @@ describe('Debug Functionality Unit Tests', () => {
       const { getByText } = render(
         <AppControlSidebar 
           {...debugTestSidebarProps}
-          isIsoRunning={true}
+          isProjectRunning={true}
           onToggleNoRunMode={onToggleNoRunMode}
           onToggleTestSections={onToggleTestSections}
           showAppNotification={showAppNotification}
@@ -287,7 +287,7 @@ describe('Debug Functionality Unit Tests', () => {
       fireEvent.click(noRunModeButton);
       fireEvent.click(testSectionsButton);
       
-      // Functions should not be called when ISO is running
+      // Functions should not be called when project is running
       expect(onToggleNoRunMode).not.toHaveBeenCalled();
       expect(onToggleTestSections).not.toHaveBeenCalled();
     });

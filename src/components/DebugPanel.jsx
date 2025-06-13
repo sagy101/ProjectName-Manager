@@ -7,7 +7,7 @@ const DebugPanel = ({
   showTestSections, 
   onToggleNoRunMode, 
   noRunMode, 
-  isIsoRunning,
+  isProjectRunning,
   showAppNotification,
   isOpen,
   onClose
@@ -190,18 +190,18 @@ const DebugPanel = ({
   };
 
   const handleToggleTestSectionsClick = useCallback(() => {
-    if (isIsoRunning) {
+    if (isProjectRunning) {
     } else {
       onToggleTestSections();
     }
-  }, [isIsoRunning, onToggleTestSections]);
+  }, [isProjectRunning, onToggleTestSections]);
 
   const handleToggleNoRunModeClick = useCallback(() => {
-    if (isIsoRunning) {
+    if (isProjectRunning) {
     } else {
       onToggleNoRunMode();
     }
-  }, [isIsoRunning, onToggleNoRunMode]);
+  }, [isProjectRunning, onToggleNoRunMode]);
 
   return (
     <div className="debug-panel-container" ref={panelRef}>
@@ -224,8 +224,8 @@ const DebugPanel = ({
               <h4>Visibility</h4>
               <button 
                 onClick={handleToggleTestSectionsClick} 
-                className={`${showTestSections ? 'active' : ''} ${isIsoRunning ? 'disabled' : ''}`}
-                disabled={isIsoRunning}
+                className={`${showTestSections ? 'active' : ''} ${isProjectRunning ? 'disabled' : ''}`}
+                disabled={isProjectRunning}
               >
                 {showTestSections ? 'Hide' : 'Show'} Test Sections
               </button>
@@ -235,8 +235,8 @@ const DebugPanel = ({
               <h4>Execution</h4>
               <button 
                 onClick={handleToggleNoRunModeClick} 
-                className={`${noRunMode ? 'active' : ''} ${isIsoRunning ? 'disabled' : ''}`}
-                disabled={isIsoRunning}
+                className={`${noRunMode ? 'active' : ''} ${isProjectRunning ? 'disabled' : ''}`}
+                disabled={isProjectRunning}
               >
                 {'No Run Mode'}
               </button>

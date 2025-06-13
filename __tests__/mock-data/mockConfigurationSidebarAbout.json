@@ -41,5 +41,10 @@
     "directoryPath": "test-section-generic",
     "description": "Description for generic test section.",
     "verifications": []
+  },
+  {
+    "sectionId": "testSubLogCommand",
+    "description": "About info for the test sub-section button command.",
+    "verifications": []
   }
-] 
+]

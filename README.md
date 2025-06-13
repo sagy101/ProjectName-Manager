@@ -1,6 +1,6 @@
 # ProjectName Manager
 
-> **Note:** The Electron app requires Node.js **22.16.0**. Terminal commands can run on Node.js **15** or **16**. It is recommended to use [nvm](https://github.com/nvm-sh/nvm) to manage multiple Node.js versions. Once you have `nvm` installed, you can run `nvm use` in the project directory to automatically switch to the correct version for the Electron runtime.
+> **Note:** The Electron app requires Node.js **22.16.0**. Terminal commands for Isolation Project can run on Node.js **15** or **16**. It is recommended to use [nvm](https://github.com/nvm-sh/nvm) to manage multiple Node.js versions. Once you have `nvm` installed, you can run `nvm use` in the project directory to automatically switch to the correct version for the Electron runtime.
 
 # {ProjectName} Manager
 

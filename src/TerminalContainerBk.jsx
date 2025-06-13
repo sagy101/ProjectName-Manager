@@ -571,11 +571,11 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
             status: 'idle',
             command: tab.command,
             originalCommand: tab.command, // Store the initial command
-            sectionId: tab.sectionId, // Pass from IsoConfig
-            commandDefinitionId: tab.commandDefinitionId, // Pass from IsoConfig
+            sectionId: tab.sectionId, // Pass from ProjectConfig
+            commandDefinitionId: tab.commandDefinitionId, // Pass from ProjectConfig
             associatedContainers: tab.associatedContainers || [], // Store associated containers
             isSubSectionCommand: tab.isSubSectionCommand || false, // Default or from tab
-            refreshConfig: tab.refreshConfig, // Pass refresh config from IsoConfig
+            refreshConfig: tab.refreshConfig, // Pass refresh config from ProjectConfig
             refreshCount: 0
           };
         }
@@ -625,8 +625,8 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
         }
       });
 
-      // Finally, clear the terminals from the UI (this will be done by stopIsoExecution calling clearTabs)
-      // No need to call setTerminals([]) here directly, as stopIsoExecution handles it via clearTabs
+      // Finally, clear the terminals from the UI (this will be done by stopProjectExecution calling clearTabs)
+      // No need to call setTerminals([]) here directly, as stopProjectExecution handles it via clearTabs
       console.log('TerminalContainer: All PTYs killed and containers signaled to stop.');
     },
     stopAllContainers: async () => {

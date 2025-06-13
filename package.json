@@ -8,11 +8,10 @@
   },
   "scripts": {
     "start": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npx @electron/rebuild -f -w node-pty && electron .",
-    "build": "webpack --mode development",
+    "test": "npm run test:jest && npm run test:e2e",      "build": "webpack --mode development",
     "watch": "webpack --mode development --watch",
     "setNode": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use",
     "rebuild": "npx @electron/rebuild -f -w node-pty",
-    "test": "npm run test:jest && npm run test:e2e",
     "test:jest": "npm run test:jest:prod && npm run test:jest:mock",
     "test:jest:prod": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && jest --config=jest.config.js",
     "test:jest:mock": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && jest --config=jest.config.mock.js",
@@ -31,7 +30,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "simple-git": "^3.28.0",
-    "zustand": "^5.0.5"
+    "zustand": "^5.0.5",
+    "adm-zip": "^0.5.10"
   },
   "devDependencies": {
     "@babel/core": "^7.24.5",

@@ -41,7 +41,7 @@
   transition: background-color 0.2s, opacity 0.2s;
 }
 
-/* Default (Run ISO) state */
+/* Default (Run Project) state */
 .run-configuration-button {
   background-color: #4CAF50; /* Green */
   color: white;
@@ -50,7 +50,7 @@
   background-color: #45a049;
 }
 
-/* Stop ISO state */
+/* Stop Project state */
 .run-configuration-button.stop {
   background-color: #f44336; /* Red */
   color: white;
@@ -59,7 +59,7 @@
   background-color: #e53935;
 }
 
-/* Stopping ISO state */
+/* Stopping Project state */
 .run-configuration-button.stopping {
   background-color: #FF9800; /* Orange */
   color: white;

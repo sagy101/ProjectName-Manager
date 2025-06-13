@@ -389,6 +389,55 @@ const ConfigSection = ({
                               })}
                           </div>
                         )}
+
+                        {subSection.components.customButtons && subSection.components.customButtons.length > 0 && (
+                          <div className="custom-buttons-container">
+                            {subSection.components.customButtons.map(button => {
+                              const commandDef = configSidebarCommands.find(c => c.sectionId === button.commandId);
+                              const commandToRun = commandDef ? (commandDef.command.base || commandDef.command) : `echo "Command not found: ${button.commandId}"`;
+                              const isDisabled = isLocked || !config.enabled || !subSectionConfig.enabled;
+                              return (
+                                <button
+                                  key={button.id}
+                                  className="custom-button"
+                                  onClick={() => {
+                                    if (openFloatingTerminal) {
+                                      openFloatingTerminal(button.commandId, button.label, commandToRun);
+                                    }
+                                  }}
+                                  disabled={isDisabled}
+                                >
+                                  {button.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {subSection.components.customButton && !subSection.components.customButtons && (
+                          <div className="custom-buttons-container">
+                            {(() => {
+                              const button = subSection.components.customButton;
+                              const commandDef = configSidebarCommands.find(c => c.sectionId === button.commandId);
+                              const commandToRun = commandDef ? (commandDef.command.base || commandDef.command) : `echo "Command not found: ${button.commandId}"`;
+                              const isDisabled = isLocked || !config.enabled || !subSectionConfig.enabled;
+                              return (
+                                <button
+                                  key={button.id}
+                                  className="custom-button"
+                                  onClick={() => {
+                                    if (openFloatingTerminal) {
+                                      openFloatingTerminal(button.commandId, button.label, commandToRun);
+                                    }
+                                  }}
+                                  disabled={isDisabled}
+                                >
+                                  {button.label}
+                                </button>
+                              );
+                            })()}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
