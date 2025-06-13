@@ -133,5 +133,10 @@
     "sectionId": "testAnalyticsLogCommand",
     "description": "Displays logs for the Test Analytics Engine in a floating terminal.",
     "verifications": []
+  },
+  {
+    "sectionId": "mlEngineLogCommand",
+    "description": "About info for the ML Engine logs button command.",
+    "verifications": []
   }
-] 
+]

@@ -7,6 +7,13 @@
     }
   },
   {
+    "sectionId": "mlEngineLogCommand",
+    "command": {
+      "base": "echo 'ML Engine logs'",
+      "tabTitle": "ML Logs"
+    }
+  },
+  {
     "sectionId": "mirror",
     "conditions": {
       "enabled": true,

@@ -87,8 +87,23 @@
             { "value": "beta", "status": "TBD" }
           ],
           "default": "alpha"
-        }
+        },
+        "subSections": [
+          {
+            "id": "test-sub-section",
+            "title": "Test Sub Section",
+            "components": {
+              "toggle": true,
+              "customButton": {
+                "id": "testSubLogs",
+                "label": "Sub Logs",
+                "commandId": "testSubLogCommand"
+              }
+            }
+          }
+        ]
       }
     }
   ]
-} 
+}
+
