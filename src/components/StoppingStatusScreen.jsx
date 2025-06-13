@@ -7,9 +7,26 @@ const StoppingStatusScreen = ({ terminals, isVisible, projectName, onClose }) =>
     containers: {}
   });
   const [isComplete, setIsComplete] = useState(false);
+  const [isTimeoutReached, setIsTimeoutReached] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    if (!isVisible || !terminals || terminals.length === 0) {
+    let timer;
+    if (isVisible) {
+      // Reset states on visibility change
+      setIsComplete(false);
+      setIsTimeoutReached(false);
+      setIsInitialized(false);
+
+      timer = setTimeout(() => {
+        setIsTimeoutReached(true);
+      }, 20000); // 20 seconds
+    }
+    return () => clearTimeout(timer);
+  }, [isVisible]);
+
+  useEffect(() => {
+    if (!isVisible) {
       // Reset status when not visible
       setTerminationStatus({ processes: {}, containers: {} });
       setIsComplete(false);
@@ -51,6 +68,7 @@ const StoppingStatusScreen = ({ terminals, isVisible, projectName, onClose }) =>
     });
 
     setTerminationStatus(initialStatus);
+    setIsInitialized(true);
 
     // Listen for termination progress events
     const handleProcessTerminating = (data) => {
@@ -134,8 +152,9 @@ const StoppingStatusScreen = ({ terminals, isVisible, projectName, onClose }) =>
     };
   }, [isVisible]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Check if all processes and containers are terminated
   useEffect(() => {
+    if (!isVisible) return;
+
     const allProcessesTerminated = Object.values(terminationStatus.processes).every(
       p => p.status === 'terminated'
     );
@@ -146,10 +165,16 @@ const StoppingStatusScreen = ({ terminals, isVisible, projectName, onClose }) =>
     const hasProcesses = Object.keys(terminationStatus.processes).length > 0;
     const hasContainers = Object.keys(terminationStatus.containers).length > 0;
     
-    if (isVisible && hasProcesses && allProcessesTerminated && (!hasContainers || allContainersTerminated)) {
+    // Condition 1: All tasks are done.
+    const allDone = hasProcesses && allProcessesTerminated && (!hasContainers || allContainersTerminated);
+    
+    // Condition 2: There were no tasks to begin with, and we have initialized.
+    const nothingToStop = isInitialized && !hasProcesses && !hasContainers;
+
+    if (allDone || (isVisible && nothingToStop)) {
       setIsComplete(true);
     }
-  }, [terminationStatus, isVisible]);
+  }, [terminationStatus, isVisible, isInitialized]);
 
   if (!isVisible) return null;
 
@@ -258,7 +283,7 @@ const StoppingStatusScreen = ({ terminals, isVisible, projectName, onClose }) =>
         </div>
 
         <div className="stopping-footer">
-          {!isComplete ? (
+          {!(isComplete || isTimeoutReached) ? (
             <>
               <div className="stopping-spinner">
                 <svg className="spinner" viewBox="0 0 24 24" width="20" height="20">
@@ -270,11 +295,20 @@ const StoppingStatusScreen = ({ terminals, isVisible, projectName, onClose }) =>
             </>
           ) : (
             <div className="stopping-complete">
-              <svg className="complete-icon" viewBox="0 0 24 24" width="20" height="20">
-                <path fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                      d="M20 6L9 17l-5-5" />
-              </svg>
-              <span>All processes have been terminated successfully</span>
+              {isComplete ? (
+                <>
+                  <svg className="complete-icon" viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                          d="M20 6L9 17l-5-5" />
+                  </svg>
+                  <span>All processes have been terminated successfully.</span>
+                </>
+              ) : (
+                <>
+                  {getStatusIcon('error')}
+                  <span>Stopping timed out. Some processes may still be running.</span>
+                </>
+              )}
               <button className="close-button" onClick={onClose}>
                 Close
               </button>
