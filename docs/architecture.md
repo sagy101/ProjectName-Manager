@@ -335,7 +335,7 @@ flowchart LR
 1. **State Evaluation**: Current configuration state determines command variants
 2. **Conditional Logic**: JSON-defined conditions control command selection
 3. **Template Processing**: Environment variables and paths resolved
-4. **Modifier Application**: Prefixes, suffixes, and post-modifiers applied
+4. **Modifier Application**: Prefixes and post-modifiers applied
 5. **Execution**: Commands run in appropriate terminal context
 
 See [command-system.md](command-system.md) for detailed information.
@@ -494,7 +494,7 @@ graph TB
 
 - **Startup Time**: Fast startup with parallel verification loading
 - **Memory Usage**: Efficient caching with automatic cleanup
-- **CPU Usage**: Optimized command execution with process pooling
+- **CPU Usage**: Optimized command execution with efficient process management
 - **Network**: Minimal network usage, primarily for cloud resource queries
 - **Disk I/O**: Efficient file operations with caching
 
@@ -504,7 +504,6 @@ graph TB
 - [Terminal Features](terminal-features.md) - Terminal system capabilities
 - [Command System](command-system.md) - Command generation and execution
 - [Verification Types](verification-types.md) - Environment verification reference
-- [API Reference](api-reference.md) - Internal API documentation
 
 ---
 
