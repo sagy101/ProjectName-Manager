@@ -88,6 +88,9 @@ const App = () => {
   // State for versions
   const [discoveredVersions, setDiscoveredVersions] = useState({});
 
+  // State for ProjectConfiguration collapse
+  const [isConfigCollapsed, setIsConfigCollapsed] = useState(false);
+
   // Initialize verification statuses dynamically from JSON
   const initializeVerificationStatuses = () => {
     const statuses = {
@@ -733,6 +736,10 @@ const App = () => {
     console.log('App: appNotification state updated:', appNotification);
   }, [appNotification]);
 
+  const toggleConfigCollapse = () => {
+    setIsConfigCollapsed(prev => !prev);
+  };
+
   // Show loading screen while loading
   if (isLoading) {
     return (
@@ -760,7 +767,7 @@ const App = () => {
             overflow: 'hidden',
           }}
         >
-          <div className="sidebar"> {/* ProjectConfiguration's wrapper */}
+          <div className={`sidebar ${isConfigCollapsed ? 'collapsed' : ''}`}> {/* ProjectConfiguration's wrapper */}
             <ProjectConfiguration
               ref={projectConfigRef}
               projectName={projectName}
@@ -775,8 +782,24 @@ const App = () => {
               openFloatingTerminal={openFloatingTerminal}
               onBranchChangeError={showAppNotification}
               showAppNotification={showAppNotification}
+              isCollapsed={isConfigCollapsed}
             />
           </div>
+          <button 
+            className={`config-collapse-btn ${isConfigCollapsed ? 'collapsed' : ''}`}
+            onClick={toggleConfigCollapse}
+            title={isConfigCollapsed ? 'Expand Configuration' : 'Collapse Configuration'}
+          >
+            {isConfigCollapsed ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            )}
+          </button>
           <div className="main-content"> {/* TerminalContainer etc. */}
             <EnvironmentVerification
               projectName={projectName}
