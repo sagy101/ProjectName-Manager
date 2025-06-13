@@ -360,7 +360,7 @@ Commands should be defined using separate command objects for each variant. This
     },
     "command": {
       "base": "cd your-section && docker-compose up",
-      "prefix": "nvm use 15.5.1 && ",
+      "prefix": "nvm use 16 && ",
       "tabTitle": "Your Section (Container)"
     }
   },
@@ -372,7 +372,7 @@ Commands should be defined using separate command objects for each variant. This
     },
     "command": {
       "base": "cd your-section && npm start",
-      "prefix": "nvm use 15.5.1 && ",
+      "prefix": "nvm use 16 && ",
       "tabTitle": "Your Section (Process)"
     }
   }

@@ -120,10 +120,10 @@ Verifies that command output contains specific text. This check is highly flexib
 ```json
 {
   "id": "nodeVersionCheck",
-  "title": "Node.js (16, 18, or 20)",
+  "title": "Node.js (15 or 16)",
   "checkType": "outputContains",
   "command": "nvm ls",
-  "expectedValue": ["v16.", "v18.", "v20."],
+  "expectedValue": ["v15.", "v16."],
   "versionId": "nodeVersion"
 }
 ```
@@ -456,10 +456,10 @@ When combined with the `versionId` property, the first value from the array that
 ```json
 {
   "id": "nodeVersionCheck",
-  "title": "Node.js (16, 18, or 20)",
+  "title": "Node.js (15 or 16)",
   "checkType": "outputContains",
   "command": "nvm ls",
-  "expectedValue": ["v16.", "v18.", "v20."],
+  "expectedValue": ["v15.", "v16."],
   "versionId": "nodeVersion",
   "outputStream": "stdout"
 }
