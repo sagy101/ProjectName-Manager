@@ -50,5 +50,12 @@
       "base": "echo 'Running generic test section in alpha mode'",
       "tabTitle": "Generic Test (Alpha)"
     }
+  },
+  {
+    "sectionId": "testSubLogCommand",
+    "command": {
+      "base": "echo 'Sub section logs'",
+      "tabTitle": "Sub Logs"
+    }
   }
-] 
+]

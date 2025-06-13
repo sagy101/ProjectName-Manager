@@ -191,6 +191,11 @@
               "modeSelector": {
                 "options": ["tensorflow", "pytorch", "sklearn"],
                 "labels": ["TensorFlow", "PyTorch", "Scikit-learn"]
+              },
+              "customButton": {
+                "id": "mlEngineLogs",
+                "label": "ML Logs",
+                "commandId": "mlEngineLogCommand"
               }
             }
           }
