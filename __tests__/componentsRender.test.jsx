@@ -12,7 +12,7 @@ import EnvironmentVerification from '../src/components/EnvironmentVerification.j
 import FloatingTerminal from '../src/components/FloatingTerminal.jsx';
 import GitBranchSwitcher from '../src/components/GitBranchSwitcher.jsx';
 import ImportStatusScreen from '../src/components/ImportStatusScreen.jsx';
-import IsoConfiguration from '../src/components/IsoConfiguration.jsx';
+import ProjectConfiguration from '../src/components/ProjectConfiguration.jsx';
 import LoadingScreen from '../src/components/LoadingScreen.jsx';
 import Notification from '../src/components/Notification.jsx';
 import StoppingStatusScreen from '../src/components/StoppingStatusScreen.jsx';
@@ -73,7 +73,7 @@ describe('AppControlSidebar', () => {
         activeFloatingTerminalId={null}
         showTestSections={false}
         noRunMode={false}
-        isIsoRunning={false}
+        isProjectRunning={false}
         onToggleTestSections={() => {}}
         onToggleNoRunMode={() => {}}
         showAppNotification={() => {}}
@@ -112,7 +112,7 @@ describe('AppControlSidebar', () => {
           {...defaultProps}
           showTestSections={true}
           noRunMode={false}
-          isIsoRunning={false}
+          isProjectRunning={false}
         />
       );
       
@@ -126,7 +126,7 @@ describe('AppControlSidebar', () => {
           {...defaultProps}
           showTestSections={false}
           noRunMode={true}
-          isIsoRunning={false}
+          isProjectRunning={false}
         />
       );
       
@@ -140,7 +140,7 @@ describe('AppControlSidebar', () => {
           {...defaultProps}
           showTestSections={true}
           noRunMode={true}
-          isIsoRunning={false}
+          isProjectRunning={false}
         />
       );
       
@@ -154,7 +154,7 @@ describe('AppControlSidebar', () => {
           {...defaultProps}
           showTestSections={false}
           noRunMode={false}
-          isIsoRunning={false}
+          isProjectRunning={false}
         />
       );
       
@@ -162,13 +162,13 @@ describe('AppControlSidebar', () => {
       expect(debugButton).not.toHaveClass('has-active-options');
     });
 
-    it('should KEEP orange highlight when showTestSections is enabled and ISO is running', () => {
+    it('should KEEP orange highlight when showTestSections is enabled and project is running', () => {
       const { container } = render(
         <AppControlSidebar
           {...defaultProps}
           showTestSections={true}
           noRunMode={false}
-          isIsoRunning={true}
+          isProjectRunning={true}
         />
       );
       
@@ -176,13 +176,13 @@ describe('AppControlSidebar', () => {
       expect(debugButton).toHaveClass('has-active-options');
     });
 
-    it('should KEEP orange highlight when noRunMode is enabled and ISO is running', () => {
+    it('should KEEP orange highlight when noRunMode is enabled and project is running', () => {
       const { container } = render(
         <AppControlSidebar
           {...defaultProps}
           showTestSections={false}
           noRunMode={true}
-          isIsoRunning={true}
+          isProjectRunning={true}
         />
       );
       
@@ -196,7 +196,7 @@ describe('AppControlSidebar', () => {
           {...defaultProps}
           showTestSections={true}
           noRunMode={false}
-          isIsoRunning={false}
+          isProjectRunning={false}
         />
       );
       
@@ -210,7 +210,7 @@ describe('AppControlSidebar', () => {
           {...defaultProps}
           showTestSections={false}
           noRunMode={false}
-          isIsoRunning={false}
+          isProjectRunning={false}
         />
       );
       
@@ -371,7 +371,7 @@ describe('Component render tests', () => {
         onToggleExpand={() => {}}
         showTestSections={false}
         noRunMode={false}
-        isIsoRunning={false}
+        isProjectRunning={false}
         onToggleTestSections={() => {}}
         onToggleNoRunMode={() => {}}
         showAppNotification={() => {}}
@@ -420,7 +420,7 @@ describe('Component render tests', () => {
         showTestSections={false}
         onToggleNoRunMode={() => {}}
         noRunMode={false}
-        isIsoRunning={false}
+        isProjectRunning={false}
         showAppNotification={() => {}}
         isOpen={false}
         onClose={() => {}}
@@ -461,21 +461,6 @@ describe('Component render tests', () => {
         onClose={() => {}}
         gitBranches={{}}
         onImportComplete={() => {}}
-      />
-    );
-  });
-
-  test('IsoConfiguration renders', () => {
-    render(
-      <IsoConfiguration
-        projectName="Proj"
-        globalDropdownValues={{}}
-        terminalRef={{ current: null }}
-        verificationStatuses={{}}
-        onTriggerRefresh={() => {}}
-        onConfigStateChange={() => {}}
-        onIsRunningChange={() => {}}
-        openFloatingTerminal={() => {}}
       />
     );
   });
