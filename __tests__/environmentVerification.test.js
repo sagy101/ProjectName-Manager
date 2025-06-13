@@ -35,6 +35,7 @@ describe('execCommand', () => {
   test('prefixes nvm commands when nvm.sh exists', async () => {
     process.env.NVM_DIR = '/nvm';
     jest.spyOn(fs, 'existsSync').mockImplementation((p) => p === '/nvm/nvm.sh');
+    os.homedir.mockReturnValue('/fake/home');
     exec.mockImplementation((cmd, opts, cb) => cb(null, 'v18', ''));
 
     const result = await execCommand('nvm use 18');
@@ -46,6 +47,7 @@ describe('execCommand', () => {
   });
 
   test('returns failure when command errors', async () => {
+    os.homedir.mockReturnValue('/fake/home');
     exec.mockImplementation((cmd, opts, cb) => cb(new Error('fail'), '', 'bad'));
 
     const result = await execCommand('bad');
