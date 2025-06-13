@@ -6,14 +6,14 @@ This project is my exploration of "vibe coding" mixed with solid engineering pra
 
 - **Cursor** – my main development platform for rapid prototyping, real-time AI assistance, and quick code edits.
 - **Windsurf** – used primarily for its "preview" feature to inspect and adjust HTML elements easily. The preview mode allows real-time visual editing where you can click on UI elements to modify them directly, making frontend development much more intuitive.
-- **Google Jules** – my go-to for project-wide but small changes. Excels at understanding entire codebases and making consistent updates across multiple files.
 - **Firebase Studio** – Google's full-stack AI development environment. Excellent for rapid prototyping and deployment of UI heavy features.
 
 ## AI Coding Assistants
 
 - **OpenAI Codex** – my go-to for small features and documentation validation. Exceptional at generating boilerplate code and ensuring documentation accuracy.
-- **GitHub Copilot** – inline code completion and suggestions during active development.
-- **Replit Ghostwriter** – cloud-based coding with instant execution and deployment.
+- **Google Jules** – my go-to for project-wide but small changes. Excels at understanding entire codebases and making consistent updates across multiple files.
+
+Both were used to create jest and playwright tests.
 
 ## Language Models
 
