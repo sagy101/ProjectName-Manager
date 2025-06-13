@@ -4,7 +4,7 @@ import configSidebarSections from '../configurationSidebarSections.json';
 
 const configSidebarSectionsActual = configSidebarSections.sections;
 
-export const useIsoConfig = (globalDropdownValues, showTestSections, setNotification) => {
+export const useProjectConfig = (globalDropdownValues, showTestSections, setNotification) => {
   const [configState, setConfigState] = useState({});
   const [attachState, setAttachState] = useState({});
   const [warningState, setWarningState] = useState({});

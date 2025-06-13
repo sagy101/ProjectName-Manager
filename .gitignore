@@ -29,4 +29,8 @@ Thumbs.db
 test-results/
 
 # Electron build directories
-out/ 
+out/
+
+# Playwright reports
+/playwright-report/
+/test-results/

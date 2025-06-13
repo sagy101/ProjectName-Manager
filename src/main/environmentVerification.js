@@ -213,7 +213,16 @@ async function verifyEnvironment(mainWindow = null) {
                         matchFound = true;
                         // Store the discovered version if an ID is provided
                         if (verification.versionId) {
-                            discoveredVersions[verification.versionId] = resolvedValue;
+                          const lines = output.split('\n');
+                          for (const line of lines) {
+                            if (line.includes(resolvedValue)) {
+                              const versionMatch = line.match(/v\d+\.\d+\.\d+/);
+                              if (versionMatch) {
+                                discoveredVersions[verification.versionId] = versionMatch[0];
+                                break; // Stop after finding the first matching line with a version
+                              }
+                            }
+                          }
                         }
                         break; 
                       }
