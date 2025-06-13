@@ -132,7 +132,7 @@ const StoppingStatusScreen = ({ terminals, isVisible, projectName, onClose }) =>
         window.electron.removeContainerTerminatedListener(handleContainerTerminated);
       }
     };
-  }, [isVisible, terminals]);
+  }, [isVisible]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Check if all processes and containers are terminated
   useEffect(() => {

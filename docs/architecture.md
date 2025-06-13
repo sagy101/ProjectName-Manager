@@ -88,9 +88,10 @@ The main process has been refactored into a modular architecture for better main
 - **Export Feature**: Captures and exports all verification command outputs with status for debugging
 
 #### `ptyManagement.js` - Terminal Process Management
-- **Purpose**: PTY (pseudo-terminal) process lifecycle management
-- **Responsibilities**: Process spawning, I/O handling, cleanup, tracking
-- **Key Functions**: `spawnPTY()`, `killProcess()`, `writeToPTY()`, `resizePTY()`
+- **Purpose**: PTY (pseudo-terminal) process lifecycle management with advanced monitoring
+- **Responsibilities**: Process spawning, I/O handling, cleanup, tracking, real-time status detection, control character monitoring
+- **Key Functions**: `spawnPTY()`, `killProcess()`, `writeToPTY()`, `resizePTY()`, `startProcessMonitoring()`, `getChildProcesses()`, `interpretProcessState()`
+- **Monitoring Features**: Process tree discovery, state interpretation, control character detection, exit code capture
 
 #### `containerManagement.js` - Docker Operations
 - **Purpose**: Docker container lifecycle management
@@ -233,7 +234,7 @@ See [verification-types.md](verification-types.md) for detailed information.
 
 ## Terminal System Architecture
 
-The application features a dual-terminal system designed for different use cases and safety requirements.
+The application features a sophisticated dual-terminal system with advanced process monitoring and status detection capabilities.
 
 ```mermaid
 graph TB
@@ -261,17 +262,127 @@ graph TB
         K --> L[node-pty Backend]
         L --> M[Real Terminal Emulation]
         M --> N[Live Output Streaming]
+        M --> O[Process Monitoring]
+        M --> P[Status Detection]
     end
     
-    subgraph "Process Management"
-        O[Process Tracking]
-        P[Container Status Monitoring]
-        Q[Cleanup on Exit]
+    subgraph "Process Management & Monitoring"
+        Q[Process Tree Discovery]
+        R[Real-time Status Updates]
+        S[Control Character Detection]
+        T[Exit Code Capture]
+        U[Container Status Monitoring]
+        V[Cleanup on Exit]
     end
     
-    K --> O
-    G --> P
-    N --> Q
+    subgraph "Status Detection Methods"
+        W[ps Command Analysis]
+        X[Input Stream Monitoring]
+        Y[Output Pattern Matching]
+        Z[Process State Interpretation]
+    end
+    
+    K --> Q
+    O --> R
+    P --> S
+    P --> T
+    G --> U
+    N --> V
+    
+    Q --> W
+    S --> X
+    T --> Y
+    R --> Z
+```
+
+### Advanced Process Monitoring
+
+The terminal system implements comprehensive process monitoring through multiple detection methods:
+
+#### Process Tree Discovery
+- **Method**: Uses `ps -ax -o pid,ppid,state,command,rss,pcpu` on Unix systems
+- **Capability**: Discovers all descendant processes of the shell
+- **Frequency**: Real-time monitoring every second
+- **Filtering**: Intelligently filters out shell utilities and monitoring commands
+
+#### Process State Detection
+The system interprets Unix process states to provide accurate status information:
+
+| State | Status | Description |
+|-------|--------|-------------|
+| `R`, `R+` | running | Process is running or runnable |
+| `S`, `S+` | sleeping | Interruptible sleep (waiting for events) |
+| `D` | waiting | Uninterruptible sleep (I/O operations) |
+| `T` | paused | Stopped by signal (Ctrl+Z) |
+| `Z` | finishing | Zombie process (terminated, not reaped) |
+| `I` | idle | Idle kernel thread |
+
+#### Control Character Detection
+The system monitors input streams for control characters:
+
+- **Ctrl+C (`\x03`)**: Interrupt signal - marks process as terminated by user
+- **Ctrl+D (`\x04`)**: EOF signal - marks process as terminated by EOF
+- **Ctrl+Z (`\x1a`)**: Suspend signal - detected via process state 'T'
+
+#### Exit Code Capture
+- **Method**: Injects `echo "EXIT_CODE:$?"` after natural process completion
+- **Purpose**: Distinguishes between successful completion and error conditions
+- **Pattern Matching**: Monitors output for `EXIT_CODE:(\d+)` pattern
+
+### Terminal Lifecycle States
+
+The terminal system tracks processes through these lifecycle states:
+
+```mermaid
+stateDiagram-v2
+    [*] --> idle
+    idle --> pending_spawn: Command Initiated
+    pending_spawn --> running: PTY Spawned
+    running --> sleeping: Process Waiting
+    running --> paused: Ctrl+Z Pressed
+    running --> waiting: I/O Operations
+    sleeping --> running: Process Active
+    paused --> running: fg Command
+    running --> stopped: Ctrl+C/Ctrl+D
+    running --> error: Exit Code ≠ 0
+    running --> done: Exit Code = 0
+    stopped --> [*]
+    error --> [*]
+    done --> [*]
+```
+
+### Status Communication Flow
+
+```mermaid
+sequenceDiagram
+    participant UI as React UI
+    participant PTY as PTY Manager
+    participant Monitor as Process Monitor
+    participant System as System (ps)
+    
+    Note over UI,System: Process Lifecycle Monitoring
+    UI->>PTY: Spawn terminal process
+    PTY->>Monitor: Start monitoring (shell PID)
+    
+    loop Every 1 second
+        Monitor->>System: ps -ax (get process tree)
+        System-->>Monitor: Process list with states
+        Monitor->>Monitor: Filter & analyze processes
+        Monitor->>UI: command-status-update event
+    end
+    
+    Note over UI,System: Control Character Handling
+    UI->>PTY: User input (Ctrl+C)
+    PTY->>PTY: Mark ctrlCPressed = true
+    
+    Note over UI,System: Process Completion
+    Monitor->>Monitor: No child processes detected
+    alt Ctrl+C was pressed
+        Monitor->>UI: command-finished (stopped)
+    else Natural exit
+        Monitor->>PTY: Inject exit code check
+        PTY->>UI: command-finished (done/error)
+    end
 ```
 
 ### Terminal Types
@@ -279,14 +390,23 @@ graph TB
 #### Main Terminals
 - **Purpose**: Primary command execution for configuration sections
 - **Safety**: Read-only by default (debug override available)
-- **Features**: Tab management, container lifecycle tracking, process monitoring
+- **Features**: Tab management, container lifecycle tracking, advanced process monitoring
+- **Status Display**: Real-time status indicators with detailed process information
 - **Use Case**: Running main application services and processes
 
 #### Floating Terminals
 - **Purpose**: Auxiliary tasks and log viewing
 - **Features**: Draggable, resizable, minimizable windows
 - **Trigger**: Custom buttons in configuration sections
+- **Monitoring**: Same advanced monitoring as main terminals
 - **Use Case**: Viewing logs, running diagnostic commands, temporary tasks
+
+### Performance Optimizations
+
+- **Efficient Filtering**: Smart process filtering to avoid monitoring shell utilities
+- **State Caching**: Only sends updates when process status actually changes
+- **Resource Management**: Automatic cleanup of monitoring intervals
+- **Memory Efficiency**: Minimal memory footprint for process tracking
 
 See [terminal-features.md](terminal-features.md) for detailed information.
 

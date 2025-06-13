@@ -185,6 +185,30 @@ contextBridge.exposeInMainWorld('electron', {
       }
     };
   },
+  onCommandFinished: (callback) => {
+    const wrapperFn = (event, data) => callback(data);
+    ipcRenderer.on('command-finished', wrapperFn);
+    
+    return () => {
+      ipcRenderer.removeListener('command-finished', wrapperFn);
+    };
+  },
+  onCommandStarted: (callback) => {
+    const wrapperFn = (event, data) => callback(data);
+    ipcRenderer.on('command-started', wrapperFn);
+    
+    return () => {
+      ipcRenderer.removeListener('command-started', wrapperFn);
+    };
+  },
+  onCommandStatusUpdate: (callback) => {
+    const wrapperFn = (event, data) => callback(data);
+    ipcRenderer.on('command-status-update', wrapperFn);
+    
+    return () => {
+      ipcRenderer.removeListener('command-status-update', wrapperFn);
+    };
+  },
   onProcessKilled: (callback) => {
     const wrapperFn = (event, data) => callback(data);
     eventListeners['process-killed'].push({
@@ -200,24 +224,6 @@ contextBridge.exposeInMainWorld('electron', {
       );
       if (index !== -1) {
         eventListeners['process-killed'].splice(index, 1);
-      }
-    };
-  },
-  onProcessEnded: (callback) => {
-    const wrapperFn = (event, data) => callback(data);
-    eventListeners['process-ended'].push({
-      callback: callback,
-      wrapper: wrapperFn
-    });
-    ipcRenderer.on('process-ended', wrapperFn);
-    
-    return () => {
-      ipcRenderer.removeListener('process-ended', wrapperFn);
-      const index = eventListeners['process-ended'].findIndex(
-        listener => listener.wrapper === wrapperFn
-      );
-      if (index !== -1) {
-        eventListeners['process-ended'].splice(index, 1);
       }
     };
   },

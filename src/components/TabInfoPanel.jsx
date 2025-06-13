@@ -17,6 +17,7 @@ const TabInfoPanel = ({
   const [isLoadingContainerStatuses, setIsLoadingContainerStatuses] = useState(false);
   const panelRef = useRef(null);
 
+
   // Helper to get elapsed time as a string
   const getElapsedTime = (startTime) => {
     if (!startTime) return 'N/A';
@@ -194,6 +195,14 @@ const TabInfoPanel = ({
           <div className="info-row">
             <span className="info-label">Terminal ID:</span>
             <span className="info-value mono">{terminal.id}</span>
+          </div>
+
+          <div className="info-row">
+            <span className="info-label">Status:</span>
+            <span className="info-value">
+              <span className={`status-text status-${terminal.status}`}>{terminal.status}</span>
+              {terminal.exitStatus && <span className="exit-status">({terminal.exitStatus})</span>}
+            </span>
           </div>
           
           <div className="info-row">

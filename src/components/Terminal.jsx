@@ -3,7 +3,7 @@ import { Terminal as XTerm } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
 
-const TerminalComponent = ({ id, active, initialCommand, noRunMode, isReadOnly, isErrorTab, errorMessage }) => {
+const TerminalComponent = ({ id, active, initialCommand, noRunMode, isReadOnly, isErrorTab, errorMessage, onProcessStarted }) => {
   const terminalRef = useRef(null);
   const xtermRef = useRef(null);
   const fitAddonRef = useRef(null);
@@ -51,43 +51,48 @@ const TerminalComponent = ({ id, active, initialCommand, noRunMode, isReadOnly, 
         };
       } else {
         // Normal mode - spawn PTY and execute command
-      window.electron.ptySpawn(initialCommand, id, cols, rows);
-
-      const removePtyOutputListener = window.electron.onPtyOutput(id, (output) => {
-        term.write(output);
-      });
-
-      let onDataDisposable;
-      if (!isReadOnly) { // Only attach onData listener if not read-only
-        onDataDisposable = term.onData(data => {
-          window.electron.ptyInput(id, data);
-        });
-      }
-
-      const onResizeDisposable = term.onResize(({ cols: newCols, rows: newRows }) => {
-        window.electron.ptyResize(id, newCols, newRows);
-        // fitAddon.fit(); // FitAddon should be called when the *container* resizes or becomes visible
-      });
-      
-      if (!window.terminals) window.terminals = {};
-      window.terminals[id] = {
-        write: (data) => term.write(data),
-        term: term
-      };
-
-      return () => { // This cleanup runs when the component unmounts (tab is closed)
-        removePtyOutputListener();
-        if (onDataDisposable) onDataDisposable.dispose();
-        onResizeDisposable.dispose();
-        term.dispose();
-        xtermRef.current = null;
-        fitAddonRef.current = null;
-        if (window.terminals && window.terminals[id]) {
-          delete window.terminals[id];
+        window.electron.ptySpawn(initialCommand, String(id), cols, rows);
+        
+        // Notify parent that process has started
+        if (onProcessStarted) {
+          onProcessStarted(id);
         }
-        window.electron.killProcess(id); // Kill PTY when tab is closed
-      };
-    }
+        
+        const removePtyOutputListener = window.electron.onPtyOutput(String(id), (output) => {
+          term.write(output);
+        });
+
+        let onDataDisposable;
+        if (!isReadOnly) { // Only attach onData listener if not read-only
+          onDataDisposable = term.onData(data => {
+            window.electron.ptyInput(String(id), data);
+          });
+        }
+
+        const onResizeDisposable = term.onResize(({ cols: newCols, rows: newRows }) => {
+          window.electron.ptyResize(String(id), newCols, newRows);
+          // fitAddon.fit(); // FitAddon should be called when the *container* resizes or becomes visible
+        });
+        
+        if (!window.terminals) window.terminals = {};
+        window.terminals[id] = {
+          write: (data) => term.write(data),
+          term: term
+        };
+
+        return () => { // This cleanup runs when the component unmounts (tab is closed)
+          removePtyOutputListener();
+          if (onDataDisposable) onDataDisposable.dispose();
+          onResizeDisposable.dispose();
+          term.dispose();
+          xtermRef.current = null;
+          fitAddonRef.current = null;
+          if (window.terminals && window.terminals[id]) {
+            delete window.terminals[id];
+          }
+          window.electron.killProcess(String(id)); // Kill PTY when tab is closed
+        };
+      }
     }
     
     // Cleanup for no-run mode

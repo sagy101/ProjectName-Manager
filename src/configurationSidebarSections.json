@@ -79,7 +79,7 @@
               "modeSelector": {
                 "options": ["forwarding", "process", "mock"],
                 "labels": ["Forwarding", "Process", "Mock"],
-                "default": "Mock"
+                "default": "mock"
               },
               "dropdownSelectors": [
                 {

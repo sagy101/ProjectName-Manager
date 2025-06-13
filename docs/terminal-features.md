@@ -89,6 +89,64 @@ The Tab Information Panel is accessible via the info button (ℹ) on each main t
 | done | Blue | Process completed successfully |
 | error | Red | Process encountered an error |
 
+### Process Monitoring and Status Detection
+
+{ProjectName} Manager implements sophisticated real-time process monitoring to provide accurate status information and detailed process insights.
+
+#### Real-Time Process Monitoring
+
+The application continuously monitors all descendant processes of each terminal session:
+
+- **Process Tree Discovery**: Uses system commands (`ps` on Unix) to discover all child processes
+- **State Analysis**: Interprets process states to determine overall command status
+- **Resource Tracking**: Monitors CPU usage, memory consumption, and process hierarchy
+- **Intelligent Filtering**: Excludes shell utilities and monitoring commands from status calculations
+
+#### Advanced Status Detection
+
+Beyond basic running/stopped states, the system detects:
+
+| Detailed Status | Description | Trigger |
+|----------------|-------------|---------|
+| **running** | Process actively executing | Any child process in 'R' state |
+| **sleeping** | Process waiting for events | All processes in 'S' state |
+| **waiting** | Process blocked on I/O | Any process in 'D' state |
+| **paused** | Process suspended | Any process in 'T' state (Ctrl+Z) |
+| **finishing** | Process terminating | Zombie processes detected |
+| **stopped** | Process terminated by user | Ctrl+C or Ctrl+D detected |
+| **error** | Process failed | Non-zero exit code |
+| **done** | Process completed successfully | Zero exit code |
+
+#### Control Character Detection
+
+The system monitors input streams for control characters to accurately determine termination reasons:
+
+- **Ctrl+C (`\x03`)**: Interrupt signal - process terminated by user
+- **Ctrl+D (`\x04`)**: EOF signal - process terminated by end-of-file
+- **Ctrl+Z (`\x1a`)**: Suspend signal - process paused (also detected via process state)
+
+#### Exit Code Analysis
+
+For processes that exit naturally (not killed by user):
+- **Automatic Detection**: System injects exit code checking after process completion
+- **Status Determination**: Distinguishes between successful completion (exit code 0) and errors (non-zero)
+- **Detailed Reporting**: Provides specific exit codes for debugging
+
+#### Process Information Display
+
+The Tab Information Panel shows detailed process information:
+- **Process Count**: Number of active child processes
+- **Process States**: Individual state of each process
+- **Resource Usage**: CPU and memory consumption
+- **Command Hierarchy**: Parent-child process relationships
+
+#### Performance Optimizations
+
+- **Efficient Monitoring**: Only monitors when processes are active
+- **State Caching**: Updates sent only when status actually changes
+- **Resource Management**: Automatic cleanup when processes complete
+- **Smart Filtering**: Avoids monitoring system utilities and shell commands
+
 ### Container Status Indicators
 
 | Status | Color | Description |

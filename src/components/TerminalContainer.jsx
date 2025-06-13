@@ -23,7 +23,7 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
     handleRefreshTab,
     handleCloseTab,
     killAllTerminals
-  } = useTerminals(configState, configSidebarCommands);
+  } = useTerminals(configState, configSidebarCommands, noRunMode);
   
   const {
     visibleTabs,
@@ -35,8 +35,22 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
 
   useIpcListeners(setTerminals);
 
+  // Log terminal state changes for debugging
+  useEffect(() => {
+    console.log('TerminalContainer state updated:', terminals);
+  }, [terminals]);
+
   const [tabInfoPanel, setTabInfoPanel] = useState(null);
   const [detailsPopup, setDetailsPopup] = useState({ open: false, terminalId: null });
+
+  // Handle when a terminal process actually starts
+  const handleProcessStarted = (terminalId) => {
+    setTerminals(prev => 
+      prev.map(terminal => 
+        terminal.id === terminalId ? { ...terminal, status: 'running' } : terminal
+      )
+    );
+  };
 
   // Simplified global terminal manager setup
   useEffect(() => {
@@ -76,6 +90,11 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
         }
       }
       return terminalId;
+    };
+    
+    // Cleanup
+    return () => {
+      delete window.runInTerminal;
     };
   }, [activeTerminalId, setTerminals, setActiveTerminalId]);
 
@@ -179,6 +198,7 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
               isReadOnly={isReadOnly}
               isErrorTab={terminal.status === 'error' && terminal.errorType === 'config'}
               errorMessage={terminal.errorMessage}
+              onProcessStarted={handleProcessStarted}
             />
           ))
         )}

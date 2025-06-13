@@ -162,7 +162,7 @@ test.describe('Debug Menu Functionality', () => {
     const tab = window.locator('.tab', { hasText: /^Mirror \+ MariaDB/i });
     await expect(tab).toBeVisible({ timeout: 5000 });
     const tabStatus = tab.locator('.tab-status');
-    await expect(tabStatus).toHaveClass(/status-idle/, { timeout: 5000 });
+    await expect(tabStatus).toHaveClass(/status-running/, { timeout: 5000 });
     
     const expandButton = await window.locator('[title="Expand Sidebar"]');
     await expandButton.click();
