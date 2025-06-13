@@ -1,5 +1,6 @@
 const fs = require('fs');
 const child_process = require('child_process');
+const os = require('os');
 
 jest.mock('child_process', () => ({
   exec: jest.fn()
@@ -25,17 +26,16 @@ jest.mock('os', () => ({
 const { exec } = require('child_process');
 const envVerify = require('../src/main/environmentVerification');
 const { execCommand, verifyEnvironment } = envVerify;
-const os = require('os');
 
 beforeEach(() => {
   jest.clearAllMocks();
+  os.homedir.mockReturnValue('/fake/home');
 });
 
 describe('execCommand', () => {
   test('prefixes nvm commands when nvm.sh exists', async () => {
     process.env.NVM_DIR = '/nvm';
-    jest.spyOn(fs, 'existsSync').mockImplementation((p) => p === '/nvm/nvm.sh');
-    os.homedir.mockReturnValue('/fake/home');
+    fs.existsSync.mockImplementation((p) => p === '/nvm/nvm.sh');
     exec.mockImplementation((cmd, opts, cb) => cb(null, 'v18', ''));
 
     const result = await execCommand('nvm use 18');
@@ -47,7 +47,6 @@ describe('execCommand', () => {
   });
 
   test('returns failure when command errors', async () => {
-    os.homedir.mockReturnValue('/fake/home');
     exec.mockImplementation((cmd, opts, cb) => cb(new Error('fail'), '', 'bad'));
 
     const result = await execCommand('bad');
@@ -57,8 +56,6 @@ describe('execCommand', () => {
 
 describe('verifyEnvironment', () => {
   beforeEach(() => {
-    // Resetting modules is the cleanest way to handle module-level cache
-    // between tests, preventing state leakage.
     jest.resetModules();
   });
 
@@ -70,27 +67,27 @@ describe('verifyEnvironment', () => {
       ]
     });
 
-    fs.promises.readFile.mockImplementation((p) => {
+    const mockedFs = require('fs');
+    mockedFs.promises.readFile.mockImplementation((p) => {
       if (p.includes('generalEnvironmentVerifications.json')) return Promise.resolve(configJson);
       if (p.includes('configurationSidebarAbout.json')) return Promise.resolve('[]');
       return Promise.reject(new Error('unknown'));
     });
-    exec.mockImplementation((cmd, opts, cb) => cb(null, 'hi\n', ''));
-
+    
+    const { exec: mockedExec } = require('child_process');
+    mockedExec.mockImplementation((cmd, opts, cb) => cb(null, 'hi\n', ''));
+    
+    const { verifyEnvironment } = require('../src/main/environmentVerification');
     const results = await verifyEnvironment();
     expect(results.general.statuses.v1).toBe('valid');
   });
 
   test('should extract full version from command output for array expectedValue', async () => {
-    // --- Arrange ---
-
-    // Re-import dependencies for this test case after reset
     const { exec: mockedExec } = require('child_process');
     const { promises: mockedFsPromises } = require('fs');
-    const mockedFsSync = require('fs');
+    const mockedFs = require('fs');
     const mockedOs = require('os');
-
-    // Mock config files
+    
     const mockVerificationsConfig = {
       header: {},
       categories: [{
@@ -120,11 +117,9 @@ describe('verifyEnvironment', () => {
       return Promise.reject(new Error(`Unexpected readFile call: ${filePath}`));
     });
     
-    // Mock path checks inside execCommand
-    mockedFsSync.existsSync.mockReturnValue(false); 
+    mockedFs.existsSync.mockReturnValue(false); 
     mockedOs.homedir.mockReturnValue('/fake/home');
 
-    // Mock command execution
     const nvmLsOutput = `
       v15.5.1
       v16.20.2
@@ -132,7 +127,6 @@ describe('verifyEnvironment', () => {
     `.trim();
 
     mockedExec.mockImplementation((command, options, callback) => {
-      // The command gets wrapped, so we check for inclusion
       if (command.includes('nvm ls')) {
         callback(null, nvmLsOutput, '');
       } else {
@@ -140,16 +134,12 @@ describe('verifyEnvironment', () => {
       }
     });
 
-    // Require the module under test AFTER mocks are set up
     const { verifyEnvironment } = require('../src/main/environmentVerification');
     
-    // --- Act ---
     const result = await verifyEnvironment();
     
-    // --- Assert ---
     expect(result.discoveredVersions.nodeVersion).toBe('v15.5.1');
     
-    // Verify that exec was called with the correct command
     const execCall = mockedExec.mock.calls.find(call => call[0].includes('nvm ls'));
     expect(execCall).toBeDefined();
   });

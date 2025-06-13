@@ -229,7 +229,7 @@ Adds generic dropdown selectors that execute commands and populate options dynam
 ```json
 "testSection": true
 ```
-Marks a section as a test/development section. Test sections are hidden by default and can be shown/hidden via the debug tools in the **App Control Sidebar**. Commands from hidden test sections are excluded when "Run {ProjectName}" (e.g., "Run ISO") is pressed.
+Marks a section as a test/development section. Test sections are hidden by default and can be shown/hidden via the debug tools in the **App Control Sidebar**. Commands from hidden test sections are excluded when "Run {ProjectName}" (e.g., "Run {ProjectName}") is pressed.
 
 ## Custom Sidebar Buttons and Floating Terminals
 

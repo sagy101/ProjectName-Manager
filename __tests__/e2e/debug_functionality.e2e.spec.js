@@ -126,7 +126,7 @@ test.describe('Debug Menu Functionality', () => {
     expect(newText).not.toBe(initialText);
   });
 
-  test('should prevent debug mode changes when ISO is running', async () => {
+  test('should prevent debug mode changes when Project is running', async () => {
     const runnableSection = sections.find(s => s.components.toggle && s.id === 'mirror');
     if (!runnableSection) {
         console.log("Skipping test: No toggleable section found.");

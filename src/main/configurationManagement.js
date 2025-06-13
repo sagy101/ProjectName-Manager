@@ -15,7 +15,7 @@ async function loadDisplaySettings() {
     // Extract display settings from the loaded config
     const displaySettings = {
       openDevToolsByDefault: sectionsConfig?.displaySettings?.openDevToolsByDefault || false,
-      projectName: sectionsConfig?.displaySettings?.projectName || 'ISO',
+      projectName: sectionsConfig?.displaySettings?.projectName || 'Project',
     };
 
     console.log('Display settings loaded successfully');
