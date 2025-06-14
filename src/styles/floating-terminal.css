@@ -36,6 +36,7 @@
   align-items: center;
 }
 
+.floating-terminal-info-btn,
 .floating-terminal-minimize-btn,
 .floating-terminal-close-btn {
   background: none;
@@ -49,8 +50,17 @@
   border-radius: 3px;
   line-height: 1; /* Ensure consistent vertical alignment */
   transition: background-color 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+.floating-terminal-info-btn .icon {
+  width: 14px;
+  height: 14px;
+}
+
+.floating-terminal-info-btn:hover,
 .floating-terminal-minimize-btn:hover,
 .floating-terminal-close-btn:hover {
   background-color: #555;

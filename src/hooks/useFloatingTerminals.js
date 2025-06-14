@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import configSidebarAbout from '../configurationSidebarAbout.json';
 
 // Constants for terminal and sidebar dimensions
@@ -92,7 +92,11 @@ export const useFloatingTerminals = ({
         isVisible: true,
         isMinimized: false,
         position: { x: finalX, y: finalY }, // Use calculated and staggered position
-        zIndex: nextZIndex
+        zIndex: nextZIndex,
+        status: 'idle', // Track actual terminal status
+        exitStatus: null,
+        startTime: Date.now(),
+        associatedContainers: [] // Initialize associated containers
       };
       setNextZIndex(prevZ => prevZ + 1);
       setActiveFloatingTerminalId(newTerminalId);
@@ -151,10 +155,11 @@ export const useFloatingTerminals = ({
       title: terminal.title,
       command: commandWithDetails,
       originalCommand: terminal.command,
-      status: terminal.isMinimized ? 'minimized' : (terminal.isVisible ? 'active' : 'hidden'),
+      status: terminal.status || 'idle', // Use actual terminal status
+      exitStatus: terminal.exitStatus || null,
       sectionId: terminal.commandId,
-      startTime: parseInt(terminal.id.split('-')[1], 10) || Date.now(),
-      associatedContainers: [],
+      startTime: terminal.startTime || parseInt(terminal.id.split('-')[1], 10) || Date.now(),
+      associatedContainers: terminal.associatedContainers || [],
     };
 
     const panelX = window.innerWidth - SIDEBAR_EXPANDED_WIDTH - 420;
@@ -188,6 +193,84 @@ export const useFloatingTerminals = ({
       setIsFloatingSidebarExpanded(prev => !prev);
     }
   }, [setIsFloatingSidebarExpanded]);
+
+  // Add IPC listeners for floating terminal status updates
+  useEffect(() => {
+    if (!window.electron) return;
+
+    // Command started listener
+    const removeCommandStarted = window.electron.onCommandStarted && window.electron.onCommandStarted(({ terminalId }) => {
+      setFloatingTerminals(prev => 
+        prev.map(t => 
+          t.id === terminalId ? { ...t, status: 'running' } : t
+        )
+      );
+    });
+
+    // Command finished listener
+    const removeCommandFinished = window.electron.onCommandFinished && window.electron.onCommandFinished(({ terminalId, exitCode, status, exitStatus }) => {
+      setFloatingTerminals(prev => 
+        prev.map(t => 
+          t.id === terminalId 
+            ? { 
+                ...t, 
+                status: status || 'done', 
+                exitStatus: exitStatus || 'Command completed',
+                exitCode 
+              } 
+            : t
+        )
+      );
+    });
+
+    // Process ended listener
+    const removeProcessEnded = window.electron.onProcessEnded && window.electron.onProcessEnded(({ terminalId, code, signal }) => {
+      setFloatingTerminals(prev => 
+        prev.map(t => {
+          if (t.id === terminalId) {
+            let status = 'done';
+            let exitStatus = 'Exited successfully';
+
+            if (signal) {
+              status = 'stopped';
+              exitStatus = `Terminated by signal ${signal}`;
+            } else if (code !== 0) {
+              status = 'error';
+              exitStatus = `Exited with error code ${code}`;
+            }
+
+            return { ...t, status, exitStatus };
+          }
+          return t;
+        })
+      );
+    });
+
+    // Command status update listener (for real-time status)
+    const removeCommandStatusUpdate = window.electron.onCommandStatusUpdate && window.electron.onCommandStatusUpdate(({ terminalId, overallStatus, statusDescription, processStates, processCount }) => {
+      setFloatingTerminals(prev => 
+        prev.map(t => 
+          t.id === terminalId 
+            ? { 
+                ...t, 
+                status: overallStatus,
+                exitStatus: statusDescription,
+                processStates,
+                processCount
+              } 
+            : t
+        )
+      );
+    });
+
+    // Cleanup
+    return () => {
+      removeCommandStarted && removeCommandStarted();
+      removeCommandFinished && removeCommandFinished();
+      removeProcessEnded && removeProcessEnded();
+      removeCommandStatusUpdate && removeCommandStatusUpdate();
+    };
+  }, [setFloatingTerminals]);
 
   return {
     showFloatingTerminal,

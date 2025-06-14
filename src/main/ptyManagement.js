@@ -149,6 +149,10 @@ function startProcessMonitoring(terminalId, shellPid, mainWindow) {
   const state = commandStates[terminalId];
   if (!state) return;
 
+  // Track when monitoring started
+  const monitoringStartTime = Date.now();
+  let hasCheckedExitStatus = false;
+
   const monitorInterval = setInterval(async () => {
     if (!activeProcesses[terminalId] || state.commandFinished) {
       clearInterval(monitorInterval);
@@ -166,7 +170,8 @@ function startProcessMonitoring(terminalId, shellPid, mainWindow) {
                !cmd.includes('/bin/sh') && 
                !cmd.includes('/bin/bash') && 
                !cmd.includes('/bin/zsh') &&
-               !cmd.includes('echo "exit_code:');
+               !cmd.includes('echo "exit_code:') &&
+               !cmd.includes('echo "quick_check:');
       });
 
       if (commandProcesses.length > 0) {
@@ -268,6 +273,31 @@ function startProcessMonitoring(terminalId, shellPid, mainWindow) {
         }
         
         clearInterval(monitorInterval);
+      } else {
+        // No processes detected yet - check if we should timeout
+        const elapsedTime = Date.now() - monitoringStartTime;
+        
+        // After 6 seconds with no processes detected, check if command already finished
+        if (elapsedTime > 6000 && !hasCheckedExitStatus && !state.commandProcessDetected) {
+          hasCheckedExitStatus = true;
+          
+          // Check exit status to see if command already completed
+          if (activeProcesses[terminalId] && !state.commandFinished && state.exitCode === null) {
+            // Mark as finished so we can capture the exit code
+            state.commandFinished = true;
+            activeProcesses[terminalId].write('echo "EXIT_CODE:$?"\r');
+            
+            // Stop monitoring after a brief delay to allow exit code capture
+            setTimeout(() => {
+              // Don't send command-finished here - let the EXIT_CODE handler do it
+              // This prevents duplicate status updates and incorrect "failed" assumptions
+              clearInterval(monitorInterval);
+            }, 500);
+          } else {
+            // Command was already handled (by QUICK_CHECK or other means), just stop monitoring
+            clearInterval(monitorInterval);
+          }
+        }
       }
     } catch (error) {
       console.error(`[PTY MONITOR] Error monitoring processes for terminal ${terminalId}:`, error);
@@ -352,6 +382,17 @@ function spawnPTY(command, terminalId, cols = 80, rows = 24, projectRoot, mainWi
       
       // Start monitoring child processes
       startProcessMonitoring(terminalId, ptyProcess.pid, mainWindow);
+      
+      // Check exit status after a brief delay to catch immediate failures
+      setTimeout(() => {
+        const state = commandStates[terminalId];
+        if (state && !state.commandProcessDetected && !state.commandFinished) {
+          // No processes detected yet - command might have failed immediately
+          if (activeProcesses[terminalId]) {
+            activeProcesses[terminalId].write('echo "QUICK_CHECK:$?"\r');
+          }
+        }
+      }, 1500); // Check after 1.5 seconds
     }
   }, 1000);
 
@@ -362,6 +403,38 @@ function spawnPTY(command, terminalId, cols = 80, rows = 24, projectRoot, mainWi
         
         const dataStr = data.toString();
         const state = commandStates[terminalId];
+        
+        // Check for quick exit status check (for immediate failures)
+        const quickCheckMatch = dataStr.match(/QUICK_CHECK:(\d+)/);
+        if (quickCheckMatch && state && !state.commandProcessDetected && !state.commandFinished) {
+          const exitCode = parseInt(quickCheckMatch[1]);
+          
+          // Command completed immediately (either success or failure)
+          state.commandFinished = true;
+          state.exitCode = exitCode;
+          
+          let status = 'done';
+          let exitStatus = 'Command completed successfully';
+          
+          if (exitCode !== 0) {
+            status = 'error';
+            exitStatus = `Command failed immediately with exit code ${exitCode}`;
+          }
+          
+          if (mainWindow) {
+            mainWindow.webContents.send('command-finished', { 
+              terminalId, 
+              exitCode,
+              status,
+              exitStatus
+            });
+          }
+          
+          // Clear the monitor interval if it exists
+          if (state.monitorInterval) {
+            clearInterval(state.monitorInterval);
+          }
+        }
         
         // Check for exit code output
         const exitCodeMatch = dataStr.match(/EXIT_CODE:(\d+)/);

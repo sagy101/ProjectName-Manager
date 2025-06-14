@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import TerminalComponent from './Terminal'; // Assuming Terminal.jsx is in the same directory
+import { InformationCircleIcon } from '@heroicons/react/24/outline';
 import '../styles/floating-terminal.css'; // We will create this CSS file next
 
 const FloatingTerminal = ({
@@ -13,6 +14,7 @@ const FloatingTerminal = ({
   initialPosition, // For initial placement
   zIndex, // For stacking order
   onMinimize, // New prop for minimize action
+  onOpenInfo, // New prop for opening info panel
   noRunMode // New prop for no-run mode
 }) => {
   const terminalRef = useRef(null);
@@ -104,6 +106,13 @@ const FloatingTerminal = ({
       >
         <span className="floating-terminal-title">{title}</span>
         <div className="floating-terminal-controls">
+          <button
+            className="floating-terminal-info-btn"
+            onClick={(e) => { e.stopPropagation(); onOpenInfo && onOpenInfo(id); }}
+            title="Terminal Information"
+          >
+            <InformationCircleIcon className="icon" />
+          </button>
           <button
             className="floating-terminal-minimize-btn"
             onClick={(e) => { e.stopPropagation(); onMinimize && onMinimize(id); }}

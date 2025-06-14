@@ -234,24 +234,41 @@ const App = () => {
           zIndex={terminal.zIndex}
           initialPosition={terminal.position}
           onMinimize={floatingTerminalHandlers.toggleMinimizeFloatingTerminal}
+          onOpenInfo={floatingTerminalHandlers.showFloatingTerminalInfoPanel}
           isReadOnly={false}
           noRunMode={appState.noRunMode}
         />
       ))}
       {/* Render TabInfoPanel for Floating Terminals */}
-      {appState.infoPanelState.isVisible && appState.infoPanelState.terminalData && (
-        <TabInfoPanel
-          terminal={appState.infoPanelState.terminalData}
-          position={appState.infoPanelState.position}
-          onClose={floatingTerminalHandlers.closeFloatingTerminalInfoPanel}
-          onRefresh={() => console.log("Refresh clicked for floating term info - no-op")} // No-op for now
-          configState={appState.configState} // Pass from App's state
-          noRunMode={appState.noRunMode}     // Pass from App's state
-          detailsPopupOpen={appState.infoPanelState.detailsOpen}
-          onOpenDetailsPopup={floatingTerminalHandlers.openInfoPanelDetails}
-          onCloseDetailsPopup={floatingTerminalHandlers.closeInfoPanelDetails}
-        />
-      )}
+      {appState.infoPanelState.isVisible && appState.infoPanelState.terminalData && (() => {
+        // Get the live terminal data from floatingTerminals
+        const liveTerminal = appState.floatingTerminals.find(t => t.id === appState.infoPanelState.terminalData.id);
+        if (!liveTerminal) return null;
+        
+        // Merge the live status data with the static panel data
+        const terminalDataWithLiveStatus = {
+          ...appState.infoPanelState.terminalData,
+          status: liveTerminal.status,
+          exitStatus: liveTerminal.exitStatus,
+          exitCode: liveTerminal.exitCode,
+          processStates: liveTerminal.processStates,
+          processCount: liveTerminal.processCount
+        };
+
+        return (
+          <TabInfoPanel
+            terminal={terminalDataWithLiveStatus}
+            position={appState.infoPanelState.position}
+            onClose={floatingTerminalHandlers.closeFloatingTerminalInfoPanel}
+            onRefresh={() => console.log("Refresh clicked for floating term info - no-op")} // No-op for now
+            configState={appState.configState} // Pass from App's state
+            noRunMode={appState.noRunMode}     // Pass from App's state
+            detailsPopupOpen={appState.infoPanelState.detailsOpen}
+            onOpenDetailsPopup={floatingTerminalHandlers.openInfoPanelDetails}
+            onCloseDetailsPopup={floatingTerminalHandlers.closeInfoPanelDetails}
+          />
+        );
+      })()}
     </>
   );
 };
