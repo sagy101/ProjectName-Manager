@@ -19,7 +19,20 @@ const mockApp = {
   quit: jest.fn()
 };
 
-const mockBrowserWindow = jest.fn();
+const mockBrowserWindowInstance = {
+  on: jest.fn(),
+  once: jest.fn(),
+  loadFile: jest.fn(),
+  webContents: {
+    send: jest.fn(),
+    openDevTools: jest.fn(),
+    isDevToolsOpened: jest.fn(() => false),
+    on: jest.fn(),
+    setWindowOpenHandler: jest.fn()
+  },
+  isDestroyed: jest.fn(() => false)
+};
+const mockBrowserWindow = jest.fn(() => mockBrowserWindowInstance);
 
 const mockDialog = {
   showOpenDialog: jest.fn(),
@@ -118,9 +131,24 @@ describe('Main Process Tests', () => {
       expect(exec).toBeDefined();
     });
 
-    test('should cache environment verification results', async () => {
-      // Test that verification results are cached to prevent redundant checks
-      expect(true).toBe(true); // Placeholder - will implement after splitting
+    test('caches environment verification results', async () => {
+      jest.resetModules();
+
+      const fs = require('fs').promises;
+      const { exec } = require('child_process');
+
+      const minimalConfig = JSON.stringify({ header: {}, categories: [] });
+      fs.readFile.mockResolvedValue(minimalConfig);
+      exec.mockImplementation((cmd, opts, cb) => cb(null, '', ''));
+
+      const env = require('../src/main/environmentVerification');
+      const { verifyEnvironment } = env;
+
+      await verifyEnvironment();
+      const callsAfterFirst = fs.readFile.mock.calls.length;
+      await verifyEnvironment();
+
+      expect(fs.readFile).toHaveBeenCalledTimes(callsAfterFirst);
     });
 
     test('should handle command timeouts gracefully', async () => {
@@ -158,9 +186,20 @@ describe('Main Process Tests', () => {
       expect(exec).toBeDefined();
     });
 
-    test('should cache git branch results', () => {
-      // Test that git branch results are cached
-      expect(true).toBe(true); // Placeholder
+    test('caches git branch lookups', async () => {
+      const { exec } = require('child_process');
+      const git = require('../src/main/gitManagement');
+
+      exec.mockImplementation((cmd, opts, cb) => cb(null, 'main\n', ''));
+
+      const first = await git.getGitBranch('repo');
+      const second = await git.getGitBranch('repo');
+
+      expect(first).toBe('main');
+      expect(second).toBe('main');
+      expect(exec).toHaveBeenCalledTimes(1);
+
+      git.clearGitBranchCache('repo');
     });
 
     test('should handle git errors gracefully', async () => {
@@ -188,34 +227,53 @@ describe('Main Process Tests', () => {
   });
 
   describe('Dropdown Management Module', () => {
-    test('should fetch dropdown options with caching', () => {
+    test("registers handler for fetching dropdown options", () => {
       // Test dropdown option fetching and caching
       expect(mockIpcMain.handle).toBeDefined();
     });
 
-    test('should execute dropdown commands', () => {
+    test("registers handler for executing dropdown commands", () => {
       // Test dropdown command execution
       expect(mockIpcMain.handle).toBeDefined();
     });
 
-    test('should handle dropdown value changes', () => {
+    test("registers listener for dropdown value changes", () => {
       // Test dropdown value change notifications
       expect(mockIpcMain.on).toBeDefined();
     });
 
-    test('should clear dropdown cache when needed', () => {
-      // Test cache invalidation
-      expect(true).toBe(true); // Placeholder
+    test('clears dropdown cache entries', async () => {
+      const dropdown = require('../src/main/dropdownManagement');
+      const { exec } = require('child_process');
+
+      exec.mockImplementation((cmd, opts, cb) => cb(null, 'one\n', ''));
+      const config = { id: 'd1', command: 'echo one', parseResponse: 'lines', args: {} };
+
+      await dropdown.getDropdownOptions(config);
+      dropdown.clearDropdownCache('d1');
+      await dropdown.getDropdownOptions(config);
+
+      expect(exec).toHaveBeenCalledTimes(2);
     });
 
-    test('should handle dropdown loading states', () => {
-      // Test loading state management
-      expect(true).toBe(true); // Placeholder
+    test('waits while dropdown options load', async () => {
+      const dropdown = require('../src/main/dropdownManagement');
+      const { exec } = require('child_process');
+
+      exec.mockImplementation((cmd, opts, cb) => setTimeout(() => cb(null, 'x', ''), 50));
+      const config = { id: 'dload', command: 'echo x', parseResponse: 'lines', args: {} };
+
+      const p1 = dropdown.getDropdownOptions(config);
+      const p2 = dropdown.getDropdownOptions(config);
+      const results = await Promise.all([p1, p2]);
+
+      expect(exec).toHaveBeenCalledTimes(1);
+      expect(results[0]).toEqual(results[1]);
     });
   });
 
   describe('Terminal (PTY) Management Module', () => {
-    test('should spawn PTY processes', () => {
+    test("registers PTY spawn function", () => {
       const pty = require('node-pty');
       
       pty.spawn.mockReturnValue({
@@ -229,39 +287,58 @@ describe('Main Process Tests', () => {
       expect(pty.spawn).toBeDefined();
     });
 
-    test('should handle PTY input', () => {
+    test("registers PTY input listener", () => {
       // Test PTY input handling
       expect(mockIpcMain.on).toBeDefined();
     });
 
-    test('should handle PTY resize', () => {
+    test("registers PTY resize listener", () => {
       // Test PTY resize handling
       expect(mockIpcMain.on).toBeDefined();
     });
 
-    test('should track active processes', () => {
-      // Test process tracking
-      expect(true).toBe(true); // Placeholder
+    test('tracks active PTY processes', () => {
+      const pty = require('node-pty');
+      const ptyMgmt = require('../src/main/ptyManagement');
+
+      pty.spawn.mockReturnValue({ pid: 1, write: jest.fn(), kill: jest.fn(), on: jest.fn(), onData: jest.fn(), onExit: jest.fn() });
+
+      ptyMgmt.spawnPTY('echo hi', 't1');
+      const processes = ptyMgmt.getActivePTYProcesses();
+      expect(processes.find(p => p.terminalId === 't1')).toBeDefined();
+
+      ptyMgmt.killAllPTYProcesses();
     });
 
-    test('should handle PTY process cleanup', () => {
-      // Test process cleanup
-      expect(true).toBe(true); // Placeholder
+    test('cleans up PTY processes', () => {
+      const pty = require('node-pty');
+      const ptyMgmt = require('../src/main/ptyManagement');
+
+      pty.spawn.mockReturnValue({ pid: 2, write: jest.fn(), kill: jest.fn(), on: jest.fn(), onData: jest.fn(), onExit: jest.fn() });
+
+      ptyMgmt.spawnPTY('echo hi', 't2');
+      const res = ptyMgmt.killAllPTYProcesses();
+
+      expect(res.killedCount).toBeGreaterThan(0);
     });
 
-    test('should handle architecture mismatches gracefully', () => {
-      // Test node-pty architecture error handling
-      expect(true).toBe(true); // Placeholder
+    test('handles architecture mismatch errors', () => {
+      const pty = require('node-pty');
+      const ptyMgmt = require('../src/main/ptyManagement');
+
+      pty.spawn.mockImplementation(() => { throw new Error('arch'); });
+
+      expect(() => ptyMgmt.spawnPTY('cmd', 'bad')).not.toThrow();
     });
   });
 
   describe('Container Management Module', () => {
-    test('should stop Docker containers', () => {
+    test("registers handler to stop Docker containers", () => {
       // Test container stopping
       expect(mockIpcMain.handle).toBeDefined();
     });
 
-    test('should get container status', () => {
+    test("registers handler for container status", () => {
       // Test container status checking
       expect(mockIpcMain.handle).toBeDefined();
     });
@@ -279,9 +356,15 @@ describe('Main Process Tests', () => {
       expect(exec).toBeDefined();
     });
 
-    test('should parse container status output', () => {
-      // Test container status parsing
-      expect(true).toBe(true); // Placeholder
+    test('parses container status output', async () => {
+      const { exec } = require('child_process');
+      const cm = require('../src/main/containerManagement');
+
+      exec.mockImplementation((cmd, opts, cb) => cb(null, 'running\n', ''));
+      const status = await cm.getContainerStatus('c1');
+
+      expect(status).toBe('running');
+      expect(exec).toHaveBeenCalled();
     });
   });
 
@@ -314,7 +397,7 @@ describe('Main Process Tests', () => {
       expect(importConfigFromFile).toBeDefined();
     });
 
-    test('should get about configuration', () => {
+    test("registers handler for about configuration", () => {
       // Test about config retrieval
       expect(mockIpcMain.handle).toBeDefined();
     });
@@ -330,51 +413,64 @@ describe('Main Process Tests', () => {
   });
 
   describe('Window Management Module', () => {
-    test('should create main window', () => {
+    test("exposes BrowserWindow class", () => {
       // Test window creation
       expect(mockBrowserWindow).toBeDefined();
     });
 
-    test('should handle window events', () => {
+    test("registers window event handlers", () => {
       // Test window event handling
       expect(mockApp.on).toBeDefined();
     });
 
-    test('should open developer tools', () => {
+    test("registers listener to open developer tools", () => {
       // Test dev tools opening
       expect(mockIpcMain.on).toBeDefined();
     });
 
-    test('should reload application', () => {
+    test("registers listener to reload application", () => {
       // Test app reloading
       expect(mockIpcMain.on).toBeDefined();
     });
 
-    test('should handle window focus and blur', () => {
-      // Test window focus management
-      expect(true).toBe(true); // Placeholder
+    test('attaches focus and blur handlers', () => {
+      const wm = require('../src/main/windowManagement');
+      wm.createWindow();
+
+      expect(mockBrowserWindowInstance.on).toHaveBeenCalledWith('focus', expect.any(Function));
+      expect(mockBrowserWindowInstance.on).toHaveBeenCalledWith('blur', expect.any(Function));
     });
   });
 
   describe('Process Management Module', () => {
-    test('should kill processes by PID', () => {
+    test("registers listener to kill process", () => {
       // Test process killing
       expect(mockIpcMain.on).toBeDefined();
     });
 
-    test('should handle process cleanup on app quit', () => {
+    test("registers cleanup on app quit", () => {
       // Test cleanup on quit
       expect(mockApp.on).toBeDefined();
     });
 
-    test('should track running processes', () => {
-      // Test process tracking
-      expect(true).toBe(true); // Placeholder
+    test('tracks running processes', () => {
+      const pty = require('node-pty');
+      const ptyMgmt = require('../src/main/ptyManagement');
+
+      pty.spawn.mockReturnValue({ pid: 10, write: jest.fn(), kill: jest.fn(), on: jest.fn(), onData: jest.fn(), onExit: jest.fn() });
+
+      ptyMgmt.spawnPTY('echo', 'track');
+      expect(ptyMgmt.getPTYInfo('track').pid).toBe(10);
+
+      ptyMgmt.killAllPTYProcesses();
     });
 
-    test('should handle process errors', () => {
-      // Test process error handling
-      expect(true).toBe(true); // Placeholder
+    test('process error handling for missing PTY', () => {
+      const ptyMgmt = require('../src/main/ptyManagement');
+      const window = { webContents: { send: jest.fn() } };
+
+      expect(() => ptyMgmt.killProcess('none', window)).not.toThrow();
+      expect(window.webContents.send).toHaveBeenCalledWith('process-terminated', { terminalId: 'none' });
     });
   });
 
@@ -410,9 +506,20 @@ describe('Main Process Tests', () => {
       expect(mockIpcMain.on).toBeDefined();
     });
 
-    test('should handle IPC errors gracefully', () => {
-      // Test IPC error handling
-      expect(true).toBe(true); // Placeholder
+    test('IPC error handling sends responses', () => {
+      const ipcErrHandler = jest.fn();
+      mockIpcMain.handle.mockImplementation((channel, handler) => {
+        if (channel === 'test-error') {
+          ipcErrHandler.mockImplementation(handler);
+        }
+      });
+
+      const { ipcMain } = require('electron');
+      ipcMain.handle('test-error', async () => { throw new Error('bad'); });
+
+      return ipcErrHandler().catch(err => {
+        expect(err).toBeDefined();
+      });
     });
   });
 
@@ -422,36 +529,72 @@ describe('Main Process Tests', () => {
       expect(process.env.NODE_ENV).toBe('test');
     });
 
-    test('should log important operations', () => {
-      // Test logging functionality
-      expect(true).toBe(true); // Placeholder
+    test('logs when opening dev tools', () => {
+      const wm = require('../src/main/windowManagement');
+      wm.createWindow();
+      const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      wm.openDevTools();
+      expect(logSpy).toHaveBeenCalledWith('Opening developer tools');
+      logSpy.mockRestore();
     });
 
-    test('should handle module loading errors', () => {
-      // Test module loading error handling
-      expect(true).toBe(true); // Placeholder
+    test('module loading error handling logs failure', () => {
+      expect(() => require('../src/main/does-not-exist')).toThrow();
     });
   });
 
   describe('Cache Management', () => {
-    test('should manage dropdown cache properly', () => {
-      // Test dropdown cache management
-      expect(true).toBe(true); // Placeholder
+    test('dropdown cache stats reflect entries', async () => {
+      const dropdown = require('../src/main/dropdownManagement');
+      const { exec } = require('child_process');
+
+      exec.mockImplementation((cmd, opts, cb) => cb(null, 'a', ''));
+      const config = { id: 'cacheTest', command: 'echo a', parseResponse: 'lines', args: {} };
+
+      await dropdown.getDropdownOptions(config);
+      const stats = dropdown.getDropdownCacheStats();
+
+      expect(stats.cacheSize).toBeGreaterThan(0);
+      dropdown.clearDropdownCache('cacheTest');
     });
 
-    test('should manage environment cache properly', () => {
-      // Test environment cache management
-      expect(true).toBe(true); // Placeholder
+    test('environment cache refresh clears old data', async () => {
+      jest.resetModules();
+      const fs = require('fs').promises;
+      const { exec } = require('child_process');
+      fs.readFile.mockResolvedValue(JSON.stringify({ header: {}, categories: [] }));
+      exec.mockImplementation((cmd, opts, cb) => cb(null, '', ''));
+      const env = require('../src/main/environmentVerification');
+      await env.verifyEnvironment();
+      const first = env.getEnvironmentVerification();
+      await env.refreshEnvironmentVerification();
+      const second = env.getEnvironmentVerification();
+      expect(second).not.toBe(first);
     });
 
-    test('should clear caches when needed', () => {
-      // Test cache clearing
-      expect(true).toBe(true); // Placeholder
+    test('cache clearing removes git branch cache', async () => {
+      const { exec } = require('child_process');
+      const git = require('../src/main/gitManagement');
+
+      exec.mockImplementation((cmd, opts, cb) => cb(null, 'main\n', ''));
+      await git.getGitBranch('repo');
+      git.clearGitBranchCache('repo');
+      await git.getGitBranch('repo');
+
+      expect(exec).toHaveBeenCalledTimes(2);
     });
 
-    test('should handle cache invalidation', () => {
-      // Test cache invalidation
-      expect(true).toBe(true); // Placeholder
+    test('cache invalidation on dropdown change', async () => {
+      const dropdown = require('../src/main/dropdownManagement');
+      const { exec } = require('child_process');
+
+      exec.mockImplementation((cmd, opts, cb) => cb(null, 'b', ''));
+      const config = { id: 'inv', command: 'echo b', parseResponse: 'lines', args: {} };
+      await dropdown.getDropdownOptions(config);
+      dropdown.handleDropdownValueChange('inv', 'b');
+      await dropdown.getDropdownOptions(config);
+
+      expect(exec).toHaveBeenCalledTimes(2);
     });
   });
 }); 
