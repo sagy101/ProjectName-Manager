@@ -46,12 +46,27 @@ graph TB
             I[electron-preload.js<br/>IPC Bridge]
         end
         
-        subgraph "Renderer Process (React)"
-            J[App.jsx] --> K[IsoConfiguration]
+        subgraph "Renderer Process (React) - Modular Architecture"
+            J[App.jsx<br/>Composition Layer] --> K[ProjectConfiguration]
             J --> L[TerminalContainer]
             J --> M[EnvironmentVerification]
             J --> N[FloatingTerminals]
             J --> O[AppControlSidebar]
+            J --> P[ConfigCollapseButton]
+            
+            subgraph "Custom Hooks"
+                Q[useAppState<br/>State Management]
+                R[useAppEffects<br/>Side Effects]
+                S[useAppEventHandlers<br/>Event Handling]
+                T[useFloatingTerminals<br/>Terminal Management]
+                U[useConfigurationManagement<br/>Configuration]
+            end
+            
+            J -.->|Uses| Q
+            J -.->|Uses| R
+            J -.->|Uses| S
+            J -.->|Uses| T
+            J -.->|Uses| U
         end
     end
     
@@ -129,13 +144,110 @@ The main process has been refactored into a modular architecture for better main
 
 ### Renderer Process Component Architecture
 
-The renderer process is built with React and follows a modern, modular architecture centered around components and hooks. This mirrors the modularity of the main process, ensuring the codebase is scalable and maintainable.
+The renderer process is built with React and follows a modern, modular architecture centered around components and custom hooks. This mirrors the modularity of the main process, ensuring the codebase is scalable and maintainable.
 
--   **Container Components**: High-level components like `IsoConfiguration` and `TerminalContainer` manage state and orchestrate their children.
--   **Presentational Components**: Smaller, reusable components like `RunButton`, `TerminalPlaceholder`, and `ConfigSection` focus on rendering specific pieces of the UI.
--   **Custom Hooks**: Complex, reusable stateful logic is extracted into custom hooks. For example, `useIsoConfig` encapsulates all configuration state management, simplifying the `IsoConfiguration` component and making the logic reusable and testable in isolation.
+#### Component Hierarchy
+-   **Container Components**: High-level components like `ProjectConfiguration` and `TerminalContainer` manage state and orchestrate their children.
+-   **Presentational Components**: Smaller, reusable components like `RunButton`, `TerminalPlaceholder`, `ConfigSection`, and `ConfigCollapseButton` focus on rendering specific pieces of the UI.
+-   **Custom Hooks**: Complex, reusable stateful logic is extracted into custom hooks for better organization and testability.
 
-This separation of concerns makes the UI code easier to test, debug, and refactor.
+#### App Component Refactoring
+
+The main `App.jsx` component has been refactored from a monolithic 900+ line file into a clean, modular architecture using custom hooks:
+
+```mermaid
+graph TB
+    subgraph "App.jsx - Refactored Architecture"
+        A[App Component] --> B[useAppState]
+        A --> C[useAppEffects]
+        A --> D[useAppEventHandlers]
+        A --> E[useFloatingTerminals]
+        A --> F[useConfigurationManagement]
+        A --> G[ConfigCollapseButton]
+    end
+    
+    subgraph "Other Component Hooks"
+        H[ProjectConfiguration] --> I[useProjectConfig]
+        J[TerminalContainer] --> K[useTerminals]
+        L[Various Components] --> M[useIpcListeners]
+        L --> N[useTabManagement]
+        L --> O[useTitleOverflow]
+    end
+    
+    subgraph "App Hook Responsibilities"
+        B --> P[State Management<br/>- All useState hooks<br/>- State initialization<br/>- Refs management]
+        C --> Q[Side Effects<br/>- useEffect hooks<br/>- Event listeners<br/>- Loading process<br/>- Document title]
+        D --> R[Event Handlers<br/>- User interactions<br/>- Callbacks<br/>- Notifications<br/>- Toggle functions]
+        E --> S[Floating Terminals<br/>- Terminal lifecycle<br/>- Position management<br/>- Info panel state<br/>- Z-index handling]
+        F --> T[Configuration<br/>- Import/Export<br/>- Git branch handling<br/>- Status screen management<br/>- File operations]
+        G --> U[Reusable Component<br/>- Collapse/Expand UI<br/>- SVG icons<br/>- Accessibility]
+    end
+```
+
+#### Custom Hooks Architecture
+
+| Hook | Purpose | Key Responsibilities |
+|------|---------|---------------------|
+| `useAppState` | State Management | All useState hooks, refs, initialization functions |
+| `useAppEffects` | Side Effects | useEffect hooks, event listeners, loading process, git refresh |
+| `useAppEventHandlers` | Event Handling | User interactions, callbacks, notifications, toggle functions |
+| `useFloatingTerminals` | Terminal Management | Floating terminal lifecycle, positioning, info panels |
+| `useConfigurationManagement` | Configuration | Import/export, git operations, status screens |
+
+#### Benefits of the Refactored Architecture
+
+- **Separation of Concerns**: Each hook has a single, well-defined responsibility
+- **Testability**: Individual hooks can be tested in isolation with proper mocking
+- **Maintainability**: Easier to locate and modify specific functionality
+- **Reusability**: Hooks can be imported and used across different components
+- **Readability**: Main App component is now clean and focused on composition
+- **Performance**: Better dependency management and reduced re-renders
+
+#### File Structure
+```
+src/
+├── App.jsx (refactored, 248 lines vs 901 original)
+├── App.jsx.backup (original backup)
+├── components/
+│   └── ConfigCollapseButton.jsx (extracted reusable component)
+└── hooks/
+    ├── useAppState.js (App state management)
+    ├── useAppEffects.js (App side effects)
+    ├── useAppEventHandlers.js (App event handling)
+    ├── useFloatingTerminals.js (App terminal management)
+    ├── useConfigurationManagement.js (App configuration)
+    ├── useTerminals.js (TerminalContainer hooks)
+    ├── useIpcListeners.js (IPC communication hooks)
+    ├── useProjectConfig.js (ProjectConfiguration hooks)
+    ├── useTabManagement.js (Tab management hooks)
+    └── useTitleOverflow.js (UI utility hooks)
+```
+
+This separation of concerns makes the UI code easier to test, debug, and refactor while maintaining all original functionality.
+
+#### Testing Architecture
+
+The refactored App component maintains comprehensive test coverage with improved testing strategies:
+
+- **Comprehensive Test Suite**: 236 tests covering all functionality
+- **Act Warning Suppression**: Proper handling of React's async testing warnings
+- **Mock Strategy**: Strategic mocking of child components to focus on App logic
+- **Timer Management**: Jest fake timers for testing loading processes
+- **State Testing**: Verification of state management and event handling
+- **Integration Testing**: End-to-end testing of component interactions
+
+The modular hook architecture enables better unit testing of individual concerns while maintaining integration test coverage of the complete App component.
+
+#### Broader Hook Ecosystem
+
+Beyond the App component refactoring, the project employs a comprehensive hook-based architecture throughout:
+
+- **App-specific hooks**: The 5 hooks extracted from App.jsx for state, effects, events, terminals, and configuration
+- **Component-specific hooks**: Other components like `ProjectConfiguration` and `TerminalContainer` use their own dedicated hooks (`useProjectConfig`, `useTerminals`, etc.)
+- **Shared utility hooks**: Common functionality like `useIpcListeners`, `useTabManagement`, and `useTitleOverflow` are reused across components
+- **Separation of concerns**: Each hook focuses on a specific domain (IPC communication, tab management, UI utilities)
+
+This creates a scalable architecture where complex logic is extracted into testable, reusable hooks while keeping components focused on rendering and composition.
 
 ## Communication Flow
 
