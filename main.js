@@ -104,6 +104,18 @@ ipcMain.handle('refresh-environment-verification', async () => {
   return await environmentVerification.refreshEnvironmentVerification(mainWindow);
 });
 
+ipcMain.handle('run-fix-command', async (event, { verificationId, sectionId }) => {
+  const result = await environmentVerification.runFixCommand(verificationId, sectionId);
+  if (result.success && mainWindow) {
+    mainWindow.webContents.send('single-verification-updated', {
+      verificationId: result.verificationId,
+      newStatus: result.newStatus,
+      sectionId: result.sectionId
+    });
+  }
+  return result; // Still return the full result to the direct invoker
+});
+
 ipcMain.handle('refresh-git-statuses', async () => {
   return await gitManagement.refreshGitBranches();
 });

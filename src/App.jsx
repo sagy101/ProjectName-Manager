@@ -360,12 +360,43 @@ const App = () => {
         await terminalRef.current.stopAllContainers();
       }
     });
+
+    // Listener for single verification item updates after a fix command
+    const removeSingleVerificationUpdateListener = window.electron.onSingleVerificationUpdated(({ verificationId, newStatus, sectionId }) => {
+      console.log(`App: Received single-verification-updated: ID=${verificationId}, Status=${newStatus}, Section=${sectionId}`);
+      setVerificationStatuses(prevStatuses => {
+        const newStatuses = { ...prevStatuses };
+        if (sectionId === 'general') {
+          if (newStatuses.general) {
+            newStatuses.general = {
+              ...newStatuses.general,
+              [verificationId]: newStatus
+            };
+          } else { // Should not happen if general is initialized
+            newStatuses.general = { [verificationId]: newStatus };
+          }
+        } else {
+          // sectionId here is expected to be the cacheKey (e.g., serviceChecks)
+          if (newStatuses[sectionId]) {
+            newStatuses[sectionId] = {
+              ...newStatuses[sectionId],
+              [verificationId]: newStatus
+            };
+          } else { // Section might not have been initialized if it had no verifications initially
+            console.warn(`App: Received update for uninitialized section ${sectionId}. Initializing with new status.`);
+            newStatuses[sectionId] = { [verificationId]: newStatus };
+          }
+        }
+        return newStatuses;
+      });
+    });
     
     return () => {
       if (removeVerificationListener) removeVerificationListener();
       if (removeProgressListener) removeProgressListener();
       if (removeQuitListener) removeQuitListener();
       if (removeReloadListener) removeReloadListener();
+      if (removeSingleVerificationUpdateListener) removeSingleVerificationUpdateListener(); // Cleanup new listener
     };
   }, []); // Setup listener once
 

@@ -164,7 +164,7 @@ async function verifyEnvironment(mainWindow = null) {
           const { 
             command, id, title, checkType = 'commandSuccess', 
             expectedValue, outputStream = 'any', variableName, 
-            pathValue, pathType 
+            pathValue, pathType, fixCommand // Ensure fixCommand is destructured
           } = verification;
           let result = 'invalid';
 
@@ -472,6 +472,227 @@ async function refreshEnvironmentVerification(mainWindow = null) {
   return { ...newResults, discoveredVersions };
 }
 
+async function runFixCommand(verificationId, sectionId) {
+  console.log(`Attempting to run fix command for verificationId: ${verificationId}, sectionId: ${sectionId}`);
+
+  let verificationConfig;
+  let commandToRun;
+  let fixCommandToRun;
+
+  try {
+    if (!sectionId || sectionId === 'general') {
+      // For general verifications, try to get from cache first, then fallback to file read.
+      if (environmentCaches.general && environmentCaches.general.config) {
+        for (const categoryItem of environmentCaches.general.config) {
+          // Ensure categoryItem.category exists and has a verifications array
+          if (categoryItem.category && Array.isArray(categoryItem.category.verifications)) {
+            const found = categoryItem.category.verifications.find(v => v.id === verificationId);
+            if (found) {
+              verificationConfig = found;
+              break;
+            }
+          }
+        }
+      }
+      if (!verificationConfig) { // Fallback to reading file if not in cache or cache structure issue
+        console.log(`Verification ${verificationId} (general) not found in cache or cache issue, reading from ${VERIFICATIONS_CONFIG_PATH}`);
+        const verificationsConfigFile = await fs.readFile(VERIFICATIONS_CONFIG_PATH, 'utf-8');
+        const parsedConfig = JSON.parse(verificationsConfigFile);
+        for (const categoryItem of parsedConfig.categories) {
+          if (categoryItem.category && Array.isArray(categoryItem.category.verifications)) {
+            const found = categoryItem.category.verifications.find(v => v.id === verificationId);
+            if (found) {
+              verificationConfig = found;
+              break;
+            }
+          }
+        }
+      }
+    } else {
+      // For section-specific, always read from file as their full config isn't cached reliably across all sections.
+      console.log(`Reading section-specific verification ${verificationId} (section: ${sectionId}) from ${CONFIG_SIDEBAR_ABOUT_PATH}`);
+      const configAboutFile = await fs.readFile(CONFIG_SIDEBAR_ABOUT_PATH, 'utf-8');
+      const parsedConfig = JSON.parse(configAboutFile);
+      const sectionConfig = parsedConfig.find(s => s.sectionId === sectionId);
+      if (sectionConfig && sectionConfig.verifications) {
+        verificationConfig = sectionConfig.verifications.find(v => v.id === verificationId);
+      }
+    }
+
+    if (!verificationConfig) {
+      console.error(`Verification config not found for ID: ${verificationId} in section: ${sectionId}`);
+      return { success: false, error: 'Verification configuration not found.' };
+    }
+
+    commandToRun = verificationConfig.command;
+    fixCommandToRun = verificationConfig.fixCommand;
+
+    if (!fixCommandToRun) {
+      console.warn(`No fixCommand found for verification ID: ${verificationId}`);
+      return { success: false, error: 'No fix command defined for this verification.' };
+    }
+
+    const commandBasedCheckTypes = ['commandSuccess', 'outputContains'];
+    if (!commandToRun && commandBasedCheckTypes.includes(verificationConfig.checkType)) {
+      console.error(`No original command found for command-based verification ID: ${verificationId}. Cannot re-verify.`);
+      return { success: false, error: 'Original verification command not found for command-based check.' };
+    }
+
+    // Execute the fix command
+    console.log(`Executing fixCommand: ${fixCommandToRun}`);
+    const fixResult = await execCommand(fixCommandToRun);
+    verificationOutputs[`${verificationId}_fix_attempt`] = { // Store fix attempt output
+        command: fixCommandToRun,
+        stdout: fixResult.stdout,
+        stderr: fixResult.stderr,
+        status: fixResult.success ? 'executed_success' : 'executed_fail',
+        title: verificationConfig.title + " (Fix Attempt)"
+    };
+
+    if (!fixResult.success) {
+      console.error(`Fix command failed for ${verificationId}: ${fixResult.stderr || fixResult.stdout}`);
+      return { success: false, error: `Fix command failed: ${fixResult.stderr || fixResult.stdout}`, fixOutput: fixResult.stdout + fixResult.stderr };
+    }
+
+    // If fix command was successful, re-run the original verification logic
+    let newStatus = 'invalid'; // Default to invalid
+    const verifyCmdOutputForReturn = { stdout: '', stderr: ''}; // To store output of verification command if it runs
+    const { checkType = 'commandSuccess', expectedValue, outputStream = 'any', variableName, pathValue, pathType } = verificationConfig;
+
+    if (commandToRun) { // Only execute command if one is defined for the checkType
+        console.log(`Fix command successful. Re-running original verification command: ${commandToRun}`);
+        const verifyResult = await execCommand(commandToRun);
+        verifyCmdOutputForReturn.stdout = verifyResult.stdout;
+        verifyCmdOutputForReturn.stderr = verifyResult.stderr;
+
+        // Store/Update the output for export, ensure title and other details are present
+        verificationOutputs[verificationId] = {
+            ...(verificationOutputs[verificationId] || {}), // Preserve existing fields if any
+            command: commandToRun,
+            stdout: verifyResult.stdout,
+            stderr: verifyResult.stderr,
+            // status will be updated by the switch block below
+            title: verificationConfig.title,
+            lastFixAttempt: new Date().toISOString()
+        };
+
+        // Determine status based on command output
+        switch (checkType) {
+            case 'commandSuccess':
+                newStatus = verifyResult.success ? 'valid' : 'invalid';
+                break;
+            case 'outputContains':
+                let output = '';
+                if (outputStream === 'stdout') output = verifyResult.stdout;
+                else if (outputStream === 'stderr') output = verifyResult.stderr;
+                else output = `${verifyResult.stdout} ${verifyResult.stderr}`;
+
+                const resolvedExpected = resolveEnvVars(expectedValue);
+                if (!resolvedExpected || resolvedExpected.length === 0) {
+                    newStatus = output.trim() !== '' ? 'valid' : 'invalid';
+                } else if (Array.isArray(resolvedExpected)) {
+                    // Check if any value in the array is contained in the output
+                    newStatus = resolvedExpected.some(val => output.includes(resolveEnvVars(val))) ? 'valid' : 'invalid';
+                } else {
+                    // Handle string expectedValue with regex
+                    const regexPattern = typeof resolvedExpected === 'string' ? resolvedExpected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') : '';
+                    const regex = new RegExp(regexPattern);
+                    newStatus = regex.test(output) ? 'valid' : 'invalid';
+                }
+                break;
+        }
+    } else { // For non-command based checks like pathExists, envVarExists
+        console.log(`Fix command successful. Re-evaluating non-command based verification: ${verificationId}`);
+        // No command output to store for these, but we mark that a fix was attempted and title.
+         verificationOutputs[verificationId] = {
+            ...(verificationOutputs[verificationId] || {}),
+            title: verificationConfig.title,
+            lastFixAttempt: new Date().toISOString(),
+            // status will be updated by the switch block below
+        };
+    }
+
+    // Handle non-command checks and finalize status for command-based checks (if not already set)
+    // This switch block determines `newStatus` based on `checkType`
+    const resolvedExpectedValue = resolveEnvVars(expectedValue); // Re-resolve for non-command checks
+    const resolvedPathValue = resolveEnvVars(pathValue); // Re-resolve for non-command checks
+
+    switch (checkType) {
+        case 'commandSuccess':
+        case 'outputContains':
+            // These statuses are determined above if commandToRun exists.
+            // If commandToRun didn't exist (which is an issue for these types), newStatus remains 'invalid'.
+            if (!commandToRun) newStatus = 'invalid';
+            break;
+        case 'envVarExists':
+            newStatus = (process.env[variableName] !== undefined && process.env[variableName] !== '') ? 'valid' : 'invalid';
+            break;
+        case 'envVarEquals':
+            newStatus = (process.env[variableName] === resolvedExpectedValue) ? 'valid' : 'invalid';
+            break;
+        case 'pathExists':
+            try {
+                const stats = await fs.stat(resolvedPathValue);
+                if (pathType === 'directory' && stats.isDirectory()) newStatus = 'valid';
+                else if (pathType === 'file' && stats.isFile()) newStatus = 'valid';
+                else if (!pathType && (stats.isFile() || stats.isDirectory())) newStatus = 'valid'; // No specific type, just exists
+                else newStatus = 'invalid';
+            } catch (e) {
+                newStatus = 'invalid'; // Path does not exist or other error
+            }
+            break;
+        default:
+            console.warn(`Unknown checkType for re-verification: ${checkType} for ID ${verificationId}`);
+            newStatus = 'invalid'; // Fallback for unknown check types
+    }
+
+    // Update status in verificationOutputs as well, as this is used for export
+    if(verificationOutputs[verificationId]) {
+        verificationOutputs[verificationId].status = newStatus;
+    } else {
+         verificationOutputs[verificationId] = { // Should be rare, but good fallback
+            title: verificationConfig.title,
+            status: newStatus,
+            lastFixAttempt: new Date().toISOString()
+        };
+    }
+
+    // Update the status in the main cache
+    if (!sectionId || sectionId === 'general') {
+      if (environmentCaches.general && environmentCaches.general.statuses) {
+        environmentCaches.general.statuses[verificationId] = newStatus;
+      }
+    } else {
+      const cacheKey = sectionId.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+      if (environmentCaches[cacheKey]) {
+        // Ensure the cacheKey object exists and then update the verificationId property
+        environmentCaches[cacheKey] = {
+          ...environmentCaches[cacheKey], // Preserve other statuses and gitBranch
+          [verificationId]: newStatus // Update specific verification status
+        };
+      } else {
+         // This case should ideally not happen if verifyEnvironment ran for the section
+         console.warn(`Cache key ${cacheKey} not found for section ${sectionId}. Initializing with current fix status.`);
+         environmentCaches[cacheKey] = { [verificationId]: newStatus };
+      }
+    }
+
+    console.log(`Re-verification for ${verificationId} (section ${sectionId || 'general'}) resulted in: ${newStatus}`);
+    return {
+      success: true,
+      newStatus: newStatus,
+      verificationId: verificationId, // Added verificationId
+      sectionId: sectionId || 'general', // Added sectionId (normalized)
+      fixOutput: fixResult.stdout + fixResult.stderr,
+      verificationOutput: verifyCmdOutputForReturn.stdout + verifyCmdOutputForReturn.stderr
+    };
+
+  } catch (error) {
+    console.error(`Error in runFixCommand for ${verificationId} (${sectionId || 'general'}):`, error);
+    return { success: false, error: error.message };
+  }
+}
+
 // Function to get current environment verification results
 function getEnvironmentVerification() {
   return environmentCaches;
@@ -502,5 +723,6 @@ module.exports = {
   refreshEnvironmentVerification,
   getEnvironmentVerification,
   getEnvironmentExportData,
-  execCommand
+  execCommand,
+  runFixCommand // Added runFixCommand
 }; 

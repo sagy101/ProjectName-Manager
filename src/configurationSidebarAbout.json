@@ -138,5 +138,18 @@
     "sectionId": "mlEngineLogCommand",
     "description": "About info for the ML Engine logs button command.",
     "verifications": []
+  },
+  {
+    "sectionId": "serviceChecks",
+    "description": "Checks for various running services.",
+    "verifications": [
+      {
+        "id": "serviceRunning",
+        "title": "My Service Running",
+        "command": "pgrep my-service",
+        "checkType": "commandSuccess",
+        "fixCommand": "echo 'Attempting to start my-service...' && systemctl start my-service"
+      }
+    ]
   }
 ]

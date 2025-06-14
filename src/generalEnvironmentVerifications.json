@@ -95,7 +95,8 @@
             "id": "nvmInstalled",
             "title": "Nvm installed",
             "command": "nvm --version",
-            "checkType": "commandSuccess"
+            "checkType": "commandSuccess",
+            "fixCommand": "echo 'Fixing NVM... (example)' && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash"
           }
         ]
       }

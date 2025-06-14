@@ -167,7 +167,10 @@ const EnvironmentVerification = ({
                     <VerificationIndicator 
                       key={verification.id} 
                       label={verification.title} 
-                      status={statusMap[verification.id] || STATUS.WAITING} 
+                      status={statusMap[verification.id] || STATUS.WAITING}
+                      fixCommand={verification.fixCommand} // Pass fixCommand
+                      verificationId={verification.id}     // Pass verification.id
+                      sectionId="general"                  // Pass sectionId as "general"
                     />
                   ))}
                 </div>
