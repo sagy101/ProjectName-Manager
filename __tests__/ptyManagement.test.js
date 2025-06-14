@@ -121,3 +121,160 @@ describe('ptyManagement', () => {
   // child_process, and IPC communications, which is beyond the scope of this example.
   // The tests for interpretProcessState cover the core logic of status detection.
 });
+
+describe('Global Variable Substitution in spawnPTY', () => {
+  let consoleWarnSpy;
+  let consoleLogSpy; // To potentially spy on the "executing command" log
+
+  beforeEach(() => {
+    jest.useFakeTimers(); // Ensure timers are mocked for each test
+    consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {}); // Mock console.log
+    // Reset pty mocks if necessary, though the top-level beforeEach should handle it.
+    if (pty.__data.last) {
+      Object.values(pty.__data.last).forEach(mockFn => {
+        if (typeof mockFn === 'function' && mockFn.mockClear) {
+          mockFn.mockClear();
+        }
+      });
+    }
+    pty.spawn.mockClear();
+  });
+
+  afterEach(() => {
+    consoleWarnSpy.mockRestore();
+    consoleLogSpy.mockRestore();
+    jest.useRealTimers(); // Restore real timers
+  });
+
+  const mockProjectRoot = '/mock/project';
+  const mockMainWindow = null; // Assuming mainWindow is not critical for command processing logic
+
+  test('should substitute a single global variable', () => {
+    const command = "${global.myKey} some args";
+    const globals = { myKey: "myValue" };
+    const expectedCommand = "myValue some args\r";
+
+    spawnPTY(command, 'term-g1', 80, 24, mockProjectRoot, mockMainWindow, globals);
+    jest.advanceTimersByTime(1000); // For the setTimeout in spawnPTY
+
+    expect(pty.__data.last.write).toHaveBeenCalledWith(expectedCommand);
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining(`executing: myValue some args`));
+  });
+
+  test('should substitute multiple global variables', () => {
+    const command = "echo ${global.var1} ${global.var2}";
+    const globals = { var1: "val1", var2: "val2" };
+    const expectedCommand = "echo val1 val2\r";
+
+    spawnPTY(command, 'term-g2', 80, 24, mockProjectRoot, mockMainWindow, globals);
+    jest.advanceTimersByTime(1000);
+
+    expect(pty.__data.last.write).toHaveBeenCalledWith(expectedCommand);
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining(`executing: echo val1 val2`));
+  });
+
+  test('should leave placeholder and warn if a global variable is missing', () => {
+    const command = "echo ${global.missingKey}";
+    const globals = { myKey: "myValue" }; // missingKey is not in globals
+    const expectedCommand = "echo ${global.missingKey}\r";
+
+    spawnPTY(command, 'term-g3', 80, 24, mockProjectRoot, mockMainWindow, globals);
+    jest.advanceTimersByTime(1000);
+
+    expect(pty.__data.last.write).toHaveBeenCalledWith(expectedCommand);
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("[PTY Spawner] Global variable placeholder ${global.missingKey} found in command for terminal term-g3, but not defined in globalVariables.")
+    );
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining(`executing: echo \${global.missingKey}`));
+  });
+
+  test('should not change command if no global placeholders are present', () => {
+    const command = "echo no_globals";
+    const globals = { myKey: "myValue" };
+    const expectedCommand = "echo no_globals\r";
+
+    spawnPTY(command, 'term-g4', 80, 24, mockProjectRoot, mockMainWindow, globals);
+    jest.advanceTimersByTime(1000);
+
+    expect(pty.__data.last.write).toHaveBeenCalledWith(expectedCommand);
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining(`executing: echo no_globals`));
+  });
+
+  test('should not substitute non-global placeholders like ${nodeVersion}', () => {
+    const command = "nvm use ${nodeVersion} && ${global.myKey}";
+    const globals = { myKey: "myValue" };
+    const expectedCommand = "nvm use ${nodeVersion} && myValue\r";
+
+    spawnPTY(command, 'term-g5', 80, 24, mockProjectRoot, mockMainWindow, globals);
+    jest.advanceTimersByTime(1000);
+
+    expect(pty.__data.last.write).toHaveBeenCalledWith(expectedCommand);
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining(`executing: nvm use \${nodeVersion} && myValue`));
+  });
+
+  test('should correctly substitute nested-like placeholders (e.g., global.nodeVer containing ${nodeVersion})', () => {
+    const command = "${global.nodeVer} echo test";
+    const globals = { nodeVer: "nvm use ${nodeVersion} &&" }; // note the trailing space is part of the value in globalVariable.json
+    // The ptyManagement currently adds a space if the global var is used as a prefix, but here it's the whole command.
+    // The current implementation in ptyManagement for substitution is direct string replacement.
+    // globalVariable.json has "nvm use ${nodeVersion} &&"
+    // So the processed command should become "nvm use ${nodeVersion} && echo test"
+    const expectedCommand = "nvm use ${nodeVersion} && echo test\r";
+
+    spawnPTY(command, 'term-g6', 80, 24, mockProjectRoot, mockMainWindow, globals);
+    jest.advanceTimersByTime(1000);
+
+    expect(pty.__data.last.write).toHaveBeenCalledWith(expectedCommand);
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining(`executing: nvm use \${nodeVersion} && echo test`));
+  });
+
+  test('should handle empty globalVariables object gracefully', () => {
+    const command = "echo ${global.myKey}";
+    const globals = {};
+    const expectedCommand = "echo ${global.myKey}\r"; // Stays the same
+
+    spawnPTY(command, 'term-g7', 80, 24, mockProjectRoot, mockMainWindow, globals);
+    jest.advanceTimersByTime(1000);
+
+    expect(pty.__data.last.write).toHaveBeenCalledWith(expectedCommand);
+    // No warning because the substitution loop is skipped if globalVariables is empty.
+    // The specific check for `${global.missingKey}` happens *after* the loop.
+    // So, if globals is empty, loop is skipped, then it checks for ${global.myKey} and warns.
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("[PTY Spawner] Global variable placeholder ${global.myKey} found in command for terminal term-g7, but not defined in globalVariables.")
+    );
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining(`executing: echo \${global.myKey}`));
+  });
+
+  test('should handle globalVariables being null or undefined gracefully', () => {
+    const command = "echo ${global.myKey}";
+    const expectedCommand = "echo ${global.myKey}\r"; // Stays the same
+
+    spawnPTY(command, 'term-g8', 80, 24, mockProjectRoot, mockMainWindow, null); // Test with null
+    jest.advanceTimersByTime(1000);
+
+    expect(pty.__data.last.write).toHaveBeenCalledWith(expectedCommand);
+    // Similar to empty object, the substitution loop is skipped.
+    // The warning for the specific placeholder happens after the loop.
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("[PTY Spawner] Global variable placeholder ${global.myKey} found in command for terminal term-g8, but not defined in globalVariables.")
+    );
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining(`executing: echo \${global.myKey}`));
+
+    consoleWarnSpy.mockClear(); // Clear for next call
+    consoleLogSpy.mockClear();
+    pty.__data.last.write.mockClear();
+    pty.spawn.mockClear();
+
+
+    spawnPTY(command, 'term-g9', 80, 24, mockProjectRoot, mockMainWindow, undefined); // Test with undefined
+    jest.advanceTimersByTime(1000);
+
+    expect(pty.__data.last.write).toHaveBeenCalledWith(expectedCommand);
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("[PTY Spawner] Global variable placeholder ${global.myKey} found in command for terminal term-g9, but not defined in globalVariables.")
+    );
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining(`executing: echo \${global.myKey}`));
+  });
+});

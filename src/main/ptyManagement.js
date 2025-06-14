@@ -278,8 +278,13 @@ function startProcessMonitoring(terminalId, shellPid, mainWindow) {
   state.monitorInterval = monitorInterval;
 }
 
+// Function to escape special characters for RegExp
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
 // Function to spawn a PTY process (matching original main.js signature)
-function spawnPTY(command, terminalId, cols = 80, rows = 24, projectRoot, mainWindow) {
+function spawnPTY(command, terminalId, cols = 80, rows = 24, projectRoot, mainWindow, globalVariables = {}) {
   if (activeProcesses[terminalId]) {
     console.warn(`Terminal ${terminalId} already has an active process.`);
     return;
@@ -341,13 +346,42 @@ function spawnPTY(command, terminalId, cols = 80, rows = 24, projectRoot, mainWi
   }
 
   activeProcesses[terminalId] = ptyProcess;
-  console.log(`PTY spawned for terminal ${terminalId} with PID ${ptyProcess.pid}, executing: ${command}`);
+
+  // --- Global Variable Substitution ---
+  let processedCommand = command;
+  if (globalVariables && typeof globalVariables === 'object' && Object.keys(globalVariables).length > 0) {
+    console.log(`[PTY Spawner] Original command for ${terminalId}: ${command}`);
+    console.log(`[PTY Spawner] Applying global variables:`, globalVariables);
+    for (const varName in globalVariables) {
+      if (Object.prototype.hasOwnProperty.call(globalVariables, varName)) {
+        const placeholder = `\${global.${varName}}`;
+        const value = String(globalVariables[varName]); // Ensure value is a string
+
+        // Using split().join() for robust replacement without regex complexities for varName
+        processedCommand = processedCommand.split(placeholder).join(value);
+      }
+    }
+
+    // Log any remaining placeholders that were not found in globalVariables
+    const placeholderRegex = /\$\{global\.([a-zA-Z0-9_]+)\}/g;
+    let match;
+    while ((match = placeholderRegex.exec(processedCommand)) !== null) {
+      const missingVarName = match[1];
+      if (!globalVariables.hasOwnProperty(missingVarName)) {
+        console.warn(`[PTY Spawner] Global variable placeholder \${global.${missingVarName}} found in command for terminal ${terminalId}, but not defined in globalVariables.`);
+      }
+    }
+    console.log(`[PTY Spawner] Processed command for ${terminalId}: ${processedCommand}`);
+  }
+  // --- End Global Variable Substitution ---
+
+  console.log(`PTY spawned for terminal ${terminalId} with PID ${ptyProcess.pid}, executing: ${processedCommand}`);
 
   // Execute the command after a short delay to let the shell initialize
   setTimeout(() => {
     // Check if the process is still active before proceeding
     if (activeProcesses[terminalId] && commandStates[terminalId]) {
-      ptyProcess.write(`${command}\r`);
+      ptyProcess.write(`${processedCommand}\r`); // Use processedCommand
       commandStates[terminalId].commandSent = true;
       
       // Start monitoring child processes

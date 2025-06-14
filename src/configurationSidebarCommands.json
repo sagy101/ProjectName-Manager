@@ -20,7 +20,7 @@
       "attachState.mirror": false
     },
     "command": {
-      "base": "nvm use ${nodeVersion} && cd ./weblifemirror && ./gradlew bootRun --info -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
+      "base": "${global.nodeVer} cd ./weblifemirror && ./gradlew bootRun --info -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
       "associatedContainers": [
         "wiremock",
         "weblifemirror-db-replica-1",
@@ -41,7 +41,7 @@
       "mode": "suspend"
     },
     "command": {
-      "base": "nvm use ${nodeVersion} && cd ./weblifemirror && ./gradlew bootRun --debug-jvm --info -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
+      "base": "${global.nodeVer} cd ./weblifemirror && ./gradlew bootRun --debug-jvm --info -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
       "associatedContainers": [
         "wiremock",
         "weblifemirror-db-replica-1",
@@ -62,7 +62,7 @@
       "mode": "run"
     },
     "command": {
-      "base": "nvm use ${nodeVersion} && cd ./weblifemirror && ./gradlew bootRun --debug-jvm -Dorg.gradle.debug.suspend=false --info -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
+      "base": "${global.nodeVer} cd ./weblifemirror && ./gradlew bootRun --debug-jvm -Dorg.gradle.debug.suspend=false --info -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
       "associatedContainers": [
         "wiremock",
         "weblifemirror-db-replica-1",
@@ -84,7 +84,7 @@
     },
     "command": {
       "base": "cd ./weblifemirror && webpack --watch",
-      "prefix": "nvm use ${nodeVersion} && ",
+      "prefix": "${global.nodeVer} ",
       "tabTitle": "Frontend (Dev Mode)"
     }
   },
@@ -97,7 +97,7 @@
     },
     "command": {
       "base": "cd ./weblifemirror && webpack --bail",
-      "prefix": "nvm use ${nodeVersion} && ",
+      "prefix": "${global.nodeVer} ",
       "tabTitle": "Frontend"
     }
   },
@@ -109,7 +109,7 @@
     },
     "command": {
       "base": "cd ./gopm && make run-local",
-      "prefix": "nvm use ${nodeVersion} && ",
+      "prefix": "${global.nodeVer} ",
       "tabTitle": "gopm (Process)",
       "refreshConfig": {
         "prependCommands": [
@@ -129,7 +129,7 @@
     "command": {
       "base": "cd ./gopm && make run-local-docker",
       "associatedContainers": ["serverbrowseragent"],
-      "prefix": "nvm use ${nodeVersion} && ",
+      "prefix": "${global.nodeVer} ",
       "tabTitle": "gopm (Container)"
     }
   },
@@ -142,7 +142,7 @@
     },
     "command": {
       "base": "cd ./ThreatIntelligenceMock && node inteligence.js",
-      "prefix": "nvm use ${nodeVersion} && ",
+      "prefix": "${global.nodeVer} ",
       "tabTitle": {
         "base": "URL Intelligence (Mock)"
       }
@@ -157,7 +157,7 @@
     },
     "command": {
       "base": "kubectx ${kubectlContext} && PROOFPOINT_AUTH_CLIENT_SECRET=$(./infrastructure/scripts/decode-secret.sh default env-url-intelligence client_secret) PROOFPOINT_AUTH_CLIENT_ID=$(./infrastructure/scripts/decode-secret.sh default env-url-intelligence client_id) PROOFPOINT_SCORER_CUSTOMER_ID=$(./infrastructure/scripts/decode-secret.sh default env-url-intelligence customer_id) cd ./threatintelligence/url-intelligence && ./gradlew bootRun --args='--spring.profiles.active=staging --proofpoint.proxy.url= --server.port=8083 --threatintelligence.url=http://127.0.0.1:8084'",
-      "prefix": "nvm use ${nodeVersion} && ",
+      "prefix": "${global.nodeVer} ",
       "tabTitle": {
         "base": "URL Intelligence (Process)"
       }
@@ -173,7 +173,7 @@
     },
     "command": {
       "base": "cd ./threatintelligence && kubectx ${kubectlContext} && kubectl port-forward ${urlIntelPod} 8083:8080",
-      "prefix": "nvm use ${nodeVersion} && ",
+      "prefix": "${global.nodeVer} ",
       "tabTitle": {
         "base": "URL Intelligence",
         "conditionalAppends": [
@@ -194,7 +194,7 @@
     },
     "command": {
       "base": "kubectx ${kubectlContext} && kubectl port-forward ${threatIntelPod} 8084:8080",
-      "prefix": "nvm use ${nodeVersion} && ",
+      "prefix": "${global.nodeVer} ",
       "tabTitle": {
         "base": "Threat Intelligence"
       }
@@ -207,7 +207,7 @@
       "attachState.activity-logger": false
     },
     "command": {
-      "base": "nvm use ${nodeVersion} && cd ./activity-logger && ./gradlew bootRun -Dspring.profiles.active=dev -Dgcloud.project=${gcloudProject}",
+      "base": "${global.nodeVer} cd ./activity-logger && ./gradlew bootRun -Dspring.profiles.active=dev -Dgcloud.project=${gcloudProject}",
       "tabTitle": "Activity Logger"
     }
   },
@@ -219,7 +219,7 @@
       "mode": "suspend"
     },
     "command": {
-      "base": "nvm use ${nodeVersion} && cd ./activity-logger && ./gradlew bootRun --debug-jvm -Dspring.profiles.active=dev -Dgcloud.project=${gcloudProject}",
+      "base": "${global.nodeVer} cd ./activity-logger && ./gradlew bootRun --debug-jvm -Dspring.profiles.active=dev -Dgcloud.project=${gcloudProject}",
       "tabTitle": "Activity Logger (Debug Suspend)"
     }
   },
@@ -231,7 +231,7 @@
       "mode": "run"
     },
     "command": {
-      "base": "nvm use ${nodeVersion} && cd ./activity-logger && ./gradlew bootRun --debug-jvm -Dorg.gradle.debug.suspend=false -Dspring.profiles.active=dev -Dgcloud.project=${gcloudProject}",
+      "base": "${global.nodeVer} cd ./activity-logger && ./gradlew bootRun --debug-jvm -Dorg.gradle.debug.suspend=false -Dspring.profiles.active=dev -Dgcloud.project=${gcloudProject}",
       "tabTitle": "Activity Logger (Debug Run)"
     }
   },
@@ -264,7 +264,7 @@
     "command": {
       "base": "cd ./weblifemirror && ./gradlew runDockerComposeRuleEngine",
       "associatedContainers": ["rule-engine"],
-      "prefix": "nvm use ${nodeVersion} && ",
+      "prefix": "${global.nodeVer} ",
       "tabTitle": "Rule Engine (Container)"
     }
   },
@@ -391,4 +391,4 @@
       }
     }
   }
-] 
+]

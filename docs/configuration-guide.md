@@ -512,6 +512,61 @@ To add a new section:
 
 The section will automatically appear in the UI with full functionality.
 
+### 5. Global Variables (`globalVariable.json`)
+
+**Purpose:**
+This file allows you to define global variables or secrets that can be reused across your command configurations in `src/configurationSidebarCommands.json`. This promotes reusability, helps in managing frequently used values, and provides a way to keep potentially sensitive information (like API keys) out of the main command definitions.
+
+**File Location:**
+The file must be located at `src/globalVariable.json`.
+
+**Structure:**
+`globalVariable.json` is a simple JSON object containing key-value pairs. The keys are your variable names, and the values are the strings that will be substituted.
+
+*Example:*
+```json
+{
+  "nodeVer": "nvm use ${nodeVersion} &&",
+  "API_KEY": "YOUR_SECRET_API_KEY",
+  "commonPath": "/opt/shared/tools",
+  "servicePort": "8080"
+}
+```
+
+**Usage in Commands:**
+Global variables are substituted into the `base` and `prefix` fields of command objects within `src/configurationSidebarCommands.json` using the syntax: `${global.YOUR_VARIABLE_NAME}`.
+
+*Example `configurationSidebarCommands.json` entry:*
+```json
+{
+  "sectionId": "mirror",
+  "conditions": { "enabled": true },
+  "command": {
+    "base": "${global.nodeVer} cd ./weblifemirror && ./gradlew bootRun -Dserver.port=${global.servicePort}",
+    "prefix": "export API_KEY=${global.API_KEY} && ",
+    "tabTitle": "Mirror + MariaDB"
+  }
+}
+```
+In this example:
+- `${global.nodeVer}` would be replaced by its value from `globalVariable.json`.
+- `${global.servicePort}` would be replaced by `8080`.
+- `${global.API_KEY}` in the prefix would be replaced by `YOUR_SECRET_API_KEY`.
+
+**Substitution Order:**
+Global variables are substituted into the command string first. This means if a global variable's value itself contains other placeholders (like `${nodeVersion}` in the `nodeVer` example above), those placeholders will remain and be processed by subsequent substitution steps. For instance, if `global.nodeVer` is `nvm use ${nodeVersion} &&`, the command `"${global.nodeVer} yarn start"` becomes `"nvm use ${nodeVersion} && yarn start"`.
+
+**Security Note (Very Important):**
+If you use `globalVariable.json` to store sensitive information such as API keys, passwords, or other secrets, it is **critical** that you add this file to your project's `.gitignore` file. This will prevent you from accidentally committing secrets to your Git repository.
+
+Add the following line to your `.gitignore` file:
+```
+src/globalVariable.json
+```
+
+**Activation:**
+Changes made to `globalVariable.json` may require a restart of the {ProjectName} Manager application to take effect, as these variables are typically loaded during the application's startup sequence.
+
 ## Special Features
 
 ### Skip Verification

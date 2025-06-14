@@ -22,12 +22,14 @@ const dropdownManagement = require('./src/main/dropdownManagement');
 const ptyManagement = require('./src/main/ptyManagement');
 const containerManagement = require('./src/main/containerManagement');
 const configurationManagement = require('./src/main/configurationManagement');
+const { loadGlobalVariables } = require('./src/main/configurationManagement'); // Import loadGlobalVariables
 const windowManagement = require('./src/main/windowManagement');
 
 // Import shared constants
 const { projectSelectorFallbacks } = require('./src/constants/selectors');
 
 let mainWindow; // This will be managed by windowManagement module
+let globalVariables = {}; // To store loaded global variables
 
 const projectRoot = path.resolve(app.getAppPath(), '..'); // Define projectRoot globally for helpers
 
@@ -198,7 +200,7 @@ ipcMain.handle('export-environment-data', async () => {
 
 // PTY/Terminal management - corrected to match original signature
 ipcMain.on('pty-spawn', (event, { command, terminalId, cols, rows }) => {
-  ptyManagement.spawnPTY(command, terminalId, cols, rows, projectRoot, mainWindow);
+  ptyManagement.spawnPTY(command, terminalId, cols, rows, projectRoot, mainWindow, globalVariables);
 });
 
 ipcMain.on('pty-input', (event, { terminalId, data }) => {
@@ -217,6 +219,9 @@ ipcMain.on('process-exited', (event, data) => {
 
 app.whenReady().then(async () => {
   console.log('=== APPLICATION STARTUP ===');
+  console.log('0. Loading global variables...'); // Added step for global vars
+  await loadGlobalVariablesAndStore(); // Load and store global variables
+
   console.log('1. Loading display settings...');
   const displaySettings = await loadDisplaySettings();
 
@@ -237,6 +242,27 @@ app.whenReady().then(async () => {
 
   // Initial dropdown data will be fetched on demand from frontend
 });
+
+// Function to load and store global variables
+async function loadGlobalVariablesAndStore() {
+  try {
+    const result = await loadGlobalVariables(); // Use the imported function
+    if (result.success && result.globals) {
+      globalVariables = result.globals;
+      console.log('Global variables loaded successfully:', globalVariables);
+    } else if (result.success && Object.keys(result.globals).length === 0) {
+      globalVariables = {};
+      console.log('Global variables file was empty or not found. Using empty globals.');
+    }
+    else {
+      console.error('Failed to load global variables:', result.error);
+      globalVariables = {}; // Ensure it's an empty object on failure
+    }
+  } catch (error) {
+    console.error('Error during loadGlobalVariablesAndStore:', error);
+    globalVariables = {}; // Ensure it's an empty object on critical failure
+  }
+}
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

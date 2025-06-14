@@ -1,0 +1,3 @@
+{
+  "nodeVer": "nvm use ${nodeVersion} &&"
+}

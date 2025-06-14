@@ -6,6 +6,7 @@ const { exportConfigToFile, importConfigFromFile } = require('../../configIO');
 // Path to configuration files
 const CONFIG_SIDEBAR_ABOUT_PATH = path.join(__dirname, '../configurationSidebarAbout.json');
 const CONFIG_SIDEBAR_SECTIONS_PATH = path.join(__dirname, '../configurationSidebarSections.json');
+const GLOBAL_VARIABLES_PATH = path.join(__dirname, '../globalVariable.json');
 
 // Function to load display settings
 async function loadDisplaySettings() {
@@ -257,5 +258,24 @@ module.exports = {
   saveConfiguration,
   validateConfiguration,
   getConfigurationPaths,
-  checkConfigurationFiles
-}; 
+  checkConfigurationFiles,
+  loadGlobalVariables
+};
+
+// Function to load global variables
+async function loadGlobalVariables() {
+  try {
+    const configFile = await fs.readFile(GLOBAL_VARIABLES_PATH, 'utf-8');
+    const data = JSON.parse(configFile);
+    console.log('Global variables loaded successfully');
+    return { success: true, globals: data };
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      console.warn(`Global variables file not found at ${GLOBAL_VARIABLES_PATH}. Returning empty object.`);
+      return { success: true, globals: {} };
+    } else {
+      console.error('Error loading global variables:', error);
+      return { success: false, error: error.message, globals: {} };
+    }
+  }
+}
