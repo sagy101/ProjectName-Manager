@@ -15,33 +15,14 @@ This project is my exploration of "vibe coding" mixed with solid engineering pra
 
 Both were used to create jest and playwright tests.
 
-## Language Models
-
-### Cutting-Edge Models (2024-2025)
-
-- **Claude 4 Opus** – Anthropic's flagship model with exceptional reasoning for complex coding tasks and architectural decisions. Best for multi-file refactoring and system design.
-- **Claude 4 Sonnet** – the balanced option with strong coding performance at lower cost. Excellent for everyday development tasks and code reviews.
-- **GPT-4.1** – OpenAI's latest with improved instruction following and coding accuracy. Great for multimodal tasks and rapid iteration.
-- **GPT-4.5** – enhanced reasoning model with unified capabilities. Ideal for complex problem-solving and algorithm design.
-- **Gemini 2.5 Pro** – currently ranked #1 across coding benchmarks. Massive 1M+ token context window allows processing entire codebases. Excellent for large-scale analysis and refactoring.
-- **o3-mini** – OpenAI's fast reasoning model, perfect for real-time code suggestions and quick debugging sessions.
-- **DeepSeek R1** – open-source reasoning model, extremely cost-effective for coding and mathematics. Up to 30x cheaper than comparable models.
-- **Grok 3** – xAI's model with superior reasoning and real-time data access via X integration. Great for research and technical problem-solving.
-
-### Specialized Models
-
-- **Claude Sonnet 3.7** – hybrid reasoning model that adapts speed based on task complexity. Excellent for both quick queries and deep analysis.
-- **Gemini 2.0 Flash** – Google's multimodal model optimized for real-time interactions. Perfect for UI analysis and visual debugging.
-- **GPT-4o** – fast multimodal model ideal for image-based coding questions and rapid prototyping.
-
 ## Model Selection Strategy
 
-Each model excels in different scenarios:
+Each model serves a different role:
 
-- **For complex architectural decisions and careful adjustments**: Claude 4 Opus
-- **For large codebase analysis/refactoring**: Gemini 2.5 Pro (1M+ context window)
-- **For cost-effective daily coding**: Claude 3.7 Sonnet or GPT-4.1
-- **For real-time coding assistance**: o3-mini or GPT-4o or sonnet 4
-- **For multimodal debugging (i.e screenshots)**: Gemini 2.5 Flash or GPT-o3
+- **Claude 4 Opus or GPT-o3** – write requirements, plan development, and tackle complex bugs.
+- **Gemini 2.5 Pro** – large context for big refactors with strong vision for visual changes.
+- **Claude 4 Sonnet or GPT-4.1** – go-to models for everyday feature coding and debugging.
+- **GPT-4o or Claude 3.7 Sonnet** – extremely fast for tab completion and quick assistance.
+- **Gemini 2.0 Flash** – optimized for real-time interactions and UI analysis.
 
-The key is matching the model's strengths to the specific task, balancing performance, cost, and speed based on project needs.
+The key is matching the model's strengths to the task. This strategy works well.
