@@ -72,6 +72,9 @@ export const useAppState = () => {
   // State for ProjectConfiguration collapse
   const [isConfigCollapsed, setIsConfigCollapsed] = useState(false);
 
+  // State for Health Report
+  const [isHealthReportVisible, setIsHealthReportVisible] = useState(false);
+
   // Initialize verification statuses dynamically from JSON
   const initializeVerificationStatuses = () => {
     const statuses = {
@@ -123,6 +126,7 @@ export const useAppState = () => {
     isMainTerminalWritable,
     discoveredVersions,
     isConfigCollapsed,
+    isHealthReportVisible,
     verificationStatuses,
     globalDropdownValues,
     terminalRef,
@@ -152,6 +156,7 @@ export const useAppState = () => {
     setIsMainTerminalWritable,
     setDiscoveredVersions,
     setIsConfigCollapsed,
+    setIsHealthReportVisible,
     setVerificationStatuses,
     setGlobalDropdownValues,
     

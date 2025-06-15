@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import '../styles/app-control-sidebar.css'; // Renamed CSS
+import HealthReportButton from './HealthReportButton';
 // Import XMarkIcon as CloseIcon for clarity, or use XMarkIcon directly if no conflict
 import { Bars3Icon, XMarkIcon, EyeIcon, EyeSlashIcon, InformationCircleIcon, XMarkIcon as CloseIcon, Cog6ToothIcon, ArrowPathIcon, ComputerDesktopIcon, TrashIcon, ArrowDownTrayIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 
@@ -23,7 +24,10 @@ const AppControlSidebar = ({
   onToggleMainTerminalWritable, // New prop
   onExportConfig,
   onImportConfig,
-  onToggleAllVerifications // New prop for toggling all verification statuses
+  onToggleAllVerifications, // New prop for toggling all verification statuses
+  // Health Report props
+  healthStatus, // Health report status (green/blue/red)
+  onOpenHealthReport // Health report open handler
 }) => {
   const sidebarRef = useRef(null);
   const [isDebugSectionOpen, setIsDebugSectionOpen] = useState(false);
@@ -175,8 +179,14 @@ const AppControlSidebar = ({
         </div>
       )}
 
-      {/* Debug Section Toggle Button - always visible at the bottom */}
+      {/* Health Report and Debug Section Toggle Buttons - always visible at the bottom */}
       <div className="sidebar-bottom-controls">
+        <div className="health-report-button-container">
+          <HealthReportButton
+            healthStatus={healthStatus}
+            onOpenHealthReport={onOpenHealthReport}
+          />
+        </div>
         <button
           className={`debug-section-toggle-button ${isExpanded ? 'expanded' : 'collapsed'} ${(showTestSections || noRunMode) ? 'has-active-options' : ''}`}
           onClick={toggleDebugSection}
@@ -190,7 +200,6 @@ const AppControlSidebar = ({
       {/* Debug Section Content - shown when isDebugSectionOpen and sidebar isExpanded */}
       {isExpanded && isDebugSectionOpen && (
         <div className="debug-section-content">
-          <h4>Debug Tools</h4>
           <button onClick={openDevTools} title="Open Developer Tools">
             <ComputerDesktopIcon className="icon" />
             <span>DevTools</span>

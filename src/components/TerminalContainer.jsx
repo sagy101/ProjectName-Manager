@@ -150,6 +150,12 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
     },
     getTerminals: () => terminals,
     killAllTerminals,
+    focusTab: (terminalId) => {
+      handleSelectTab(terminalId);
+    },
+    refreshTab: (terminalId) => {
+      handleRefreshTab(terminalId);
+    },
     stopAllContainers: async () => {
       const allContainers = new Set(
         terminals.flatMap(t => t.associatedContainers || []).filter(c => c && typeof c === 'string')
@@ -158,7 +164,7 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
         await window.electron.stopContainers(Array.from(allContainers));
       }
     }
-  }), [terminals, openTabs, clearTabs, killAllTerminals]);
+  }), [terminals, openTabs, clearTabs, killAllTerminals, handleSelectTab, handleRefreshTab]);
 
   return (
     <div className="terminal-main-container">

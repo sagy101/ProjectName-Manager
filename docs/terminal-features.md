@@ -88,6 +88,14 @@ The Tab Information Panel is accessible via the info button (ℹ) on each main t
 | running | Green (pulsing) | Process actively executing |
 | done | Blue | Process completed successfully |
 | error | Red | Process encountered an error |
+| initializing | Blue | Process is starting up |
+| degraded | Orange | Process is running but some dependencies are not |
+
+### Real-Time Health Monitoring (Health Report)
+
+The detailed status information described below is aggregated and displayed in the **Health Report**, which provides a centralized, at-a-glance view of the health of all services and their dependencies.
+
+For a comprehensive guide to the Health Report and its features, see the [Health Report Guide](health-report.md).
 
 ### Process Monitoring and Status Detection
 

@@ -12,7 +12,7 @@
 .sidebar {
   width: 380px; /* Default expanded width */
   min-width: 380px;
-  background-color: #1a202c;
+  background-color: #2c1a1a;
   transition: width 0.3s ease, min-width 0.3s ease;
   height: 100%;
   position: relative;
@@ -99,7 +99,7 @@
   left: 320px;
   transform: translateY(-50%);
   z-index: 1000;
-  background: #2d3748;
+  background: #42433f;
   color: white;
   border: 1px solid #4a5568;
   border-left: none;

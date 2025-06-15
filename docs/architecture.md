@@ -53,6 +53,7 @@ graph TB
             J --> N[FloatingTerminals]
             J --> O[AppControlSidebar]
             J --> P[ConfigCollapseButton]
+            J --> HR[HealthReportScreen]
             
             subgraph "Custom Hooks"
                 Q[useAppState<br/>State Management]

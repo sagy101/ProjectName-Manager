@@ -24,13 +24,18 @@ test.describe('Debug Menu Functionality', () => {
   });
 
   test('should toggle no run mode and display commands without execution', async () => {
+    // Expand the sidebar first to access debug tools
     const expandButton = await window.locator('[title="Expand Sidebar"]');
     await expandButton.click();
-    const debugButton = await window.locator('[title*="Debug Tools"]');
+    
+    // Click the debug tools button in the App Control Sidebar
+    const debugButton = await window.locator('.debug-section-toggle-button');
     await debugButton.click();
-    await expect(window.locator('text=Debug Tools')).toBeVisible();
+    
+    // Wait for debug section to expand and show debug tools
+    await expect(window.locator('.debug-section-content')).toBeVisible();
 
-    const noRunModeButton = await window.locator('text=No Run Mode').locator('..');
+    const noRunModeButton = await window.locator('.debug-section-content button').filter({ hasText: 'No Run Mode' });
     await noRunModeButton.click();
     await expect(noRunModeButton).toHaveClass(/active/);
     
@@ -94,10 +99,12 @@ test.describe('Debug Menu Functionality', () => {
     const expandButton = await window.locator('[title="Expand Sidebar"]');
     await expandButton.click();
     
-    const debugButton = await window.locator('[title*="Debug Tools"]');
+    const debugButton = await window.locator('.debug-section-toggle-button');
     await debugButton.click();
     
-    const showTestSectionsButton = await window.locator('button').filter({ hasText: /Show Tests/i });
+    await expect(window.locator('.debug-section-content')).toBeVisible();
+    
+    const showTestSectionsButton = await window.locator('.debug-section-content button').filter({ hasText: /Show Tests/i });
     await expect(showTestSectionsButton).toBeVisible();
     
     // Test sections should be hidden initially
@@ -105,7 +112,7 @@ test.describe('Debug Menu Functionality', () => {
 
     await showTestSectionsButton.click();
     
-    await expect(window.locator('button').filter({ hasText: /Hide Tests/i })).toBeVisible();
+    await expect(window.locator('.debug-section-content button').filter({ hasText: /Hide Tests/i })).toBeVisible();
 
     // Test section should now be visible
     await expect(window.locator(`h2:has-text("${testSection.title}")`)).toBeVisible();
@@ -114,10 +121,12 @@ test.describe('Debug Menu Functionality', () => {
   test('should toggle terminal read-only/writable mode', async () => {
     const expandButton = await window.locator('[title="Expand Sidebar"]');
     await expandButton.click();
-    const debugButton = await window.locator('[title*="Debug Tools"]');
+    const debugButton = await window.locator('.debug-section-toggle-button');
     await debugButton.click();
     
-    const terminalModeButton = await window.locator('button').filter({ hasText: /Terminals Read-Only|Terminals Writable/i });
+    await expect(window.locator('.debug-section-content')).toBeVisible();
+    
+    const terminalModeButton = await window.locator('.debug-section-content button').filter({ hasText: /Terminals Read-Only|Terminals Writable/i });
     await expect(terminalModeButton).toBeVisible();
     
     const initialText = await terminalModeButton.textContent();
@@ -166,13 +175,15 @@ test.describe('Debug Menu Functionality', () => {
     
     const expandButton = await window.locator('[title="Expand Sidebar"]');
     await expandButton.click();
-    const debugButton = await window.locator('[title*="Debug Tools"]');
+    const debugButton = await window.locator('.debug-section-toggle-button');
 
     await debugButton.click();
     
-    const noRunModeButton = await window.locator('button').filter({ hasText: /No Run Mode/i });
-    const testSectionsButton = await window.locator('button').filter({ hasText: /Show Tests|Hide Tests/i });
-    const terminalModeButton = await window.locator('button').filter({ hasText: /Terminals Read-Only|Terminals Writable/i });
+    await expect(window.locator('.debug-section-content')).toBeVisible();
+    
+    const noRunModeButton = await window.locator('.debug-section-content button').filter({ hasText: /No Run Mode/i });
+    const testSectionsButton = await window.locator('.debug-section-content button').filter({ hasText: /Show Tests|Hide Tests/i });
+    const terminalModeButton = await window.locator('.debug-section-content button').filter({ hasText: /Terminals Read-Only|Terminals Writable/i });
     
     await expect(noRunModeButton).toBeDisabled();
     await expect(testSectionsButton).toBeDisabled();
@@ -182,11 +193,13 @@ test.describe('Debug Menu Functionality', () => {
   test('should show active options indicator when debug modes are enabled', async () => {
     const expandButton = await window.locator('[title="Expand Sidebar"]');
     await expandButton.click();
-    const debugButton = await window.locator('[title*="Debug Tools"]');
+    const debugButton = await window.locator('.debug-section-toggle-button');
         
     await debugButton.click();
     
-    const noRunModeButton = await window.locator('button').filter({ hasText: /No Run Mode/i });
+    await expect(window.locator('.debug-section-content')).toBeVisible();
+    
+    const noRunModeButton = await window.locator('.debug-section-content button').filter({ hasText: /No Run Mode/i });
     await noRunModeButton.click();
     
     await expect(debugButton).toHaveClass(/has-active-options/);
@@ -207,8 +220,10 @@ test.describe('Debug Menu Functionality', () => {
     const expandButton = await window.locator('[title="Expand Sidebar"]');
     await expandButton.click();
     
-    const debugButton = await window.locator('[title*="Debug Tools"]');
+    const debugButton = await window.locator('.debug-section-toggle-button');
     await debugButton.click();
+    
+    await expect(window.locator('.debug-section-content')).toBeVisible();
     
     // First, wait for the environment verification section to be visible
     const envVerificationHeader = window.locator('.verification-header', { hasText: 'General Environment' });
@@ -221,7 +236,7 @@ test.describe('Debug Menu Functionality', () => {
     }, { timeout: 15000 });
     
     // Look for the toggle verification button
-    const toggleVerificationsButton = await window.locator('button').filter({ hasText: /Toggle Verifications/i });
+    const toggleVerificationsButton = await window.locator('.debug-section-content button').filter({ hasText: /Toggle Verifications/i });
     await expect(toggleVerificationsButton).toBeVisible();
     
     // Get initial state after verification completes
@@ -257,23 +272,27 @@ test.describe('Debug Menu Functionality', () => {
   test('should access developer tools functions', async () => {
     const expandButton = await window.locator('[title="Expand Sidebar"]');
     await expandButton.click();
-    const debugButton = await window.locator('[title*="Debug Tools"]');
+    const debugButton = await window.locator('.debug-section-toggle-button');
     await debugButton.click();
     
-    await expect(window.locator('button').filter({ hasText: /DevTools/i })).toBeVisible();
-    await expect(window.locator('button').filter({ hasText: /Reload/i })).toBeVisible();
+    await expect(window.locator('.debug-section-content')).toBeVisible();
+    
+    await expect(window.locator('.debug-section-content button').filter({ hasText: /DevTools/i })).toBeVisible();
+    await expect(window.locator('.debug-section-content button').filter({ hasText: /Reload/i })).toBeVisible();
   });
 
   test('should handle import/export configuration', async () => {
     const expandButton = await window.locator('[title="Expand Sidebar"]');
     await expandButton.click();
-    const debugButton = await window.locator('[title*="Debug Tools"]');
+    const debugButton = await window.locator('.debug-section-toggle-button');
     await debugButton.click();
     
+    await expect(window.locator('.debug-section-content')).toBeVisible();
+    
     // Be more specific to avoid matching "Export Environment" button
-    const exportConfigButton = await window.locator('button').filter({ hasText: 'Export Config' });
-    const importConfigButton = await window.locator('button').filter({ hasText: 'Import Config' });
-    const exportEnvButton = await window.locator('button').filter({ hasText: 'Export Environment' });
+    const exportConfigButton = await window.locator('.debug-section-content button').filter({ hasText: 'Export Config' });
+    const importConfigButton = await window.locator('.debug-section-content button').filter({ hasText: 'Import Config' });
+    const exportEnvButton = await window.locator('.debug-section-content button').filter({ hasText: 'Export Environment' });
     
     // Test Export Config button
     if (await exportConfigButton.count() > 0) {

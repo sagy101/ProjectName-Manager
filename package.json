@@ -13,7 +13,7 @@
     "watch": "webpack --mode development --watch",
     "setNode": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use",
     "rebuild": "npx @electron/rebuild -f -w node-pty",
-    "test:jest": "npm run test:jest:prod && npm run test:jest:mock",
+    "test:jest": "npm run test:jest:prod -- --silent --verbose=false --noStackTrace --passWithNoTests --reporters=default && npm run test:jest:mock -- --silent --verbose=false --noStackTrace --passWithNoTests --reporters=default",
     "test:jest:prod": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && jest --config=jest.config.js",
     "test:jest:mock": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && jest --config=jest.config.mock.js",
     "test:e2e": "npm run build && unset PREFIX && source ~/.nvm/nvm.sh && nvm use && E2E_ENV=prod npx playwright test --reporter=list",

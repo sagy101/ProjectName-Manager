@@ -136,7 +136,13 @@ Defines the UI structure and components for each section in the configuration si
 }
 ```
 
-**Component Types**:
+**Top-Level Section Properties**:
+- `id` (string): A unique identifier for the section. Used to link commands and "About" info.
+- `title` (string): The display name for the section in the UI.
+- `testSection` (boolean): If `true`, marks the section as a test/development section. Test sections are hidden by default and can be toggled via the debug tools. Commands from hidden test sections are excluded from "Run {ProjectName}".
+- `components` (object): Contains the definitions for the UI components to be rendered in this section.
+
+**Section Components**:
 
 #### Toggle
 ```json

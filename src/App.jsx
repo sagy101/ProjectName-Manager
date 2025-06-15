@@ -8,6 +8,7 @@ import FloatingTerminal from './components/FloatingTerminal';
 import AppControlSidebar from './components/AppControlSidebar';
 import TabInfoPanel from './components/TabInfoPanel';
 import ImportStatusScreen from './components/ImportStatusScreen';
+import HealthReportScreen from './components/HealthReportScreen';
 import './styles/app.css';
 
 // Import custom hooks
@@ -17,6 +18,7 @@ import { useConfigurationManagement } from './hooks/useConfigurationManagement';
 import { useAppEventHandlers } from './hooks/useAppEventHandlers';
 import { useAppEffects } from './hooks/useAppEffects';
 import { useFixCommands } from './hooks/useFixCommands';
+import useHealthReport from './hooks/useHealthReport';
 
 // Constants for sidebar dimensions
 const SIDEBAR_EXPANDED_WIDTH = 280; // From app-control-sidebar.css
@@ -97,6 +99,42 @@ const App = () => {
     appState,
     eventHandlers,
     floatingTerminalHandlers
+  });
+
+  // Get live terminal data
+  const [liveTerminals, setLiveTerminals] = React.useState([]);
+  
+  // Update live terminals data
+  React.useEffect(() => {
+    const updateTerminals = () => {
+      const terminals = appState.terminalRef.current?.getTerminals ? appState.terminalRef.current.getTerminals() : [];
+      setLiveTerminals(terminals);
+    };
+    
+    // Initial update
+    updateTerminals();
+    
+    // Update every second for live data
+    const interval = setInterval(updateTerminals, 1000);
+    
+    return () => clearInterval(interval);
+  }, [appState.terminalRef.current]);
+
+  // Initialize health report management
+  const healthReport = useHealthReport({
+    terminals: liveTerminals,
+    isHealthReportVisible: appState.isHealthReportVisible,
+    setIsHealthReportVisible: appState.setIsHealthReportVisible,
+    onFocusTerminal: (terminalId) => {
+      if (appState.terminalRef.current?.focusTab) {
+        appState.terminalRef.current.focusTab(terminalId);
+      }
+    },
+    onRefreshTerminal: (terminalId) => {
+      if (appState.terminalRef.current?.refreshTab) {
+        appState.terminalRef.current.refreshTab(terminalId);
+      }
+    }
   });
 
   // Log appNotification state changes
@@ -209,6 +247,8 @@ const App = () => {
             onExportConfig={configManagement.handleExportConfig}
             onImportConfig={configManagement.handleImportConfig}
             onToggleAllVerifications={fixCommands.handleToggleAllVerifications}
+            healthStatus={healthReport.healthStatus}
+            onOpenHealthReport={healthReport.handleOpenHealthReport}
           />
         )}
       </div> {/* End of the main flex container for isLoading=false case */}
@@ -228,6 +268,16 @@ const App = () => {
         onClose={configManagement.closeImportStatusScreen}
         gitBranches={appState.importGitBranches}
         onImportComplete={configManagement.performImport}
+      />
+      {/* Health Report Screen */}
+      <HealthReportScreen
+        isVisible={healthReport.isHealthReportVisible}
+        projectName={appState.projectName}
+        onClose={healthReport.handleCloseHealthReport}
+        terminals={liveTerminals}
+        noRunMode={appState.noRunMode}
+        onRefreshTerminal={healthReport.handleRefreshTerminal}
+        onFocusTerminal={healthReport.handleFocusTerminal}
       />
       {/* Render FloatingTerminals */}
       {appState.floatingTerminals.map(terminal => (

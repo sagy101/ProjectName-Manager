@@ -156,7 +156,7 @@
       "url-intelligenceConfig.mode": "process"
     },
     "command": {
-      "base": "kubectx ${kubectlContext} && PROOFPOINT_AUTH_CLIENT_SECRET=$(./infrastructure/scripts/decode-secret.sh default env-url-intelligence client_secret) PROOFPOINT_AUTH_CLIENT_ID=$(./infrastructure/scripts/decode-secret.sh default env-url-intelligence client_id) PROOFPOINT_SCORER_CUSTOMER_ID=$(./infrastructure/scripts/decode-secret.sh default env-url-intelligence customer_id) cd ./threatintelligence/url-intelligence && ./gradlew bootRun --args='--spring.profiles.active=staging --proofpoint.proxy.url= --server.port=8083 --threatintelligence.url=http://127.0.0.1:8084'",
+      "base": "cd ./threatintelligence/url-intelligence && kubectx ${kubectlContext} && PROOFPOINT_AUTH_CLIENT_SECRET=$(../../infrastructure/scripts/decode-secret.sh default env-url-intelligence client_secret) PROOFPOINT_AUTH_CLIENT_ID=$(../../infrastructure/scripts/decode-secret.sh default env-url-intelligence client_id) PROOFPOINT_SCORER_CUSTOMER_ID=$(../../infrastructure/scripts/decode-secret.sh default env-url-intelligence customer_id) ./gradlew bootRun --args='--spring.profiles.active=staging --proofpoint.proxy.url= --server.port=8083 --threatintelligence.url=http://127.0.0.1:8084'",
       "prefix": "nvm use ${nodeVersion} && ",
       "tabTitle": {
         "base": "URL Intelligence (Process)"

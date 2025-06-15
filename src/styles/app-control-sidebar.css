@@ -166,89 +166,46 @@
   text-align: center;
 }
 
-/* Styles for the Debug Toggle Button within the sidebar */
-.debug-toggle-sidebar {
-  position: absolute;
-  bottom: 15px; /* Position from the bottom */
-  /* Adjusted positioning based on expanded/collapsed state */
-}
-
-.debug-toggle-sidebar.expanded {
-  right: 15px; /* Position from the right when expanded */
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #444; /* Match the original debug button style */
-  border: none;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s;
-}
-
-.debug-toggle-sidebar.collapsed {
-  right: 5px; /* Position from the right when collapsed, closer to edge */
-  width: 40px; /* Maybe make it smaller when collapsed? Or keep same size? */
-  height: 40px;
-  border-radius: 50%;
-  background-color: #444; /* Match the original debug button style */
-  border: none;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s;
-}
-
-.debug-toggle-sidebar:hover {
-  background-color: #555; /* Hover effect */
-}
-
-/* Styles for when debug options are active (match original .has-active-options) */
-.debug-toggle-sidebar.has-active-options {
-  background-color: #555;
-  border: 2px solid #FEB32E;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3), 0 0 10px rgba(254, 179, 46, 0.3);
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-.debug-toggle-sidebar.has-active-options:hover {
-  background-color: #666;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3), 0 0 15px rgba(254, 179, 46, 0.5);
-}
-
-/* Reuse the pulse-glow animation from debug-panel.css */
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3), 0 0 10px rgba(254, 179, 46, 0.3);
-  }
-  50% {
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3), 0 0 20px rgba(254, 179, 46, 0.5);
-  }
-}
-
-.debug-icon { /* Reuse the debug-icon styling */
-  font-size: 18px;
-}
-
-/* Sidebar Bottom Controls - for Debug Toggle */
+/* Sidebar Bottom Controls - for Health Report and Debug Toggle */
 .sidebar-bottom-controls {
   margin-top: auto; /* Pushes this section to the bottom */
   padding: 10px;    /* Default padding (for expanded state) */
   border-top: 1px solid #4a505c;
-  /* Not a flex container by default */
+  display: flex;
+  flex-direction: column; /* Stack buttons vertically */
+  gap: 8px; /* Space between health report and debug buttons */
 }
 
 .app-control-sidebar.expanded .sidebar-bottom-controls {
-  display: flex;           /* Use flex for expanded state if needed for button content alignment */
-  justify-content: center; /* Centers the button if it's not full-width, or its content */
+  align-items: stretch; /* Make buttons full width when expanded */
 }
 
 .app-control-sidebar.collapsed .sidebar-bottom-controls {
   padding: 10px 0; /* Vertical padding only, 0 horizontal. Content width will be 50px. */
+  align-items: center; /* Center buttons when collapsed */
+}
+
+/* Health Report Button Container */
+.sidebar-bottom-controls .health-report-button-container {
+  width: 100%;
+}
+
+/* Adjust health report button for collapsed state */
+.app-control-sidebar.collapsed .health-report-button-container .health-report-button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  margin: 0 auto 8px auto;
+  justify-content: center;
+  min-width: unset;
+}
+
+.app-control-sidebar.collapsed .health-report-button-container .health-button-text {
+  display: none;
+}
+
+.app-control-sidebar.collapsed .health-report-button-container .health-icon {
+  margin-right: 0;
 }
 
 .debug-section-toggle-button {

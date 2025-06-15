@@ -81,14 +81,14 @@ test.describe('Sidebar Navigation', () => {
     const expandButton = await window.locator('[title="Expand Sidebar"]');
     await expandButton.click();
     
-    // Click the debug tools button
-    const debugButton = await window.locator('[title*="Debug Tools"]');
+    // Click the debug tools button in the App Control Sidebar
+    const debugButton = await window.locator('.debug-section-toggle-button');
     await debugButton.click();
     
-    // Check that debug tools are now visible
-    await expect(window.locator('text=Debug Tools')).toBeVisible();
-    await expect(window.locator('text=DevTools')).toBeVisible();
-    await expect(window.locator('text=Reload')).toBeVisible();
-    await expect(window.locator('text=No Run Mode')).toBeVisible();
+    // Check that debug section content is now visible
+    await expect(window.locator('.debug-section-content')).toBeVisible();
+    await expect(window.locator('.debug-section-content button').filter({ hasText: /DevTools/i })).toBeVisible();
+    await expect(window.locator('.debug-section-content button').filter({ hasText: /Reload/i })).toBeVisible();
+    await expect(window.locator('.debug-section-content button').filter({ hasText: /No Run Mode/i })).toBeVisible();
   });
 }); 

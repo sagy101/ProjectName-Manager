@@ -44,6 +44,7 @@ This project is also an experiment in "vibe coding" mixed with solid code practi
 - [Terminal Integration](#💻-terminal-integration)
   - [Main Terminals](#main-terminals)
   - [Floating Terminals](#floating-terminals)
+- [Health Report](#❤️‍🩹-health-report)
 - [App Control Sidebar & Debug Tools](#🛠️-app-control-sidebar--debug-tools)
 - [Development](#🛠️-development)
 - [Troubleshooting](#🐛-troubleshooting)
@@ -481,8 +482,6 @@ After installing new native dependencies:
 npm run rebuild
 ```
 
-
-
 ## 🐛 Troubleshooting
 
 <details>
@@ -513,7 +512,6 @@ npm run rebuild
 - Enable input via Debug Tools: App Control Sidebar -> Gear Icon -> "Terminals Read-Only" button. This is disabled if an {ProjectName} is running.
 
 </details>
-
 
 ## 📚 Additional Documentation
 
@@ -613,3 +611,18 @@ The notification will show the count of successful vs total branch switches, e.g
 ```
 
 This ensures your entire development environment can be quickly replicated across different machines or shared with team members.
+
+## ❤️‍🩹 Health Report
+
+The **Health Report** provides a comprehensive, real-time overview of all running services and their dependencies. It is accessible via a status indicator button in the App Control Sidebar.
+
+- **Centralized Status Monitoring**: View the status of all main terminal processes and their associated Docker containers in a single, unified view.
+- **Combined Health Status**: The header for each service displays a combined health status, calculated from the state of both the main process and its container dependencies. This provides a more holistic, at-a-glance understanding of each service's health.
+- **Detailed Sub-Status**: Inside each section, the report shows the specific status of the main terminal process, as well as the individual statuses of all associated containers.
+- **Real-Time Updates**: The report automatically refreshes every few seconds to provide a live view of your environment's health.
+- **Interactive Controls**:
+  - **Focus Tab**: Immediately jump to the relevant terminal tab for a specific service.
+  - **Show Command**: View the exact command being run in the terminal.
+  - **Refresh**: Manually re-run the command for a specific service.
+
+For more details on the Health Report's features and status calculations, see the [Health Report Guide](docs/health-report.md).
