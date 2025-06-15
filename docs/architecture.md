@@ -151,9 +151,9 @@ The renderer process is built with React and follows a modern, modular architect
 -   **Presentational Components**: Smaller, reusable components like `RunButton`, `TerminalPlaceholder`, `ConfigSection`, and `ConfigCollapseButton` focus on rendering specific pieces of the UI.
 -   **Custom Hooks**: Complex, reusable stateful logic is extracted into custom hooks for better organization and testability.
 
-#### App Component Refactoring
+#### App Component Architecture
 
-The main `App.jsx` component has been refactored from a monolithic 900+ line file into a clean, modular architecture using custom hooks:
+The main `App.jsx` component follows a clean, modular architecture using custom hooks:
 
 ```mermaid
 graph TB
@@ -163,7 +163,8 @@ graph TB
         A --> D[useAppEventHandlers]
         A --> E[useFloatingTerminals]
         A --> F[useConfigurationManagement]
-        A --> G[ConfigCollapseButton]
+        A --> G[useFixCommands]
+        A --> H[ConfigCollapseButton]
     end
     
     subgraph "Other Component Hooks"
@@ -180,7 +181,8 @@ graph TB
         D --> R[Event Handlers<br/>- User interactions<br/>- Callbacks<br/>- Notifications<br/>- Toggle functions]
         E --> S[Floating Terminals<br/>- Terminal lifecycle<br/>- Position management<br/>- Info panel state<br/>- Z-index handling]
         F --> T[Configuration<br/>- Import/Export<br/>- Git branch handling<br/>- Status screen management<br/>- File operations]
-        G --> U[Reusable Component<br/>- Collapse/Expand UI<br/>- SVG icons<br/>- Accessibility]
+        G --> V[Fix Commands<br/>- Verification updates<br/>- Fix command execution<br/>- Toggle verifications<br/>- Auto re-validation]
+        H --> U[Reusable Component<br/>- Collapse/Expand UI<br/>- SVG icons<br/>- Accessibility]
     end
 ```
 
@@ -193,29 +195,30 @@ graph TB
 | `useAppEventHandlers` | Event Handling | User interactions, callbacks, notifications, toggle functions |
 | `useFloatingTerminals` | Terminal Management | Floating terminal lifecycle, positioning, info panels |
 | `useConfigurationManagement` | Configuration | Import/export, git operations, status screens |
+| `useFixCommands` | Fix Commands | Fix command execution, verification updates, toggle verifications |
 
-#### Benefits of the Refactored Architecture
+#### Benefits of the Modular Architecture
 
 - **Separation of Concerns**: Each hook has a single, well-defined responsibility
 - **Testability**: Individual hooks can be tested in isolation with proper mocking
 - **Maintainability**: Easier to locate and modify specific functionality
 - **Reusability**: Hooks can be imported and used across different components
-- **Readability**: Main App component is now clean and focused on composition
+- **Readability**: Main App component is clean and focused on composition
 - **Performance**: Better dependency management and reduced re-renders
 
 #### File Structure
 ```
 src/
-├── App.jsx (refactored, 248 lines vs 901 original)
-├── App.jsx.backup (original backup)
+├── App.jsx (clean, modular composition)
 ├── components/
-│   └── ConfigCollapseButton.jsx (extracted reusable component)
+│   └── ConfigCollapseButton.jsx (reusable component)
 └── hooks/
     ├── useAppState.js (App state management)
     ├── useAppEffects.js (App side effects)
     ├── useAppEventHandlers.js (App event handling)
     ├── useFloatingTerminals.js (App terminal management)
     ├── useConfigurationManagement.js (App configuration)
+    ├── useFixCommands.js (Fix commands & verification management)
     ├── useTerminals.js (TerminalContainer hooks)
     ├── useIpcListeners.js (IPC communication hooks)
     ├── useProjectConfig.js (ProjectConfiguration hooks)
@@ -223,13 +226,13 @@ src/
     └── useTitleOverflow.js (UI utility hooks)
 ```
 
-This separation of concerns makes the UI code easier to test, debug, and refactor while maintaining all original functionality.
+This separation of concerns makes the UI code easier to test, debug, and maintain.
 
 #### Testing Architecture
 
-The refactored App component maintains comprehensive test coverage with improved testing strategies:
+The App component maintains comprehensive test coverage with modern testing strategies:
 
-- **Comprehensive Test Suite**: 236 tests covering all functionality
+- **Comprehensive Test Suite**: Extensive tests covering all functionality
 - **Act Warning Suppression**: Proper handling of React's async testing warnings
 - **Mock Strategy**: Strategic mocking of child components to focus on App logic
 - **Timer Management**: Jest fake timers for testing loading processes
@@ -242,7 +245,7 @@ The modular hook architecture enables better unit testing of individual concerns
 
 Beyond the App component refactoring, the project employs a comprehensive hook-based architecture throughout:
 
-- **App-specific hooks**: The 5 hooks extracted from App.jsx for state, effects, events, terminals, and configuration
+- **App-specific hooks**: The 6 hooks extracted from App.jsx for state, effects, events, terminals, configuration, and fix commands
 - **Component-specific hooks**: Other components like `ProjectConfiguration` and `TerminalContainer` use their own dedicated hooks (`useProjectConfig`, `useTerminals`, etc.)
 - **Shared utility hooks**: Common functionality like `useIpcListeners`, `useTabManagement`, and `useTitleOverflow` are reused across components
 - **Separation of concerns**: Each hook focuses on a specific domain (IPC communication, tab management, UI utilities)

@@ -48,13 +48,13 @@ export const useFloatingTerminals = ({
   }, [nextZIndex, setActiveFloatingTerminalId, setFloatingTerminals, setNextZIndex]); // Depends on nextZIndex
 
   // Now define openFloatingTerminal, which depends on the two above
-  const openFloatingTerminal = useCallback((commandId, title, command) => {
+  const openFloatingTerminal = useCallback((commandId, title, command, isFixCommand = false) => {
     setFloatingTerminals(prevTerminals => {
       const newTerminalId = `ft-${Date.now()}-${commandId}`;
       const existingTerminal = prevTerminals.find(t => t.commandId === commandId && t.title === title);
 
-      if (existingTerminal) {
-        // If terminal exists, show and focus it.
+      if (existingTerminal && !isFixCommand) {
+        // If terminal exists and it's not a fix command, show and focus it.
         // If it was minimized, ensure it un-minimizes and becomes visible.
         setFloatingTerminals(currentTerminals =>
           currentTerminals.map(t =>
@@ -96,7 +96,8 @@ export const useFloatingTerminals = ({
         status: 'idle', // Track actual terminal status
         exitStatus: null,
         startTime: Date.now(),
-        associatedContainers: [] // Initialize associated containers
+        associatedContainers: [], // Initialize associated containers
+        isFixCommand: isFixCommand || false // Track if this is a fix command terminal
       };
       setNextZIndex(prevZ => prevZ + 1);
       setActiveFloatingTerminalId(newTerminalId);
@@ -184,6 +185,12 @@ export const useFloatingTerminals = ({
   const closeInfoPanelDetails = useCallback(() => {
     setInfoPanelState(prev => ({ ...prev, detailsOpen: false }));
   }, [setInfoPanelState]);
+
+  // Specific function for opening fix command terminals
+  const openFixCommandTerminal = useCallback((verificationId, verificationTitle, fixCommand) => {
+    const title = `Fix: ${verificationTitle}`;
+    return openFloatingTerminal(verificationId, title, fixCommand, true);
+  }, [openFloatingTerminal]);
 
   const toggleFloatingSidebarExpand = useCallback((expandedState) => {
     // If an explicit state is passed (true/false), use it. Otherwise, toggle.
@@ -283,6 +290,7 @@ export const useFloatingTerminals = ({
     closeFloatingTerminalInfoPanel,
     openInfoPanelDetails,
     closeInfoPanelDetails,
+    openFixCommandTerminal,
     toggleFloatingSidebarExpand
   };
 }; 

@@ -104,6 +104,10 @@ ipcMain.handle('refresh-environment-verification', async () => {
   return await environmentVerification.refreshEnvironmentVerification(mainWindow);
 });
 
+ipcMain.handle('rerun-single-verification', async (event, verificationId) => {
+  return await environmentVerification.rerunSingleVerification(verificationId, mainWindow);
+});
+
 ipcMain.handle('refresh-git-statuses', async () => {
   return await gitManagement.refreshGitBranches();
 });

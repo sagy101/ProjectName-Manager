@@ -24,7 +24,8 @@ const EnvironmentVerification = ({
   headerConfig,
   globalDropdownValues,
   onGlobalDropdownChange,
-  onInitiateRefresh
+  onInitiateRefresh,
+  onFixCommand  // New prop for fix command handler
 }) => {
   const [expanded, setExpanded] = useState(false);
 
@@ -167,7 +168,9 @@ const EnvironmentVerification = ({
                     <VerificationIndicator 
                       key={verification.id} 
                       label={verification.title} 
-                      status={statusMap[verification.id] || STATUS.WAITING} 
+                      status={statusMap[verification.id] || STATUS.WAITING}
+                      verification={verification}
+                      onFixCommand={onFixCommand}
                     />
                   ))}
                 </div>

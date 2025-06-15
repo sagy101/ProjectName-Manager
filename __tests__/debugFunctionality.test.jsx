@@ -258,7 +258,8 @@ describe('Debug Functionality Unit Tests', () => {
       isMainTerminalWritable: false,
       onToggleMainTerminalWritable: jest.fn(),
       onExportConfig: jest.fn(),
-      onImportConfig: jest.fn()
+      onImportConfig: jest.fn(),
+      onToggleAllVerifications: jest.fn()
     };
 
     test('should prevent debug mode changes when project is running', () => {
@@ -290,6 +291,76 @@ describe('Debug Functionality Unit Tests', () => {
       // Functions should not be called when project is running
       expect(onToggleNoRunMode).not.toHaveBeenCalled();
       expect(onToggleTestSections).not.toHaveBeenCalled();
+    });
+
+    test('should call toggle all verifications function when button is clicked', () => {
+      const onToggleAllVerifications = jest.fn();
+      
+      const { getByText, container } = render(
+        <AppControlSidebar 
+          {...debugTestSidebarProps}
+          onToggleAllVerifications={onToggleAllVerifications}
+        />
+      );
+      
+      // Expand debug section
+      const debugButton = getByText('Debug');
+      fireEvent.click(debugButton);
+      
+      // Click the toggle verifications button
+      const buttons = container.querySelectorAll('button');
+      let toggleVerificationsButton = null;
+      for (const button of buttons) {
+        if (button.textContent.includes('Toggle Verifications')) {
+          toggleVerificationsButton = button;
+          break;
+        }
+      }
+      
+      expect(toggleVerificationsButton).not.toBeNull();
+      fireEvent.click(toggleVerificationsButton);
+      
+      expect(onToggleAllVerifications).toHaveBeenCalledTimes(1);
+    });
+
+    test('should disable toggle verifications button when project is running', () => {
+      const onToggleAllVerifications = jest.fn();
+      
+      const { getByText, container } = render(
+        <AppControlSidebar 
+          {...debugTestSidebarProps}
+          isProjectRunning={true}
+          onToggleAllVerifications={onToggleAllVerifications}
+        />
+      );
+      
+      // Expand debug section
+      const debugButton = getByText('Debug');
+      fireEvent.click(debugButton);
+      
+      // Check that the toggle verifications button is disabled
+      // Use container.querySelector to find the button that contains the "Toggle Verifications" span
+      const toggleVerificationsButton = container.querySelector('button:has([text="Toggle Verifications"])') || 
+                                       container.querySelector('button').parentNode.querySelector('span').textContent === 'Toggle Verifications' ? 
+                                       container.querySelector('button') : null;
+      
+      // Alternative approach: find button by looking for the button that has the onClick handler
+      const buttons = container.querySelectorAll('button');
+      let targetButton = null;
+      for (const button of buttons) {
+        if (button.textContent.includes('Toggle Verifications')) {
+          targetButton = button;
+          break;
+        }
+      }
+      
+      expect(targetButton).not.toBeNull();
+      expect(targetButton).toBeDisabled();
+      expect(targetButton).toHaveClass('disabled');
+      
+      // Clicking should not trigger the function
+      fireEvent.click(targetButton);
+      expect(onToggleAllVerifications).not.toHaveBeenCalled();
     });
 
     test('should maintain debug state visual indicators', () => {

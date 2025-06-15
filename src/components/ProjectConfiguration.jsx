@@ -12,7 +12,7 @@ import '../styles/project-configuration.css';
 
 const configSidebarSectionsActual = configSidebarSections.sections;
 
-const ProjectConfiguration = forwardRef(({ projectName, globalDropdownValues, terminalRef, verificationStatuses, onTriggerRefresh, showTestSections = false, onConfigStateChange, onIsRunningChange, openFloatingTerminal, discoveredVersions, onBranchChangeError, showAppNotification, isCollapsed }, ref) => {
+const ProjectConfiguration = forwardRef(({ projectName, globalDropdownValues, terminalRef, verificationStatuses, onTriggerRefresh, showTestSections = false, onConfigStateChange, onIsRunningChange, openFloatingTerminal, discoveredVersions, onBranchChangeError, showAppNotification, onFixCommand, isCollapsed }, ref) => {
   const [isRunning, setIsRunning] = useState(false);
   const [isStopping, setIsStopping] = useState(false);
   const [showStoppingScreen, setShowStoppingScreen] = useState(false);
@@ -205,6 +205,7 @@ const ProjectConfiguration = forwardRef(({ projectName, globalDropdownValues, te
             configSidebarCommands={configSidebarCommands}
             onBranchChangeError={onBranchChangeError}
             showAppNotification={showAppNotification}
+            onFixCommand={onFixCommand}
           />
         ))}
       </div>

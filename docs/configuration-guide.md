@@ -44,7 +44,8 @@ This file defines the verifications shown in the "General Environment" section a
             "id": "gcloudInstalled",
             "title": "gcloud CLI installed",
             "checkType": "commandSuccess",
-            "command": "gcloud --version"
+            "command": "gcloud --version",
+            "fixCommand": "curl https://sdk.cloud.google.com | bash && exec -l $SHELL"
           }
         ]
       }
@@ -60,6 +61,30 @@ This file defines the verifications shown in the "General Environment" section a
 - `categories`: Array of verification categories
   - `category.title`: Display name for the category
   - `category.verifications`: Array of verification objects (see [Verification Types](verification-types.md))
+
+#### Auto-Fix Commands
+
+Verifications can include an optional `fixCommand` property that provides automatic remediation for failed checks:
+
+```json
+{
+  "id": "nodeVersionCheck",
+  "title": "Node.js 16.x",
+  "checkType": "outputContains", 
+  "command": "node --version",
+  "expectedValue": "v16.",
+  "fixCommand": "nvm install 16 && nvm use 16"
+}
+```
+
+**Fix Command Features:**
+- Appears as orange "Fix" button next to invalid verifications
+- Runs in dedicated floating terminal with auto-close functionality
+- Automatically re-runs verification after command completes
+- Close button disabled for 20 seconds to prevent accidental closure
+- Provides success/failure notifications
+
+For detailed information about verification types and fix commands, see [Verification Types](verification-types.md).
 
 ### 2. Configuration Sidebar Sections
 

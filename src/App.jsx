@@ -16,10 +16,9 @@ import { useFloatingTerminals } from './hooks/useFloatingTerminals';
 import { useConfigurationManagement } from './hooks/useConfigurationManagement';
 import { useAppEventHandlers } from './hooks/useAppEventHandlers';
 import { useAppEffects } from './hooks/useAppEffects';
+import { useFixCommands } from './hooks/useFixCommands';
 
-// Constants for terminal and sidebar dimensions
-const FLOATING_TERMINAL_AVG_WIDTH = 500; // Approximate width
-const FLOATING_TERMINAL_AVG_HEIGHT = 300; // Approximate height
+// Constants for sidebar dimensions
 const SIDEBAR_EXPANDED_WIDTH = 280; // From app-control-sidebar.css
 const SIDEBAR_COLLAPSED_WIDTH = 50; // From app-control-sidebar.css
 
@@ -93,6 +92,13 @@ const App = () => {
     isPerformingImport: appState.isPerformingImport
   });
 
+  // Initialize fix command management
+  const fixCommands = useFixCommands({
+    appState,
+    eventHandlers,
+    floatingTerminalHandlers
+  });
+
   // Log appNotification state changes
   React.useEffect(() => {
     console.log('App: appNotification state updated:', appState.appNotification);
@@ -140,6 +146,7 @@ const App = () => {
               openFloatingTerminal={floatingTerminalHandlers.openFloatingTerminal}
               onBranchChangeError={eventHandlers.showAppNotification}
               showAppNotification={eventHandlers.showAppNotification}
+              onFixCommand={fixCommands.handleFixCommand}
               isCollapsed={appState.isConfigCollapsed}
             />
           </div>
@@ -167,6 +174,7 @@ const App = () => {
               globalDropdownValues={appState.globalDropdownValues}
               onGlobalDropdownChange={eventHandlers.handleGlobalDropdownChange}
               onInitiateRefresh={eventHandlers.handleInitiateRefresh}
+              onFixCommand={fixCommands.handleFixCommand}
             />
             <TerminalContainer 
               ref={appState.terminalRef} 
@@ -200,6 +208,7 @@ const App = () => {
             onToggleMainTerminalWritable={() => appState.setIsMainTerminalWritable(prev => !prev)}
             onExportConfig={configManagement.handleExportConfig}
             onImportConfig={configManagement.handleImportConfig}
+            onToggleAllVerifications={fixCommands.handleToggleAllVerifications}
           />
         )}
       </div> {/* End of the main flex container for isLoading=false case */}
@@ -235,6 +244,9 @@ const App = () => {
           initialPosition={terminal.position}
           onMinimize={floatingTerminalHandlers.toggleMinimizeFloatingTerminal}
           onOpenInfo={floatingTerminalHandlers.showFloatingTerminalInfoPanel}
+          isFixCommand={terminal.isFixCommand || false}
+          onShowNotification={eventHandlers.showAppNotification}
+          onCommandComplete={fixCommands.handleFixCommandComplete}
           isReadOnly={false}
           noRunMode={appState.noRunMode}
         />

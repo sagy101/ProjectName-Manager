@@ -58,6 +58,14 @@ describe('DeploymentOptions', () => {
       currentType: 'container'
     };
     render(<DeploymentOptions {...tbdProps} />);
+    
+    // Component should automatically switch away from TBD option during initialization
+    expect(tbdProps.onChange).toHaveBeenCalledWith('testSection', 'process');
+    
+    // Clear the mock to test the click behavior
+    tbdProps.onChange.mockClear();
+    
+    // Clicking on TBD option should show notification and not call onChange again
     fireEvent.click(screen.getByText('Container'));
     expect(tbdProps.showAppNotification).toHaveBeenCalledWith('This feature is not yet implemented.', 'info');
     expect(tbdProps.onChange).not.toHaveBeenCalled();

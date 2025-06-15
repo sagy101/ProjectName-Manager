@@ -152,49 +152,4 @@ test.describe('Terminal Command Validation', () => {
     const remainingTabs = await window.locator('.tab .status-running').count();
     expect(remainingTabs).toBe(0);
   });
-
-  test('should validate different deployment modes generate different commands', async () => {
-    const sectionWithOptions = sections.find(s => s.components.deploymentOptions);
-    if (!sectionWithOptions) {
-      console.log('Skipping test: No section with deployment options found.');
-      return;
-    }
-    
-    const sectionLocator = await window.locator(`h2:has-text("${sectionWithOptions.title}")`).locator('..').locator('..');
-    const toggle = await sectionLocator.locator('input[type="checkbox"]').first();
-    if (!await toggle.isChecked()) await toggle.click();
-
-    const processButton = sectionLocator.locator('.deployment-toggle-btn').filter({ hasText: /process/i });
-    if (!await processButton.isVisible()) {
-        console.log('Skipping test: Process button not found.');
-        return;
-    }
-    await processButton.click();
-    
-    const runButton = window.locator('button').filter({ hasText: new RegExp(`RUN.*${displaySettings.projectName}`, 'i') });
-    await expect(runButton).toBeEnabled();
-    await runButton.click();
-    await window.waitForTimeout(3000);
-
-    const tabTitle = sectionWithOptions.title;
-    const allTabTitles3 = await window.locator('.tab-title').allTextContents();
-    let tabTitleLocator = await window.locator('.tab-title').filter({ hasText: /gopm/i });
-    await expect(tabTitleLocator.first()).toBeVisible({ timeout: 5000 });
-
-    const stopButton = window.locator('button').filter({ hasText: /STOP|KILL/i }).or(window.locator('button').filter({ hasText: new RegExp(`STOP.*${displaySettings.projectName}`, 'i') }));
-    await stopButton.click();
-    await window.waitForTimeout(2000);
-
-    const containerButton = sectionLocator.locator('.deployment-toggle-btn').filter({ hasText: /container/i });
-    if (!await containerButton.isVisible()) {
-        console.log('Skipping test: Container button not found.');
-        return;
-    }
-    await containerButton.click();
-    await runButton.click();
-    await window.waitForTimeout(3000);
-    const allTabTitles4 = await window.locator('.tab-title').allTextContents();
-    tabTitleLocator = await window.locator('.tab-title').filter({ hasText: /gopm/i });
-    await expect(tabTitleLocator.first()).toBeVisible({ timeout: 5000 });
-  });
 }); 

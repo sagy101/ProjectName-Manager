@@ -44,11 +44,18 @@ contextBridge.exposeInMainWorld('electron', {
   // Environment verification handlers
   getEnvironmentVerification: () => ipcRenderer.invoke('get-environment-verification'),
   refreshEnvironmentVerification: () => ipcRenderer.invoke('refresh-environment-verification'),
+  rerunSingleVerification: (verificationId) => ipcRenderer.invoke('rerun-single-verification', verificationId),
   refreshGitStatuses: () => ipcRenderer.invoke('refresh-git-statuses'),
   onEnvironmentVerificationComplete: (callback) => {
     ipcRenderer.on('environment-verification-complete', (event, data) => callback(data));
     return () => {
       ipcRenderer.removeListener('environment-verification-complete', callback);
+    };
+  },
+  onSingleVerificationUpdated: (callback) => {
+    ipcRenderer.on('single-verification-updated', (event, data) => callback(data));
+    return () => {
+      ipcRenderer.removeListener('single-verification-updated', callback);
     };
   },
   onVerificationProgress: (callback) => {

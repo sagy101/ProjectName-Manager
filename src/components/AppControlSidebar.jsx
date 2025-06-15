@@ -22,7 +22,8 @@ const AppControlSidebar = ({
   isMainTerminalWritable, // New prop
   onToggleMainTerminalWritable, // New prop
   onExportConfig,
-  onImportConfig
+  onImportConfig,
+  onToggleAllVerifications // New prop for toggling all verification statuses
 }) => {
   const sidebarRef = useRef(null);
   const [isDebugSectionOpen, setIsDebugSectionOpen] = useState(false);
@@ -236,6 +237,17 @@ const AppControlSidebar = ({
           <button onClick={exportEnvironment} title="Export Environment Data">
             <ArrowDownTrayIcon className="icon" />
             <span>Export Environment</span>
+          </button>
+          <button 
+            onClick={onToggleAllVerifications} 
+            title="Toggle all verifications between valid/invalid for testing fix button functionality"
+            disabled={isProjectRunning}
+            className={`${isProjectRunning ? 'disabled' : ''}`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="icon">
+              <path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H3.989a.75.75 0 00-.75.75v4.242a.75.75 0 001.5 0v-2.43l.31.31a7 7 0 0011.712-3.138.75.75 0 00-1.449-.39zm-3.068-9.849a7 7 0 00-11.614 3.138.75.75 0 101.449.39 5.5 5.5 0 019.4-2.466l.31-.31V5.159a.75.75 0 001.5 0V.917a.75.75 0 00-.75-.75H8.497a.75.75 0 000 1.5h2.433l-.31.31z" clipRule="evenodd" />
+            </svg>
+            <span>Toggle Verifications</span>
           </button>
         </div>
       )}

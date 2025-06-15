@@ -67,6 +67,17 @@
   color: #fff;
 }
 
+.floating-terminal-close-btn:disabled {
+  color: #666;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.floating-terminal-close-btn:disabled:hover {
+  background-color: transparent;
+  color: #666;
+}
+
 .floating-terminal-content {
   flex-grow: 1;
   padding: 0; /* Remove padding if TerminalComponent handles its own */

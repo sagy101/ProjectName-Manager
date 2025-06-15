@@ -46,6 +46,20 @@ const config = {
         /* Ensure headless mode for all tests */
         headless: true,
       },
+      /* Exclude fix-command tests from main project */
+      testIgnore: ['**/fix-command.e2e.spec.js'],
+    },
+    {
+      name: 'fix-command-tests',
+      use: {
+        ...devices['Desktop Chrome'],
+        /* Ensure headless mode for all tests */
+        headless: true,
+      },
+      /* Only run fix-command tests in this project */
+      testMatch: ['**/fix-command.e2e.spec.js'],
+      /* Run fix-command tests with single worker to avoid interference */
+      fullyParallel: false,
     },
   ],
 };

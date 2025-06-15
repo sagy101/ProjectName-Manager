@@ -1,10 +1,12 @@
 # Verification Types Reference
 
-This document provides a comprehensive reference for all verification types supported by {ProjectName} Manager's environment verification system. For a higher-level overview of the verification system, see the [System Architecture](architecture.md#environment-verification-system) document.
+This document provides a comprehensive reference for all verification types supported by {ProjectName} Manager's environment verification system, including the auto-fix command feature. For a higher-level overview of the verification system, see the [System Architecture](architecture.md#environment-verification-system) document.
 
 ## Overview
 
 Verifications are checks that validate the presence and configuration of tools, paths, environment variables, and other dependencies required for your development environment. Each verification has a `checkType` that determines how the validation is performed.
+
+**New Feature**: Verifications can now include `fixCommand` properties that provide one-click automatic fixes for failed verifications.
 
 Verifications can be organized in categories within the `generalEnvironmentVerifications.json` file, which now also supports header configuration with dropdown selectors for dynamic environment selection.
 
@@ -17,6 +19,7 @@ All verifications share a common base structure:
   "id": "uniqueIdentifier",
   "title": "Human-readable description",
   "checkType": "verificationType",
+  "fixCommand": "command to fix this verification (optional)"
   // Additional properties based on checkType
 }
 ```
@@ -25,6 +28,7 @@ All verifications share a common base structure:
 - `id` (string, required): Unique identifier for the verification
 - `title` (string, required): Human-readable description shown in the UI
 - `checkType` (string, required): Type of verification to perform
+- `fixCommand` (string, optional): Command to automatically fix failed verifications
 
 ## File Structure
 
@@ -578,4 +582,74 @@ Checks if a file or directory exists at the specified path.
 - Checking for configuration files
 - Validating installation paths
 - Checking for build scripts (e.g., gradlew, package.json)
-- Verifying tool installations in specific locations 
+- Verifying tool installations in specific locations
+
+## Auto-Fix Commands
+
+Verifications can include an optional `fixCommand` property that provides automatic remediation for failed checks. When a verification fails and has a `fixCommand`, an orange "Fix" button appears in the UI.
+
+### Fix Command Features
+
+- **One-Click Fix**: Orange "Fix" button appears next to invalid verifications
+- **Floating Terminal**: Fix commands run in dedicated floating terminals
+- **Auto-Close**: Terminals close automatically when command completes (if minimized)
+- **Re-Validation**: Verification automatically re-runs after fix completes
+- **Safety Features**: Close button disabled for 20 seconds to prevent accidental closure
+- **Smart Notifications**: Success/failure feedback after fix attempts
+
+### Fix Command Examples
+
+**Directory Creation:**
+```json
+{
+  "id": "projectDirExists",
+  "title": "./my-project directory exists",
+  "checkType": "pathExists",
+  "pathValue": "./my-project",
+  "pathType": "directory",
+  "fixCommand": "mkdir -p ./my-project"
+}
+```
+
+**Package Installation:**
+```json
+{
+  "id": "dockerInstalled",
+  "title": "Docker installed",
+  "checkType": "commandSuccess",
+  "command": "docker --version",
+  "fixCommand": "brew install docker"
+}
+```
+
+**Complex Multi-Step Fix:**
+```json
+{
+  "id": "gradlewExists",
+  "title": "gradlew exists",
+  "checkType": "pathExists",
+  "pathValue": "./project/gradlew",
+  "pathType": "file",
+  "fixCommand": "cd ./project && gradle wrapper && chmod +x ./gradlew"
+}
+```
+
+**Environment Setup:**
+```json
+{
+  "id": "nodeVersionCorrect",
+  "title": "Node.js 16.x",
+  "checkType": "outputContains",
+  "command": "node --version",
+  "expectedValue": "v16.",
+  "fixCommand": "nvm install 16 && nvm use 16"
+}
+```
+
+### Best Practices for Fix Commands
+
+1. **Idempotent**: Commands should be safe to run multiple times
+2. **Non-Interactive**: Avoid commands that require user input
+3. **Platform Aware**: Consider using platform-specific commands when needed
+4. **Error Handling**: Commands should handle common error cases gracefully
+5. **Side Effects**: Be mindful of commands that modify global system state

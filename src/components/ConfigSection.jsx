@@ -34,7 +34,8 @@ const ConfigSection = ({
   openFloatingTerminal,
   configSidebarCommands,
   onBranchChangeError,
-  showAppNotification
+  showAppNotification,
+  onFixCommand
 }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const verificationPopoverRef = useRef(null);
@@ -229,6 +230,8 @@ const ConfigSection = ({
                   key={verification.id}
                   label={verification.title}
                   status={getVerificationStatus(verification.id)}
+                  verification={verification}
+                  onFixCommand={onFixCommand}
               />
               ))
             ) : (

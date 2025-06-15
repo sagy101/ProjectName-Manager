@@ -15,11 +15,17 @@ const FloatingTerminal = ({
   zIndex, // For stacking order
   onMinimize, // New prop for minimize action
   onOpenInfo, // New prop for opening info panel
+  isFixCommand = false, // New prop to identify fix commands
+  onShowNotification, // New prop for showing notifications
+  onCommandComplete, // New prop for when command completes
   noRunMode // New prop for no-run mode
 }) => {
   const terminalRef = useRef(null);
   const [position, setPosition] = useState(initialPosition || { x: 50, y: 50 });
   const [isDragging, setIsDragging] = useState(false);
+  const [isCloseDisabled, setIsCloseDisabled] = useState(false);
+  const [disableTimeRemaining, setDisableTimeRemaining] = useState(0);
+  const [terminalStatus, setTerminalStatus] = useState('idle');
   const dragOffset = useRef({ x: 0, y: 0 });
 
   // Effect to update position if initialPosition prop changes externally (e.g., centering on re-open)
@@ -28,6 +34,71 @@ const FloatingTerminal = ({
   useEffect(() => {
     setPosition(initialPosition || { x: 50, y: 50 });
   }, [initialPosition?.x, initialPosition?.y]); // Only re-run if initialPosition object reference itself changes or x/y
+
+  // Effect for fix command close button disable timer
+  useEffect(() => {
+    if (isFixCommand) {
+      setIsCloseDisabled(true);
+      setDisableTimeRemaining(20);
+      
+      const timer = setInterval(() => {
+        setDisableTimeRemaining(prev => {
+          if (prev <= 1) {
+            setIsCloseDisabled(false);
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [isFixCommand]);
+
+  // Effect to listen for terminal status changes and auto-close
+  useEffect(() => {
+    if (!window.electron) return;
+
+    const handleCommandFinished = ({ terminalId, status, exitCode }) => {
+      if (terminalId === id) {
+        setTerminalStatus(status);
+        
+        // Auto-close conditions:
+        // 1. If it's a fix command and command finished (done/error/stopped)
+        // 2. If terminal is minimized and command finished
+        const shouldAutoClose = (isFixCommand || isMinimized) && 
+                               ['done', 'error', 'stopped'].includes(status);
+        
+        if (shouldAutoClose) {
+          // Small delay to let user see the final status
+          setTimeout(() => {
+            onClose(id);
+          }, 2000);
+        }
+        
+        // Notify parent component that command completed (for verification re-run)
+        if (onCommandComplete && ['done', 'error', 'stopped'].includes(status)) {
+          onCommandComplete(id, status, exitCode);
+        }
+      }
+    };
+
+    const handleCommandStarted = ({ terminalId }) => {
+      if (terminalId === id) {
+        setTerminalStatus('running');
+      }
+    };
+
+    // Listen for command events
+    const removeCommandFinished = window.electron.onCommandFinished?.(handleCommandFinished);
+    const removeCommandStarted = window.electron.onCommandStarted?.(handleCommandStarted);
+
+    return () => {
+      removeCommandFinished?.();
+      removeCommandStarted?.();
+    };
+  }, [id, isFixCommand, isMinimized, onClose, onCommandComplete]);
 
   const handleMouseDown = (e) => {
     if (!terminalRef.current) return;
@@ -80,6 +151,21 @@ const FloatingTerminal = ({
     };
   }, [isDragging]);
 
+  // Handle close button click with notification for disabled state
+  const handleCloseClick = (e) => {
+    e.stopPropagation();
+    
+    if (isCloseDisabled && onShowNotification) {
+      onShowNotification(
+        `Fix command is running. Close button will be enabled in ${disableTimeRemaining} seconds.`,
+        'warning'
+      );
+      return;
+    }
+    
+    onClose(id);
+  };
+
   if (!isVisible) {
     return null;
   }
@@ -124,8 +210,9 @@ const FloatingTerminal = ({
           </button>
           <button
             className="floating-terminal-close-btn"
-            onClick={(e) => { e.stopPropagation(); onClose(id); }}
-            title="Close Terminal"
+            onClick={handleCloseClick}
+            title={isCloseDisabled ? `Close disabled (${disableTimeRemaining}s remaining)` : "Close Terminal"}
+            disabled={isCloseDisabled}
           >
             &times; {/* Simple 'X' icon */}
           </button>

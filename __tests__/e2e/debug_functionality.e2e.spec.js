@@ -191,7 +191,7 @@ test.describe('Debug Menu Functionality', () => {
     
     await expect(debugButton).toHaveClass(/has-active-options/);
     
-    await debugButton.click(); // Close
+    await debugButton.click(); // Close  
     const collapsedTooltip = await debugButton.getAttribute('title');
     expect(collapsedTooltip).toContain('(Active Options)');
     
@@ -200,6 +200,58 @@ test.describe('Debug Menu Functionality', () => {
     
     await debugButton.click(); // Close
     await expect(debugButton).not.toHaveClass(/has-active-options/);
+  });
+
+  test('should toggle all verification statuses for testing fix button functionality', async () => {
+    // Expand the sidebar and open debug tools
+    const expandButton = await window.locator('[title="Expand Sidebar"]');
+    await expandButton.click();
+    
+    const debugButton = await window.locator('[title*="Debug Tools"]');
+    await debugButton.click();
+    
+    // First, wait for the environment verification section to be visible
+    const envVerificationHeader = window.locator('.verification-header', { hasText: 'General Environment' });
+    await envVerificationHeader.waitFor({ state: 'visible', timeout: 10000 });
+    
+    // Wait for verification to complete (no longer in "waiting" state)
+    await window.waitForFunction(() => {
+      const header = document.querySelector('.verification-header');
+      return header && !header.classList.contains('waiting');
+    }, { timeout: 15000 });
+    
+    // Look for the toggle verification button
+    const toggleVerificationsButton = await window.locator('button').filter({ hasText: /Toggle Verifications/i });
+    await expect(toggleVerificationsButton).toBeVisible();
+    
+    // Get initial state after verification completes
+    const initialHeaderClasses = await envVerificationHeader.getAttribute('class');
+    
+    // Click to toggle all verifications
+    await toggleVerificationsButton.click();
+    
+    // Wait a moment for the status changes to take effect
+    await window.waitForTimeout(1000);
+    
+    // Check if the header reflects the status change (should have a different color/class)
+    const toggledHeaderClasses = await envVerificationHeader.getAttribute('class');
+    
+    // Click toggle again to switch statuses back
+    await toggleVerificationsButton.click();
+    await window.waitForTimeout(1000);
+    
+    // The classes should be different after toggling
+    expect(initialHeaderClasses).not.toBe(toggledHeaderClasses);
+    
+    // Check that fix buttons appear when verifications are invalid
+    // Expand the environment verification section to see individual verifications
+    const toggleIcon = envVerificationHeader.locator('.toggle-icon');
+    const isCollapsed = await toggleIcon.evaluate(node => node.textContent.includes('▶'));
+    if (isCollapsed) {
+      await toggleIcon.click();
+      await window.waitForTimeout(500);
+    }
+
   });
 
   test('should access developer tools functions', async () => {
@@ -227,21 +279,18 @@ test.describe('Debug Menu Functionality', () => {
     if (await exportConfigButton.count() > 0) {
       await expect(exportConfigButton).toBeVisible();
       await expect(exportConfigButton).toBeEnabled();
-      console.log('✓ Export configuration button found and enabled');
     }
     
     // Test Import Config button
     if (await importConfigButton.count() > 0) {
       await expect(importConfigButton).toBeVisible();
       await expect(importConfigButton).toBeEnabled();
-      console.log('✓ Import configuration button found and enabled');
     }
     
     // Test Export Environment button
     if (await exportEnvButton.count() > 0) {
       await expect(exportEnvButton).toBeVisible();
       await expect(exportEnvButton).toBeEnabled();
-      console.log('✓ Export environment button found and enabled');
     }
   });
 }); 

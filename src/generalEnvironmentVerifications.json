@@ -24,7 +24,8 @@
             "command": "gcloud --version",
             "checkType": "outputContains",
             "expectedValue": "Google Cloud SDK",
-            "outputStream": "stdout"
+            "outputStream": "stdout",
+            "fixCommand": "brew install --cask google-cloud-sdk"
           },
           {
             "id": "cloudKubectlCLI",
@@ -32,13 +33,15 @@
             "command": "kubectl version --client",
             "checkType": "outputContains",
             "expectedValue": "Client Version:",
-            "outputStream": "stdout"
+            "outputStream": "stdout",
+            "fixCommand": "brew install kubectl"
           },
           {
             "id": "cloudKubectx",
             "title": "kubectx",
             "command": "kubectx --help",
-            "checkType": "commandSuccess"
+            "checkType": "commandSuccess",
+            "fixCommand": "brew install kubectx"
           }
         ]
       }
@@ -65,7 +68,8 @@
             "command": "rdctl version",
             "checkType": "outputContains",
             "expectedValue": "",
-            "outputStream": "stdout"
+            "outputStream": "stdout",
+            "fixCommand": "brew install --cask rancher"
           },
           {
             "id": "containerRuntime",
@@ -89,13 +93,15 @@
             "checkType": "outputContains",
             "expectedValue": ["v15.", "v16."],
             "versionId": "nodeVersion",
-            "outputStream": "stdout"
+            "outputStream": "stdout",
+            "fixCommand": "nvm install 16"
           },
           {
             "id": "nvmInstalled",
             "title": "Nvm installed",
             "command": "nvm --version",
-            "checkType": "commandSuccess"
+            "checkType": "commandSuccess",
+            "fixCommand": "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash"
           }
         ]
       }
@@ -109,7 +115,8 @@
             "title": "Go installed",
             "command": "go version",
             "checkType": "outputContains",
-            "expectedValue": "go version go1"
+            "expectedValue": "go version go1",
+            "fixCommand": "brew install go"
           },
           {
             "id": "goLocation",
@@ -123,7 +130,8 @@
             "title": "GOPATH configured: $HOME/go",
             "checkType": "envVarEquals",
             "variableName": "GOPATH",
-            "expectedValue": "$HOME/go"
+            "expectedValue": "$HOME/go",
+            "fixCommand": "GOPATH_LINE='export GOPATH=$HOME/go\\nexport PATH=$PATH:$GOPATH/bin'; for f in ~/.zshrc ~/.bash_profile; do [ -f \"$f\" ] || touch \"$f\"; printf \"$GOPATH_LINE\\n\" >> \"$f\"; done; [ -n \"$ZSH_VERSION\" ] && source ~/.zshrc || { [ -n \"$BASH_VERSION\" ] && source ~/.bash_profile; }"
           },
           {
             "id": "goPathIncludes",
@@ -145,13 +153,21 @@
             "command": "java -version",
             "checkType": "outputContains",
             "expectedValue": "openjdk version \"17.",
-            "outputStream": "stderr"
+            "outputStream": "stderr",
+            "fixCommand": "brew install openjdk@17"
           },
           {
             "id": "additionalCloudbees",
             "title": "CLOUDBEES_FEATURES_ENV_KEY",
             "checkType": "envVarExists",
             "variableName": "CLOUDBEES_FEATURES_ENV_KEY"
+          },
+          {
+            "id": "homebrewInstalled",
+            "title": "Homebrew installed",
+            "command": "brew --version",
+            "checkType": "commandSuccess",
+            "fixCommand": "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
           }
         ]
       }

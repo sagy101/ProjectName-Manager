@@ -497,10 +497,248 @@ function getEnvironmentExportData() {
   };
 }
 
+// Function to re-run a single verification by ID
+async function rerunSingleVerification(verificationId, mainWindow = null) {
+  console.log(`Re-running single verification: ${verificationId}`);
+  
+  let found = false;
+  let updatedData = null;
+  
+  try {
+    // First, check if it's in generalEnvironmentVerifications.json
+    const verificationsConfigFile = await fs.readFile(VERIFICATIONS_CONFIG_PATH, 'utf-8');
+    const parsedVerificationsConfig = JSON.parse(verificationsConfigFile);
+    
+    for (const item of parsedVerificationsConfig.categories || []) {
+      const verification = item.category.verifications?.find(v => v.id === verificationId);
+      if (verification) {
+        found = true;
+        
+        // Re-run this specific verification
+        const { 
+          command, id, title, checkType = 'commandSuccess', 
+          expectedValue, outputStream = 'any', variableName, 
+          pathValue, pathType 
+        } = verification;
+        
+        let result = 'invalid';
+        
+        // Use the same logic as in verifyEnvironment
+        const resolvedExpectedValue = resolveEnvVars(expectedValue);
+        const resolvedPathValue = resolveEnvVars(pathValue);
+
+        switch (checkType) {
+          case 'commandSuccess':
+            if (command) {
+              const execResult = await execCommand(command);
+              result = execResult.success ? 'valid' : 'invalid';
+              verificationOutputs[id] = {
+                command,
+                stdout: execResult.stdout,
+                stderr: execResult.stderr,
+                status: result,
+                title
+              };
+            }
+            break;
+          case 'outputContains':
+            if (command) {
+              const execResult = await execCommand(command);
+              let output = '';
+              if (outputStream === 'stdout') output = execResult.stdout;
+              else if (outputStream === 'stderr') output = execResult.stderr;
+              else output = `${execResult.stdout} ${execResult.stderr}`;
+              
+              if (!expectedValue || expectedValue.length === 0) {
+                result = output.trim() !== '' ? 'valid' : 'invalid';
+              } else if (Array.isArray(expectedValue)) {
+                let matchFound = false;
+                for (const value of expectedValue) {
+                  const resolvedValue = resolveEnvVars(value);
+                  if (output.includes(resolvedValue)) {
+                    matchFound = true;
+                    if (verification.versionId) {
+                      const lines = output.split('\n');
+                      for (const line of lines) {
+                        if (line.includes(resolvedValue)) {
+                          const versionMatch = line.match(/v\d+\.\d+\.\d+/);
+                          if (versionMatch) {
+                            discoveredVersions[verification.versionId] = versionMatch[0];
+                            break;
+                          }
+                        }
+                      }
+                    }
+                    break;
+                  }
+                }
+                result = matchFound ? 'valid' : 'invalid';
+              } else {
+                const regex = new RegExp(resolvedExpectedValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+                result = regex.test(output) ? 'valid' : 'invalid';
+                if (result === 'valid' && verification.versionId) {
+                  discoveredVersions[verification.versionId] = resolvedExpectedValue;
+                }
+              }
+              
+              verificationOutputs[id] = {
+                command,
+                stdout: execResult.stdout,
+                stderr: execResult.stderr,
+                status: result,
+                title,
+                expectedValue: resolvedExpectedValue,
+                outputStream
+              };
+            }
+            break;
+          case 'envVarExists':
+            result = (process.env[variableName] !== undefined && process.env[variableName] !== '') ? 'valid' : 'invalid';
+            break;
+          case 'envVarEquals':
+            result = (process.env[variableName] === resolvedExpectedValue) ? 'valid' : 'invalid';
+            break;
+          case 'pathExists':
+            try {
+              const stats = await fs.stat(resolvedPathValue);
+              if (pathType === 'directory' && stats.isDirectory()) result = 'valid';
+              else if (pathType === 'file' && stats.isFile()) result = 'valid';
+              else if (!pathType && (stats.isFile() || stats.isDirectory())) result = 'valid';
+              else result = 'invalid';
+            } catch (e) {
+              result = 'invalid';
+            }
+            break;
+        }
+        
+        // Update the cache
+        if (environmentCaches.general && environmentCaches.general.statuses) {
+          environmentCaches.general.statuses[verificationId] = result;
+        }
+        
+        updatedData = {
+          verificationId,
+          result,
+          source: 'general'
+        };
+        
+        break;
+      }
+    }
+    
+    // If not found in general, check configurationSidebarAbout.json
+    if (!found) {
+      const configAboutFile = await fs.readFile(CONFIG_SIDEBAR_ABOUT_PATH, 'utf-8');
+      const configSidebarAbout = JSON.parse(configAboutFile);
+      
+      for (const section of configSidebarAbout) {
+        if (!section.verifications) continue;
+        
+        const verification = section.verifications.find(v => v.id === verificationId);
+        if (verification) {
+          found = true;
+          
+          const { id, checkType, pathValue, pathType, command, expectedValue, outputStream } = verification;
+          let result = 'invalid';
+          
+          switch (checkType) {
+            case 'pathExists':
+              const pathStatus = await checkPathExists(projectRoot, pathValue.slice(2), pathType);
+              result = pathStatus;
+              break;
+              
+            case 'commandSuccess':
+              try {
+                const execResult = await execCommand(command);
+                result = execResult.success ? 'valid' : 'invalid';
+                verificationOutputs[id] = {
+                  command,
+                  stdout: execResult.stdout,
+                  stderr: execResult.stderr,
+                  status: result,
+                  sectionId: section.sectionId
+                };
+              } catch (e) {
+                result = 'invalid';
+              }
+              break;
+              
+            case 'outputContains':
+              try {
+                const execResult = await execCommand(command);
+                const output = outputStream === 'stderr' ? execResult.stderr : execResult.stdout;
+                result = output.includes(expectedValue) ? 'valid' : 'invalid';
+                verificationOutputs[id] = {
+                  command,
+                  stdout: execResult.stdout,
+                  stderr: execResult.stderr,
+                  status: result,
+                  sectionId: section.sectionId,
+                  expectedValue,
+                  outputStream
+                };
+              } catch (e) {
+                result = 'invalid';
+              }
+              break;
+              
+            case 'envVarExists':
+              result = process.env[verification.variableName] ? 'valid' : 'invalid';
+              break;
+              
+            case 'envVarEquals':
+              result = process.env[verification.variableName] === expectedValue ? 'valid' : 'invalid';
+              break;
+          }
+          
+          // Update the appropriate section cache
+          const cacheKey = section.sectionId.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+          if (environmentCaches[cacheKey]) {
+            environmentCaches[cacheKey][verificationId] = result;
+          }
+          
+          updatedData = {
+            verificationId,
+            result,
+            source: section.sectionId,
+            cacheKey
+          };
+          
+          break;
+        }
+      }
+    }
+    
+    if (!found) {
+      console.warn(`Verification ${verificationId} not found in any configuration`);
+      return { success: false, error: 'Verification not found' };
+    }
+    
+    console.log(`Single verification ${verificationId} completed with result: ${updatedData.result}`);
+    
+    // Send updated result to frontend
+    if (mainWindow) {
+      mainWindow.webContents.send('single-verification-updated', updatedData);
+    }
+    
+    return { 
+      success: true, 
+      verificationId, 
+      result: updatedData.result,
+      source: updatedData.source
+    };
+    
+  } catch (error) {
+    console.error(`Error re-running verification ${verificationId}:`, error);
+    return { success: false, error: error.message };
+  }
+}
+
 module.exports = {
   verifyEnvironment,
   refreshEnvironmentVerification,
   getEnvironmentVerification,
   getEnvironmentExportData,
-  execCommand
+  execCommand,
+  rerunSingleVerification
 }; 

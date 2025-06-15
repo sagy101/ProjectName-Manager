@@ -1,8 +1,6 @@
-# ProjectName Manager
+# {ProjectName} Manager
 
 > **Note:** The Electron app requires Node.js **22.16.0**. Terminal commands for Isolation Project can run on Node.js **15** or **16**. It is recommended to use [nvm](https://github.com/nvm-sh/nvm) to manage multiple Node.js versions. Once you have `nvm` installed, you can run `nvm use` in the project directory to automatically switch to the correct version for the Electron runtime.
-
-# {ProjectName} Manager
 
 [![Electron](https://img.shields.io/badge/Electron-30.0.1-47848F?style=flat&logo=electron&logoColor=white)](https://electronjs.org/)
 [![React](https://img.shields.io/badge/React-18.2.0-61DAFB?style=flat&logo=react&logoColor=black)](https://reactjs.org/)
@@ -16,11 +14,13 @@ This project is also an experiment in "vibe coding" mixed with solid code practi
 ## 🚀 Features
 
 - **Dynamic Environment Verification**: JSON-configurable verification system for tools and dependencies
+  - **Auto-Fix Commands**: One-click fix buttons for failed verifications with automatic re-validation
 - **Generic Dropdown Selectors**: Command-driven dropdowns with dependency chains and default value selection (e.g., gcloud projects, kubectl contexts)
 - **Header Configuration**: Configurable environment section headers with integrated dropdowns
 - **Integrated Terminal**: Full PTY terminal support with tab management for main tasks
   - **Read-Only Main Terminals**: Main execution terminals are read-only by default for safety, with a debug option to enable input
 - **Floating Terminals**: Draggable, resizable, and minimizable floating terminals for specific tasks (e.g., viewing logs via custom buttons)
+  - **Fix Command Terminals**: Special floating terminals that auto-close when fix commands complete
 - **App Control Sidebar**: Centralized sidebar for managing floating terminals and accessing debug/developer tools
 - **Tab Information Panel**: Detailed tab info for main terminals with command viewing and conditional refresh
 - **Conditional Command Refresh**: Re-run main terminal commands with dynamic modifications based on current state
@@ -51,7 +51,7 @@ This project is also an experiment in "vibe coding" mixed with solid code practi
 
 ## 🏃 Quick Start
 
--### Prerequisites
+### Prerequisites
 
 - Node.js 22.16.0 for the Electron app
 - Node.js 15 or 16 for command execution
@@ -323,7 +323,30 @@ git init
 
 ## 🔍 Environment Verification
 
-The verification system supports multiple check types for comprehensive environment validation.
+The verification system supports multiple check types for comprehensive environment validation, with optional auto-fix capabilities.
+
+### Auto-Fix Commands
+
+Failed verifications can include fix commands that automatically attempt to resolve issues:
+
+```json
+{
+  "id": "mirrorDirExists",
+  "title": "./weblifemirror directory exists",
+  "checkType": "pathExists", 
+  "pathValue": "./weblifemirror",
+  "pathType": "directory",
+  "fixCommand": "mkdir -p ./weblifemirror"
+}
+```
+
+**Fix Command Features:**
+- **One-Click Fix**: Orange "Fix" button appears next to invalid verifications
+- **Floating Terminal**: Fix commands run in dedicated floating terminals
+- **Auto-Close**: Terminals close automatically when command completes (if minimized)
+- **Re-Validation**: Verification automatically re-runs after fix completes
+- **Safety Features**: Close button disabled for 20 seconds to prevent accidental closure
+- **Smart Notifications**: Success/failure feedback after fix attempts
 
 <details>
 <summary><strong>Verification Types</strong></summary>
@@ -411,6 +434,9 @@ When any debug options are active, the gear icon will show an orange border.
 - **Open Dev Tools**: Opens Chrome Developer Tools.
 - **Reload App**: Reloads the entire application.
 - **Export Environment**: Exports comprehensive environment verification data including command outputs and system information.
+- **Toggle All Verifications**: Toggles all visible verification statuses between valid/invalid for testing purposes.
+  - If any verifications are invalid, sets all to valid. Otherwise sets all to invalid.
+  - Only affects verifications from visible sections (respects test section visibility).
 
 **Visibility Options**
 - **Show/Hide Test Sections**: Toggle visibility of sections marked `testSection: true`.
@@ -455,36 +481,7 @@ After installing new native dependencies:
 npm run rebuild
 ```
 
-### Debug Panel
 
-The debug panel (gear icon in bottom right) provides powerful development and testing tools. When any debug options are active, the gear icon will show an orange border and pulsing glow effect.
-
-#### Features
-
-**Developer Tools**
-- **Open Dev Tools**: Opens Chrome Developer Tools for debugging
-- **Reload App**: Reloads the entire application
-- **Clear Local Storage**: Clears all locally stored data
-- **Export Environment**: Exports all environment verification data with command outputs
-
-**Visibility Options**
-- **Show/Hide Test Sections**: Toggle visibility of sections marked as `testSection: true` in configuration
-  - Hidden by default to keep the UI clean for production use
-  - When enabled, shows all development/testing sections
-
-**Execution Modes**
-- **No Run Mode**: When enabled, commands are displayed in terminal tabs but not executed
-  - Shows `[NO-RUN MODE]` indicator in terminal
-  - Displays the full command that would be executed
-  - Useful for testing configurations without actually running commands
-  - Perfect for demonstrations or dry runs
-
-#### Visual Indicators
-
-The debug panel button changes appearance based on active options:
-- **Normal State**: Dark gray background
-- **Active Options**: Orange border with pulsing glow effect
-- **Tooltip**: Shows "Debug Tools (Active Options)" when options are enabled
 
 ## 🐛 Troubleshooting
 

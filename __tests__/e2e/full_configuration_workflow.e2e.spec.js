@@ -74,7 +74,7 @@ test.describe('Full Configuration Workflow', () => {
 
     // Verify that the correct tabs appear
     await expect(window.locator('.tab', { hasText: /Mirror \+ MariaDB/ })).toBeVisible({ timeout: 15000 });
-    await expect(window.locator('.tab', { hasText: /gopm \(Container\)/ })).toBeVisible({ timeout: 15000 });
+    await expect(window.locator('.tab', { hasText: /gopm \(Process\)/ })).toBeVisible({ timeout: 15000 });
     await expect(window.locator('.tab.error-tab-button', { hasText: /URL Intelligence \+ TI \(Cloud\)/ })).toBeVisible({ timeout: 15000 });
     
     // Phase 4: Stop and verify
@@ -117,9 +117,9 @@ test.describe('Full Configuration Workflow', () => {
     const gopmLocator = window.locator(`h2:has-text("${gopmSection.title}")`).locator('..').locator('..');
     await gopmLocator.locator('input[type="checkbox"]').first().check();
 
-    // Initial run with default (container)
+    // Initial run with default (process, since container is TBD)
     await window.locator('#run-configuration-button').click();
-    const gopmTab = window.locator('.tab', { hasText: /gopm \(Container\)/i });
+    const gopmTab = window.locator('.tab', { hasText: /gopm \(Process\)/i });
     await expect(gopmTab).toBeVisible();
 
     await window.locator('#run-configuration-button.stop').click();
@@ -134,12 +134,16 @@ test.describe('Full Configuration Workflow', () => {
     await closeButton2.click();
     await expect(stoppingScreen).not.toBeVisible({ timeout: 5000 });
 
-    // Change deployment option to process
+    // Since container is TBD, we can't test switching to it. 
+    // Instead, verify that the process button is already selected (as it's the default)
     const processButton = window.locator('[data-testid="mode-selector-btn-gopm-process"]');
-    await expect(processButton).toBeEnabled({ timeout: 5000 });
-    await processButton.click();
+    await expect(processButton).toHaveClass(/active/, { timeout: 5000 });
 
-    // Run again and verify new tab name
+    // Verify container button is disabled/TBD
+    const containerButton = window.locator('[data-testid="mode-selector-btn-gopm-container"]');
+    await expect(containerButton).toHaveClass(/tbd/, { timeout: 5000 });
+
+    // Run again and verify the tab name is still process
     await window.locator('#run-configuration-button').click();
     await expect(window.locator('.tab-title').filter({ hasText: /gopm \(Process\)/i })).toBeVisible();
   });
