@@ -1,0 +1,104 @@
+.health-report-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin: 4px 0;
+  background: var(--background-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-color);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.health-report-button:hover {
+  background: var(--background-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.health-report-button:active {
+  transform: translateY(0);
+}
+
+.health-icon {
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+}
+
+.health-button-text {
+  font-weight: 500;
+}
+
+/* Color states */
+.health-report-button--green {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.health-report-button--green .health-icon {
+  color: #22c55e;
+}
+
+.health-report-button--green:hover {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: #16a34a;
+}
+
+.health-report-button--blue {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.health-report-button--blue .health-icon {
+  color: #3b82f6;
+}
+
+.health-report-button--blue:hover {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: #2563eb;
+}
+
+.health-report-button--red {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.health-report-button--red .health-icon {
+  color: #ef4444;
+}
+
+.health-report-button--red:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #dc2626;
+}
+
+/* Dark theme adjustments */
+@media (prefers-color-scheme: dark) {
+  .health-report-button--green {
+    background: rgba(34, 197, 94, 0.15);
+  }
+  
+  .health-report-button--green:hover {
+    background: rgba(34, 197, 94, 0.2);
+  }
+  
+  .health-report-button--blue {
+    background: rgba(59, 130, 246, 0.15);
+  }
+  
+  .health-report-button--blue:hover {
+    background: rgba(59, 130, 246, 0.2);
+  }
+  
+  .health-report-button--red {
+    background: rgba(239, 68, 68, 0.15);
+  }
+  
+  .health-report-button--red:hover {
+    background: rgba(239, 68, 68, 0.2);
+  }
+} 
