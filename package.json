@@ -8,16 +8,31 @@
   },
   "scripts": {
     "start": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npx @electron/rebuild -f -w node-pty && electron .",
-    "test": "npm run test:jest && npm run test:e2e",      
     "build": "webpack --mode development",
     "watch": "webpack --mode development --watch",
-    "setNode": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use",
-    "rebuild": "npx @electron/rebuild -f -w node-pty",
+
+    "test": "npm run test:jest && npm run test:e2e",
     "test:jest": "npm run test:jest:prod -- --silent --verbose=false --noStackTrace --passWithNoTests --reporters=default && npm run test:jest:mock -- --silent --verbose=false --noStackTrace --passWithNoTests --reporters=default",
     "test:jest:prod": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && jest --config=jest.config.js",
     "test:jest:mock": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && jest --config=jest.config.mock.js",
+
+    "test:jest:prod:coverage": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && jest --config=jest.config.js --coverage --coverageDirectory=coverage/prod",
+    "test:jest:mock:coverage": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && jest --config=jest.config.mock.js --coverage --coverageDirectory=coverage/mock",
+
+    "coverage:prepare": "mkdir -p coverage/merged-raw && cp coverage/prod/coverage-final.json coverage/merged-raw/prod.json && cp coverage/mock/coverage-final.json coverage/merged-raw/mock.json",
+
+    "test:jest:coverage:base": "npm run test:jest:prod:coverage && npm run test:jest:mock:coverage && npm run coverage:prepare && nyc merge coverage/merged-raw coverage/merged/coverage.json",
+    "test:jest:coverage:text": "npm run test:jest:coverage:base && nyc report --reporter=text --report-dir=coverage/merged --temp-dir=coverage/merged",
+    "test:jest:coverage:html": "npm run test:jest:coverage:base && nyc report --reporter=html-spa --report-dir=coverage/merged --temp-dir=coverage/merged && open coverage/merged/index.html",
+
     "test:e2e": "npm run build && unset PREFIX && source ~/.nvm/nvm.sh && nvm use && E2E_ENV=prod npx playwright test --reporter=list",
     "test:e2e:report": "npm run build && unset PREFIX && source ~/.nvm/nvm.sh && nvm use && E2E_ENV=prod npx playwright test"
+  },
+  "nyc": {
+    "all": true,
+    "include": ["src/**/*.js", "src/**/*.jsx"],
+    "extension": [".js", ".jsx"],
+    "reporter": ["html-spa", "lcov", "text", "text-summary"]
   },
   "author": "",
   "license": "ISC",
@@ -26,14 +41,14 @@
     "@heroicons/react": "^2.1.3",
     "@xterm/addon-fit": "^0.10.0",
     "@xterm/xterm": "^5.3.0",
+    "adm-zip": "^0.5.10",
     "electron": "^15.0.0",
+    "electron-reload": "^2.0.0-alpha.1",
     "node-pty": "^1.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "simple-git": "^3.28.0",
-    "zustand": "^5.0.5",
-    "adm-zip": "^0.5.10",
-    "electron-reload": "^2.0.0-alpha.1"
+    "zustand": "^5.0.5"
   },
   "devDependencies": {
     "@babel/core": "^7.24.5",
@@ -51,6 +66,7 @@
     "identity-obj-proxy": "^3.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
+    "nyc": "^17.1.0",
     "playwright": "^1.45.3",
     "style-loader": "^4.0.0",
     "webpack": "^5.91.0",

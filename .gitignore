@@ -27,6 +27,7 @@ Thumbs.db
 
 # Testing
 test-results/
+coverage/
 
 # Electron build directories
 out/
