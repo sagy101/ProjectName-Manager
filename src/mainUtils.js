@@ -12,9 +12,11 @@ function resolveEnvVars(str) {
     return str; // Return the original value if it's not a string
   }
   if (!str) return '';
-  let resolvedStr = str.replace(/\$HOME/g, os.homedir());
+  // Only replace standalone $HOME and $GOPATH variables so similar names like
+  // $HOME_DIR are left intact
+  let resolvedStr = str.replace(/\$HOME(?![A-Za-z0-9_])/g, os.homedir());
   if (process.env.GOPATH) {
-    resolvedStr = resolvedStr.replace(/\$GOPATH/g, process.env.GOPATH);
+    resolvedStr = resolvedStr.replace(/\$GOPATH(?![A-Za-z0-9_])/g, process.env.GOPATH);
   }
   return resolvedStr;
 }

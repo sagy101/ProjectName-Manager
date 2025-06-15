@@ -14,6 +14,16 @@ describe('resolveEnvVars', () => {
     process.env.GOPATH = '/tmp/go';
     expect(resolveEnvVars('$GOPATH/bin')).toBe('/tmp/go/bin');
   });
+
+  test('does not replace $GOPATH when used as part of a larger variable', () => {
+    process.env.GOPATH = '/tmp/go';
+    const input = '$GOPATH_EXTRA/bin';
+    expect(resolveEnvVars(input)).toBe('$GOPATH_EXTRA/bin');
+  });
+  test('does not replace $HOME when used as part of a larger variable', () => {
+    const input = '$HOME_DIR/some/path';
+    expect(resolveEnvVars(input)).toBe('$HOME_DIR/some/path');
+  });
 });
 
 describe('checkPathExists', () => {
