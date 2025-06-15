@@ -2,10 +2,12 @@
 
 > **Note:** The Electron app requires Node.js **22.16.0**. Terminal commands for Isolation Project can run on Node.js **15** or **16**. It is recommended to use [nvm](https://github.com/nvm-sh/nvm) to manage multiple Node.js versions. Once you have `nvm` installed, you can run `nvm use` in the project directory to automatically switch to the correct version for the Electron runtime.
 
+> The application has been tested on **macOS**. It should also work on **Linux**, though this has not been verified. Windows compatibility is not planned at this time.
+
 [![Electron](https://img.shields.io/badge/Electron-30.0.1-47848F?style=flat&logo=electron&logoColor=white)](https://electronjs.org/)
 [![React](https://img.shields.io/badge/React-18.2.0-61DAFB?style=flat&logo=react&logoColor=black)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-Latest-339933?style=flat&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey)](https://github.com/electron/electron)
+[![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux-lightgrey)](https://github.com/electron/electron)
 
 A powerful, modular desktop application for managing {ProjectName} environments with integrated terminal support, environment verification, and dynamic configuration management.
 
@@ -32,7 +34,7 @@ This project is also an experiment in "vibe coding" mixed with solid code practi
 - **Test Section Management**: Hide/show test sections via the debug tools in the App Control Sidebar. Commands from hidden test sections are excluded from "Run {ProjectName}"
 - **No Run Mode**: Preview commands without execution in both main and floating terminals
 - **No Special Cases**: All sections handled uniformly through JSON configuration
-- **Cross-platform**: Works on macOS, Linux, and Windows
+- **Cross-platform**: Tested on macOS and expected to work on Linux. Windows compatibility is not planned.
 
 ## 🔧 Table of Contents
 
