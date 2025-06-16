@@ -329,6 +329,48 @@ describe('StoppingStatusScreen', () => {
     });
   });
 
+  describe('State reset between runs', () => {
+    test('should not show close button immediately when reopened', async () => {
+      const terminals = [
+        {
+          id: 'term1',
+          title: 'Terminal 1',
+          associatedContainers: [],
+        },
+      ];
+
+      const { rerender } = render(
+        <StoppingStatusScreen {...defaultProps} terminals={terminals} />
+      );
+
+      // Trigger timeout to show close button
+      act(() => {
+        jest.advanceTimersByTime(20000);
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Close')).toBeInTheDocument();
+      });
+
+      // Hide the component
+      rerender(
+        <StoppingStatusScreen
+          {...defaultProps}
+          terminals={terminals}
+          isVisible={false}
+        />
+      );
+
+      // Show again
+      rerender(
+        <StoppingStatusScreen {...defaultProps} terminals={terminals} />
+      );
+
+      // Close button should not be visible immediately
+      expect(screen.queryByText('Close')).not.toBeInTheDocument();
+    });
+  });
+
   describe('Edge cases', () => {
     test('should handle invalid container names gracefully', async () => {
       const terminals = [

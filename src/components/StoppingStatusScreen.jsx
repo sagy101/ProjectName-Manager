@@ -30,6 +30,8 @@ const StoppingStatusScreen = ({ terminals, isVisible, projectName, onClose }) =>
       // Reset status when not visible
       setTerminationStatus({ processes: {}, containers: {} });
       setIsComplete(false);
+      setIsTimeoutReached(false);
+      setIsInitialized(false);
       return;
     }
 
