@@ -113,7 +113,11 @@ const TabInfoPanel = ({
     if (!detailsPopupOpen) return null;
 
     return (
-      <div className="command-popup-overlay" onClick={onCloseDetailsPopup}>
+      <div
+        className="command-popup-overlay"
+        style={{ zIndex: 110000 }}
+        onClick={onCloseDetailsPopup}
+      >
         <div className="command-popup" onClick={(e) => e.stopPropagation()}>
           <div className="command-popup-header">
             <h3>More Details</h3>
