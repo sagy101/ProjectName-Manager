@@ -20,7 +20,7 @@
       "attachState.mirror": false
     },
     "command": {
-      "base": "nvm use ${nodeVersion} && cd ./weblifemirror && ./gradlew bootRun --info -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
+      "base": "nvm use ${nodeVersion} && cd ./weblifemirror && ./gradlew bootRun --info  -x runDockerComposeAuthService -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
       "associatedContainers": [
         "wiremock",
         "weblifemirror-db-replica-1",
@@ -41,7 +41,7 @@
       "mode": "suspend"
     },
     "command": {
-      "base": "nvm use ${nodeVersion} && cd ./weblifemirror && ./gradlew bootRun --debug-jvm --info -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
+      "base": "nvm use ${nodeVersion} && cd ./weblifemirror && ./gradlew bootRun --debug-jvm --info  -x runDockerComposeAuthService -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
       "associatedContainers": [
         "wiremock",
         "weblifemirror-db-replica-1",
@@ -62,7 +62,7 @@
       "mode": "run"
     },
     "command": {
-      "base": "nvm use ${nodeVersion} && cd ./weblifemirror && ./gradlew bootRun --debug-jvm -Dorg.gradle.debug.suspend=false --info -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
+      "base": "nvm use ${nodeVersion} && cd ./weblifemirror && ./gradlew bootRun --debug-jvm -Dorg.gradle.debug.suspend=false --info  -x runDockerComposeAuthService -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
       "associatedContainers": [
         "wiremock",
         "weblifemirror-db-replica-1",
