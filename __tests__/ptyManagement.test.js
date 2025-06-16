@@ -24,6 +24,7 @@ const {
   killProcess,
   getPTYInfo,
   killAllPTYProcesses,
+  getActivePTYProcesses,
   isPTYAvailable,
   interpretProcessState
 } = require('../src/main/ptyManagement');
@@ -39,6 +40,7 @@ describe('PTY management', () => {
   });
 
   afterEach(() => {
+    killAllPTYProcesses();
     jest.useRealTimers();
   });
 
@@ -143,4 +145,31 @@ test('isPTYAvailable reflects missing spawn function', () => {
   jest.doMock('node-pty', () => ({}));
   const mod = require('../src/main/ptyManagement');
   expect(mod.isPTYAvailable()).toBe(false);
+});
+
+describe('additional ptyManagement helpers', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllTimers();
+    killAllPTYProcesses();
+  });
+  afterEach(() => {
+    killAllPTYProcesses();
+    jest.useRealTimers();
+  });
+
+  test('getActivePTYProcesses lists active processes', () => {
+    spawnPTY('echo hi', 'list');
+    jest.advanceTimersByTime(1000); // allow command to send
+    const listRes = getActivePTYProcesses();
+    expect(listRes.some(p => p.terminalId === 'list')).toBe(true);
+    killAllPTYProcesses();
+  });
+
+  test('killAllPTYProcesses removes running processes', () => {
+    spawnPTY('echo hi', 'k');
+    jest.advanceTimersByTime(1000);
+    const res = killAllPTYProcesses();
+    expect(res.killedCount).toBeGreaterThan(0);
+  });
 });
