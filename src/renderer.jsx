@@ -5,7 +5,9 @@ import './styles/index.css';
 
 // Simple debug logger controlled by DEBUG_LOGS env var
 window.debugLog = (...args) => {
-  if (process.env.DEBUG_LOGS === 'true') {
+  const debugEnv = (typeof process !== 'undefined' && process.env && process.env.DEBUG_LOGS) ||
+                   (window.env && window.env.DEBUG_LOGS);
+  if (debugEnv === 'true') {
     console.log(...args);
   }
 };
