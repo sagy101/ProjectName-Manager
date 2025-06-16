@@ -22,7 +22,7 @@ const GitBranchSwitcher = ({
 
   // Debug: Log when currentBranch changes
   useEffect(() => {
-    console.log(`GitBranchSwitcher [${projectPath}]: currentBranch changed to "${currentBranch}"`);
+    debugLog(`GitBranchSwitcher [${projectPath}]: currentBranch changed to "${currentBranch}"`);
   }, [currentBranch, projectPath]);
 
   // Update newBranchName when currentBranch prop changes (e.g., after successful checkout)

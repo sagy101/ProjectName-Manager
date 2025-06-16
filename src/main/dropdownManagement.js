@@ -39,13 +39,13 @@ async function getDropdownOptions(config) {
 
   // Check cache first
   if (dropdownCache[cacheKey]) {
-    console.log(`Returning cached options for dropdown ${id}`);
+    debugLog(`Returning cached options for dropdown ${id}`);
     return dropdownCache[cacheKey];
   }
 
   // Mark as loading
   dropdownLoadingState[cacheKey] = true;
-  console.log(`Fetching dropdown options for ${id} with command: ${resolvedCommand}`);
+  debugLog(`Fetching dropdown options for ${id} with command: ${resolvedCommand}`);
 
   try {
     const result = await new Promise((resolve) => {
@@ -74,7 +74,7 @@ async function getDropdownOptions(config) {
     
     const resultData = { options };
     dropdownCache[cacheKey] = resultData;
-    console.log(`Cached ${options.length} options for dropdown ${id}`);
+    debugLog(`Cached ${options.length} options for dropdown ${id}`);
     return resultData;
 
   } catch (error) {
@@ -88,7 +88,7 @@ async function getDropdownOptions(config) {
 }
 
 async function precacheGlobalDropdowns() {
-    console.log('Starting global dropdown pre-caching...');
+    debugLog('Starting global dropdown pre-caching...');
     try {
         const configPath = path.join(__dirname, '..', 'generalEnvironmentVerifications.json');
         const configData = await fs.readFile(configPath, 'utf-8');
@@ -97,12 +97,12 @@ async function precacheGlobalDropdowns() {
         const globalDropdowns = config?.header?.dropdownSelectors || [];
 
         if (globalDropdowns.length === 0) {
-            console.log('No global dropdowns found to pre-cache.');
+            debugLog('No global dropdowns found to pre-cache.');
             return { success: true, precached: 0 };
         }
 
         const precachePromises = globalDropdowns.map(dropdownConfig => {
-            console.log(`Pre-caching a global dropdown: ${dropdownConfig.id}`);
+            debugLog(`Pre-caching a global dropdown: ${dropdownConfig.id}`);
             return getDropdownOptions({
                 id: dropdownConfig.id,
                 command: dropdownConfig.command,
@@ -112,7 +112,7 @@ async function precacheGlobalDropdowns() {
         });
 
         await Promise.all(precachePromises);
-        console.log(`Global dropdown pre-caching complete. Cached ${globalDropdowns.length} dropdowns.`);
+        debugLog(`Global dropdown pre-caching complete. Cached ${globalDropdowns.length} dropdowns.`);
         return { success: true, precached: globalDropdowns.length };
 
     } catch (error) {
@@ -123,7 +123,7 @@ async function precacheGlobalDropdowns() {
 
 // Function to handle dropdown value changes
 function handleDropdownValueChange(dropdownId, value) {
-  console.log(`Dropdown ${dropdownId} value changed to: ${value}`);
+  debugLog(`Dropdown ${dropdownId} value changed to: ${value}`);
   
   // Clear related caches if needed
   // This is a simple implementation - you might want more sophisticated cache invalidation
@@ -133,7 +133,7 @@ function handleDropdownValueChange(dropdownId, value) {
   });
   
   if (keysToRemove.length > 0) {
-    console.log(`Cleared ${keysToRemove.length} cache entries for dropdown ${dropdownId}`);
+    debugLog(`Cleared ${keysToRemove.length} cache entries for dropdown ${dropdownId}`);
   }
 }
 
@@ -146,12 +146,12 @@ function clearDropdownCache(dropdownId = null) {
       delete dropdownCache[key];
       delete dropdownLoadingState[key];
     });
-    console.log(`Cleared cache for dropdown ${dropdownId}`);
+    debugLog(`Cleared cache for dropdown ${dropdownId}`);
   } else {
     // Clear all cache
     dropdownCache = {};
     dropdownLoadingState = {};
-    console.log('Cleared all dropdown cache');
+    debugLog('Cleared all dropdown cache');
   }
 }
 

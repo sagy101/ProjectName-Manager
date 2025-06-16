@@ -15,7 +15,7 @@ export const useAppEventHandlers = ({
   setGlobalDropdownValues
 }) => {
   const handleVerificationStatusChange = (sectionKey, status) => {
-    console.log(`DebugPanel: Attempting to update ${sectionKey} to ${status}. This may need adjustment.`);
+    debugLog(`DebugPanel: Attempting to update ${sectionKey} to ${status}. This may need adjustment.`);
     setVerificationStatuses(prev => {
       const newStatuses = { ...prev };
       // This part needs to be careful if general is now {statuses, config}
@@ -44,13 +44,13 @@ export const useAppEventHandlers = ({
 
   // Callback for ProjectConfiguration to update App's isRunning state
   const handleProjectRunStateChange = useCallback((isRunning) => {
-    console.log('App: Project running state changed to:', isRunning);
+    debugLog('App: Project running state changed to:', isRunning);
     setAppIsProjectRunning(isRunning);
   }, [setAppIsProjectRunning]);
 
   // Function to show an app-level notification
   const showAppNotification = useCallback((message, type = 'info', autoCloseTime = 3000) => {
-    console.log('App: showAppNotification called with:', { message, type, autoCloseTime });
+    debugLog('App: showAppNotification called with:', { message, type, autoCloseTime });
     setAppNotification({
       isVisible: true,
       message,
@@ -66,7 +66,7 @@ export const useAppEventHandlers = ({
 
   // Function to reset verification statuses and config to waiting/empty
   const handleInitiateRefresh = useCallback(() => {
-    console.log('App: Initiating refresh, setting statuses to waiting and config to empty.');
+    debugLog('App: Initiating refresh, setting statuses to waiting and config to empty.');
     const resetStatuses = initializeVerificationStatuses();
     setVerificationStatuses(resetStatuses);
     setGeneralVerificationConfig([]); // Clear the config so child component shows loading/empty
@@ -84,7 +84,7 @@ export const useAppEventHandlers = ({
 
   // Callback to handle dropdown value changes from any global selector
   const handleGlobalDropdownChange = useCallback((dropdownId, value) => {
-    console.log(`App: Global dropdown '${dropdownId}' changed to:`, value);
+    debugLog(`App: Global dropdown '${dropdownId}' changed to:`, value);
     setGlobalDropdownValues(prev => ({ ...prev, [dropdownId]: value }));
     
     // Notify backend about dropdown value change for cache management

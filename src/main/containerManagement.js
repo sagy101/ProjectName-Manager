@@ -10,7 +10,7 @@ async function stopContainers(containerNames, mainWindow = null) {
     };
   }
 
-  console.log('Attempting to stop containers:', containerNames);
+  debugLog('Attempting to stop containers:', containerNames);
 
   const stopPromises = containerNames.map(containerName => {
     return stopSingleContainer(containerName, mainWindow)
@@ -53,7 +53,7 @@ async function stopSingleContainer(containerName, mainWindow = null) {
   
   return new Promise((resolve) => {
     const command = `docker stop "${containerName}"`;
-    console.log(`Executing: ${command}`);
+    debugLog(`Executing: ${command}`);
 
     exec(command, { timeout: 30000 }, (error, stdout, stderr) => {
       if (error) {
@@ -73,7 +73,7 @@ async function stopSingleContainer(containerName, mainWindow = null) {
           stderr: stderr.trim()
         });
       } else {
-        console.log(`Successfully stopped container ${containerName}`);
+        debugLog(`Successfully stopped container ${containerName}`);
         // Emit container terminated event with success
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('container-terminated', { 
@@ -99,7 +99,7 @@ async function getContainerStatus(containerName) {
 
   return new Promise((resolve) => {
     const command = `docker inspect --format='{{.State.Status}}' "${containerName}"`;
-    console.log(`Checking container status: ${command}`);
+    debugLog(`Checking container status: ${command}`);
 
     exec(command, { timeout: 5000 }, (error, stdout, stderr) => {
       if (error) {
@@ -108,7 +108,7 @@ async function getContainerStatus(containerName) {
         resolve('unknown');
       } else {
         const status = stdout.trim();
-        console.log(`Container ${containerName} status: ${status}`);
+        debugLog(`Container ${containerName} status: ${status}`);
         resolve(status || 'unknown');
       }
     });
@@ -131,7 +131,7 @@ async function listContainers(options = {}) {
   }
 
   return new Promise((resolve) => {
-    console.log(`Listing containers: ${command}`);
+    debugLog(`Listing containers: ${command}`);
 
     exec(command, { timeout: 10000 }, (error, stdout, stderr) => {
       if (error) {
@@ -187,7 +187,7 @@ async function removeContainers(containerNames, options = {}) {
   }
 
   const { force = false, volumes = false } = options;
-  console.log('Attempting to remove containers:', containerNames);
+  debugLog('Attempting to remove containers:', containerNames);
   const results = [];
 
   for (const containerName of containerNames) {
@@ -228,7 +228,7 @@ async function removeSingleContainer(containerName, options = {}) {
   command += ` "${containerName}"`;
 
   return new Promise((resolve) => {
-    console.log(`Executing: ${command}`);
+    debugLog(`Executing: ${command}`);
 
     exec(command, { timeout: 30000 }, (error, stdout, stderr) => {
       if (error) {
@@ -240,7 +240,7 @@ async function removeSingleContainer(containerName, options = {}) {
           stderr: stderr.trim()
         });
       } else {
-        console.log(`Successfully removed container ${containerName}`);
+        debugLog(`Successfully removed container ${containerName}`);
         resolve({
           success: true,
           stdout: stdout.trim(),
@@ -259,7 +259,7 @@ async function isDockerAvailable() {
         console.warn('Docker not available:', error.message);
         resolve(false);
       } else {
-        console.log('Docker version:', stdout.trim());
+        debugLog('Docker version:', stdout.trim());
         resolve(true);
       }
     });

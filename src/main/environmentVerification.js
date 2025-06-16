@@ -23,7 +23,7 @@ const VERIFICATIONS_CONFIG_PATH = path.join(__dirname, '../generalEnvironmentVer
 const CONFIG_SIDEBAR_ABOUT_PATH = path.join(__dirname, '../configurationSidebarAbout.json');
 
 const execCommand = async (commandString) => {
-  console.log(`Executing command: ${commandString}`);
+  debugLog(`Executing command: ${commandString}`);
   return new Promise((resolve) => {
     // Set a reasonable timeout for commands
     const timeout = setTimeout(() => {
@@ -45,18 +45,18 @@ const execCommand = async (commandString) => {
 
       if (nvmDir && fsSync.existsSync(path.join(nvmDir, 'nvm.sh'))) {
         nvmScriptPath = path.join(nvmDir, 'nvm.sh');
-        console.log(`Found nvm.sh via NVM_DIR: ${nvmScriptPath}`);
+        debugLog(`Found nvm.sh via NVM_DIR: ${nvmScriptPath}`);
       } else if (fsSync.existsSync(homeNvmPath)) {
         nvmScriptPath = homeNvmPath;
-        console.log(`Found nvm.sh at default home location: ${nvmScriptPath}`);
+        debugLog(`Found nvm.sh at default home location: ${nvmScriptPath}`);
       } else if (process.platform === 'darwin' && fsSync.existsSync(homebrewNvmPath)) {
         nvmScriptPath = homebrewNvmPath;
-        console.log(`Found nvm.sh at Homebrew location: ${nvmScriptPath}`);
+        debugLog(`Found nvm.sh at Homebrew location: ${nvmScriptPath}`);
       }
 
       if (nvmScriptPath) {
         finalCommand = `. "${nvmScriptPath}" && ${commandString}`; // Ensure path with spaces is quoted
-        console.log(`Modified nvm command to: ${finalCommand}`);
+        debugLog(`Modified nvm command to: ${finalCommand}`);
       } else {
         console.warn('nvm.sh not found via NVM_DIR, ~/.nvm/nvm.sh, or Homebrew path. Running nvm command without explicit sourcing.');
       }
@@ -77,7 +77,7 @@ const execCommand = async (commandString) => {
         console.warn(`Command failed: ${commandString}. Stderr: "${sStderr}". Error:`, error.message);
         resolve({ success: false, stdout: sStdout, stderr: sStderr });
       } else {
-        console.log(`Command succeeded: ${commandString}. Stdout: "${sStdout}"`);
+        debugLog(`Command succeeded: ${commandString}. Stdout: "${sStdout}"`);
         resolve({ success: true, stdout: sStdout, stderr: sStderr });
       }
     });
@@ -118,7 +118,7 @@ async function verifyEnvironment(mainWindow = null) {
   }
 
   isVerifyingEnvironment = true;
-  console.log('Starting full environment verification process...');
+  debugLog('Starting full environment verification process...');
 
   // For generalResults, we'll populate statuses directly. The config will be stored alongside.
   const generalResultsStatuses = {};
@@ -326,7 +326,7 @@ async function verifyEnvironment(mainWindow = null) {
     // Handle sections that skip verification
     if (skipVerification) {
       environmentCaches[cacheKey] = { status: 'no_specific_checks' };
-      console.log(`${sectionId} Environment Cache:`, environmentCaches[cacheKey]);
+      debugLog(`${sectionId} Environment Cache:`, environmentCaches[cacheKey]);
       return;
     }
     
@@ -419,7 +419,7 @@ async function verifyEnvironment(mainWindow = null) {
       gitBranch
     };
     
-    console.log(`${sectionId} Environment Cache:`, environmentCaches[cacheKey]);
+    debugLog(`${sectionId} Environment Cache:`, environmentCaches[cacheKey]);
     
     // Update progress for section completion
     completedCount++;
@@ -435,10 +435,10 @@ async function verifyEnvironment(mainWindow = null) {
   // Wait for all sections to complete
   await Promise.all(sectionPromises);
 
-  console.log('Overall Environment Verification Completed. Composite Results:\n', JSON.stringify(environmentCaches, null, 2));
+  debugLog('Overall Environment Verification Completed. Composite Results:\n', JSON.stringify(environmentCaches, null, 2));
 
   isVerifyingEnvironment = false;
-  console.log('Environment verification completed.');
+  debugLog('Environment verification completed.');
   
   // Send completion event to frontend
   if (mainWindow) {
@@ -450,7 +450,7 @@ async function verifyEnvironment(mainWindow = null) {
 
 // Function to refresh environment verification
 async function refreshEnvironmentVerification(mainWindow = null) {
-  console.log('Forcefully refreshing all environment verification data...');
+  debugLog('Forcefully refreshing all environment verification data...');
 
   // Reset verification state flag to ensure the process runs
   isVerifyingEnvironment = false;
@@ -468,7 +468,7 @@ async function refreshEnvironmentVerification(mainWindow = null) {
     mainWindow.webContents.send('environment-verification-complete', { ...newResults, discoveredVersions });
   }
 
-  console.log('Environment verification refresh has fully completed.');
+  debugLog('Environment verification refresh has fully completed.');
   return { ...newResults, discoveredVersions };
 }
 
@@ -499,7 +499,7 @@ function getEnvironmentExportData() {
 
 // Function to re-run a single verification by ID
 async function rerunSingleVerification(verificationId, mainWindow = null) {
-  console.log(`Re-running single verification: ${verificationId}`);
+  debugLog(`Re-running single verification: ${verificationId}`);
   
   let found = false;
   let updatedData = null;
@@ -714,7 +714,7 @@ async function rerunSingleVerification(verificationId, mainWindow = null) {
       return { success: false, error: 'Verification not found' };
     }
     
-    console.log(`Single verification ${verificationId} completed with result: ${updatedData.result}`);
+    debugLog(`Single verification ${verificationId} completed with result: ${updatedData.result}`);
     
     // Send updated result to frontend
     if (mainWindow) {

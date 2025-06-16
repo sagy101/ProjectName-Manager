@@ -18,7 +18,7 @@ async function loadDisplaySettings() {
       projectName: sectionsConfig?.displaySettings?.projectName || 'Project',
     };
 
-    console.log('Display settings loaded successfully');
+    debugLog('Display settings loaded successfully');
     return {
       success: true,
       displaySettings,
@@ -41,7 +41,7 @@ async function getAboutConfig() {
     const configFile = await fs.readFile(CONFIG_SIDEBAR_ABOUT_PATH, 'utf-8');
     const aboutConfig = JSON.parse(configFile);
     
-    console.log('About configuration loaded successfully');
+    debugLog('About configuration loaded successfully');
     return aboutConfig;
   } catch (error) {
     console.error('Error loading about configuration:', error);
@@ -52,7 +52,7 @@ async function getAboutConfig() {
 // Function to export configuration
 async function exportConfiguration(data) {
   try {
-    console.log('Showing save dialog for configuration export...');
+    debugLog('Showing save dialog for configuration export...');
     const { canceled, filePath } = await dialog.showSaveDialog({
       title: 'Export Configuration',
       defaultPath: 'config.json',
@@ -60,7 +60,7 @@ async function exportConfiguration(data) {
     });
     
     if (canceled || !filePath) {
-      console.log('Export canceled by user');
+      debugLog('Export canceled by user');
       return { 
         success: false, 
         canceled: true,
@@ -68,11 +68,11 @@ async function exportConfiguration(data) {
       };
     }
     
-    console.log(`Exporting configuration data to: ${filePath}`);
+    debugLog(`Exporting configuration data to: ${filePath}`);
     const result = await exportConfigToFile(data, filePath);
     
     if (result.success) {
-      console.log(`Configuration exported successfully to: ${filePath}`);
+      debugLog(`Configuration exported successfully to: ${filePath}`);
       return {
         success: true,
         filePath: filePath,
@@ -99,7 +99,7 @@ async function exportConfiguration(data) {
 // Function to import configuration
 async function importConfiguration() {
   try {
-    console.log('Showing open dialog for configuration import...');
+    debugLog('Showing open dialog for configuration import...');
     const { canceled, filePaths } = await dialog.showOpenDialog({
       title: 'Import Configuration',
       properties: ['openFile'],
@@ -107,7 +107,7 @@ async function importConfiguration() {
     });
     
     if (canceled || filePaths.length === 0) {
-      console.log('Import canceled by user');
+      debugLog('Import canceled by user');
       return { 
         success: false, 
         canceled: true,
@@ -115,11 +115,11 @@ async function importConfiguration() {
       };
     }
     
-    console.log(`Importing configuration from file: ${filePaths[0]}`);
+    debugLog(`Importing configuration from file: ${filePaths[0]}`);
     const result = await importConfigFromFile(filePaths[0]);
     
     if (result.success) {
-      console.log('Configuration imported successfully');
+      debugLog('Configuration imported successfully');
       // Spread the imported data directly like the original version
       // This ensures configState, attachState, globalDropdownValues, gitBranches are top-level properties
       return {
@@ -152,7 +152,7 @@ async function loadSectionConfiguration(sectionFilePath) {
     const configFile = await fs.readFile(absolutePath, 'utf-8');
     const sectionConfig = JSON.parse(configFile);
     
-    console.log(`Section configuration loaded: ${sectionFilePath}`);
+    debugLog(`Section configuration loaded: ${sectionFilePath}`);
     return {
       success: true,
       config: sectionConfig
@@ -173,7 +173,7 @@ async function saveConfiguration(configPath, data) {
     const configString = JSON.stringify(data, null, 2);
     await fs.writeFile(configPath, configString, 'utf-8');
     
-    console.log(`Configuration saved to: ${configPath}`);
+    debugLog(`Configuration saved to: ${configPath}`);
     return {
       success: true,
       filePath: configPath,

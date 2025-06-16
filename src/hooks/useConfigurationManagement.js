@@ -37,7 +37,7 @@ export const useConfigurationManagement = ({
           }
         }
         
-        console.log('Exporting git branches:', gitBranches);
+        debugLog('Exporting git branches:', gitBranches);
       } catch (error) {
         console.warn('Error collecting git branches for export:', error);
       }
@@ -84,13 +84,13 @@ export const useConfigurationManagement = ({
   const performImport = useCallback(async (updateGitBranchStatus, updateConfigStatus) => {
     // Prevent multiple simultaneous imports
     if (isPerformingImport) {
-      console.log('Import already in progress, skipping...');
+      debugLog('Import already in progress, skipping...');
       return;
     }
 
     try {
       setIsPerformingImport(true);
-      console.log('Starting import process...');
+      debugLog('Starting import process...');
       
       // Use the stored import result instead of calling importConfig again
       const result = importResult;
@@ -117,7 +117,7 @@ export const useConfigurationManagement = ({
 
       // Handle git branch switching if branches were exported
       if (result.gitBranches && Object.keys(result.gitBranches).length > 0) {
-        console.log('Switching to exported git branches:', result.gitBranches);
+        debugLog('Switching to exported git branches:', result.gitBranches);
         
         // Get directory paths for sections from the about config
         const sectionDirectoryMap = {};
@@ -174,23 +174,23 @@ export const useConfigurationManagement = ({
         }
         
         // Trigger refresh and wait for it to complete
-        console.log('Import: Triggering environment refresh...');
+        debugLog('Import: Triggering environment refresh...');
         if (window.electron?.refreshEnvironmentVerification) {
           try {
             await window.electron.refreshEnvironmentVerification();
-            console.log('Import: Environment refresh completed');
+            debugLog('Import: Environment refresh completed');
           } catch (error) {
             console.warn('Import: Environment refresh failed:', error);
           }
         }
         
         // Wait for UI to update and then verify
-        console.log('Import: Waiting for UI to update...');
+        debugLog('Import: Waiting for UI to update...');
         await new Promise(resolve => setTimeout(resolve, 1500));
         
         // Verify branches after a delay to allow React state to update
         setTimeout(() => {
-          console.log('Import: Verifying branch switches after delay...');
+          debugLog('Import: Verifying branch switches after delay...');
           for (const [sectionId, switchResult] of Object.entries(branchSwitchResults)) {
             if (switchResult.skipped || !switchResult.success) {
               continue;
@@ -199,7 +199,7 @@ export const useConfigurationManagement = ({
             // Just mark as success since the git command succeeded
             // The UI will update when it's ready
             updateGitBranchStatus(sectionId, 'success', `Switched to ${switchResult.targetBranch}`);
-            console.log(`Import: Marked ${sectionId} as switched to ${switchResult.targetBranch}`);
+            debugLog(`Import: Marked ${sectionId} as switched to ${switchResult.targetBranch}`);
           }
         }, 100);
       }

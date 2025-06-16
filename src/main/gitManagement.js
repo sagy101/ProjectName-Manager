@@ -26,7 +26,7 @@ const getGitBranch = async (relativePath) => {
         return;
       }
       const branchName = stdout.trim();
-      console.log(`Git branch for ${absolutePath}: ${branchName}`);
+      debugLog(`Git branch for ${absolutePath}: ${branchName}`);
       gitBranchCache[relativePath] = branchName; // Cache the result
       resolve(branchName);
     });
@@ -39,7 +39,7 @@ const checkoutGitBranch = async (projectPath, branchName) => {
   
   return new Promise((resolve) => {
     const command = `git -C "${absolutePath}" checkout "${branchName}"`;
-    console.log(`Executing git checkout: ${command}`);
+    debugLog(`Executing git checkout: ${command}`);
     
     exec(command, { timeout: 10000 }, (error, stdout, stderr) => {
       if (error) {
@@ -53,7 +53,7 @@ const checkoutGitBranch = async (projectPath, branchName) => {
         return;
       }
       
-      console.log(`Git checkout successful for ${absolutePath} to branch ${branchName}`);
+      debugLog(`Git checkout successful for ${absolutePath} to branch ${branchName}`);
       
       // Clear cache for this path so next getGitBranch call will fetch fresh data
       delete gitBranchCache[projectPath];
@@ -74,7 +74,7 @@ const listLocalGitBranches = async (projectPath) => {
   
   return new Promise((resolve) => {
     const command = `git -C "${absolutePath}" branch --format="%(refname:short)"`;
-    console.log(`Listing local branches: ${command}`);
+    debugLog(`Listing local branches: ${command}`);
     
     exec(command, { timeout: 5000 }, (error, stdout, stderr) => {
       if (error) {
@@ -88,7 +88,7 @@ const listLocalGitBranches = async (projectPath) => {
       }
       
       const branches = stdout.trim().split('\n').filter(branch => branch.trim() !== '');
-      console.log(`Found ${branches.length} local branches for ${absolutePath}:`, branches);
+      debugLog(`Found ${branches.length} local branches for ${absolutePath}:`, branches);
       
       resolve({
         success: true,
@@ -116,7 +116,7 @@ const getGitBranchCache = () => {
 };
 
 async function refreshGitBranches() {
-    console.log('Refreshing git branch statuses...');
+    debugLog('Refreshing git branch statuses...');
     clearGitBranchCache();
 
     let configSidebarAbout = [];
@@ -138,7 +138,7 @@ async function refreshGitBranches() {
     });
 
     await Promise.all(branchPromises);
-    console.log('Git branch refresh complete.');
+    debugLog('Git branch refresh complete.');
     return refreshedBranches;
 }
 

@@ -139,7 +139,7 @@ const App = () => {
 
   // Log appNotification state changes
   React.useEffect(() => {
-    console.log('App: appNotification state updated:', appState.appNotification);
+    debugLog('App: appNotification state updated:', appState.appNotification);
   }, [appState.appNotification]);
 
   // Show loading screen while loading
@@ -322,7 +322,7 @@ const App = () => {
             terminal={terminalDataWithLiveStatus}
             position={appState.infoPanelState.position}
             onClose={floatingTerminalHandlers.closeFloatingTerminalInfoPanel}
-            onRefresh={() => console.log("Refresh clicked for floating term info - no-op")} // No-op for now
+            onRefresh={() => debugLog("Refresh clicked for floating term info - no-op")} // No-op for now
             configState={appState.configState} // Pass from App's state
             noRunMode={appState.noRunMode}     // Pass from App's state
             detailsPopupOpen={appState.infoPanelState.detailsOpen}
