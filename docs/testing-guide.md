@@ -121,6 +121,8 @@ HEADLESS=true npm run test:e2e
 
 This ensures the Electron window is not shown during tests. You can also add `HEADLESS=true` to explicitly run Playwright in headless mode, but by default Playwright is headless unless configured otherwise.
 
+**Important**: E2E tests require `openDevToolsByDefault` to be set to `false` in `src/configurationSidebarSections.json`. Having dev tools open during automated testing can interfere with test execution and cause failures.
+
 ## Key Scripts
 
 - `npm test`: Runs the main test suite (all Jest and E2E tests).
@@ -139,4 +141,5 @@ This ensures the Electron window is not shown during tests. You can also add `HE
 
 - **`node-pty` compilation errors**: If you see errors related to `node-pty` or `NODE_MODULE_VERSION`, run `npx @electron/rebuild -f -w node-pty` or restart with `npm start` to rebuild automatically.
 - **`document is not defined`**: This error indicates that a test requiring a DOM is running in the `node` environment. Add `/** @jest-environment jsdom */` to the top of the test file.
-- **`toBeInTheDocument is not a function`**: This means the `@testing-library/jest-dom` matchers are not loaded. Ensure that `jest.setup.js` is correctly configured in `jest.config.js`. 
+- **`toBeInTheDocument is not a function`**: This means the `@testing-library/jest-dom` matchers are not loaded. Ensure that `jest.setup.js` is correctly configured in `jest.config.js`.
+- **E2E tests failing**: Ensure `openDevToolsByDefault` is set to `false` in `src/configurationSidebarSections.json`. Dev tools being open can interfere with Playwright automation and cause test failures. 

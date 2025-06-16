@@ -334,6 +334,12 @@ test.describe('Fix Command Feature', () => {
       expect(titleContainsCommand).toBe(true);
       console.log(`✓ Terminal opened for fix command: ${terminalTitle}`);
       
+      // Wait for close button to be enabled (fix commands have 20s disable timer)
+      await window.waitForFunction(() => {
+        const closeBtn = document.querySelector('.floating-terminal-close-btn');
+        return closeBtn && !closeBtn.disabled;
+      }, { timeout: 25000 }); // 25 seconds to account for the 20 second timer
+      
       // Close the terminal
       await floatingTerminal.locator('.floating-terminal-close-btn').click();
       await expect(floatingTerminal).not.toBeVisible();
@@ -384,6 +390,18 @@ test.describe('Fix Command Feature', () => {
         
         // Wait for command to complete
         await window.waitForTimeout(2000);
+        
+        // Wait for close button to be enabled (fix commands have 20s disable timer)
+        await terminal.locator('.floating-terminal-close-btn').waitFor({ 
+          state: 'attached', 
+          timeout: 30000 
+        });
+        
+        // Wait for the button to be enabled (not disabled)
+        await window.waitForFunction(() => {
+          const closeBtn = document.querySelector('.floating-terminal-close-btn');
+          return closeBtn && !closeBtn.disabled;
+        }, { timeout: 25000 }); // 25 seconds to account for the 20 second timer
         
         // Close the terminal to clean up
         await terminal.locator('.floating-terminal-close-btn').click();
