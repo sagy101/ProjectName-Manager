@@ -3,7 +3,7 @@ const os = require('os');
 const { exec } = require('child_process');
 const fs = require('fs').promises;
 const fsSync = require('fs');
-const { resolveEnvVars, checkPathExists } = require('../mainUtils');
+const { resolveEnvVars, checkPathExists } = require('./mainUtils');
 const { getGitBranch, clearGitBranchCache } = require('./gitManagement');
 
 // Dynamic cache for environment verification
@@ -741,4 +741,4 @@ module.exports = {
   getEnvironmentExportData,
   execCommand,
   rerunSingleVerification
-}; 
+};

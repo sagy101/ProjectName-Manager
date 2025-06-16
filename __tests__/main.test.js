@@ -75,7 +75,7 @@ jest.mock('../configIO', () => ({
   importConfigFromFile: jest.fn()
 }));
 
-jest.mock('../src/mainUtils', () => ({
+jest.mock('../src/main/mainUtils', () => ({
   resolveEnvVars: jest.fn(),
   checkPathExists: jest.fn()
 }));
@@ -163,7 +163,7 @@ describe('Main Process Tests', () => {
     });
 
     test('should resolve environment variables in commands', () => {
-      const { resolveEnvVars } = require('../src/mainUtils');
+      const { resolveEnvVars } = require('../src/main/mainUtils');
       resolveEnvVars.mockReturnValue('/resolved/path');
       
       const result = resolveEnvVars('$HOME/test');

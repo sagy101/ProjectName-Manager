@@ -1,5 +1,5 @@
 const { exec } = require('child_process');
-const { resolveEnvVars } = require('../mainUtils');
+const { resolveEnvVars } = require('./mainUtils');
 const fs = require('fs').promises;
 const path = require('path');
 
@@ -171,4 +171,4 @@ module.exports = {
   handleDropdownValueChange,
   clearDropdownCache,
   getDropdownCacheStats
-}; 
+};
