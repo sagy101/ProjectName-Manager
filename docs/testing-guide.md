@@ -131,9 +131,12 @@ This ensures the Electron window is not shown during tests. You can also add `HE
 - `npm run test:jest:mock`: Runs Jest tests using mock configuration/data files for stable, generic test coverage.
 - `npm run test:e2e`: Builds the app and runs Playwright E2E tests (set `HEADLESS=true` for headless Electron window).
 - `npm run test:e2e:report`: Builds the app and runs Playwright E2E tests with the default Playwright reporter (for HTML or CI reports).
+- `npm run test:jest:coverage:text`: Generates a text coverage summary.
+- `npm run test:jest:coverage:html`: Generates an HTML coverage report.
+- `scripts/run-all-tests.sh`: Convenience script that runs Jest and Playwright tests.
 
 ## Troubleshooting
 
-- **`node-pty` compilation errors**: If you see errors related to `node-pty` or `NODE_MODULE_VERSION`, running `npm run rebuild` (for Electron) or `npm rebuild node-pty` (for Node) can often resolve the issue.
+- **`node-pty` compilation errors**: If you see errors related to `node-pty` or `NODE_MODULE_VERSION`, run `npx @electron/rebuild -f -w node-pty` or restart with `npm start` to rebuild automatically.
 - **`document is not defined`**: This error indicates that a test requiring a DOM is running in the `node` environment. Add `/** @jest-environment jsdom */` to the top of the test file.
 - **`toBeInTheDocument is not a function`**: This means the `@testing-library/jest-dom` matchers are not loaded. Ensure that `jest.setup.js` is correctly configured in `jest.config.js`. 
