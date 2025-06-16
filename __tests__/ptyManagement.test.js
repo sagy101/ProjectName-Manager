@@ -173,3 +173,18 @@ describe('additional ptyManagement helpers', () => {
     expect(res.killedCount).toBeGreaterThan(0);
   });
 });
+
+test('spawnPTY sends error when spawn fails', () => {
+  const win = { webContents: { send: jest.fn() } };
+  pty.spawn.mockImplementationOnce(() => { throw new Error('oops'); });
+  spawnPTY('bad', 'fail', 80, 24, null, win);
+  expect(win.webContents.send).toHaveBeenCalledWith('pty-output', expect.objectContaining({ output: expect.stringContaining('oops') }));
+  expect(getPTYInfo('fail')).toBeNull();
+});
+
+test('write and resize warn with no process', () => {
+  console.warn = jest.fn();
+  writeToPTY('none', 'data');
+  resizePTY('none', 10, 10);
+  expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('No active PTY'));
+});

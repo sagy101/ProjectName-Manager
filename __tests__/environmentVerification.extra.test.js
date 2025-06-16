@@ -78,3 +78,47 @@ describe('environmentVerification additional checks', () => {
     expect(results.general.statuses.x3).toBe('invalid');
   });
 });
+
+test('rerunSingleVerification returns failure when not found', async () => {
+  const config = {
+    header: {},
+    categories: [{ category: { title: 'Test', verifications: [{ id: 'v1', command: 'echo', checkType: 'commandSuccess' }] } }]
+  };
+  const mockedFs = require('fs');
+  mockedFs.promises.readFile.mockImplementation((p) => {
+    if (p.includes('generalEnvironmentVerifications.json')) return Promise.resolve(JSON.stringify(config));
+    if (p.includes('configurationSidebarAbout.json')) return Promise.resolve('[]');
+    return Promise.reject(new Error('unknown path'));
+  });
+  const envVerify = require('../src/main/environmentVerification');
+  await envVerify.verifyEnvironment();
+  const res = await envVerify.rerunSingleVerification('missing');
+  expect(res.success).toBe(false);
+});
+
+
+test('verifyEnvironment processes sidebar section verifications', async () => {
+  const config = { header: {}, categories: [] };
+  const sidebar = [{
+    sectionId: 'sec1',
+    directoryPath: '/tmp',
+    verifications: [
+      { id: 'p1', checkType: 'pathExists', pathValue: './package.json', pathType: 'file' },
+      { id: 'c1', checkType: 'commandSuccess', command: 'echo hi' }
+    ]
+  }];
+  const mockedFs = require('fs');
+  mockedFs.promises.readFile.mockImplementation((p) => {
+    if (p.includes('generalEnvironmentVerifications.json')) return Promise.resolve(JSON.stringify(config));
+    if (p.includes('configurationSidebarAbout.json')) return Promise.resolve(JSON.stringify(sidebar));
+    return Promise.reject(new Error('unknown')); });
+  mockedFs.promises.stat.mockResolvedValue({ isFile: () => true, isDirectory: () => false });
+  const { exec } = require('child_process');
+  exec.mockImplementation((cmd, opts, cb) => cb(null, 'ok', ''));
+  const envVerify = require('../src/main/environmentVerification');
+  await envVerify.refreshEnvironmentVerification();
+  const res = await envVerify.verifyEnvironment();
+  expect(res.sec1.p1).toBe('valid');
+  expect(res.sec1.c1).toBe('valid');
+});
+

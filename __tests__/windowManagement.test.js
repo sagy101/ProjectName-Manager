@@ -159,4 +159,17 @@ describe('windowManagement', () => {
     expect(win.close).toHaveBeenCalled();
     expect(res.success).toBe(true);
   });
+
+  test('sendToRenderer fails when window destroyed', () => {
+    const win = createWindow();
+    win.isDestroyed.mockReturnValue(true);
+    const res = sendToRenderer('chan', {});
+    expect(res.success).toBe(false);
+  });
+
+  test('isWindowReady false when loading', () => {
+    const win = createWindow();
+    win.webContents.isLoading.mockReturnValue(true);
+    expect(isWindowReady()).toBe(false);
+  });
 });
