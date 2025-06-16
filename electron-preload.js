@@ -13,6 +13,11 @@ const eventListeners = {
 // Create a special direct output handler that bypasses the callback stack
 let directOutputCallback = null;
 
+// Expose limited environment variables needed by the renderer
+contextBridge.exposeInMainWorld('env', {
+  DEBUG_LOGS: process.env.DEBUG_LOGS
+});
+
 contextBridge.exposeInMainWorld('electron', {
   // Add the new command generation handler
   getCommandForSection: (data) => ipcRenderer.invoke('get-command-for-section', data),
