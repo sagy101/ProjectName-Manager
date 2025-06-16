@@ -9,6 +9,7 @@ import AppControlSidebar from './components/AppControlSidebar';
 import TabInfoPanel from './components/TabInfoPanel';
 import ImportStatusScreen from './components/ImportStatusScreen';
 import HealthReportScreen from './components/HealthReportScreen';
+import FixCommandConfirmation from './components/FixCommandConfirmation';
 import './styles/app.css';
 
 // Import custom hooks
@@ -260,6 +261,11 @@ const App = () => {
         type={appState.appNotification.type}
         onClose={eventHandlers.hideAppNotification}
         autoCloseTime={appState.appNotification.autoCloseTime}
+      />
+      <FixCommandConfirmation
+        verification={appState.pendingFixVerification}
+        onConfirm={fixCommands.executePendingFixCommand}
+        onCancel={() => appState.setPendingFixVerification(null)}
       />
       {/* Import Status Screen */}
       <ImportStatusScreen

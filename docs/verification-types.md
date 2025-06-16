@@ -591,6 +591,7 @@ Verifications can include an optional `fixCommand` property that provides automa
 ### Fix Command Features
 
 - **One-Click Fix**: Orange "Fix" button appears next to invalid verifications
+- **Confirmation Prompt**: Users must confirm the fix command before it runs
 - **Floating Terminal**: Fix commands run in dedicated floating terminals
 - **Auto-Close**: Terminals close automatically when command completes (if minimized)
 - **Re-Validation**: Verification automatically re-runs after fix completes

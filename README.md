@@ -345,6 +345,7 @@ Failed verifications can include fix commands that automatically attempt to reso
 
 **Fix Command Features:**
 - **One-Click Fix**: Orange "Fix" button appears next to invalid verifications
+- **Confirmation Prompt**: Clicking "Fix" shows the command and asks for confirmation
 - **Floating Terminal**: Fix commands run in dedicated floating terminals
 - **Auto-Close**: Terminals close automatically when command completes (if minimized)
 - **Re-Validation**: Verification automatically re-runs after fix completes

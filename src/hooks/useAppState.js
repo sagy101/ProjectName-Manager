@@ -75,6 +75,9 @@ export const useAppState = () => {
   // State for Health Report
   const [isHealthReportVisible, setIsHealthReportVisible] = useState(false);
 
+  // State for pending fix command confirmation
+  const [pendingFixVerification, setPendingFixVerification] = useState(null);
+
   // Initialize verification statuses dynamically from JSON
   const initializeVerificationStatuses = () => {
     const statuses = {
@@ -127,6 +130,7 @@ export const useAppState = () => {
     discoveredVersions,
     isConfigCollapsed,
     isHealthReportVisible,
+    pendingFixVerification,
     verificationStatuses,
     globalDropdownValues,
     terminalRef,
@@ -157,6 +161,7 @@ export const useAppState = () => {
     setDiscoveredVersions,
     setIsConfigCollapsed,
     setIsHealthReportVisible,
+    setPendingFixVerification,
     setVerificationStatuses,
     setGlobalDropdownValues,
     

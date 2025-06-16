@@ -65,30 +65,37 @@ export const useFixCommands = ({
     };
   }, [appState.setVerificationStatuses, eventHandlers]);
 
-  // Handle fix command execution
+  // Handle fix command click - show confirmation modal
   const handleFixCommand = useCallback((verification) => {
     if (!verification.fixCommand) return;
-    
-    // Open floating terminal with fix command
+    appState.setPendingFixVerification(verification);
+  }, [appState.setPendingFixVerification]);
+
+  // Execute the pending fix command after confirmation
+  const executePendingFixCommand = useCallback(() => {
+    const verification = appState.pendingFixVerification;
+    if (!verification || !verification.fixCommand) return;
+
     const terminalId = floatingTerminalHandlers.openFixCommandTerminal(
       verification.id,
       verification.title,
       verification.fixCommand
     );
-    
-    // Show notification that fix is starting
+
     eventHandlers.showAppNotification(
       `Running fix command for: ${verification.title}`,
       'info',
       2000
     );
-    
+
     console.log('Fix command started:', {
       verification: verification.id,
       command: verification.fixCommand,
       terminalId
     });
-  }, [floatingTerminalHandlers, eventHandlers]);
+
+    appState.setPendingFixVerification(null);
+  }, [appState.pendingFixVerification, floatingTerminalHandlers, eventHandlers, appState.setPendingFixVerification]);
 
   // Handle fix command completion and trigger verification re-run
   const handleFixCommandComplete = useCallback(async (terminalId, status, exitCode) => {
@@ -229,7 +236,8 @@ export const useFixCommands = ({
 
   return {
     handleFixCommand,
+    executePendingFixCommand,
     handleFixCommandComplete,
     handleToggleAllVerifications
   };
-}; 
+};
