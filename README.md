@@ -499,6 +499,15 @@ npm run rebuild
 - Verify JSON configuration syntax
 - Review console logs for detailed error messages
 
+### Enabling Debug Logs
+To view detailed logs for troubleshooting, you can start the application with the `DEBUG_LOGS` environment variable.
+
+**Example:**
+```bash
+DEBUG_LOGS=true npm start
+```
+This will print more verbose logs to the developer console, which can be helpful for diagnosing issues with verifications, command execution, or other internal processes.
+
 ### Git Integration Issues
 - Ensure git is installed and configured
 - Check repository initialization in project directories
