@@ -87,13 +87,8 @@ export const useFixCommands = ({
       'info',
       2000
     );
-<<<<<<< codex/add-confirmation-popup-for-fix-button
-
-    console.log('Fix command started:', {
-=======
     
     debugLog('Fix command started:', {
->>>>>>> main
       verification: verification.id,
       command: verification.fixCommand,
       terminalId
