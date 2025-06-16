@@ -19,9 +19,13 @@ jest.mock('fs', () => {
   };
 });
 
-jest.mock('os', () => ({
-  homedir: jest.fn(),
-}));
+jest.mock('os', () => {
+  const actual = jest.requireActual('os');
+  return {
+    ...actual,
+    homedir: jest.fn(),
+  };
+});
 
 const { exec } = require('child_process');
 const envVerify = require('../src/main/environmentVerification');
@@ -144,3 +148,64 @@ describe('verifyEnvironment', () => {
     expect(execCall).toBeDefined();
   });
 });
+
+describe('additional environmentVerification functions', () => {
+  beforeEach(() => {
+    jest.resetModules();
+    os.homedir.mockReturnValue('/fake/home');
+  });
+
+  function setupMocks() {
+    const configJson = JSON.stringify({
+      header: {},
+      categories: [
+        { category: { title: 'Test', verifications: [{ id: 'v1', title: 'v1', command: 'echo hi', checkType: 'outputContains', expectedValue: 'hi', outputStream: 'stdout' }] } }
+      ]
+    });
+
+    const mockedFs = require('fs');
+    mockedFs.promises.readFile.mockImplementation((p) => {
+      if (p.includes('generalEnvironmentVerifications.json')) return Promise.resolve(configJson);
+      if (p.includes('configurationSidebarAbout.json')) return Promise.resolve('[]');
+      return Promise.reject(new Error('unknown'));
+    });
+
+    const { exec: mockedExec } = require('child_process');
+    mockedExec.mockImplementation((cmd, opts, cb) => cb(null, 'hi\n', ''));
+  }
+
+  test('refreshEnvironmentVerification re-runs verification and sends result', async () => {
+    setupMocks();
+    const envVerify = require('../src/main/environmentVerification');
+    const mainWindow = { webContents: { send: jest.fn() } };
+
+    const result = await envVerify.refreshEnvironmentVerification(mainWindow);
+    expect(mainWindow.webContents.send).toHaveBeenCalledWith('environment-verification-complete', expect.any(Object));
+    expect(result.general.statuses.v1).toBe('valid');
+  });
+
+  test('getEnvironmentExportData returns caches and platform info', async () => {
+    setupMocks();
+    const envVerify = require('../src/main/environmentVerification');
+    await envVerify.verifyEnvironment();
+
+    const data = envVerify.getEnvironmentExportData();
+    expect(data.environmentCaches.general.statuses.v1).toBe('valid');
+    expect(data.platform).toHaveProperty('platform');
+    expect(data).toHaveProperty('timestamp');
+  });
+
+  test('rerunSingleVerification updates single result', async () => {
+    setupMocks();
+    const envVerify = require('../src/main/environmentVerification');
+    await envVerify.verifyEnvironment();
+    const mainWindow = { webContents: { send: jest.fn() } };
+
+    const res = await envVerify.rerunSingleVerification('v1', mainWindow);
+    expect(res.success).toBe(true);
+    expect(mainWindow.webContents.send).toHaveBeenCalledWith('single-verification-updated', expect.objectContaining({ verificationId: 'v1' }));
+    const caches = envVerify.getEnvironmentVerification();
+    expect(caches.general.statuses.v1).toBe('valid');
+  });
+});
+
