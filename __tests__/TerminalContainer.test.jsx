@@ -119,4 +119,53 @@ describe('TerminalContainer', () => {
             expect(calledWith).toEqual(expectedContainers);
         });
     });
-}); 
+    describe('runInTerminal and stopAllContainers', () => {
+        let ref;
+        beforeEach(() => {
+            ref = React.createRef();
+            jest.useFakeTimers();
+        });
+        afterEach(() => {
+            jest.useRealTimers();
+        });
+
+        test('runInTerminal opens new tab and executes command', () => {
+            render(<TerminalContainer ref={ref} />);
+            act(() => { ref.current.openTabs([{ title: 'T1', command: 'echo 1' }]); });
+            const newId = window.runInTerminal('newcmd', true);
+            act(() => { jest.advanceTimersByTime(150); });
+            const terms = ref.current.getTerminals();
+            const created = terms.find(t => t.id === newId);
+            expect(created.command).toBe('newcmd');
+            expect(created.status).toBe('pending_spawn');
+            const activeTabs = screen.getAllByTestId(/terminal-tab-/).filter(t => t.dataset.active === 'true');
+            expect(activeTabs[0].dataset.testid).toBe(`terminal-tab-${newId}`);
+        });
+
+        test('runInTerminal uses active tab when newTab=false', async () => {
+            render(<TerminalContainer ref={ref} />);
+            act(() => { ref.current.openTabs([{ title: 'T1', command: 'echo 1' }]); });
+            const activeId = ref.current.getTerminals()[0].id;
+            const returnedId = window.runInTerminal('replace', false);
+            expect(returnedId).toBe(activeId);
+            await act(async () => {}); // flush state update
+            const term = ref.current.getTerminals()[0];
+            expect(term.command).toBe('replace');
+            expect(term.status).toBe('pending_spawn');
+        });
+
+        test('stopAllContainers collects unique containers', async () => {
+            render(<TerminalContainer ref={ref} />);
+            const cfg = [
+                { title: 'A', command: 'a', associatedContainers: ['x', 'y'] },
+                { title: 'B', command: 'b', associatedContainers: ['y', 'z'] }
+            ];
+            act(() => { ref.current.openTabs(cfg); });
+            await act(async () => {
+                await ref.current.stopAllContainers();
+            });
+            const called = window.electron.stopContainers.mock.calls[0][0];
+            expect(new Set(called)).toEqual(new Set(['x','y','z']));
+        });
+    });
+});
