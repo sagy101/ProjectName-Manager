@@ -121,3 +121,26 @@ describe('ptyManagement', () => {
   // child_process, and IPC communications, which is beyond the scope of this example.
   // The tests for interpretProcessState cover the core logic of status detection.
 });
+
+test('killProcess emits terminated when no process', () => {
+  const mainWindow = { webContents: { send: jest.fn() } };
+  killProcess('none', mainWindow);
+  expect(mainWindow.webContents.send).toHaveBeenCalledWith('process-terminated', { terminalId: 'none' });
+});
+
+test('killProcess handles kill errors', () => {
+  const mainWindow = { webContents: { send: jest.fn() } };
+  spawnPTY('echo', 'err');
+  const proc = pty.__data.last;
+  proc.kill.mockImplementation(() => { throw new Error('fail'); });
+  killProcess('err', mainWindow);
+  expect(mainWindow.webContents.send).toHaveBeenCalledWith('process-terminating', { terminalId: 'err' });
+  expect(mainWindow.webContents.send).toHaveBeenCalledWith('pty-output', expect.objectContaining({ terminalId: 'err' }));
+});
+
+test('isPTYAvailable reflects missing spawn function', () => {
+  jest.resetModules();
+  jest.doMock('node-pty', () => ({}));
+  const mod = require('../src/main/ptyManagement');
+  expect(mod.isPTYAvailable()).toBe(false);
+});
