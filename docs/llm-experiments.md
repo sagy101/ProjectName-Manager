@@ -2,6 +2,10 @@
 
 This project is my exploration of "vibe coding" mixed with solid engineering practices and some good old coding. I leverage several AI tools and language models to streamline development, each chosen for their specific strengths and use cases.
 
+This document is also a vibe coding exercise, noting what works and what doesn't as the project evolves.
+
+It's also a platform to test the effectiveness of various MCP servers, like **Context7**, **Sequential Thinking**, and **Memory Bank**, seeing how they impact development workflows.
+
 ## Development Platforms
 
 - **Cursor** – my main development platform for rapid prototyping, real-time AI assistance, and quick code edits.
