@@ -39,7 +39,7 @@ const EnvironmentVerification = ({
         }
         // Then, trigger the backend refresh
         const results = await window.electron.refreshEnvironmentVerification();
-        console.log('Refreshed environment verification results:', results);
+        debugLog('Refreshed environment verification results:', results);
         // App.jsx will handle updating the statuses via its event listener
       } catch (error) {
         console.error('Error refreshing environment verification:', error);

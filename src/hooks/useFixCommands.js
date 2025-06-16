@@ -12,7 +12,7 @@ export const useFixCommands = ({
     if (!window.electron) return;
 
     const removeSingleVerificationListener = window.electron.onSingleVerificationUpdated?.((data) => {
-      console.log('FixCommands: Single verification updated:', data);
+      debugLog('FixCommands: Single verification updated:', data);
       
       const { verificationId, result, source, cacheKey } = data;
       
@@ -87,8 +87,13 @@ export const useFixCommands = ({
       'info',
       2000
     );
+<<<<<<< codex/add-confirmation-popup-for-fix-button
 
     console.log('Fix command started:', {
+=======
+    
+    debugLog('Fix command started:', {
+>>>>>>> main
       verification: verification.id,
       command: verification.fixCommand,
       terminalId
@@ -106,7 +111,7 @@ export const useFixCommands = ({
     // Extract verification ID from terminal command ID (set when creating fix terminal)
     const verificationId = terminal.commandId;
     
-    console.log('Fix command completed:', {
+    debugLog('Fix command completed:', {
       terminalId,
       verificationId,
       status,
@@ -132,7 +137,7 @@ export const useFixCommands = ({
     try {
       if (window.electron?.rerunSingleVerification) {
         await window.electron.rerunSingleVerification(verificationId);
-        console.log('Verification re-run triggered for:', verificationId);
+        debugLog('Verification re-run triggered for:', verificationId);
       } else {
         console.warn('Single verification re-run not available, triggering full refresh');
         // Fallback to full refresh if single verification not implemented yet
@@ -149,7 +154,7 @@ export const useFixCommands = ({
 
   // Handle toggling all verification statuses for testing
   const handleToggleAllVerifications = useCallback(() => {
-    console.log('Toggling all verification statuses for testing');
+    debugLog('Toggling all verification statuses for testing');
     
     // Get the current general verification statuses (stored directly in general, not general.statuses)
     const currentGeneralStatuses = appState.verificationStatuses?.general || {};
