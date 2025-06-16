@@ -1,4 +1,9 @@
-jest.mock('../src/configurationSidebarSections.json', () => require('./mock-data/mockConfigurationSidebarSections.json'));
+jest.mock('../src/configurationSidebarSections.json', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const file = fs.readFileSync(path.join(__dirname, 'mock-data/mockConfigurationSidebarSections.json'), 'utf-8');
+  return JSON.parse(file);
+});
 
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useProjectConfig } from '../src/hooks/useProjectConfig';

@@ -1,6 +1,8 @@
 const child_process = require('child_process');
 const fs = require('fs');
 
+const originalReadFile = fs.promises.readFile;
+
 jest.mock('child_process', () => ({
   exec: jest.fn()
 }));
@@ -19,6 +21,10 @@ beforeEach(() => {
   jest.clearAllMocks();
   fs.promises.readFile = jest.fn();
   clearGitBranchCache();
+});
+
+afterEach(() => {
+  fs.promises.readFile = originalReadFile;
 });
 
 describe('checkoutGitBranch', () => {

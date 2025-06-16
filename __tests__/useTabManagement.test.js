@@ -5,7 +5,8 @@ import { useTabManagement } from '../src/hooks/useTabManagement';
 describe('useTabManagement hook', () => {
   test('toggleOverflowTabs toggles state', () => {
     const ref = { current: document.createElement('div') };
-    const { result } = renderHook(() => useTabManagement(ref, [], null));
+    const emptyTerms = [];
+    const { result } = renderHook(() => useTabManagement(ref, emptyTerms, null));
     act(() => { result.current.toggleOverflowTabs(); });
     expect(result.current.overflowTabsOpen).toBe(true);
   });
