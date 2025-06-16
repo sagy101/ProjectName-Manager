@@ -21,4 +21,13 @@ describe('mainUtils additional', () => {
     const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'dir-'));
     expect(await checkPathExists(dir, '.', null)).toBe('valid');
   });
+
+  test('checkPathExists without type returns invalid for missing path', async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'dir-'));
+    expect(await checkPathExists(dir, 'nope.txt')).toBe('invalid');
+  });
+
+  test('resolveEnvVars returns empty string for empty input', () => {
+    expect(resolveEnvVars('')).toBe('');
+  });
 });
