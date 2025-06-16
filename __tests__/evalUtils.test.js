@@ -226,3 +226,45 @@ test('handles prefixes, final appends and conditional tab titles', () => {
   expect(list[0].section).toBe('T-X');
   expect(list[0].associatedContainers).toEqual(['base', 'cond']);
 });
+
+test('generateCommandList resolves placeholders from multiple sources', () => {
+  const sections = [
+    { id: 'parent', title: 'Parent', components: { subSections: [{ id: 'child-sub', title: 'Child' }] } }
+  ];
+  const commands = [
+    {
+      sectionId: 'child-sub',
+      command: { base: 'run ${var} ${mode} ${ver} ${g}', tabTitle: 'T' }
+    }
+  ];
+  const config = {
+    parent: {
+      enabled: true,
+      childConfig: {
+        enabled: true,
+        var: 'c',
+        mode: { value: 'child' }
+      }
+    }
+  };
+  const list = generateCommandList(
+    config,
+    { g: 'glob' },
+    {
+      configSidebarCommands: commands,
+      configSidebarSectionsActual: sections,
+      attachState: {},
+      discoveredVersions: { ver: '1.0' }
+    }
+  );
+  expect(list).toHaveLength(1);
+  expect(list[0].command).toBe('run c [object Object] 1.0 glob');
+});
+
+test('evaluateCondition reads values from other sections', () => {
+  const config = {
+    secA: { enabled: true },
+    secB: { fooConfig: { bar: 'baz' } }
+  };
+  expect(evaluateCondition('fooConfig.bar === "baz"', config, 'secA')).toBe(true);
+});
