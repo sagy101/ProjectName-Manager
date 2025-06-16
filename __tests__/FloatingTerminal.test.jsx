@@ -1,6 +1,6 @@
 /** @jest-environment jsdom */
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react';
+import { render, fireEvent, act } from '@testing-library/react';
 import FloatingTerminal from '../src/components/FloatingTerminal.jsx';
 
 jest.mock('../src/components/Terminal.jsx', () => () => <div data-testid="terminal"/>);
@@ -29,5 +29,27 @@ describe('FloatingTerminal component', () => {
     fireEvent.click(container.querySelector('.floating-terminal-close-btn'));
     expect(baseProps.onMinimize).toHaveBeenCalledWith('t1');
     expect(baseProps.onClose).toHaveBeenCalledWith('t1');
+  });
+
+  test('does not render when not visible', () => {
+    const { container } = render(<FloatingTerminal {...baseProps} isVisible={false} />);
+    expect(container.firstChild).toBeNull();
+  });
+
+  test('auto closes when command finishes', () => {
+    jest.useFakeTimers();
+    let finishCb;
+    window.electron = {
+      onCommandFinished: cb => { finishCb = cb; return jest.fn(); },
+      onCommandStarted: jest.fn(() => jest.fn()),
+    };
+    const onClose = jest.fn();
+    render(<FloatingTerminal {...baseProps} isFixCommand={true} onClose={onClose} />);
+    act(() => {
+      finishCb({ terminalId: 't1', status: 'done', exitCode: 0 });
+      jest.advanceTimersByTime(2100);
+    });
+    expect(onClose).toHaveBeenCalledWith('t1');
+    jest.useRealTimers();
   });
 });

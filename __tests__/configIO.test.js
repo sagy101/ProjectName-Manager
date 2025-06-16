@@ -43,4 +43,18 @@ describe('Config import/export', () => {
     const result = await importConfigFromFile(roundTripFile);
     expect(result).toMatchObject({ success: true, ...data });
   });
+
+  test('exportConfigToFile handles write errors', async () => {
+    const spy = jest.spyOn(fs, 'writeFile').mockRejectedValueOnce(new Error('fail'));
+    const result = await exportConfigToFile({}, '/bad/path');
+    expect(result).toEqual({ success: false, error: 'fail' });
+    spy.mockRestore();
+  });
+
+  test('importConfigFromFile handles read errors', async () => {
+    const spy = jest.spyOn(fs, 'readFile').mockRejectedValueOnce(new Error('fail'));
+    const result = await importConfigFromFile('/bad/path');
+    expect(result).toEqual({ success: false, error: 'fail' });
+    spy.mockRestore();
+  });
 });
