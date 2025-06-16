@@ -209,3 +209,25 @@ describe('additional environmentVerification functions', () => {
   });
 });
 
+
+  test('execCommand runs when nvm not found', async () => {
+    delete process.env.NVM_DIR;
+    const fsMock = require('fs');
+    fsMock.existsSync.mockReturnValue(false);
+    exec.mockImplementation((cmd, opts, cb) => cb(null, 'ok', ''));
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const result = await execCommand('nvm use 18');
+    expect(result).toEqual({ success: true, stdout: 'ok', stderr: '' });
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('nvm.sh not found'));
+    warnSpy.mockRestore();
+  });
+
+test('execCommand times out when process hangs', async () => {
+  exec.mockImplementation(() => {});
+  jest.useFakeTimers();
+  const promise = execCommand('sleep');
+  jest.advanceTimersByTime(16000);
+  const result = await promise;
+  expect(result).toEqual({ success: false, stdout: '', stderr: 'Command timed out' });
+  jest.useRealTimers();
+});
