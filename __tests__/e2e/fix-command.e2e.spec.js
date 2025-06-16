@@ -31,6 +31,23 @@ test.describe('Fix Command Feature', () => {
   let electronApp;
   let window;
 
+  // Helper function to handle fix button click with confirmation
+  const clickFixButtonWithConfirmation = async (fixButton) => {
+    // Click the fix button
+    await fixButton.click();
+    
+    // Wait for confirmation popup to appear
+    await window.waitForSelector('.command-popup-overlay', { timeout: 5000 });
+    
+    // Click the confirm button in the popup
+    const confirmButton = window.locator('.confirm-button');
+    await expect(confirmButton).toBeVisible();
+    await confirmButton.click();
+    
+    // Wait for popup to disappear
+    await window.waitForSelector('.command-popup-overlay', { state: 'hidden', timeout: 5000 });
+  };
+
   test.beforeEach(async () => {
     // Launch Electron app
     const { electronApp: app, window: win } = await launchElectron();
@@ -293,8 +310,8 @@ test.describe('Fix Command Feature', () => {
         return fixButtons.length > 0;
       }, { timeout: 10000 });
       
-      // Click any visible fix button
-      await window.locator('.fix-button').first().click();
+      // Click any visible fix button with confirmation
+      await clickFixButtonWithConfirmation(window.locator('.fix-button').first());
       
       // Should open a floating terminal
       await window.waitForSelector('.floating-terminal-window');
@@ -355,8 +372,8 @@ test.describe('Fix Command Feature', () => {
       if (fixButtons.length > 0) {
         console.log(`Found ${fixButtons.length} fix buttons`);
         
-        // Click the first available fix button
-        await fixButtons[0].click();
+        // Click the first available fix button with confirmation
+        await clickFixButtonWithConfirmation(fixButtons[0]);
         
         // Wait for floating terminal
         await window.waitForSelector('.floating-terminal-window', { timeout: 10000 });
@@ -458,8 +475,8 @@ test.describe('Fix Command Feature', () => {
       const fixButtons = await window.locator('.fix-button').all();
       
       if (fixButtons.length > 0) {
-        // Click fix button
-        await fixButtons[0].click();
+        // Click fix button with confirmation
+        await clickFixButtonWithConfirmation(fixButtons[0]);
         
         // Wait for terminal
         await window.waitForSelector('.floating-terminal-window', { timeout: 10000 });
@@ -506,13 +523,22 @@ test.describe('Fix Command Feature', () => {
       const fixButtons = await window.locator('.fix-button').all();
       
       if (fixButtons.length > 0) {
-        // Rapid clicks should not cause issues
+        // Rapid clicks should not cause issues - but with confirmation popup, we need to handle this differently
         const firstFixButton = fixButtons[0];
+        
+        // First click should open confirmation popup
         await firstFixButton.click();
-        await window.waitForTimeout(100);
-        await firstFixButton.click();
-        await window.waitForTimeout(100);
-        await firstFixButton.click();
+        await window.waitForSelector('.command-popup-overlay', { timeout: 5000 });
+        
+        // Additional clicks while popup is open should be gracefully handled
+        // We don't actually click the button again since the popup overlay blocks it
+        // Instead, we test that the popup remains stable and only one confirmation dialog is shown
+        const popupCount = await window.locator('.command-popup-overlay').count();
+        expect(popupCount).toBe(1);
+        
+        // Confirm the first (and only) request
+        const confirmButton = window.locator('.confirm-button');
+        await confirmButton.click();
         
         // Should only have opened one terminal (or handle gracefully)
         await window.waitForTimeout(2000);
