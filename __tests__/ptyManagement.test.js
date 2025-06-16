@@ -188,3 +188,22 @@ test('write and resize warn with no process', () => {
   resizePTY('none', 10, 10);
   expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('No active PTY'));
 });
+
+test('onData handles quick check and exit code events', () => {
+  jest.useFakeTimers();
+  const win = { webContents: { send: jest.fn() } };
+  spawnPTY('echo', 'od', 80, 24, null, win);
+  const proc = pty.__data.last;
+  const onData = proc.onData.mock.calls[0][0];
+  onData('QUICK_CHECK:1');
+  expect(win.webContents.send).toHaveBeenCalledWith(
+    'command-finished',
+    expect.objectContaining({ terminalId: 'od', exitCode: 1, status: 'error' })
+  );
+  onData('EXIT_CODE:0');
+  // Should not emit another command-finished since exit code already handled
+  const finishedCalls = win.webContents.send.mock.calls.filter(c => c[0] === 'command-finished');
+  expect(finishedCalls).toHaveLength(1);
+  killAllPTYProcesses();
+  jest.useRealTimers();
+});
