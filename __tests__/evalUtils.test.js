@@ -193,3 +193,36 @@ test('produces error for enabled sub-section when no matching command', () => {
   expect(parentError).toBeDefined();
   expect(parentError).toHaveProperty('type', 'error');
 });
+
+test('handles prefixes, final appends and conditional tab titles', () => {
+  const sections = [{ id: 'sec', title: 'Sec', components: {} }];
+  const commands = [
+    {
+      sectionId: 'sec',
+      conditions: { enabled: true },
+      command: {
+        base: 'run ${version} ${mode}',
+        modifiers: [{ condition: 'globalVar === "yes"', append: ' A' }],
+        finalAppend: ' B',
+        prefix: 'pre-',
+        tabTitle: { base: 'T', conditionalAppends: [{ condition: 'attachState.t', append: '-X' }] },
+        associatedContainers: ['base', { name: 'cond', condition: 'attachState.t' }]
+      }
+    }
+  ];
+  const config = { sec: { enabled: true, mode: 'prod' } };
+  const list = generateCommandList(
+    config,
+    { globalVar: 'yes' },
+    {
+      attachState: { t: true },
+      configSidebarCommands: commands,
+      configSidebarSectionsActual: sections,
+      discoveredVersions: { version: '1.0' }
+    }
+  );
+  expect(list).toHaveLength(1);
+  expect(list[0].command).toBe('pre-run 1.0 prod A B');
+  expect(list[0].section).toBe('T-X');
+  expect(list[0].associatedContainers).toEqual(['base', 'cond']);
+});

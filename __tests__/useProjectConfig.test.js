@@ -65,4 +65,41 @@ describe('useProjectConfig', () => {
     await waitFor(() => result.current.configState['section-with-dropdowns']['mock-dropdown-1'] === 'x');
     expect(result.current.configState['section-with-dropdowns']['mock-dropdown-1']).toBe('x');
   });
+
+  test('handleAttachToggle enforces mutual exclusion', async () => {
+    const notify = jest.fn();
+    const { result } = renderHook(() => useProjectConfig({}, false, notify));
+    await waitFor(() => result.current.initialized);
+    act(() => {
+      result.current.setAttachState({ 'generic-section-2': true, 'generic-section-1': false });
+    });
+    act(() => {
+      result.current.handleAttachToggle('generic-section-1', true);
+    });
+    expect(result.current.attachState['generic-section-1']).toBe(true);
+    expect(result.current.attachState['generic-section-2']).toBe(false);
+    expect(result.current.warningState['generic-section-2']).toBe(true);
+    expect(notify).toHaveBeenCalledWith(expect.objectContaining({ type: 'warning' }));
+  });
+
+  test('handleAttachToggle disables attach', async () => {
+    const { result } = renderHook(() => useProjectConfig({}, false, noop));
+    await waitFor(() => result.current.initialized);
+    act(() => {
+      result.current.setAttachState({ 'generic-section-1': true });
+    });
+    act(() => {
+      result.current.handleAttachToggle('generic-section-1', false);
+    });
+    expect(result.current.attachState['generic-section-1']).toBe(false);
+  });
+
+  test('toggleSubSectionEnabled updates sub section state', async () => {
+    const { result } = renderHook(() => useProjectConfig({}, false, noop));
+    await waitFor(() => result.current.initialized);
+    act(() => {
+      result.current.toggleSubSectionEnabled('generic-section-1', 'generic-subsection-1', true);
+    });
+    expect(result.current.configState['generic-section-1']['generic-subsection-1Config'].enabled).toBe(true);
+  });
 });
