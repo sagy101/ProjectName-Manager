@@ -67,13 +67,13 @@ const ImportStatusScreen = ({ isVisible, projectName, onClose, gitBranches, onIm
   const startImport = useCallback(async () => {
     // Prevent multiple simultaneous imports
     if (isImporting) {
-      console.log('Import already in progress, skipping...');
+      debugLog('Import already in progress, skipping...');
       return;
     }
 
     try {
       setIsImporting(true);
-      console.log('Starting import process...');
+      debugLog('Starting import process...');
       
       // Start config import
       updateConfigStatus('importing', 'Importing configuration...');

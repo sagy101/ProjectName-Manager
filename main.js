@@ -3,6 +3,13 @@ const path = require('path');
 const { exec } = require('child_process');
 const { generateCommandList } = require('./src/utils/evalUtils');
 
+// Simple debug logger controlled by DEBUG_LOGS env var
+global.debugLog = (...args) => {
+  if (process.env.DEBUG_LOGS === 'true') {
+    console.log(...args);
+  }
+};
+
 // Handle uncaught exceptions gracefully during tests
 if (process.env.NODE_ENV === 'test') {
   process.on('uncaughtException', (error) => {

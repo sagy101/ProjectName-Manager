@@ -37,7 +37,7 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
 
   // Log terminal state changes for debugging
   useEffect(() => {
-    console.log('TerminalContainer state updated:', terminals);
+    debugLog('TerminalContainer state updated:', terminals);
   }, [terminals]);
 
   const [tabInfoPanel, setTabInfoPanel] = useState(null);

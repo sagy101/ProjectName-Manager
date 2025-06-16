@@ -5,7 +5,7 @@ let mainWindow = null;
 
 // Function to create the main application window
 function createWindow() {
-  console.log('Creating main window...');
+  debugLog('Creating main window...');
   
   // Check if running in test/headless mode
   const isTestMode = process.env.HEADLESS === 'true';
@@ -30,7 +30,7 @@ function createWindow() {
     windowOptions.maximizable = false;
     windowOptions.closable = true;
     windowOptions.focusable = false;
-    console.log('Creating invisible window for test mode');
+    debugLog('Creating invisible window for test mode');
   }
 
   // Create the browser window
@@ -41,7 +41,7 @@ function createWindow() {
 
   // Show window when ready to prevent visual flash
   mainWindow.once('ready-to-show', () => {
-    console.log('Main window ready to show');
+    debugLog('Main window ready to show');
     if (!isTestMode) {
       mainWindow.show();
       
@@ -54,41 +54,41 @@ function createWindow() {
 
   // Handle window closed
   mainWindow.on('closed', () => {
-    console.log('Main window closed');
+    debugLog('Main window closed');
     mainWindow = null;
   });
 
   // Handle window focus events
   mainWindow.on('focus', () => {
-    console.log('Main window focused');
+    debugLog('Main window focused');
   });
 
   mainWindow.on('blur', () => {
-    console.log('Main window blurred');
+    debugLog('Main window blurred');
   });
 
   // Handle window resize events
   mainWindow.on('resize', () => {
     const [width, height] = mainWindow.getSize();
-    console.log(`Main window resized to ${width}x${height}`);
+    debugLog(`Main window resized to ${width}x${height}`);
   });
 
   // Handle window maximize/unmaximize events
   mainWindow.on('maximize', () => {
-    console.log('Main window maximized');
+    debugLog('Main window maximized');
   });
 
   mainWindow.on('unmaximize', () => {
-    console.log('Main window unmaximized');
+    debugLog('Main window unmaximized');
   });
 
   // Handle window minimize/restore events
   mainWindow.on('minimize', () => {
-    console.log('Main window minimized');
+    debugLog('Main window minimized');
   });
 
   mainWindow.on('restore', () => {
-    console.log('Main window restored');
+    debugLog('Main window restored');
   });
 
   // Prevent navigation away from the app
@@ -105,11 +105,11 @@ function createWindow() {
 
   // Handle new window creation
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    console.log('Preventing new window creation for:', url);
+    debugLog('Preventing new window creation for:', url);
     return { action: 'deny' };
   });
 
-  console.log('Main window created successfully');
+  debugLog('Main window created successfully');
   return mainWindow;
 }
 
@@ -121,7 +121,7 @@ function getMainWindow() {
 // Function to open developer tools
 function openDevTools() {
   if (mainWindow && !mainWindow.isDestroyed()) {
-    console.log('Opening developer tools');
+    debugLog('Opening developer tools');
     mainWindow.webContents.openDevTools();
     return { success: true };
   } else {
@@ -133,7 +133,7 @@ function openDevTools() {
 // Function to reload the application
 function reloadApp() {
   if (mainWindow && !mainWindow.isDestroyed()) {
-    console.log('Reloading application');
+    debugLog('Reloading application');
     mainWindow.reload();
     return { success: true };
   } else {
@@ -145,7 +145,7 @@ function reloadApp() {
 // Function to close the main window
 function closeMainWindow() {
   if (mainWindow && !mainWindow.isDestroyed()) {
-    console.log('Closing main window');
+    debugLog('Closing main window');
     mainWindow.close();
     return { success: true };
   } else {
@@ -157,7 +157,7 @@ function closeMainWindow() {
 // Function to minimize the main window
 function minimizeMainWindow() {
   if (mainWindow && !mainWindow.isDestroyed()) {
-    console.log('Minimizing main window');
+    debugLog('Minimizing main window');
     mainWindow.minimize();
     return { success: true };
   } else {
@@ -169,10 +169,10 @@ function minimizeMainWindow() {
 function maximizeMainWindow() {
   if (mainWindow && !mainWindow.isDestroyed()) {
     if (mainWindow.isMaximized()) {
-      console.log('Unmaximizing main window');
+      debugLog('Unmaximizing main window');
       mainWindow.unmaximize();
     } else {
-      console.log('Maximizing main window');
+      debugLog('Maximizing main window');
       mainWindow.maximize();
     }
     return { success: true, isMaximized: mainWindow.isMaximized() };
@@ -184,7 +184,7 @@ function maximizeMainWindow() {
 // Function to show the main window
 function showMainWindow() {
   if (mainWindow && !mainWindow.isDestroyed()) {
-    console.log('Showing main window');
+    debugLog('Showing main window');
     mainWindow.show();
     mainWindow.focus();
     return { success: true };
@@ -196,7 +196,7 @@ function showMainWindow() {
 // Function to hide the main window
 function hideMainWindow() {
   if (mainWindow && !mainWindow.isDestroyed()) {
-    console.log('Hiding main window');
+    debugLog('Hiding main window');
     mainWindow.hide();
     return { success: true };
   } else {
@@ -250,7 +250,7 @@ function setWindowState(state) {
       mainWindow.minimize();
     }
     
-    console.log('Window state updated successfully');
+    debugLog('Window state updated successfully');
     return { success: true };
   } catch (error) {
     console.error('Error setting window state:', error);
