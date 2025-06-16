@@ -69,7 +69,7 @@ const ConfigSection = ({
       actualValue = baseConfig[configKey];
     }
     
-    // console.log(`Visibility check: key=${configKey}, expected=${hasValue}, actual=${actualValue}, visible=${actualValue === hasValue}`);
+    // debugLog(`Visibility check: key=${configKey}, expected=${hasValue}, actual=${actualValue}, visible=${actualValue === hasValue}`);
     return actualValue === hasValue;
   };
 
@@ -180,7 +180,7 @@ const ConfigSection = ({
 
   return (
     <div className={`config-section ${borderClass} ${!config.enabled ? 'collapsed' : ''}`} id={`section-${section.id}`}>
-      {console.log(`Rendering section: ${section.id}`, { config, isAttached })}
+      {debugLog(`Rendering section: ${section.id}`, { config, isAttached })}
       <div className="section-header compact">
         <div className="section-header-left">
           <button

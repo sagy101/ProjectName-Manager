@@ -11,7 +11,7 @@ const HealthReportScreen = ({
   onRefreshTerminal,
   onFocusTerminal 
 }) => {
-  console.log('HealthReportScreen: Component rendered or re-rendered.');
+  debugLog('HealthReportScreen: Component rendered or re-rendered.');
   const [containerHealth, setContainerHealth] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -48,7 +48,7 @@ const HealthReportScreen = ({
       return;
     }
     
-    console.log('HealthReportScreen: fetching container statuses...');
+    debugLog('HealthReportScreen: fetching container statuses...');
     fetchContainerStatuses();
     setIsLoading(false);
     

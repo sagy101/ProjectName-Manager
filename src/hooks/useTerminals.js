@@ -6,7 +6,7 @@ export const useTerminals = (configState, configSidebarCommands, noRunMode) => {
     const [activeTerminalId, setActiveTerminalId] = useState(null);
 
     const openTabs = useCallback((tabConfigs) => {
-        console.log('useTerminals: openTabs called with', tabConfigs.length, 'tabs');
+        debugLog('useTerminals: openTabs called with', tabConfigs.length, 'tabs');
         setTerminals([]);
         let firstId = null;
         const newTerminals = tabConfigs.map((tab, idx) => {
@@ -14,7 +14,7 @@ export const useTerminals = (configState, configSidebarCommands, noRunMode) => {
             if (idx === 0) firstId = terminalId;
 
             if (tab.type === 'error') {
-                console.log(`useTerminals: Creating error terminal ${terminalId}`);
+                debugLog(`useTerminals: Creating error terminal ${terminalId}`);
                 return {
                     id: terminalId,
                     title: tab.title || tab.section,
@@ -26,7 +26,7 @@ export const useTerminals = (configState, configSidebarCommands, noRunMode) => {
                 };
             } else {
                 const status = noRunMode ? 'idle' : 'pending_spawn';
-                console.log(`useTerminals: Creating terminal ${terminalId} with status ${status}, command:`, tab.command);
+                debugLog(`useTerminals: Creating terminal ${terminalId} with status ${status}, command:`, tab.command);
                 return {
                     id: terminalId,
                     title: tab.title || tab.section,
@@ -43,7 +43,7 @@ export const useTerminals = (configState, configSidebarCommands, noRunMode) => {
             }
         });
 
-        console.log('useTerminals: Setting terminals:', newTerminals);
+        debugLog('useTerminals: Setting terminals:', newTerminals);
         setTerminals(newTerminals);
         if (firstId) setActiveTerminalId(firstId);
     }, [noRunMode]);

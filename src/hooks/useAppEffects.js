@@ -15,11 +15,11 @@ export const useAppEffects = ({
   terminalRef
 }) => {
   const triggerGitRefresh = useCallback(async () => {
-    console.log('App: Triggering targeted git status refresh...');
+    debugLog('App: Triggering targeted git status refresh...');
     if (window.electron && window.electron.refreshGitStatuses) {
       try {
         const newGitStatuses = await window.electron.refreshGitStatuses();
-        console.log('App: Received new git statuses:', newGitStatuses);
+        debugLog('App: Received new git statuses:', newGitStatuses);
         setVerificationStatuses(prev => {
           const newStatuses = { ...prev };
           for (const sectionKey in newGitStatuses) {
@@ -44,7 +44,7 @@ export const useAppEffects = ({
     
     // Listener for ongoing updates (e.g., after manual refresh)
     const removeVerificationListener = window.electron.onEnvironmentVerificationComplete((results) => {
-      console.log('App: Received environment-verification-complete event:', results);
+      debugLog('App: Received environment-verification-complete event:', results);
       if (results) {
         // Update general statuses
         if (results.general) {
@@ -83,7 +83,7 @@ export const useAppEffects = ({
     
     // Handle container cleanup before quit
     const removeQuitListener = window.electron.onStopAllContainersBeforeQuit(async () => {
-      console.log('App: Received stop-all-containers-before-quit event');
+      debugLog('App: Received stop-all-containers-before-quit event');
       if (terminalRef.current && terminalRef.current.stopAllContainers) {
         await terminalRef.current.stopAllContainers();
       }
@@ -91,7 +91,7 @@ export const useAppEffects = ({
     
     // Handle container cleanup before reload
     const removeReloadListener = window.electron.onStopAllContainersBeforeReload(async () => {
-      console.log('App: Received stop-all-containers-before-reload event');
+      debugLog('App: Received stop-all-containers-before-reload event');
       if (terminalRef.current && terminalRef.current.stopAllContainers) {
         await terminalRef.current.stopAllContainers();
       }
@@ -140,9 +140,9 @@ export const useAppEffects = ({
       // Fetch initial verification data and precache dropdowns
       const fetchInitialData = async () => {
         try {
-          console.log('App: Fetching initial environment verification data...');
+          debugLog('App: Fetching initial environment verification data...');
           const initialResults = await window.electron.getEnvironmentVerification();
-          console.log('App: Received initial environment verification data:', initialResults);
+          debugLog('App: Received initial environment verification data:', initialResults);
           
           if (initialResults) {
             if (initialResults.general) {
@@ -170,9 +170,9 @@ export const useAppEffects = ({
         
         // Now, precache the global dropdowns
         try {
-          console.log('App: Pre-caching global dropdowns...');
+          debugLog('App: Pre-caching global dropdowns...');
           await window.electron.precacheGlobalDropdowns();
-          console.log('App: Global dropdowns pre-cached successfully.');
+          debugLog('App: Global dropdowns pre-cached successfully.');
         } catch (error) {
           console.error('App: Error pre-caching global dropdowns:', error);
         } finally {

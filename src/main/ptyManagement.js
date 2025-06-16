@@ -9,7 +9,7 @@ try {
 } catch (error) {
   console.warn('node-pty module failed to load:', error.message);
   if (process.env.NODE_ENV === 'test') {
-    console.log('Continuing in test mode without node-pty...');
+    debugLog('Continuing in test mode without node-pty...');
     // Create a mock pty object for tests
     pty = {
       spawn: () => {
@@ -348,7 +348,7 @@ function spawnPTY(command, terminalId, cols = 80, rows = 24, projectRoot, mainWi
   } else {
     shell = process.env.SHELL || '/bin/bash';
   }
-  console.log(`Using shell: ${shell} with args: [${shellArgs.join(', ')}] for PTY on platform: ${os.platform()}`);
+  debugLog(`Using shell: ${shell} with args: [${shellArgs.join(', ')}] for PTY on platform: ${os.platform()}`);
 
   let ptyProcess;
   try {
@@ -371,7 +371,7 @@ function spawnPTY(command, terminalId, cols = 80, rows = 24, projectRoot, mainWi
   }
 
   activeProcesses[terminalId] = ptyProcess;
-  console.log(`PTY spawned for terminal ${terminalId} with PID ${ptyProcess.pid}, executing: ${command}`);
+  debugLog(`PTY spawned for terminal ${terminalId} with PID ${ptyProcess.pid}, executing: ${command}`);
 
   // Execute the command after a short delay to let the shell initialize
   setTimeout(() => {
@@ -540,7 +540,7 @@ function killProcess(terminalId, mainWindow) {
   const ptyProcess = activeProcesses[terminalId];
 
   if (ptyProcess) {
-    console.log(`Attempting to kill PTY process with PID ${ptyProcess.pid} for terminal ${terminalId}`);
+    debugLog(`Attempting to kill PTY process with PID ${ptyProcess.pid} for terminal ${terminalId}`);
     
     // Emit terminating event
     if (mainWindow) {
@@ -550,10 +550,10 @@ function killProcess(terminalId, mainWindow) {
     try {
       if (os.platform() === 'win32') {
         ptyProcess.kill(); // Default behavior for Windows
-        console.log(`ptyProcess.kill() called for Windows PID ${ptyProcess.pid} for terminal ${terminalId}`);
+        debugLog(`ptyProcess.kill() called for Windows PID ${ptyProcess.pid} for terminal ${terminalId}`);
       } else {
         ptyProcess.kill('SIGKILL'); // Use SIGKILL for macOS/Linux
-        console.log(`ptyProcess.kill('SIGKILL') called for PID ${ptyProcess.pid} for terminal ${terminalId}`);
+        debugLog(`ptyProcess.kill('SIGKILL') called for PID ${ptyProcess.pid} for terminal ${terminalId}`);
       }
       // The onExit handler will handle cleanup and notification
     } catch (e) {
@@ -567,7 +567,7 @@ function killProcess(terminalId, mainWindow) {
       }
     }
   } else {
-    console.log(`No active PTY process found for terminal ${terminalId} to kill.`);
+    debugLog(`No active PTY process found for terminal ${terminalId} to kill.`);
     // Still emit terminated event even if process not found
     if (mainWindow) {
       mainWindow.webContents.send('process-terminated', { terminalId });
@@ -607,7 +607,7 @@ function killAllPTYProcesses() {
     const ptyProcess = activeProcesses[terminalId];
     if (ptyProcess) {
       try {
-        console.log(`Killing PTY for terminal ${terminalId} with PID ${ptyProcess.pid}`);
+        debugLog(`Killing PTY for terminal ${terminalId} with PID ${ptyProcess.pid}`);
         ptyProcess.kill();
         delete activeProcesses[terminalId];
         killedCount++;
@@ -617,7 +617,7 @@ function killAllPTYProcesses() {
     }
   }
 
-  console.log(`Killed ${killedCount} PTY processes during cleanup`);
+  debugLog(`Killed ${killedCount} PTY processes during cleanup`);
   return { killedCount, totalCount: terminalIds.length };
 }
 
