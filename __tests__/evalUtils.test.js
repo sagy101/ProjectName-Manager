@@ -134,3 +134,62 @@ describe('generateCommandList', () => {
     expect(list[0]).toHaveProperty('sectionId', 'sectionB');
   });
 });
+
+test('handles associated container conditions and strings', () => {
+  const sections = [{ id: 'sec', title: 'Sec', components: {} }];
+  const commands = [
+    {
+      sectionId: 'sec',
+      command: {
+        base: 'run',
+        tabTitle: 'T',
+        associatedContainers: ['c1', { name: 'c2', condition: 'attachState.useC2' }]
+      }
+    }
+  ];
+  const list = generateCommandList(
+    { sec: { enabled: true } },
+    {},
+    {
+      attachState: { useC2: true },
+      configSidebarCommands: commands,
+      configSidebarSectionsActual: sections
+    }
+  );
+  expect(list[0].associatedContainers).toEqual(['c1', 'c2']);
+});
+
+test('produces error when section enabled but no commands defined', () => {
+  const sections = [{ id: 'sec', title: 'Sec', components: {} }];
+  const list = generateCommandList(
+    { sec: { enabled: true } },
+    {},
+    { attachState: {}, configSidebarCommands: [], configSidebarSectionsActual: sections }
+  );
+  expect(list).toHaveLength(1);
+  expect(list[0]).toMatchObject({ type: 'error', sectionId: 'sec' });
+});
+
+test('produces error for enabled sub-section when no matching command', () => {
+  const sections = [{
+    id: 'parent',
+    title: 'Parent',
+    components: { subSections: [{ id: 'child-sub', title: 'Child' }] }
+  }];
+  const commands = [
+    {
+      sectionId: 'child-sub',
+      conditions: { enabled: false },
+      command: { base: 'cmd', tabTitle: 'child' }
+    }
+  ];
+  const config = { parent: { enabled: true, 'child-subConfig': { enabled: true } } };
+  const list = generateCommandList(
+    config,
+    {},
+    { attachState: {}, configSidebarCommands: commands, configSidebarSectionsActual: sections }
+  );
+  const parentError = list.find(e => e.sectionId === 'parent');
+  expect(parentError).toBeDefined();
+  expect(parentError).toHaveProperty('type', 'error');
+});
