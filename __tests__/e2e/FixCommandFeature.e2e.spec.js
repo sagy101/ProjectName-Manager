@@ -64,7 +64,6 @@ test.describe('Fix Command Feature E2E Tests', () => {
       const isCollapsed = await toggleButton.evaluate(node => node.textContent.includes('▶'));
       
       if (isCollapsed) {
-        console.log(`Attempt ${attempts + 1}: Expanding General Environment section...`);
         await toggleButton.click();
         await page.waitForTimeout(1000); // Wait for animation
       }

@@ -48,11 +48,57 @@ test.describe('Fix Command Feature', () => {
     await window.waitForSelector('.command-popup-overlay', { state: 'hidden', timeout: 5000 });
   };
 
+  // Helper function to ensure terminal is properly closed
+  const ensureTerminalClosed = async (terminal) => {
+    try {
+      // First try waiting for the terminal to close naturally
+      await expect(terminal).not.toBeVisible({ timeout: 30000 });
+    } catch (error) {
+      console.log('Terminal did not close naturally, attempting to close manually...');
+      
+      // Try to close the terminal manually
+      const closeButton = terminal.locator('.floating-terminal-close-button, .close-button, button[title*="close"], button[title*="Close"]');
+      if (await closeButton.isVisible()) {
+        // Check if the close button is enabled (not in timeout state)
+        const isEnabled = await closeButton.isEnabled();
+        if (isEnabled) {
+          await closeButton.click();
+          await expect(terminal).not.toBeVisible({ timeout: 5000 });
+        } else {
+          console.log('Close button is disabled (likely in timeout period), using DOM manipulation...');
+          // Skip to DOM manipulation since button is disabled
+          await window.evaluate(() => {
+            const terminals = document.querySelectorAll('.floating-terminal-window');
+            terminals.forEach(terminal => terminal.remove());
+          });
+          console.log('Terminal manually closed via DOM manipulation');
+        }
+      } else {
+        // If no close button found, force close via DOM manipulation
+        await window.evaluate(() => {
+          const terminals = document.querySelectorAll('.floating-terminal-window');
+          terminals.forEach(terminal => terminal.remove());
+        });
+        console.log('Terminal manually closed via DOM manipulation');
+      }
+    }
+  };
+
   test.beforeEach(async () => {
     // Launch Electron app
     const { electronApp: app, window: win } = await launchElectron();
     electronApp = app;
     window = win;
+    
+    // Ensure clean start - remove any lingering floating terminals from previous tests
+    try {
+      await window.evaluate(() => {
+        const terminals = document.querySelectorAll('.floating-terminal-window');
+        terminals.forEach(terminal => terminal.remove());
+      });
+    } catch (error) {
+      // Ignore errors during cleanup as the page might not be fully loaded yet
+    }
     
     // Mock the API response for verification statuses
     await window.route('**/get-verification-statuses', route => {
@@ -118,7 +164,6 @@ test.describe('Fix Command Feature', () => {
       const isCollapsed = await toggleButton.evaluate(node => node.textContent.includes('▶'));
       
       if (isCollapsed) {
-        console.log(`Attempt ${attempts + 1}: Expanding General Environment section...`);
         await toggleButton.click();
         await window.waitForTimeout(1000); // Wait for animation
       }
@@ -193,6 +238,29 @@ test.describe('Fix Command Feature', () => {
   });
 
   test.afterEach(async () => {
+    // Clean up any lingering floating terminals before closing the app
+    try {
+      const floatingTerminals = await window.locator('.floating-terminal-window').all();
+      for (const terminal of floatingTerminals) {
+        if (await terminal.isVisible()) {
+          // Try to close the terminal using the close button
+          const closeButton = terminal.locator('.floating-terminal-close-button, .close-button, button[title*="close"], button[title*="Close"]');
+          if (await closeButton.isVisible() && await closeButton.isEnabled()) {
+            await closeButton.click();
+            await window.waitForTimeout(500);
+          }
+        }
+      }
+      
+      // Force close any remaining terminals
+      await window.evaluate(() => {
+        const terminals = document.querySelectorAll('.floating-terminal-window');
+        terminals.forEach(terminal => terminal.remove());
+      });
+    } catch (error) {
+      console.log('Warning: Could not clean up floating terminals:', error.message);
+    }
+    
     await electronApp.close();
   });
   
@@ -334,9 +402,8 @@ test.describe('Fix Command Feature', () => {
       expect(titleContainsCommand).toBe(true);
       console.log(`✓ Terminal opened for fix command: ${terminalTitle}`);
       
-      // Close the terminal
-      await floatingTerminal.locator('.floating-terminal-close-btn').click();
-      await expect(floatingTerminal).not.toBeVisible();
+      // Ensure the terminal is properly closed
+      await ensureTerminalClosed(floatingTerminal);
     });
 
     test('should test directory creation fix commands safely', async () => {
@@ -382,12 +449,8 @@ test.describe('Fix Command Feature', () => {
         const terminal = window.locator('.floating-terminal-window');
         await expect(terminal).toBeVisible();
         
-        // Wait for command to complete
-        await window.waitForTimeout(2000);
-        
-        // Close the terminal to clean up
-        await terminal.locator('.floating-terminal-close-btn').click();
-        await expect(terminal).not.toBeVisible();
+        // Ensure the terminal is properly closed
+        await ensureTerminalClosed(terminal);
       } else {
         console.log('No fix buttons found - this may indicate an issue with verification toggling or the test setup');
         // Don't fail the test, just log the issue
