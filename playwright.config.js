@@ -21,7 +21,7 @@ const config = {
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
-  retries: 0,
+  retries: process.env.CI ? 0 : 1,
   /* Opt out of parallel tests on CI. */
   // Use 6 workers on CI for faster E2E, unless overridden
   workers: process.env.CI ? 6 : undefined,

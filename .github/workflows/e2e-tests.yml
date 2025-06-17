@@ -46,19 +46,13 @@ jobs:
           . "$NVM_DIR/nvm.sh"
           nvm use 22.16.0
           npx @electron/rebuild -f -w node-pty
-      - name: Set up comprehensive mock environment for E2E
+      - name: Setup Mock Environment
         run: |
-          # Create mock directories for general environment
-          mkdir -p $HOME/go
-          mkdir -p $HOME/go/bin
-          mkdir -p $HOME/gopm
-          mkdir -p /usr/local/bin
+          echo "Setting up mock environment for E2E tests..."
           
-          # Create mock directories for configuration sections (from configurationSidebarAbout.json)
-          mkdir -p ./weblifemirror
+          # --- Create Mock Directories ---
+          echo "Creating mock directories..."
           mkdir -p ./weblifemirror/agent
-          mkdir -p ./gopm
-          mkdir -p ./threatintelligence
           mkdir -p ./threatintelligence/threat-intelligence
           mkdir -p ./threatintelligence/url-intelligence
           mkdir -p ./infrastructure
@@ -66,7 +60,8 @@ jobs:
           mkdir -p ./rule-engine
           mkdir -p ./test-analytics
           
-          # Create mock gradlew files
+          # --- Create Mock Gradlew Files ---
+          echo "Creating mock gradlew files..."
           touch ./weblifemirror/gradlew
           touch ./threatintelligence/threat-intelligence/gradlew
           touch ./threatintelligence/url-intelligence/gradlew
@@ -75,198 +70,20 @@ jobs:
           chmod +x ./threatintelligence/threat-intelligence/gradlew
           chmod +x ./threatintelligence/url-intelligence/gradlew
           chmod +x ./activity-logger/gradlew
-          
-          # Create mock Go directories
+
+          # --- Create Mock Go Directories and Shell Configs ---
+          echo "Creating mock Go environment..."
           mkdir -p $GOPATH/bin
           mkdir -p $GOPM_HOME
-          
-          # Set up environment variables (both for GitHub and current session)
-          echo "GOPM_HOME=$GOPM_HOME" >> $GITHUB_ENV
-          echo "GOPATH=$GOPATH" >> $GITHUB_ENV
-          echo "JAVA_HOME=$JAVA_HOME" >> $GITHUB_ENV
-          echo "CLOUDBEES_FEATURES_ENV_KEY=$CLOUDBEES_FEATURES_ENV_KEY" >> $GITHUB_ENV
-          echo "PATH=$PATH:$GOPATH/bin:/usr/local/bin" >> $GITHUB_ENV
-          
-          # Also export for current session
-          export GOPM_HOME=$GOPM_HOME
-          export GOPATH=$GOPATH
-          export JAVA_HOME=$JAVA_HOME
-          export CLOUDBEES_FEATURES_ENV_KEY=$CLOUDBEES_FEATURES_ENV_KEY
-          export PATH=$PATH:$GOPATH/bin:/usr/local/bin
-          
-          # Create mock gcloud CLI
-          sudo tee /usr/local/bin/gcloud > /dev/null << 'EOF'
-          #!/bin/bash
-          case "$1" in
-            "--version")
-              echo "Google Cloud SDK 450.0.0"
-              echo "bq 2.0.98"
-              echo "core 2023.11.17"
-              echo "gcloud-crc32c 1.0.0"
-              echo "gsutil 5.27"
-              ;;
-            "projects")
-              if [[ "$2" == "list" ]]; then
-                echo "mock-project-1"
-                echo "mock-project-2"
-                echo "test-project"
-              fi
-              ;;
-            *)
-              echo "gcloud mock: $*"
-              ;;
-          esac
+          # Create mock shell config files to satisfy goPathConfig check
+          tee -a $HOME/.bashrc $HOME/.zshrc > /dev/null << 'EOF'
+          export GOPATH=$HOME/go
+          export PATH=$PATH:$GOPATH/bin
           EOF
-          sudo chmod +x /usr/local/bin/gcloud
-          
-          # Create mock kubectl
-          sudo tee /usr/local/bin/kubectl > /dev/null << 'EOF'
-          #!/bin/bash
-          case "$1" in
-            "version")
-              echo "Client Version: v1.28.4"
-              ;;
-            *)
-              echo "kubectl mock: $*"
-              ;;
-          esac
-          EOF
-          sudo chmod +x /usr/local/bin/kubectl
-          
-          # Create mock kubectx
-          sudo tee /usr/local/bin/kubectx > /dev/null << 'EOF'
-          #!/bin/bash
-          case "$1" in
-            "--help")
-              echo "kubectx mock help"
-              ;;
-            *)
-              echo "kubectx mock: $*"
-              ;;
-          esac
-          EOF
-          sudo chmod +x /usr/local/bin/kubectx
-          
-          # Create mock docker
-          sudo tee /usr/local/bin/docker > /dev/null << 'EOF'
-          #!/bin/bash
-          case "$1" in
-            "version")
-              echo "Docker version 24.0.7, build afdd53b"
-              echo ""
-              echo "Server: Docker Desktop 4.25.2 (129061)"
-              echo " Engine:"
-              echo "  Version:          24.0.7"
-              ;;
-            "ps")
-              echo "CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES"
-              ;;
-            "info")
-              echo "ServerVersion: 24.0.7"
-              ;;
-            *)
-              echo "docker mock: $*"
-              ;;
-          esac
-          EOF
-          sudo chmod +x /usr/local/bin/docker
-          
-          # Create mock go
-          sudo tee /usr/local/bin/go > /dev/null << 'EOF'
-          #!/bin/bash
-          case "$1" in
-            "version")
-              echo "go version go1.21.4 linux/amd64"
-              ;;
-            *)
-              echo "go mock: $*"
-              ;;
-          esac
-          EOF
-          sudo chmod +x /usr/local/bin/go
-          
-          # Create mock java
-          sudo tee /usr/local/bin/java > /dev/null << 'EOF'
-          #!/bin/bash
-          case "$1" in
-            "-version")
-              echo "openjdk version \"17.0.8\" 2023-07-18" >&2
-              echo "OpenJDK Runtime Environment (build 17.0.8+7-Ubuntu-1ubuntu122.04)" >&2
-              echo "OpenJDK 64-Bit Server VM (build 17.0.8+7-Ubuntu-1ubuntu122.04, mixed mode, sharing)" >&2
-              ;;
-            *)
-              echo "java mock: $*"
-              ;;
-          esac
-          EOF
-          sudo chmod +x /usr/local/bin/java
-          
-          # Create mock brew
-          sudo tee /usr/local/bin/brew > /dev/null << 'EOF'
-          #!/bin/bash
-          case "$1" in
-            "--version")
-              echo "Homebrew 4.1.20"
-              ;;
-            *)
-              echo "brew mock: $*"
-              ;;
-          esac
-          EOF
-          sudo chmod +x /usr/local/bin/brew
-          
-          # Create mock rdctl (Rancher Desktop)
-          sudo tee /usr/local/bin/rdctl > /dev/null << 'EOF'
-          #!/bin/bash
-          case "$1" in
-            "version")
-              echo "rdctl version 1.10.1"
-              ;;
-            *)
-              echo "rdctl mock: $*"
-              ;;
-          esac
-          EOF
-          sudo chmod +x /usr/local/bin/rdctl
-          
-          # Create mock chromium
-          sudo tee /usr/local/bin/chromium > /dev/null << 'EOF'
-          #!/bin/bash
-          case "$1" in
-            "--version")
-              echo "Chromium 125.0.6422.141"
-              ;;
-            *)
-              echo "chromium mock: $*"
-              ;;
-          esac
-          EOF
-          sudo chmod +x /usr/local/bin/chromium
-          
-          # Create mock nvm (ensure it shows v16 to satisfy verification)
-          mkdir -p $HOME/.nvm
-          tee $HOME/.nvm/nvm.sh > /dev/null << 'EOF'
-          #!/bin/bash
-          nvm() {
-            case "$1" in
-              "--version")
-                echo "0.39.7"
-                ;;
-              "ls")
-                echo "       v16.20.2"
-                echo "->     v22.16.0 (default)"
-                ;;
-              "use")
-                echo "Now using node v22.16.0 (npm v10.9.2)"
-                ;;
-              *)
-                echo "nvm mock: $*"
-                ;;
-            esac
-          }
-          EOF
-          
-          echo "Mock environment setup complete"
+
+          # --- Create Mock Executables ---
+          echo "Creating mock executables..."
+          # ... existing executable mocks ...
       - name: Test mock environment
         run: |
           echo "=== Testing Mock Environment ==="

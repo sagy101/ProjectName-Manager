@@ -29,8 +29,16 @@ async function launchElectron() {
   // but only in CI when debug logs are explicitly enabled.
   if (process.env.CI && process.env.DEBUG_LOGS === 'true') {
     window.on('console', async (msg) => {
-      const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
-      console.log(`[APP CONSOLE] ${msg.type()}:`, ...args);
+      // Prevent errors if the window is closed before the async handler executes
+      if (window.isClosed()) {
+        return;
+      }
+      try {
+        const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
+        console.log(`[APP CONSOLE] ${msg.type()}:`, ...args);
+      } catch (error) {
+        console.log(`[APP CONSOLE] Error reading console message: ${error.message}`);
+      }
     });
   }
   
