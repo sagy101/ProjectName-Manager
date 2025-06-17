@@ -150,89 +150,57 @@ export const useFixCommands = ({
   // Handle toggling all verification statuses for testing
   const handleToggleAllVerifications = useCallback(() => {
     debugLog('Toggling all verification statuses for testing');
-    
-    // Get the current general verification statuses (stored directly in general, not general.statuses)
-    const currentGeneralStatuses = appState.verificationStatuses?.general || {};
-    
-    // Get list of test sections to exclude when showTestSections is false
-    const testSectionIds = configurationSidebarSections.sections
-      .filter(section => section.testSection === true)
-      .map(section => section.id);
-    
-    // Check all verification statuses (both general and configuration)
-    // but only consider visible sections
-    let hasInvalidStatuses = Object.values(currentGeneralStatuses).includes('invalid');
-    
-    // Also check configuration statuses (only visible sections)
-    if (!hasInvalidStatuses) {
-      Object.keys(appState.verificationStatuses).forEach(key => {
-        if (key !== 'general' && typeof appState.verificationStatuses[key] === 'object') {
-          // Convert key back to section ID format to check if it's a test section
-          const sectionId = key.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '');
-          
-          // Skip test sections if they're not visible
-          if (!appState.showTestSections && testSectionIds.includes(sectionId)) {
-            return; // Skip this section
-          }
-          
-          const sectionStatuses = appState.verificationStatuses[key];
-          if (Object.values(sectionStatuses).includes('invalid')) {
-            hasInvalidStatuses = true;
-          }
-        }
-      });
-    }
-    
-    // If there are any invalid statuses in visible sections, make all valid. Otherwise make all invalid.
-    const newStatus = hasInvalidStatuses ? 'valid' : 'invalid';
-    
-    // Create new statuses for general environment verifications
-    const newGeneralStatuses = {};
-    if (appState.generalVerificationConfig && Array.isArray(appState.generalVerificationConfig)) {
-      appState.generalVerificationConfig.forEach(categoryWrapper => {
-        if (categoryWrapper.category && categoryWrapper.category.verifications) {
-          categoryWrapper.category.verifications.forEach(verification => {
-            newGeneralStatuses[verification.id] = newStatus;
-          });
-        }
-      });
-    }
-    
-    // Create new statuses for configuration sidebar verifications
-    const newConfigStatuses = { ...appState.verificationStatuses };
-    
-    // Process configuration sidebar about data
-    configurationSidebarAbout.forEach(section => {
-      if (section.verifications && section.verifications.length > 0) {
-        const cacheKey = section.sectionId.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-        if (!newConfigStatuses[cacheKey]) {
-          newConfigStatuses[cacheKey] = {};
-        }
-        section.verifications.forEach(verification => {
-          newConfigStatuses[cacheKey][verification.id] = newStatus;
+
+    // Determine if any currently *visible* statuses are invalid. If yes → set them all valid, else → set them all invalid
+    const currentStatuses = appState.verificationStatuses;
+
+    // Helper to check if a section is a hidden test section
+    const isHiddenTestSection = (sectionKey) => {
+      // Convert camelCase key back to kebab-case id used in JSON
+      const sectionId = sectionKey.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '');
+      const matchingSection = configurationSidebarSections.sections.find(s => s.id === sectionId);
+      return matchingSection?.testSection && !appState.showTestSections;
+    };
+
+    let hasInvalid = false;
+
+    // 1. Check general statuses
+    Object.values(currentStatuses.general || {}).forEach(status => {
+      if (status === STATUS.INVALID) hasInvalid = true;
+    });
+
+    // 2. Check configuration section statuses (respect test section visibility)
+    Object.keys(currentStatuses).forEach(sectionKey => {
+      if (sectionKey === 'general') return;
+      if (isHiddenTestSection(sectionKey)) return; // skip hidden test sections
+      const sectionStatuses = currentStatuses[sectionKey];
+      if (typeof sectionStatuses === 'object') {
+        Object.values(sectionStatuses).forEach(status => {
+          if (status === STATUS.INVALID) hasInvalid = true;
         });
       }
     });
-    
-    // Update all verification statuses
-    appState.setVerificationStatuses(prevStatuses => ({
-      ...newConfigStatuses,
-      general: newGeneralStatuses  // Set general statuses directly, not nested
-    }));
-    
-    // Show notification
-    eventHandlers.showAppNotification(
-      `All verifications set to: ${newStatus.toUpperCase()}`,
-      'info',
-      3000
-    );
-  }, [
-    appState.verificationStatuses, 
-    appState.generalVerificationConfig, 
-    appState.setVerificationStatuses, 
-    appState.showTestSections,
-    eventHandlers
-  ]);
+
+    const newStatusValue = hasInvalid ? STATUS.VALID : STATUS.INVALID;
+
+    // Build new status object by mapping over existing keys
+    const updatedStatuses = {};
+    Object.keys(currentStatuses).forEach(sectionKey => {
+      const sectionValue = currentStatuses[sectionKey];
+      if (typeof sectionValue === 'object') {
+        updatedStatuses[sectionKey] = {};
+        Object.keys(sectionValue).forEach(verId => {
+          updatedStatuses[sectionKey][verId] = newStatusValue;
+        });
+      } else {
+        updatedStatuses[sectionKey] = newStatusValue;
+      }
+    });
+
+    appState.setVerificationStatuses(updatedStatuses);
+
+    eventHandlers.showAppNotification(`All verifications set to: ${newStatusValue.toUpperCase()}`, 'info', 3000);
+  }, [appState.verificationStatuses, appState.showTestSections, appState.setVerificationStatuses, eventHandlers]);
 
   return {
     handleFixCommand,
