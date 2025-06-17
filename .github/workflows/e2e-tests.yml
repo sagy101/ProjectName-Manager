@@ -480,6 +480,13 @@ jobs:
             
             ${{ env.E2E_NON_PASSING_DETAILS }}
             </details>
-            
+
             ---
-            *E2E tests validate the complete application workflow including UI interactions, terminal operations, and configuration management.* 
+            *E2E tests validate the complete application workflow including UI interactions, terminal operations, and configuration management.*
+      - name: Fail job if E2E tests failed
+        if: always()
+        run: |
+          if [ "${{ env.E2E_SUCCESS_PERCENTAGE }}" -lt 85 ] || [ "${{ env.E2E_TESTS_FAILED }}" -ne 0 ]; then
+            echo "E2E tests did not meet success threshold"
+            exit 1
+          fi
