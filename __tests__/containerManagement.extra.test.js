@@ -58,4 +58,41 @@ describe('containerManagement additional', () => {
     expect((await stopContainers([])).success).toBe(false);
     expect((await removeContainers(null)).success).toBe(false);
   });
+
+  test('stopContainers handles single failure', async () => {
+    child_process.exec.mockImplementation((cmd, opts, cb) => cb(new Error('boom'), '', 'err'));
+    const win = { webContents: { send: jest.fn() }, isDestroyed: jest.fn(() => false) };
+    const res = await stopContainers(['x'], win);
+    expect(res.success).toBe(false);
+    expect(win.webContents.send).toHaveBeenCalledWith('container-terminated', {
+      containerName: 'x',
+      success: false,
+      error: 'err'
+    });
+  });
+
+  test('removeContainers aggregates failures', async () => {
+    child_process.exec.mockImplementation((cmd, opts, cb) => cb(new Error('fail'), '', 'oops'));
+    const res = await removeContainers(['c']);
+    expect(res.success).toBe(false);
+    expect(res.results[0]).toEqual({
+      containerName: 'c',
+      success: false,
+      error: 'oops',
+      stdout: '',
+      stderr: 'oops'
+    });
+  });
+
+  test('getContainerStatus unknown for missing name', async () => {
+    const mod = require('../src/main/containerManagement');
+    const status = await mod.getContainerStatus('');
+    expect(status).toBe('unknown');
+  });
+
+  test('listContainers returns raw table output', async () => {
+    child_process.exec.mockImplementation((cmd, opts, cb) => cb(null, 'TABLE', ''));
+    const res = await listContainers({ format: 'table' });
+    expect(res).toEqual({ success: true, containers: 'TABLE' });
+  });
 });
