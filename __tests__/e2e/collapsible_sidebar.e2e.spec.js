@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { launchElectron, waitForElement } = require('./test-helpers');
+const { launchElectron, waitForElement, getTimeout } = require('./test-helpers');
 
 test.describe('Collapsible Sidebar E2E Tests', () => {
   let electronApp;
@@ -11,7 +11,7 @@ test.describe('Collapsible Sidebar E2E Tests', () => {
     window = launchResult.window;
     
     // Wait for the app to load completely
-    await window.waitForSelector('.config-collapse-btn', { timeout: 10000 });
+    await window.waitForSelector('.config-collapse-btn', { timeout: getTimeout(10000) });
   });
 
   test.afterEach(async () => {
@@ -46,7 +46,7 @@ test.describe('Collapsible Sidebar E2E Tests', () => {
     await collapseButton.click();
     
     // Wait for animation to complete
-    await window.waitForTimeout(500);
+    await window.waitForTimeout(getTimeout(500));
     
     // Verify sidebar is now collapsed
     await expect(sidebar).toHaveClass(/collapsed/);
@@ -69,7 +69,7 @@ test.describe('Collapsible Sidebar E2E Tests', () => {
     
     // First collapse the sidebar
     await collapseButton.click();
-    await window.waitForTimeout(500);
+    await window.waitForTimeout(getTimeout(500));
     
     // Verify it's collapsed
     await expect(sidebar).toHaveClass(/collapsed/);
@@ -78,7 +78,7 @@ test.describe('Collapsible Sidebar E2E Tests', () => {
     await collapseButton.click();
     
     // Wait for animation to complete
-    await window.waitForTimeout(500);
+    await window.waitForTimeout(getTimeout(500));
     
     // Verify sidebar is now expanded
     await expect(sidebar).not.toHaveClass(/collapsed/);
@@ -106,7 +106,7 @@ test.describe('Collapsible Sidebar E2E Tests', () => {
     
     // Collapse the sidebar
     await collapseButton.click();
-    await window.waitForTimeout(500);
+    await window.waitForTimeout(getTimeout(500));
     
     // Verify content is hidden (opacity should be 0)
     const configSectionsOpacity = await configSections.evaluate(el => 
@@ -129,7 +129,7 @@ test.describe('Collapsible Sidebar E2E Tests', () => {
     
     // Collapse the sidebar
     await collapseButton.click();
-    await window.waitForTimeout(500);
+    await window.waitForTimeout(getTimeout(500));
     
     // Get new main content width
     const expandedMainContentBox = await mainContent.boundingBox();
@@ -145,18 +145,18 @@ test.describe('Collapsible Sidebar E2E Tests', () => {
     // Rapidly click the button multiple times
     for (let i = 0; i < 5; i++) {
       await collapseButton.click();
-      await window.waitForTimeout(100); // Short delay between clicks
+      await window.waitForTimeout(getTimeout(100)); // Short delay between clicks
     }
     
     // Wait for all animations to complete
-    await window.waitForTimeout(1000);
+    await window.waitForTimeout(getTimeout(1000));
     
     // The final state should be collapsed (odd number of clicks)
     await expect(sidebar).toHaveClass(/collapsed/);
     
     // Click once more to expand
     await collapseButton.click();
-    await window.waitForTimeout(500);
+    await window.waitForTimeout(getTimeout(500));
     
     // Should be expanded now
     await expect(sidebar).not.toHaveClass(/collapsed/);
@@ -170,7 +170,7 @@ test.describe('Collapsible Sidebar E2E Tests', () => {
     
     // Collapse the sidebar
     await collapseButton.click();
-    await window.waitForTimeout(500);
+    await window.waitForTimeout(getTimeout(500));
     
     // Get new button position
     const collapsedButtonBox = await collapseButton.boundingBox();
@@ -203,7 +203,7 @@ test.describe('Collapsible Sidebar E2E Tests', () => {
     
     // Test that clicking still works after hover
     await collapseButton.click();
-    await window.waitForTimeout(500);
+    await window.waitForTimeout(getTimeout(500));
     
     const sidebar = window.locator('.sidebar');
     await expect(sidebar).toHaveClass(/collapsed/);
@@ -217,14 +217,14 @@ test.describe('Collapsible Sidebar E2E Tests', () => {
     
     // Collapse the sidebar
     await collapseButton.click();
-    await window.waitForTimeout(500);
+    await window.waitForTimeout(getTimeout(500));
     
     // Check updated accessibility attributes
     await expect(collapseButton).toHaveAttribute('title', 'Expand Configuration');
     
     // Expand again
     await collapseButton.click();
-    await window.waitForTimeout(500);
+    await window.waitForTimeout(getTimeout(500));
     
     // Should be back to original
     await expect(collapseButton).toHaveAttribute('title', 'Collapse Configuration');

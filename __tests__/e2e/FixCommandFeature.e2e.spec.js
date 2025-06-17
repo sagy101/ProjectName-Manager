@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const path = require('path');
 const fs = require('fs');
-const { launchElectron } = require('./test-helpers');
+const { launchElectron, ensureAllVerificationsValid, getTimeout } = require('./test-helpers');
 
 // Import configuration data to validate test scenarios
 const generalEnvironmentVerifications = JSON.parse(
@@ -24,7 +24,10 @@ test.describe('Fix Command Feature E2E Tests', () => {
     page = win;
     
     // Wait for app to fully load
-    await page.waitForSelector('.config-container', { timeout: 30000 });
+    await page.waitForSelector('.config-container', { timeout: getTimeout(30000) });
+    await page.waitForTimeout(getTimeout(2000));
+    // Ensure all verifications are valid before toggling
+    await ensureAllVerificationsValid(page);
     
     // Expand the sidebar first to access debug tools
     const expandButton = await page.locator('[title="Expand Sidebar"]');
@@ -41,16 +44,16 @@ test.describe('Fix Command Feature E2E Tests', () => {
     const toggleVerificationsButton = await page.locator('.debug-section-content button').filter({ hasText: /Toggle Verifications/i });
     if (await toggleVerificationsButton.isVisible()) {
       await toggleVerificationsButton.click();
-      await page.waitForTimeout(1500); // Wait longer for status changes to propagate
+      await page.waitForTimeout(getTimeout(1500)); // Wait longer for status changes to propagate
     }
     
     // Close debug tools
     await debugButton.click();
-    await page.waitForTimeout(500); // Wait for debug panel to close
+    await page.waitForTimeout(getTimeout(500)); // Wait for debug panel to close
 
     // Find the header for "General Environment" and ensure it's expanded
     const header = page.locator('.verification-header', { hasText: 'General Environment' });
-    await header.waitFor({ state: 'visible', timeout: 10000 });
+    await header.waitFor({ state: 'visible', timeout: getTimeout(10000) });
 
     // Find the toggle button within the header and ensure section is expanded
     const toggleButton = header.locator('.toggle-icon');
@@ -65,7 +68,7 @@ test.describe('Fix Command Feature E2E Tests', () => {
       
       if (isCollapsed) {
         await toggleButton.click();
-        await page.waitForTimeout(1000); // Wait for animation
+        await page.waitForTimeout(getTimeout(1000)); // Wait for animation
       }
       
       // Check if verification content is now visible
@@ -77,16 +80,16 @@ test.describe('Fix Command Feature E2E Tests', () => {
       
       attempts++;
       if (attempts < maxAttempts) {
-        await page.waitForTimeout(500); // Wait before next attempt
+        await page.waitForTimeout(getTimeout(500)); // Wait before next attempt
       }
     }
 
     // Now, confirm that the "General Environment" link is visible before proceeding.
-    await page.waitForSelector('text=General Environment', { state: 'visible', timeout: 10000 });
+    await page.waitForSelector('text=General Environment', { state: 'visible', timeout: getTimeout(10000) });
     
     // Most importantly, wait for the verification content to be visible
     // This is critical for the tests that depend on it
-    await page.waitForSelector('.verification-content', { state: 'visible', timeout: 15000 });
+    await page.waitForSelector('.verification-content', { state: 'visible', timeout: getTimeout(15000) });
     
     // Wait for fix buttons to appear (they should be there after toggling verifications)
     // If they don't appear, try toggling verifications again
@@ -99,7 +102,7 @@ test.describe('Fix Command Feature E2E Tests', () => {
         await page.waitForFunction(() => {
           const fixButtons = document.querySelectorAll('.fix-button');
           return fixButtons.length > 0;
-        }, { timeout: 5000 });
+        }, { timeout: getTimeout(5000) });
         fixButtonsFound = true;
         console.log('✓ Fix buttons found successfully');
       } catch (error) {
@@ -119,11 +122,11 @@ test.describe('Fix Command Feature E2E Tests', () => {
           const toggleVerificationsButton = await page.locator('.debug-section-content button').filter({ hasText: /Toggle Verifications/i });
           if (await toggleVerificationsButton.isVisible()) {
             await toggleVerificationsButton.click();
-            await page.waitForTimeout(2000); // Wait longer for status changes
+            await page.waitForTimeout(getTimeout(2000)); // Wait longer for status changes
           }
           
           await debugButton.click(); // Close debug tools
-          await page.waitForTimeout(1000);
+          await page.waitForTimeout(getTimeout(1000));
         }
       }
     }
@@ -147,7 +150,7 @@ test.describe('Fix Command Feature E2E Tests', () => {
     await fixButton.click();
     
     // Wait for confirmation popup to appear
-    await page.waitForSelector('.command-popup-overlay', { timeout: 5000 });
+    await page.waitForSelector('.command-popup-overlay', { timeout: getTimeout(5000) });
     
     // Click the confirm button in the popup
     const confirmButton = page.locator('.confirm-button');
@@ -155,7 +158,7 @@ test.describe('Fix Command Feature E2E Tests', () => {
     await confirmButton.click();
     
     // Wait for popup to disappear
-    await page.waitForSelector('.command-popup-overlay', { state: 'hidden', timeout: 5000 });
+    await page.waitForSelector('.command-popup-overlay', { state: 'hidden', timeout: getTimeout(5000) });
   };
 
   test.describe('Fix Button Visibility', () => {
@@ -200,7 +203,7 @@ test.describe('Fix Command Feature E2E Tests', () => {
     test('should show fix buttons for configuration sidebar verifications with fixCommand', async () => {
       // Navigate to a configuration section that actually exists
       await page.click('text=Mirror + MariaDB');
-      await page.waitForSelector('.config-section', { timeout: 10000 });
+      await page.waitForSelector('.config-section', { timeout: getTimeout(10000) });
 
       // Find configuration sections with verifications that have fix commands
       const sectionsWithFixCommands = configurationSidebarAbout.filter(section => 
@@ -243,7 +246,7 @@ test.describe('Fix Command Feature E2E Tests', () => {
         await clickFixButtonWithConfirmation(fixButton);
         
         // Should open a floating terminal
-        await page.waitForSelector('.floating-terminal-window', { timeout: 10000 });
+        await page.waitForSelector('.floating-terminal-window', { timeout: getTimeout(10000) });
         
         // Verify floating terminal has fix command properties
         const floatingTerminal = await page.locator('.floating-terminal-window').first();
@@ -286,7 +289,7 @@ test.describe('Fix Command Feature E2E Tests', () => {
         const testVerification = dirCreationVerifications[0]; // Test first directory creation
         
         await page.click('text=Mirror + MariaDB');
-        await page.waitForSelector('.config-section', { timeout: 10000 });
+        await page.waitForSelector('.config-section', { timeout: getTimeout(10000) });
         
         // Try to find and click any available fix button (since we can't target specific verifications by ID)
         const fixButtons = await page.locator('.fix-button').all();
@@ -298,7 +301,7 @@ test.describe('Fix Command Feature E2E Tests', () => {
           
           // Try to wait for floating terminal, but handle gracefully if it doesn't appear
           try {
-            await page.waitForSelector('.floating-terminal-window', { timeout: 5000 });
+            await page.waitForSelector('.floating-terminal-window', { timeout: getTimeout(5000) });
             
             // Verify terminal opened
             const terminal = page.locator('.floating-terminal-window');
@@ -309,7 +312,7 @@ test.describe('Fix Command Feature E2E Tests', () => {
             console.log('⚠ Floating terminal not visible in CI - checking alternative indicators');
             
             // Wait for command to potentially complete
-            await page.waitForTimeout(2000);
+            await page.waitForTimeout(getTimeout(2000));
             
             // Check for any success indicators
             const hasNotification = await page.locator('.notification').isVisible().catch(() => false);
@@ -344,7 +347,7 @@ test.describe('Fix Command Feature E2E Tests', () => {
         // Try to wait for floating terminal, but handle gracefully if it doesn't appear
         let terminalAppeared = false;
         try {
-          await page.waitForSelector('.floating-terminal-window', { timeout: 5000 });
+          await page.waitForSelector('.floating-terminal-window', { timeout: getTimeout(5000) });
           
           // Verify the terminal is visible and working
           const terminal = page.locator('.floating-terminal-window');
@@ -357,7 +360,7 @@ test.describe('Fix Command Feature E2E Tests', () => {
         }
         
         // Wait for command execution and potential completion
-        await page.waitForTimeout(5000);
+        await page.waitForTimeout(getTimeout(5000));
         
         // Check for verification re-run indicators
         try {
@@ -388,7 +391,7 @@ test.describe('Fix Command Feature E2E Tests', () => {
         
         // Try to wait for floating terminal, but don't fail if it doesn't appear in CI
         try {
-          await page.waitForSelector('.floating-terminal-window', { timeout: 5000 });
+          await page.waitForSelector('.floating-terminal-window', { timeout: getTimeout(5000) });
           
           // Terminal should be visible
           const terminal = page.locator('.floating-terminal-window');
@@ -401,7 +404,7 @@ test.describe('Fix Command Feature E2E Tests', () => {
           console.log('⚠ Floating terminal window not visible - checking for command execution indicators');
           
           // Wait a bit for command to execute
-          await page.waitForTimeout(3000);
+          await page.waitForTimeout(getTimeout(3000));
           
           // Check if we can find any indication that the command was executed
           // This could be through notifications, status changes, or console logs
@@ -516,7 +519,7 @@ test.describe('Fix Command Feature E2E Tests', () => {
         // Rapid clicks should not cause issues - but with confirmation popup, we need to handle this differently
         // First click should open confirmation popup
         await fixButton.click();
-        await page.waitForSelector('.command-popup-overlay', { timeout: 5000 });
+        await page.waitForSelector('.command-popup-overlay', { timeout: getTimeout(5000) });
         
         // Additional clicks while popup is open should be gracefully handled
         // We don't actually click the button again since the popup overlay blocks it
@@ -529,7 +532,7 @@ test.describe('Fix Command Feature E2E Tests', () => {
         await confirmButton.click();
         
         // Should only open one floating terminal
-        await page.waitForTimeout(2000);
+        await page.waitForTimeout(getTimeout(2000));
         const terminalCount = await page.locator('.floating-terminal-window').count();
         expect(terminalCount).toBeLessThanOrEqual(1);
       }
@@ -546,7 +549,7 @@ test.describe('Fix Command Feature E2E Tests', () => {
         await clickFixButtonWithConfirmation(fixButtons[0]);
         
         // Wait for terminal to open
-        await page.waitForSelector('.floating-terminal-window', { timeout: 10000 });
+        await page.waitForSelector('.floating-terminal-window', { timeout: getTimeout(10000) });
         
         // Should be able to navigate while fix command runs
         await page.click('text=Mirror + MariaDB');

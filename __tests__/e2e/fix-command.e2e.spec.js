@@ -169,6 +169,8 @@ test.describe('Fix Command Feature', () => {
 
     await toggleVerificationsButton.click();
     await window.waitForTimeout(getTimeout(5000)); // Wait for status changes to propagate
+
+    
   
     
     // Close debug tools

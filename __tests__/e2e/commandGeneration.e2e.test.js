@@ -3,6 +3,8 @@
 const { generateCommandList } = require('../../src/utils/evalUtils');
 const configSidebarCommands = require('../../src/configurationSidebarCommands.json');
 const { sections: configSidebarSectionsActual } = require('../../src/configurationSidebarSections.json');
+const { test, expect } = require('@playwright/test');
+const { launchElectron, getTimeout } = require('./test-helpers');
 
 describe('Command generation end-to-end', () => {
   test('Mirror command without attach uses base gradle run', () => {

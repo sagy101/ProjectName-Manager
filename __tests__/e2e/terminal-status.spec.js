@@ -1,6 +1,7 @@
 const { _electron: electron } = require('playwright');
 const { test, expect } = require('@playwright/test');
 const path = require('path');
+const { launchElectron, getTimeout } = require('./test-helpers');
 
 test.describe('Terminal Status E2E Tests', () => {
   let electronApp;
@@ -11,7 +12,7 @@ test.describe('Terminal Status E2E Tests', () => {
     electronApp = await electron.launch({ 
       args: [path.join(__dirname, '..', 'main.js')],
       // Increase timeout for slower machines or complex startups
-      timeout: 60000 
+      timeout: getTimeout(60000) 
     });
     window = await electronApp.firstWindow();
     await window.waitForLoadState('domcontentloaded');
@@ -42,7 +43,7 @@ test.describe('Terminal Status E2E Tests', () => {
     const activeTabStatus = window.locator('.tab.active .status-indicator');
     
     // Use expect with a timeout to wait for the status to become 'running'
-    await expect(activeTabStatus).toHaveClass(/running/, { timeout: 15000 });
+    await expect(activeTabStatus).toHaveClass(/running/, { timeout: getTimeout(15000) });
 
     // --- 4. SEND CTRL+C ---
     // Focus the active terminal's viewport and send the Ctrl+C key combination
@@ -52,7 +53,7 @@ test.describe('Terminal Status E2E Tests', () => {
 
     // --- 5. VERIFY STOPPED STATUS ---
     // Wait for the status indicator to update to 'stopped'
-    await expect(activeTabStatus).toHaveClass(/stopped/, { timeout: 10000 });
+    await expect(activeTabStatus).toHaveClass(/stopped/, { timeout: getTimeout(10000) });
 
     // Optional: Check the text in the TabInfoPanel to be more specific
     await window.locator('.tab.active .info-icon').click();
