@@ -11,7 +11,7 @@
         "errorText": "Error loading projects",
         "noOptionsText": "No projects found",
         "defaultValue": {
-              "contains": "staging"
+              "contains": "dev5"
         }
       }
     ]
