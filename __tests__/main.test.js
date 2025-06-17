@@ -534,7 +534,7 @@ describe('Main Process Tests', () => {
       wm.createWindow();
       const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
       wm.openDevTools();
-      expect(logSpy).toHaveBeenCalledWith('Opening developer tools');
+      expect(logSpy).toHaveBeenCalledWith('[DEBUG]', 'Opening developer tools');
       logSpy.mockRestore();
     });
 

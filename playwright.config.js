@@ -23,8 +23,7 @@ const config = {
   /* Retry on CI only */
   retries: process.env.CI ? 0 : 1,
   /* Opt out of parallel tests on CI. */
-  // Use 6 workers on CI for faster E2E, unless overridden
-  workers: process.env.CI ? 6 : undefined,
+  workers: 20,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   use: {
