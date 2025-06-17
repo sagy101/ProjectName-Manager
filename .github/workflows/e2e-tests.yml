@@ -198,12 +198,77 @@ jobs:
           export GOPATH=$GOPATH
           export JAVA_HOME=$JAVA_HOME
           export CLOUDBEES_FEATURES_ENV_KEY=$CLOUDBEES_FEATURES_ENV_KEY
-          export PATH=$PATH:$GOPATH/bin:/usr/local/bin
+          export PATH=$(pwd)/mock_bin:$PATH:$GOPATH/bin:/usr/local/bin
           export DEBUG_LOGS=${{ env.DEBUG_LOGS }}
+          
+          # Create node and nvm mocks in mock_bin
+          cat > ./mock_bin/node << 'NODEEOF'
+          #!/bin/bash
+          if [[ "$1" == "--version" ]]; then
+            echo "v16.20.2"
+          else
+            /usr/bin/node "$@"
+          fi
+          NODEEOF
+          chmod +x ./mock_bin/node
+          
+          cat > ./mock_bin/nvm << 'NVMEOF'
+          #!/bin/bash
+          echo "0.39.0"
+          NVMEOF
+          chmod +x ./mock_bin/nvm
+          
+          # Update go mock to handle 'which go' check
+          cat > ./mock_bin/go << 'GOEOF'
+          #!/bin/bash
+          if [[ "$1" == "version" ]]; then
+            echo "go version go1.21.4 linux/amd64"
+          else
+            echo "/usr/local/go/bin/go"
+          fi
+          GOEOF
+          chmod +x ./mock_bin/go
+          
+          # Create which command mock to return proper go location
+          cat > ./mock_bin/which << 'WHICHEOF'
+          #!/bin/bash
+          if [[ "$1" == "go" ]]; then
+            echo "/usr/local/go/bin/go"
+          else
+            /usr/bin/which "$@"
+          fi
+          WHICHEOF
+          chmod +x ./mock_bin/which
           
           export NVM_DIR="$HOME/.nvm"
           . "$NVM_DIR/nvm.sh"
           nvm use 22.16.0
+          
+          # Ensure mock directories exist in the build output directory
+          # The app checks paths relative to its resources directory
+          BUILD_DIR="./build/linux-unpacked/resources/app"
+          mkdir -p "$BUILD_DIR"
+          cd "$BUILD_DIR"
+          
+          # Re-create all mock directories here
+          mkdir -p ./weblifemirror/agent
+          mkdir -p ./threatintelligence/threat-intelligence
+          mkdir -p ./threatintelligence/url-intelligence
+          mkdir -p ./infrastructure
+          mkdir -p ./activity-logger
+          mkdir -p ./rule-engine
+          mkdir -p ./test-analytics
+          mkdir -p ./gopm/agent
+          
+          # Re-create gradlew files
+          touch ./weblifemirror/gradlew && chmod +x ./weblifemirror/gradlew
+          touch ./threatintelligence/threat-intelligence/gradlew && chmod +x ./threatintelligence/threat-intelligence/gradlew
+          touch ./threatintelligence/url-intelligence/gradlew && chmod +x ./threatintelligence/url-intelligence/gradlew
+          touch ./activity-logger/gradlew && chmod +x ./activity-logger/gradlew
+          
+          # Go back to project root
+          cd -
+          
           # Use the original script but capture output and add workers flag
           npm run build
           xvfb-run -a bash -c "
@@ -211,7 +276,7 @@ jobs:
             export GOPATH=$GOPATH
             export JAVA_HOME=$JAVA_HOME
             export CLOUDBEES_FEATURES_ENV_KEY=$CLOUDBEES_FEATURES_ENV_KEY
-            export PATH=$PATH:$GOPATH/bin:/usr/local/bin
+            export PATH=$(pwd)/mock_bin:$PATH:$GOPATH/bin:/usr/local/bin
             export DEBUG_LOGS=${{ env.DEBUG_LOGS }}
             unset PREFIX && source ~/.nvm/nvm.sh && nvm use && E2E_ENV=prod npx playwright test --workers=6 --reporter=list --timeout=30000
           " 2>&1 | tee e2e-output.txt || echo "E2E completed with issues"
