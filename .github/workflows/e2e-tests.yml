@@ -25,13 +25,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Set up NVM and Node.js 22.16.0
+      - name: Set up NVM and Node.js versions
         run: |
           export NVM_DIR="$HOME/.nvm"
           curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
           . "$NVM_DIR/nvm.sh"
+          nvm install 15.5.1
           nvm install 22.16.0
           nvm use 22.16.0
+          echo "Installed Node.js versions:"
+          nvm ls
+          echo "Current Node.js version:"
           node -v
           npm -v
       - name: Install dependencies
@@ -144,18 +148,24 @@ jobs:
           echo "Chromium 125.0.6422.141"
           EOF
           
-          # nvm - Mock to return expected version and list
+          # nvm - Use real nvm when available, fallback to mock
           tee ./mock_bin/nvm > /dev/null << 'EOF'
           #!/bin/bash
-          if [[ "$1" == "--version" ]]; then
-            echo "0.39.7"
-          elif [[ "$1" == "ls" ]]; then
-            echo "       v15.14.0"
-            echo "->     v16.20.2"
-            echo "       v22.16.0"
-            echo "default -> 16.20.2 (-> v16.20.2)"
+          # Try to use real nvm first
+          if [ -s "$HOME/.nvm/nvm.sh" ]; then
+            . "$HOME/.nvm/nvm.sh"
+            nvm "$@"
           else
-            echo "Node Version Manager (v0.39.7)"
+            # Fallback to mock responses
+            if [[ "$1" == "--version" ]]; then
+              echo "0.39.7"
+            elif [[ "$1" == "ls" ]]; then
+              echo "       v15.5.1"
+              echo "->     v22.16.0"
+              echo "default -> 22.16.0 (-> v22.16.0)"
+            else
+              echo "Node Version Manager (v0.39.7)"
+            fi
           fi
           EOF
           
