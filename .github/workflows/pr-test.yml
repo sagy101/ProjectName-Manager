@@ -1,0 +1,33 @@
+name: PR Test Verification
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Jest tests with merged coverage
+        run: npm run test:jest:coverage:text
+
+      - name: Upload merged coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: merged-coverage-report
+          path: coverage/merged/
+
+      - name: Run E2E tests
+        run: npm run test:e2e 
