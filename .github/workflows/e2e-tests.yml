@@ -257,7 +257,7 @@ jobs:
             export PATH=$(pwd)/mock_bin:$PATH:$GOPATH/bin:/usr/local/bin
             export DEBUG_LOGS=${{ env.DEBUG_LOGS }}
             export CI=true
-            unset PREFIX && source ~/.nvm/nvm.sh && nvm use && HEADLESS=true E2E_ENV=prod npm run test:e2e
+            unset PREFIX && source ~/.nvm/nvm.sh && nvm use && HEADLESS=true E2E_ENV=prod npx playwright test --reporter=list --timeout=60000
           " 2>&1 | tee e2e-output.txt || echo "E2E tests completed"
 
       - name: Upload E2E Logs
