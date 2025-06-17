@@ -20,7 +20,7 @@ jobs:
       GOPATH: ${{ github.workspace }}/go
       JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
       CLOUDBEES_FEATURES_ENV_KEY: mock-key-12345
-      DEBUG_LOGS: 'false'
+      DEBUG_LOGS: 'true'
 
     steps:
       - name: Checkout code
@@ -178,7 +178,7 @@ jobs:
           chmod +x ./mock_bin/*
           
           echo "Mock environment setup complete."
-      - name: Run E2E Tests (with Xvfb)
+      - name: Run Specific Failing E2E Tests with Debug Logs
         timeout-minutes: 20
         run: |
           # Set up environment variables for E2E tests
@@ -187,9 +187,9 @@ jobs:
           export JAVA_HOME=$JAVA_HOME
           export CLOUDBEES_FEATURES_ENV_KEY=$CLOUDBEES_FEATURES_ENV_KEY
           export PATH=$(pwd)/mock_bin:$PATH:$GOPATH/bin:/usr/local/bin
-          export DEBUG_LOGS=${{ env.DEBUG_LOGS }}
+          export DEBUG_LOGS=true
+          export CI=true
           export NVM_DIR="$HOME/.nvm"
-          
           
           # Source nvm and use Node.js 22.16.0 for the actual test execution
           . "$NVM_DIR/nvm.sh"
@@ -201,6 +201,7 @@ jobs:
           echo "GOPATH: $GOPATH"
           echo "JAVA_HOME: $JAVA_HOME"
           echo "CLOUDBEES_FEATURES_ENV_KEY: $CLOUDBEES_FEATURES_ENV_KEY"
+          echo "DEBUG_LOGS: $DEBUG_LOGS"
           echo ""
           echo "=== Testing Mock Executables ==="
           echo "gcloud version:"
@@ -243,31 +244,39 @@ jobs:
           echo "=== Mock Environment Test Complete ==="
           echo ""
           
-          # Use the original script but capture output and run subset of tests for faster feedback
+          # Build the app
           npm run build
+          
+          # Run only the 3 specific failing tests with debug logs enabled
+          echo "=== Running Specific Failing Tests with Debug Logs ==="
           xvfb-run -a bash -c "
             export GOPM_HOME=$GOPM_HOME
             export GOPATH=$GOPATH
             export JAVA_HOME=$JAVA_HOME
             export CLOUDBEES_FEATURES_ENV_KEY=$CLOUDBEES_FEATURES_ENV_KEY
             export PATH=$(pwd)/mock_bin:$PATH:$GOPATH/bin:/usr/local/bin
-            export DEBUG_LOGS=${{ env.DEBUG_LOGS }}
-            unset PREFIX && source ~/.nvm/nvm.sh && nvm use && E2E_ENV=prod npx playwright test --workers=2 --reporter=list --timeout=30000
-          " 2>&1 | tee e2e-output.txt || echo "E2E completed with issues"
+            export DEBUG_LOGS=true
+            export CI=true
+            unset PREFIX && source ~/.nvm/nvm.sh && nvm use && E2E_ENV=prod npx playwright test --workers=1 --reporter=list --timeout=30000 \
+              --grep 'should handle fix command for specific verification types' \
+              --grep 'should complete full fix workflow with verification re-run' \
+              --grep 'should show appropriate notifications for fix command results' \
+              __tests__/e2e/FixCommandFeature.e2e.spec.js
+          " 2>&1 | tee e2e-debug-output.txt || echo "E2E tests completed"
 
-      - name: Upload E2E Logs
+      - name: Upload E2E Debug Logs
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: e2e-logs
-          path: e2e-output.txt
+          name: e2e-debug-logs
+          path: e2e-debug-output.txt
 
       - name: Extract E2E Results
         if: always() # Always run to capture results even if tests fail
         run: |
           # Extract test results from Playwright output
-          TESTS_PASSED=$(grep -c "✓" e2e-output.txt || echo "0")
-          TESTS_FAILED=$(grep -c "✗" e2e-output.txt || echo "0")
+          TESTS_PASSED=$(grep -c "✓" e2e-debug-output.txt || echo "0")
+          TESTS_FAILED=$(grep -c "✗" e2e-debug-output.txt || echo "0")
           TESTS_TOTAL=$((TESTS_PASSED + TESTS_FAILED))
           
           # Save to environment
@@ -279,14 +288,23 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            **E2E Tests**
+            **E2E Tests (Debug Run - 3 Specific Failing Tests)**
             
             📊 **Test Results:** ${{ env.E2E_TESTS_PASSED }}/${{ env.E2E_TESTS_TOTAL }} passed
             - ✅ Passed: ${{ env.E2E_TESTS_PASSED }}
             - ❌ Failed: ${{ env.E2E_TESTS_FAILED }}
             
+            **Tests Run:**
+            - should handle fix command for specific verification types
+            - should complete full fix workflow with verification re-run  
+            - should show appropriate notifications for fix command results
+            
+            **Debug Logs:** Enabled (DEBUG_LOGS=true, CI=true)
+            
             <details>
             <summary>View full results</summary>
             
-            See the [workflow logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for detailed E2E test results and any failed tests.
+            See the [workflow logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for detailed E2E test results with debug logging enabled.
+            
+            Debug logs artifact: `e2e-debug-logs`
             </details> 
