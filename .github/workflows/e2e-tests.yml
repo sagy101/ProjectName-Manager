@@ -20,7 +20,7 @@ jobs:
       GOPATH: ${{ github.workspace }}/go
       JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
       CLOUDBEES_FEATURES_ENV_KEY: mock-key-12345
-      DEBUG_LOGS: 'false'
+      DEBUG_LOGS: 'true'
 
     steps:
       - name: Checkout code

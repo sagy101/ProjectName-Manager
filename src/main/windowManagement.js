@@ -122,7 +122,7 @@ function getMainWindow() {
 // Function to open developer tools
 function openDevTools() {
   if (mainWindow && !mainWindow.isDestroyed()) {
-    debugLog('Opening developer tools');
+    console.log('Opening developer tools');
     mainWindow.webContents.openDevTools();
     return { success: true };
   } else {

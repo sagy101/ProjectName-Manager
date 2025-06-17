@@ -71,7 +71,7 @@ jobs:
             - ❌ Failed: ${{ env.MOCK_TESTS_FAILED }}
             - ⏭️ Skipped: ${{ env.MOCK_TESTS_SKIPPED }}
             
-            📈 **Coverage:** ${{ env.MOCK_COVERAGE }}
+            📈 **Coverage:** ${{ env.MOCK_COVERAGE }}%
             
             <details>
             <summary>View full results</summary>
@@ -140,7 +140,7 @@ jobs:
             - ❌ Failed: ${{ env.PROD_TESTS_FAILED }}
             - ⏭️ Skipped: ${{ env.PROD_TESTS_SKIPPED }}
             
-            📈 **Coverage:** ${{ env.PROD_COVERAGE }}
+            📈 **Coverage:** ${{ env.PROD_COVERAGE }}%
             
             <details>
             <summary>View full results</summary>
