@@ -36,7 +36,7 @@ jobs:
           export NVM_DIR="$HOME/.nvm"
           . "$NVM_DIR/nvm.sh"
           nvm use 22.16.0
-          npm run test:jest:mock:coverage > jest-mock-output.txt 2>&1 || echo "Jest completed with issues"
+          npm run test:jest:mock:coverage 2>&1 | tee jest-mock-output.txt || echo "Jest completed with issues"
       - name: Extract Jest Mock Results
         run: |
           # Extract test results
@@ -105,7 +105,7 @@ jobs:
           export NVM_DIR="$HOME/.nvm"
           . "$NVM_DIR/nvm.sh"
           nvm use 22.16.0
-          npm run test:jest:prod:coverage > jest-prod-output.txt 2>&1 || echo "Jest completed with issues"
+          npm run test:jest:prod:coverage 2>&1 | tee jest-prod-output.txt || echo "Jest completed with issues"
       - name: Extract Jest Prod Results
         run: |
           # Extract test results
@@ -187,7 +187,7 @@ jobs:
           export NVM_DIR="$HOME/.nvm"
           . "$NVM_DIR/nvm.sh"
           nvm use 22.16.0
-          xvfb-run -a npx playwright test --workers=6 --reporter=list > e2e-output.txt 2>&1 || echo "E2E completed with issues"
+          xvfb-run -a npx playwright test --workers=6 --reporter=list 2>&1 | tee e2e-output.txt || echo "E2E completed with issues"
       - name: Extract E2E Results
         run: |
           # Extract test results from Playwright output
