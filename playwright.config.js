@@ -32,10 +32,13 @@ const config = {
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
     
     /* Run tests headlessly (invisible) */
     headless: true,
   },
+
+  outputDir: 'test-results',
 
   /* Configure projects for major browsers */
   projects: [

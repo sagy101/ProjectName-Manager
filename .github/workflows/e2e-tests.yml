@@ -143,6 +143,14 @@ jobs:
           name: e2e-logs
           path: e2e-output.txt
 
+      - name: Upload Playwright Screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-screenshots
+          path: test-results/**/*.png
+          if-no-files-found: ignore
+
       - name: Extract E2E Results
         if: always() # Always run to capture results even if tests fail
         run: |
@@ -267,6 +275,21 @@ jobs:
           else
             echo "E2E_TIMED_OUT_DETAILS=" >> $GITHUB_ENV
           fi
+
+      - name: Collect screenshots for comment
+        if: always()
+        run: |
+          SNIPPET=""
+          if [ -n "$(find test-results -name '*.png' -print -quit)" ]; then
+            for file in $(find test-results -name '*.png' | head -n 3); do
+              B64=$(base64 -w0 "$file")
+              NAME=$(basename "$file")
+              SNIPPET="${SNIPPET}\n\n![${NAME}](data:image/png;base64,${B64})"
+            done
+          fi
+          echo "E2E_SCREENSHOTS<<EOF" >> $GITHUB_ENV
+          echo "$SNIPPET" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
       - name: Determine test status
         if: always()
         run: |
@@ -353,8 +376,9 @@ jobs:
             - Mode: Headless
             - Timeout: 60 seconds per test
             - Mock environment with simulated tools and directories
-            
+
             ${{ env.E2E_NON_PASSING_DETAILS }}
+            ${{ env.E2E_SCREENSHOTS }}
             </details>
 
             ---
