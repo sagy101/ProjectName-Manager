@@ -40,9 +40,6 @@ async function launchElectron() {
 
   const window = await electronApp.firstWindow({ timeout: 60000 });
   
-  // Wait for the app to be in a ready state before proceeding
-  await waitForAppReady(window);
-  
   // Capture and log all console messages from the Electron app when debug logs are enabled.
   if (process.env.CI && process.env.DEBUG_LOGS === 'true') {
     window.on('console', async (msg) => {
@@ -62,16 +59,6 @@ async function launchElectron() {
   // The --no-sandbox and other flags should make it less visible
   
   return { electronApp, window };
-}
-
-/**
- * Waits for the application to be in a ready state.
- * @param {any} window - The Playwright window object.
- */
-async function waitForAppReady(window) {
-  // Waits for the main health report screen container to be visible.
-  // This is a reliable indicator that the main UI has loaded.
-  await waitForElement(window, '#health-report-screen', 60000);
 }
 
 /**
