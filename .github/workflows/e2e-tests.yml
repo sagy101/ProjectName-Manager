@@ -13,6 +13,14 @@ jobs:
   e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    env:
+      GOPM_HOME: ${{ github.workspace }}/gopm
+      GOPATH: ${{ github.workspace }}/go
+      JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
+      CLOUDBEES_FEATURES_ENV_KEY: mock-key-12345
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -67,19 +75,23 @@ jobs:
           chmod +x ./threatintelligence/url-intelligence/gradlew
           chmod +x ./activity-logger/gradlew
           
+          # Create mock Go directories
+          mkdir -p $GOPATH/bin
+          mkdir -p $GOPM_HOME
+          
           # Set up environment variables (both for GitHub and current session)
-          echo "export GOPM_HOME=$HOME/gopm" >> $GITHUB_ENV
-          echo "export GOPATH=$HOME/go" >> $GITHUB_ENV
-          echo "export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
-          echo "export CLOUDBEES_FEATURES_ENV_KEY=mock-key-12345" >> $GITHUB_ENV
-          echo "export PATH=$PATH:$HOME/go/bin:/usr/local/bin" >> $GITHUB_ENV
+          echo "GOPM_HOME=$GOPM_HOME" >> $GITHUB_ENV
+          echo "GOPATH=$GOPATH" >> $GITHUB_ENV
+          echo "JAVA_HOME=$JAVA_HOME" >> $GITHUB_ENV
+          echo "CLOUDBEES_FEATURES_ENV_KEY=$CLOUDBEES_FEATURES_ENV_KEY" >> $GITHUB_ENV
+          echo "PATH=$PATH:$GOPATH/bin:/usr/local/bin" >> $GITHUB_ENV
           
           # Also export for current session
-          export GOPM_HOME=$HOME/gopm
-          export GOPATH=$HOME/go
-          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-          export CLOUDBEES_FEATURES_ENV_KEY=mock-key-12345
-          export PATH=$PATH:$HOME/go/bin:/usr/local/bin
+          export GOPM_HOME=$GOPM_HOME
+          export GOPATH=$GOPATH
+          export JAVA_HOME=$JAVA_HOME
+          export CLOUDBEES_FEATURES_ENV_KEY=$CLOUDBEES_FEATURES_ENV_KEY
+          export PATH=$PATH:$GOPATH/bin:/usr/local/bin
           
           # Create mock gcloud CLI
           sudo tee /usr/local/bin/gcloud > /dev/null << 'EOF'
@@ -299,12 +311,12 @@ jobs:
       - name: Run E2E Tests (with Xvfb)
         timeout-minutes: 20
         run: |
-          # Set up environment variables for E2E tests
-          export GOPM_HOME=$HOME/gopm
-          export GOPATH=$HOME/go
-          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-          export CLOUDBEES_FEATURES_ENV_KEY=mock-key-12345
-          export PATH=$PATH:$HOME/go/bin:/usr/local/bin
+          # Set up environment variables for E2E tests (using job-level env vars)
+          export GOPM_HOME=$GOPM_HOME
+          export GOPATH=$GOPATH
+          export JAVA_HOME=$JAVA_HOME
+          export CLOUDBEES_FEATURES_ENV_KEY=$CLOUDBEES_FEATURES_ENV_KEY
+          export PATH=$PATH:$GOPATH/bin:/usr/local/bin
           
           export NVM_DIR="$HOME/.nvm"
           . "$NVM_DIR/nvm.sh"
@@ -312,11 +324,11 @@ jobs:
           # Use the original script but capture output and add workers flag
           npm run build
           xvfb-run -a bash -c "
-            export GOPM_HOME=$HOME/gopm
-            export GOPATH=$HOME/go
-            export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-            export CLOUDBEES_FEATURES_ENV_KEY=mock-key-12345
-            export PATH=$PATH:$HOME/go/bin:/usr/local/bin
+            export GOPM_HOME=$GOPM_HOME
+            export GOPATH=$GOPATH
+            export JAVA_HOME=$JAVA_HOME
+            export CLOUDBEES_FEATURES_ENV_KEY=$CLOUDBEES_FEATURES_ENV_KEY
+            export PATH=$PATH:$GOPATH/bin:/usr/local/bin
             unset PREFIX && source ~/.nvm/nvm.sh && nvm use && E2E_ENV=prod npx playwright test --workers=6 --reporter=list --timeout=30000
           " 2>&1 | tee e2e-output.txt || echo "E2E completed with issues"
       - name: Extract E2E Results
