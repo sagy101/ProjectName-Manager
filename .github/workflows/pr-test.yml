@@ -11,15 +11,27 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Use Node.js 18.x
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.x
-          cache: 'npm'
+      - name: Set up NVM and Node.js 22.16.0
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+          . "$NVM_DIR/nvm.sh"
+          nvm install 22.16.0
+          nvm use 22.16.0
+          node -v
+          npm -v
       - name: Install dependencies
-        run: npm ci
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          . "$NVM_DIR/nvm.sh"
+          nvm use 22.16.0
+          npm ci
       - name: Run Jest Mock Coverage
-        run: npm run test:jest:mock:coverage
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          . "$NVM_DIR/nvm.sh"
+          nvm use 22.16.0
+          npm run test:jest:mock:coverage
       - name: Upload Mock Coverage Report
         uses: actions/upload-artifact@v4
         with:
@@ -32,15 +44,27 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Use Node.js 18.x
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.x
-          cache: 'npm'
+      - name: Set up NVM and Node.js 22.16.0
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+          . "$NVM_DIR/nvm.sh"
+          nvm install 22.16.0
+          nvm use 22.16.0
+          node -v
+          npm -v
       - name: Install dependencies
-        run: npm ci
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          . "$NVM_DIR/nvm.sh"
+          nvm use 22.16.0
+          npm ci
       - name: Run Jest Prod Coverage
-        run: npm run test:jest:prod:coverage
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          . "$NVM_DIR/nvm.sh"
+          nvm use 22.16.0
+          npm run test:jest:prod:coverage
       - name: Upload Prod Coverage Report
         uses: actions/upload-artifact@v4
         with:
@@ -53,12 +77,24 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Use Node.js 18.x
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.x
-          cache: 'npm'
+      - name: Set up NVM and Node.js 22.16.0
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+          . "$NVM_DIR/nvm.sh"
+          nvm install 22.16.0
+          nvm use 22.16.0
+          node -v
+          npm -v
       - name: Install dependencies
-        run: npm ci
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          . "$NVM_DIR/nvm.sh"
+          nvm use 22.16.0
+          npm ci
       - name: Run E2E Tests
-        run: npm run test:e2e 
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          . "$NVM_DIR/nvm.sh"
+          nvm use 22.16.0
+          npm run test:e2e 
