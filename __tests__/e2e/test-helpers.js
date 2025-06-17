@@ -25,6 +25,12 @@ async function launchElectron() {
   
   const window = await electronApp.firstWindow({ timeout: 60000 });
   
+  // Capture and log all console messages from the Electron app
+  window.on('console', async (msg) => {
+    const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
+    console.log(`[APP CONSOLE] ${msg.type()}:`, ...args);
+  });
+  
   // Simply return the window - don't try to manipulate visibility
   // The --no-sandbox and other flags should make it less visible
   
