@@ -252,9 +252,7 @@ jobs:
             export CLOUDBEES_FEATURES_ENV_KEY=$CLOUDBEES_FEATURES_ENV_KEY
             export PATH=$(pwd)/mock_bin:$PATH:$GOPATH/bin:/usr/local/bin
             export DEBUG_LOGS=${{ env.DEBUG_LOGS }}
-            unset PREFIX && source ~/.nvm/nvm.sh && nvm use && E2E_ENV=prod npx playwright test --workers=2 --reporter=list --timeout=30000 \
-              __tests__/e2e/fix-command.e2e.spec.js \
-              __tests__/e2e/FixCommandFeature.e2e.spec.js 
+            unset PREFIX && source ~/.nvm/nvm.sh && nvm use && E2E_ENV=prod npx playwright test --workers=2 --reporter=list --timeout=30000
           " 2>&1 | tee e2e-output.txt || echo "E2E completed with issues"
 
       - name: Upload E2E Logs
