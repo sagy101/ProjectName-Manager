@@ -5,29 +5,60 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+  jest-mock:
+    name: Jest Mock Coverage
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
       - name: Use Node.js 18.x
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
           cache: 'npm'
-
       - name: Install dependencies
         run: npm ci
-
-      - name: Run Jest tests with merged coverage
-        run: npm run test:jest:coverage:text
-
-      - name: Upload merged coverage report
-        uses: actions/upload-artifact@v3
+      - name: Run Jest Mock Coverage
+        run: npm run test:jest:mock:coverage
+      - name: Upload Mock Coverage Report
+        uses: actions/upload-artifact@v4
         with:
-          name: merged-coverage-report
-          path: coverage/merged/
+          name: jest-mock-coverage
+          path: coverage/mock/
 
-      - name: Run E2E tests
+  jest-prod:
+    name: Jest Prod Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Jest Prod Coverage
+        run: npm run test:jest:prod:coverage
+      - name: Upload Prod Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: jest-prod-coverage
+          path: coverage/prod/
+
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run E2E Tests
         run: npm run test:e2e 
