@@ -20,6 +20,7 @@ jobs:
       GOPATH: ${{ github.workspace }}/go
       JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
       CLOUDBEES_FEATURES_ENV_KEY: mock-key-12345
+      DEBUG_LOGS: 'true'
 
     steps:
       - name: Checkout code
@@ -317,6 +318,7 @@ jobs:
           export JAVA_HOME=$JAVA_HOME
           export CLOUDBEES_FEATURES_ENV_KEY=$CLOUDBEES_FEATURES_ENV_KEY
           export PATH=$PATH:$GOPATH/bin:/usr/local/bin
+          export DEBUG_LOGS=${{ env.DEBUG_LOGS }}
           
           export NVM_DIR="$HOME/.nvm"
           . "$NVM_DIR/nvm.sh"
@@ -329,6 +331,7 @@ jobs:
             export JAVA_HOME=$JAVA_HOME
             export CLOUDBEES_FEATURES_ENV_KEY=$CLOUDBEES_FEATURES_ENV_KEY
             export PATH=$PATH:$GOPATH/bin:/usr/local/bin
+            export DEBUG_LOGS=${{ env.DEBUG_LOGS }}
             unset PREFIX && source ~/.nvm/nvm.sh && nvm use && E2E_ENV=prod npx playwright test --workers=6 --reporter=list --timeout=30000
           " 2>&1 | tee e2e-output.txt || echo "E2E completed with issues"
       - name: Extract E2E Results
