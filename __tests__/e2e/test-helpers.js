@@ -23,13 +23,26 @@ async function launchElectron() {
     }
   });
   
+  // Forward main process logs to terminal when DEBUG_LOGS=true
+  if (process.env.CI && process.env.DEBUG_LOGS === 'true') {
+    const proc = electronApp.process();
+    if (proc && proc.stdout) {
+      proc.stdout.on('data', (data) => {
+        process.stdout.write(`[MAIN STDOUT] ${data}`);
+      });
+    }
+    if (proc && proc.stderr) {
+      proc.stderr.on('data', (data) => {
+        process.stderr.write(`[MAIN STDERR] ${data}`);
+      });
+    }
+  }
+
   const window = await electronApp.firstWindow({ timeout: 60000 });
   
-  // Capture and log all console messages from the Electron app,
-  // but only in CI when debug logs are explicitly enabled.
+  // Capture and log all console messages from the Electron app when debug logs are enabled.
   if (process.env.CI && process.env.DEBUG_LOGS === 'true') {
     window.on('console', async (msg) => {
-      // Prevent errors if the window is closed before the async handler executes
       if (window.isClosed()) {
         return;
       }
