@@ -1,4 +1,5 @@
 const { exec } = require('child_process');
+const { debugLog } = require('../utils/debugUtils');
 
 // Function to stop Docker containers
 async function stopContainers(containerNames, mainWindow = null) {

@@ -2,6 +2,7 @@ const { exec } = require('child_process');
 const { resolveEnvVars } = require('./mainUtils');
 const fs = require('fs').promises;
 const path = require('path');
+const { debugLog } = require('../utils/debugUtils');
 
 // Generic dropdown cache
 let dropdownCache = {}; // Keyed by dropdown ID and args

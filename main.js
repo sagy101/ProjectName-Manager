@@ -2,13 +2,10 @@ const { app, ipcMain, dialog, BrowserWindow } = require('electron');
 const path = require('path');
 const { exec } = require('child_process');
 const { generateCommandList } = require('./src/utils/evalUtils');
+const { debugLog } = require('./src/utils/debugUtils');
 
-// Simple debug logger controlled by DEBUG_LOGS env var
-global.debugLog = (...args) => {
-  if (process.env.DEBUG_LOGS === 'true') {
-    console.log(...args);
-  }
-};
+// Make debugLog available globally for any modules that might expect it
+global.debugLog = debugLog;
 
 // Handle uncaught exceptions gracefully during tests
 if (process.env.NODE_ENV === 'test') {

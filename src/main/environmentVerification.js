@@ -5,6 +5,7 @@ const fs = require('fs').promises;
 const fsSync = require('fs');
 const { resolveEnvVars, checkPathExists } = require('./mainUtils');
 const { getGitBranch, clearGitBranchCache } = require('./gitManagement');
+const { debugLog } = require('../utils/debugUtils');
 
 // Dynamic cache for environment verification
 let environmentCaches = {
