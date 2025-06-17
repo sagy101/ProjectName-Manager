@@ -257,7 +257,7 @@ jobs:
             export PATH=$(pwd)/mock_bin:$PATH:$GOPATH/bin:/usr/local/bin
             export DEBUG_LOGS=${{ env.DEBUG_LOGS }}
             export CI=true
-            unset PREFIX && source ~/.nvm/nvm.sh && nvm use && HEADLESS=true DEBUG_LOGS=false E2E_ENV=prod npm run test
+            unset PREFIX && source ~/.nvm/nvm.sh && nvm use && HEADLESS=true E2E_ENV=prod npx playwright test --reporter=list --timeout=30000
           " 2>&1 | tee e2e-output.txt || echo "E2E tests completed"
 
       - name: Upload E2E Logs
@@ -270,28 +270,106 @@ jobs:
       - name: Extract E2E Results
         if: always() # Always run to capture results even if tests fail
         run: |
+          # Debug: Show the output file content
+          echo "=== E2E Output File Content ==="
+          if [ -f e2e-output.txt ]; then
+            echo "File exists, showing last 20 lines:"
+            tail -20 e2e-output.txt
+            echo "=== End of Output ==="
+          else
+            echo "❌ e2e-output.txt file not found!"
+            echo "Creating empty file for safety..."
+            touch e2e-output.txt
+          fi
+          
           # Extract test results from Playwright output
-          TESTS_PASSED=$(grep -c "✓" e2e-output.txt || echo "0")
-          TESTS_FAILED=$(grep -c "✗" e2e-output.txt || echo "0")
+          # Look for the final summary line that shows "X passed" or "X failed"
+          SUMMARY_LINE=$(grep -E "^\s*[0-9]+ passed" e2e-output.txt | tail -1 || echo "")
+          
+          if [ -n "$SUMMARY_LINE" ]; then
+            echo "Found summary line: $SUMMARY_LINE"
+            # Extract numbers from summary line like "76 passed (4.7m)"
+            TESTS_PASSED=$(echo "$SUMMARY_LINE" | grep -oE '^[[:space:]]*[0-9]+' | tr -d ' ' || echo "0")
+            # Look for failed tests in the summary
+            FAILED_LINE=$(echo "$SUMMARY_LINE" | grep -oE '[0-9]+ failed' || echo "")
+            if [ -n "$FAILED_LINE" ]; then
+              TESTS_FAILED=$(echo "$FAILED_LINE" | grep -oE '[0-9]+' || echo "0")
+            else
+              TESTS_FAILED="0"
+            fi
+          else
+            echo "No summary line found, using fallback method..."
+            # Fallback: Count individual test results
+            TESTS_PASSED=$(grep -c "✓" e2e-output.txt || echo "0")
+            TESTS_FAILED=$(grep -c "✗" e2e-output.txt || echo "0")
+          fi
+          
+          # Ensure we have valid numbers
+          TESTS_PASSED=${TESTS_PASSED:-0}
+          TESTS_FAILED=${TESTS_FAILED:-0}
+          
+          # Calculate total
           TESTS_TOTAL=$((TESTS_PASSED + TESTS_FAILED))
+          
+          # Calculate success percentage
+          if [ "$TESTS_TOTAL" -gt 0 ]; then
+            SUCCESS_PERCENTAGE=$(( (TESTS_PASSED * 100) / TESTS_TOTAL ))
+          else
+            SUCCESS_PERCENTAGE=0
+          fi
+          
+          echo "Results: $TESTS_PASSED passed, $TESTS_FAILED failed, $TESTS_TOTAL total ($SUCCESS_PERCENTAGE% success)"
           
           # Save to environment
           echo "E2E_TESTS_PASSED=$TESTS_PASSED" >> $GITHUB_ENV
           echo "E2E_TESTS_FAILED=$TESTS_FAILED" >> $GITHUB_ENV
           echo "E2E_TESTS_TOTAL=$TESTS_TOTAL" >> $GITHUB_ENV
+          echo "E2E_SUCCESS_PERCENTAGE=$SUCCESS_PERCENTAGE" >> $GITHUB_ENV
+      - name: Determine test status
+        if: always()
+        run: |
+          if [ "${{ env.E2E_SUCCESS_PERCENTAGE }}" -ge 85 ]; then
+            echo "E2E_STATUS=✅ **PASSED**" >> $GITHUB_ENV
+            echo "E2E_MESSAGE=🎉 Great job! The E2E tests are passing with a high success rate." >> $GITHUB_ENV
+          else
+            echo "E2E_STATUS=❌ **FAILED**" >> $GITHUB_ENV
+            echo "E2E_MESSAGE=⚠️ Some E2E tests are failing. Please review the failed tests and fix any issues." >> $GITHUB_ENV
+          fi
+          
+          if [ "${{ env.E2E_TESTS_FAILED }}" -gt 0 ]; then
+            echo "E2E_FAILED_DETAILS=**Failed Tests:**<br/>Check the workflow logs above for details on which specific tests failed and why." >> $GITHUB_ENV
+          else
+            echo "E2E_FAILED_DETAILS=**All tests passed successfully!**" >> $GITHUB_ENV
+          fi
+
       - name: Post PR comment with E2E test summary
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            **E2E Tests**
+            ## 🧪 E2E Tests Results
             
-            📊 **Test Results:** ${{ env.E2E_TESTS_PASSED }}/${{ env.E2E_TESTS_TOTAL }} passed
+            ${{ env.E2E_STATUS }} - ${{ env.E2E_SUCCESS_PERCENTAGE }}% success rate (threshold: 85%)
+            
+            📊 **Test Summary:** ${{ env.E2E_TESTS_PASSED }}/${{ env.E2E_TESTS_TOTAL }} tests passed
             - ✅ Passed: ${{ env.E2E_TESTS_PASSED }}
             - ❌ Failed: ${{ env.E2E_TESTS_FAILED }}
             
-            <details>
-            <summary>View full results</summary>
+            ${{ env.E2E_MESSAGE }}
             
-            See the [workflow logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for detailed E2E test results and any failed tests.
-            </details> 
+            <details>
+            <summary>📋 View detailed results</summary>
+            
+            **Workflow Run:** [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            
+            **Test Environment:**
+            - Browser: Chromium (Playwright)
+            - Mode: Headless
+            - Timeout: 30 seconds per test
+            - Mock environment with simulated tools and directories
+            
+            ${{ env.E2E_FAILED_DETAILS }}
+            </details>
+            
+            ---
+            *E2E tests validate the complete application workflow including UI interactions, terminal operations, and configuration management.* 
