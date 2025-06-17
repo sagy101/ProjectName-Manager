@@ -162,8 +162,26 @@ jobs:
           chmod +x ./mock_bin/*
           
           echo "Mock environment setup complete."
-      - name: Test mock environment
+      - name: Run E2E Tests (with Xvfb)
+        timeout-minutes: 20
         run: |
+          # Set up environment variables for E2E tests
+          export GOPM_HOME=$GOPM_HOME
+          export GOPATH=$HOME/go
+          export JAVA_HOME=$JAVA_HOME
+          export CLOUDBEES_FEATURES_ENV_KEY=$CLOUDBEES_FEATURES_ENV_KEY
+          export PATH=$(pwd)/mock_bin:$PATH:$GOPATH/bin:/usr/local/bin
+          export DEBUG_LOGS=${{ env.DEBUG_LOGS }}
+          export NVM_DIR="$HOME/.nvm"
+          
+          # Ensure Go directory exists and GOPATH is correct
+          mkdir -p $HOME/go/bin
+          
+          # Source nvm and use Node.js 22.16.0 for the actual test execution
+          . "$NVM_DIR/nvm.sh"
+          nvm use 22.16.0
+          
+          # Test mock environment before running E2E tests
           echo "=== Testing Mock Environment ==="
           echo "PATH: $PATH"
           echo "GOPATH: $GOPATH"
@@ -209,36 +227,6 @@ jobs:
           ls -la ./threatintelligence/threat-intelligence/gradlew || echo "❌ threat-intelligence/gradlew not found"
           echo ""
           echo "=== Mock Environment Test Complete ==="
-      - name: Run E2E Tests (with Xvfb)
-        timeout-minutes: 20
-        run: |
-          # Set up environment variables for E2E tests
-          export GOPM_HOME=$GOPM_HOME
-          export GOPATH=$HOME/go
-          export JAVA_HOME=$JAVA_HOME
-          export CLOUDBEES_FEATURES_ENV_KEY=$CLOUDBEES_FEATURES_ENV_KEY
-          export PATH=$(pwd)/mock_bin:$PATH:$GOPATH/bin:/usr/local/bin
-          export DEBUG_LOGS=${{ env.DEBUG_LOGS }}
-          export NVM_DIR="$HOME/.nvm"
-          
-          # Ensure Go directory exists and GOPATH is correct
-          mkdir -p $HOME/go/bin
-          
-          # Source nvm and use Node.js 22.16.0 for the actual test execution
-          . "$NVM_DIR/nvm.sh"
-          nvm use 22.16.0
-          
-          # Verify our mock environment is working
-          echo "=== Verifying Mock Environment for E2E Tests ==="
-          echo "GOPATH: $GOPATH"
-          echo "GOPM_HOME: $GOPM_HOME"
-          echo "PATH: $PATH"
-          echo "nvm ls output:"
-          nvm ls || echo "❌ nvm ls failed"
-          echo "go version output:"
-          go version || echo "❌ go version failed"
-          echo "docker ps output:"
-          docker ps || echo "❌ docker ps failed"
           echo ""
           
           # Ensure mock directories exist in the build output directory
