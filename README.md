@@ -638,3 +638,5 @@ The **Health Report** provides a comprehensive, real-time overview of all runnin
   - **Refresh**: Manually re-run the command for a specific service.
 
 For more details on the Health Report's features and status calculations, see the [Health Report Guide](docs/health-report.md).
+
+Test: PR workflow verification.
