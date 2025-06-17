@@ -64,6 +64,11 @@ jobs:
           mkdir -p ./rule-engine
           mkdir -p ./test-analytics
           
+          # --- Create Go Environment Directory ---
+          echo "Creating Go environment..."
+          mkdir -p $HOME/go/bin
+          mkdir -p $GOPM_HOME
+          
           # --- Create Mock Gradlew Files ---
           echo "Creating mock gradlew files..."
           touch ./weblifemirror/gradlew
@@ -75,15 +80,6 @@ jobs:
           chmod +x ./threatintelligence/url-intelligence/gradlew
           chmod +x ./activity-logger/gradlew
           
-          # --- Create Mock Go Environment ---
-          echo "Creating mock Go environment..."
-          mkdir -p $GOPATH/bin
-          mkdir -p $GOPM_HOME
-          tee -a $HOME/.bashrc $HOME/.zshrc > /dev/null << 'EOF'
-          export GOPATH=$HOME/go
-          export PATH=$PATH:$GOPATH/bin
-          EOF
-
           # --- Create Mock Executables in ./mock_bin ---
           echo "Creating mock executables..."
           
@@ -110,6 +106,8 @@ jobs:
           #!/bin/bash
           if [[ "$1" == "info" && "$2" == "--format" ]]; then
             echo "24.0.7"
+          elif [[ "$1" == "ps" ]]; then
+            echo "CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES"
           else
             echo "Docker version 24.0.7, build afdd53b"
           fi
@@ -145,6 +143,21 @@ jobs:
           echo "Chromium 125.0.6422.141"
           EOF
           
+          # nvm - Mock to return expected version and list
+          tee ./mock_bin/nvm > /dev/null << 'EOF'
+          #!/bin/bash
+          if [[ "$1" == "--version" ]]; then
+            echo "0.39.7"
+          elif [[ "$1" == "ls" ]]; then
+            echo "       v15.14.0"
+            echo "->     v16.20.2"
+            echo "       v22.16.0"
+            echo "default -> 16.20.2 (-> v16.20.2)"
+          else
+            echo "Node Version Manager (v0.39.7)"
+          fi
+          EOF
+          
           chmod +x ./mock_bin/*
           
           echo "Mock environment setup complete."
@@ -176,7 +189,8 @@ jobs:
           chromium --version || echo "❌ chromium failed"
           echo ""
           echo "nvm version and list:"
-          source $HOME/.nvm/nvm.sh && nvm --version && nvm ls || echo "❌ nvm failed"
+          nvm --version || echo "❌ nvm --version failed"
+          nvm ls || echo "❌ nvm ls failed"
           echo ""
           echo "=== Testing Mock Directories ==="
           echo "Checking directories:"
@@ -193,56 +207,34 @@ jobs:
       - name: Run E2E Tests (with Xvfb)
         timeout-minutes: 20
         run: |
-          # Set up environment variables for E2E tests (using job-level env vars)
+          # Set up environment variables for E2E tests
           export GOPM_HOME=$GOPM_HOME
-          export GOPATH=$GOPATH
+          export GOPATH=$HOME/go
           export JAVA_HOME=$JAVA_HOME
           export CLOUDBEES_FEATURES_ENV_KEY=$CLOUDBEES_FEATURES_ENV_KEY
           export PATH=$(pwd)/mock_bin:$PATH:$GOPATH/bin:/usr/local/bin
           export DEBUG_LOGS=${{ env.DEBUG_LOGS }}
-          
-          # Create node and nvm mocks in mock_bin
-          cat > ./mock_bin/node << 'NODEEOF'
-          #!/bin/bash
-          if [[ "$1" == "--version" ]]; then
-            echo "v16.20.2"
-          else
-            /usr/bin/node "$@"
-          fi
-          NODEEOF
-          chmod +x ./mock_bin/node
-          
-          cat > ./mock_bin/nvm << 'NVMEOF'
-          #!/bin/bash
-          echo "0.39.0"
-          NVMEOF
-          chmod +x ./mock_bin/nvm
-          
-          # Update go mock to handle 'which go' check
-          cat > ./mock_bin/go << 'GOEOF'
-          #!/bin/bash
-          if [[ "$1" == "version" ]]; then
-            echo "go version go1.21.4 linux/amd64"
-          else
-            echo "/usr/local/go/bin/go"
-          fi
-          GOEOF
-          chmod +x ./mock_bin/go
-          
-          # Create which command mock to return proper go location
-          cat > ./mock_bin/which << 'WHICHEOF'
-          #!/bin/bash
-          if [[ "$1" == "go" ]]; then
-            echo "/usr/local/go/bin/go"
-          else
-            /usr/bin/which "$@"
-          fi
-          WHICHEOF
-          chmod +x ./mock_bin/which
-          
           export NVM_DIR="$HOME/.nvm"
+          
+          # Ensure Go directory exists and GOPATH is correct
+          mkdir -p $HOME/go/bin
+          
+          # Source nvm and use Node.js 22.16.0 for the actual test execution
           . "$NVM_DIR/nvm.sh"
           nvm use 22.16.0
+          
+          # Verify our mock environment is working
+          echo "=== Verifying Mock Environment for E2E Tests ==="
+          echo "GOPATH: $GOPATH"
+          echo "GOPM_HOME: $GOPM_HOME"
+          echo "PATH: $PATH"
+          echo "nvm ls output:"
+          nvm ls || echo "❌ nvm ls failed"
+          echo "go version output:"
+          go version || echo "❌ go version failed"
+          echo "docker ps output:"
+          docker ps || echo "❌ docker ps failed"
+          echo ""
           
           # Ensure mock directories exist in the build output directory
           # The app checks paths relative to its resources directory
