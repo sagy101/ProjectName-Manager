@@ -30,7 +30,7 @@
   border-bottom: 1px solid #4a505c; /* Use solid border color */
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 20px;
   position: relative;
   background: linear-gradient(135deg, #2D2E2C 0%, #353b48 100%); /* Subtle gradient */
 }
