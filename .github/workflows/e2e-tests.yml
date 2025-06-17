@@ -70,8 +70,10 @@ jobs:
           touch ./threatintelligence/threat-intelligence/gradlew
           touch ./threatintelligence/url-intelligence/gradlew
           touch ./activity-logger/gradlew
-          chmod +x ./*/gradlew
-          chmod +x ./threatintelligence/*./gradlew
+          chmod +x ./weblifemirror/gradlew
+          chmod +x ./threatintelligence/threat-intelligence/gradlew
+          chmod +x ./threatintelligence/url-intelligence/gradlew
+          chmod +x ./activity-logger/gradlew
           
           # --- Create Mock Go Environment ---
           echo "Creating mock Go environment..."
