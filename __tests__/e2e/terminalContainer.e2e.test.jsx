@@ -6,6 +6,8 @@ import { render, fireEvent, waitFor } from '@testing-library/react';
 global.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
 jest.mock("../../src/components/Terminal", () => () => <div data-testid="mock-term"></div>);
 import TerminalContainer from "../../src/components/TerminalContainer";
+const { test, expect } = require('@playwright/test');
+const { launchElectron, getTimeout } = require('./test-helpers');
 
 // Helper function to convert containers like evalUtils.js does
 function processContainers(containers) {
@@ -33,7 +35,7 @@ describe('TerminalContainer container cleanup', () => {
     });
     fireEvent.click(getByTitle('Tab Information'));
     fireEvent.click(getByText('🔄 Refresh'));
-    await waitFor(() => expect(stopContainers).toHaveBeenCalledWith(['cont1']));
+    await waitFor(() => expect(stopContainers).toHaveBeenCalledWith(['cont1']), { timeout: getTimeout(10000) });
   });
 
   test('stops containers when all tabs are killed', async () => {

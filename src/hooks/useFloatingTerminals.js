@@ -49,8 +49,10 @@ export const useFloatingTerminals = ({
 
   // Now define openFloatingTerminal, which depends on the two above
   const openFloatingTerminal = useCallback((commandId, title, command, isFixCommand = false) => {
+    let newTerminalId = null;
+    
     setFloatingTerminals(prevTerminals => {
-      const newTerminalId = `ft-${Date.now()}-${commandId}`;
+      newTerminalId = `ft-${Date.now()}-${commandId}`;
       const existingTerminal = prevTerminals.find(t => t.commandId === commandId && t.title === title);
 
       if (existingTerminal && !isFixCommand) {
@@ -65,6 +67,7 @@ export const useFloatingTerminals = ({
         );
         setActiveFloatingTerminalId(existingTerminal.id);
         setNextZIndex(prevZ => prevZ + 1);
+        newTerminalId = existingTerminal.id; // Return existing terminal ID
         return prevTerminals.map(t => t.id === existingTerminal.id ? { ...t, isVisible: true, isMinimized: false } : t); // This return might be redundant due to setFloatingTerminals above
       }
 
@@ -103,6 +106,8 @@ export const useFloatingTerminals = ({
       setActiveFloatingTerminalId(newTerminalId);
       return [...prevTerminals, newTerminal];
     });
+    
+    return newTerminalId; // Return the terminal ID
   }, [nextZIndex, focusFloatingTerminal, showFloatingTerminal, positionOffset, isFloatingSidebarExpanded, setFloatingTerminals, setActiveFloatingTerminalId, setNextZIndex]); // Added isFloatingSidebarExpanded
 
   const closeFloatingTerminal = useCallback((terminalId) => {

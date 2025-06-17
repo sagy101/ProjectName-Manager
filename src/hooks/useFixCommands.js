@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react';
+import { STATUS } from '../constants/verificationConstants';
 import configurationSidebarAbout from '../configurationSidebarAbout.json';
 import configurationSidebarSections from '../configurationSidebarSections.json';
 
@@ -184,7 +185,7 @@ export const useFixCommands = ({
     }
     
     // If there are any invalid statuses in visible sections, make all valid. Otherwise make all invalid.
-    const newStatus = hasInvalidStatuses ? 'valid' : 'invalid';
+    const newStatus = hasInvalidStatuses ? STATUS.VALID : STATUS.INVALID;
     
     // Create new statuses for general environment verifications
     const newGeneralStatuses = {};

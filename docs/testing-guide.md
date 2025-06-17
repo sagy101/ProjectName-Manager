@@ -111,6 +111,33 @@ test('should return array directly from getAboutConfig', ...)
 - **Examples**: `terminalContainer.e2e.test.jsx`, `processCleanup.test.js`
 - **Purpose**: E2E tests validate complete workflows from start to finish. They often involve more complex setups, including mocking Electron's IPC and other main process features. These tests are crucial for ensuring that different parts of the application work together correctly.
 
+### Viewing Debug Logs in E2E Tests (Electron)
+
+To see detailed logs from both the Electron main process (backend) and the renderer (browser) during E2E tests:
+
+- **On GitHub Actions:** Logs from both the main process and renderer are automatically captured and shown in the Actions UI when `DEBUG_LOGS=true` is set in the workflow.
+- **Locally:**
+  - By default, only renderer/browser logs are shown during E2E tests.
+  - To see backend (main process) logs as well, run with both `CI=true` and `DEBUG_LOGS=true`:
+    ```sh
+    CI=true DEBUG_LOGS=true npm run test:e2e
+    ```
+  - This is because the E2E test helper (`__tests__/e2e/test-helpers.js`) is configured to forward main process logs only when both `CI` and `DEBUG_LOGS` are set to `true` (to avoid clutter during normal local runs).
+
+**Log Prefixes:**
+- `[APP CONSOLE]` — Renderer/browser logs (from the Electron window)
+- `[MAIN STDOUT]` / `[MAIN STDERR]` — Backend/main process logs (including all `[DEBUG]` logs)
+
+### GitHub Actions E2E Test Logging and Checks
+- The CI workflow runs three main checks on every pull request:
+  - **Jest Tests**: Runs all unit/component tests using Jest. Fails if any test fails.
+  - **E2E Tests**: Runs Playwright E2E tests in a headless Electron environment. Fails if any workflow or UI test fails.
+  - **Coverage**: Runs Jest with coverage reporting and merges results. Surfaces overall coverage % in PR comments.
+- All checks must pass for a PR to be mergeable.
+- Pass/fail status and summary (including test/coverage stats) are shown directly in the PR UI.
+- Both backend and frontend logs are visible in the Actions log output for debugging.
+- Artifacts (e.g., logs, coverage reports) may be uploaded for further review.
+
 ### Running E2E Tests Headless (Electron)
 
 For end-to-end (E2E) tests that launch the Electron app, you should run tests in headless mode to avoid opening windows during CI or automated runs. This is done by setting the `HEADLESS` environment variable:

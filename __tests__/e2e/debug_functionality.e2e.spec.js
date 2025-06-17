@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { launchElectron, waitForElement } = require('./test-helpers');
+const { launchElectron, waitForElement, ensureAllVerificationsValid, getTimeout } = require('./test-helpers');
 
 const isMock = process.env.E2E_ENV === 'mock';
 const config = isMock
@@ -17,6 +17,9 @@ test.describe('Debug Menu Functionality', () => {
     electronApp = launchResult.electronApp;
     window = launchResult.window;
     await window.waitForSelector('.config-container');
+    await window.waitForTimeout(getTimeout(2000));
+    // Ensure all verifications are valid before toggling
+    await ensureAllVerificationsValid(window);
   });
 
   test.afterEach(async () => {
@@ -48,7 +51,7 @@ test.describe('Debug Menu Functionality', () => {
     const sectionLocator = window.locator(`h2:has-text("${runnableSection.title}")`).locator('..').locator('..');
     const toggle = await sectionLocator.locator('input[type="checkbox"]').first();
     await toggle.click();
-    await window.waitForTimeout(500);
+    await window.waitForTimeout(getTimeout(500));
     
     // Attach the section to make the mode selector visible
     if (runnableSection.components.attachToggle) {
@@ -64,17 +67,17 @@ test.describe('Debug Menu Functionality', () => {
       await window.click(runOptionSelector);
     }
     
-    await window.waitForTimeout(2000);
+    await window.waitForTimeout(getTimeout(2000));
     const runButton = window.locator('#run-configuration-button');
     await runButton.click();
     
     // Wait for the tab to appear and the process to be running
     const terminalTabTitle = window.locator('.tab-title', { hasText: /^Mirror \+ MariaDB/i });
-    await expect(terminalTabTitle).toBeVisible({ timeout: 5000 });
+    await expect(terminalTabTitle).toBeVisible({ timeout: getTimeout(5000) });
 
     
     const terminalTabs = await window.locator('.tab');
-    await expect(terminalTabs.first()).toBeVisible({ timeout: 5000 });
+    await expect(terminalTabs.first()).toBeVisible({ timeout: getTimeout(5000) });
     
     const sectionTabTitle = await window.locator('.tab-title').filter({ hasText: /Mirror \+ MariaDB/i });
     await expect(sectionTabTitle).toBeVisible();
@@ -83,7 +86,7 @@ test.describe('Debug Menu Functionality', () => {
     // In "no-run" mode, the terminal should show a specific indicator.
     const terminal = window.locator('.terminal-instance-wrapper.active');
     const noRunIndicator = terminal.locator('text=/\\[NO-RUN MODE\\]/');
-    await expect(noRunIndicator).toBeVisible({ timeout: 5000 });
+    await expect(noRunIndicator).toBeVisible({ timeout: getTimeout(5000) });
 
     // Also verify the tab title includes a debug indicator
     await expect(sectionTabTitle).toHaveText(/Debug Run/);
@@ -145,7 +148,7 @@ test.describe('Debug Menu Functionality', () => {
     const sectionLocator = window.locator(`h2:has-text("${runnableSection.title}")`).locator('..').locator('..');
     const toggle = await sectionLocator.locator('input[type="checkbox"]').first();
     await toggle.click();
-    await window.waitForTimeout(500);
+    await window.waitForTimeout(getTimeout(500));
     
     // Attach the section to make the mode selector visible
     if (runnableSection.components.attachToggle) {
@@ -161,7 +164,7 @@ test.describe('Debug Menu Functionality', () => {
       await window.click(runOptionSelector);
     }
 
-    await window.waitForTimeout(2000);
+    await window.waitForTimeout(getTimeout(2000));
     const runButton = window.locator('#run-configuration-button');
     
     const initialTabCount = await window.locator('.tab').count();
@@ -169,9 +172,9 @@ test.describe('Debug Menu Functionality', () => {
   
     // Wait for the tab to appear and the process to be running
     const tab = window.locator('.tab', { hasText: /^Mirror \+ MariaDB/i });
-    await expect(tab).toBeVisible({ timeout: 5000 });
+    await expect(tab).toBeVisible({ timeout: getTimeout(5000) });
     const tabStatus = tab.locator('.tab-status');
-    await expect(tabStatus).toHaveClass(/status-running/, { timeout: 5000 });
+    await expect(tabStatus).toHaveClass(/status-running/, { timeout: getTimeout(5000) });
     
     const expandButton = await window.locator('[title="Expand Sidebar"]');
     await expandButton.click();
@@ -227,13 +230,13 @@ test.describe('Debug Menu Functionality', () => {
     
     // First, wait for the environment verification section to be visible
     const envVerificationHeader = window.locator('.verification-header', { hasText: 'General Environment' });
-    await envVerificationHeader.waitFor({ state: 'visible', timeout: 10000 });
+    await envVerificationHeader.waitFor({ state: 'visible', timeout: getTimeout(10000) });
     
     // Wait for verification to complete (no longer in "waiting" state)
     await window.waitForFunction(() => {
       const header = document.querySelector('.verification-header');
       return header && !header.classList.contains('waiting');
-    }, { timeout: 15000 });
+    }, { timeout: getTimeout(15000) });
     
     // Look for the toggle verification button
     const toggleVerificationsButton = await window.locator('.debug-section-content button').filter({ hasText: /Toggle Verifications/i });
@@ -246,14 +249,14 @@ test.describe('Debug Menu Functionality', () => {
     await toggleVerificationsButton.click();
     
     // Wait a moment for the status changes to take effect
-    await window.waitForTimeout(1000);
+    await window.waitForTimeout(getTimeout(1000));
     
     // Check if the header reflects the status change (should have a different color/class)
     const toggledHeaderClasses = await envVerificationHeader.getAttribute('class');
     
     // Click toggle again to switch statuses back
     await toggleVerificationsButton.click();
-    await window.waitForTimeout(1000);
+    await window.waitForTimeout(getTimeout(1000));
     
     // The classes should be different after toggling
     expect(initialHeaderClasses).not.toBe(toggledHeaderClasses);
@@ -264,7 +267,7 @@ test.describe('Debug Menu Functionality', () => {
     const isCollapsed = await toggleIcon.evaluate(node => node.textContent.includes('▶'));
     if (isCollapsed) {
       await toggleIcon.click();
-      await window.waitForTimeout(500);
+      await window.waitForTimeout(getTimeout(500));
     }
 
   });

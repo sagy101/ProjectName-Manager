@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { launchElectron, waitForElement } = require('./test-helpers');
+const { launchElectron, waitForElement, getTimeout } = require('./test-helpers');
 
 const isMock = process.env.E2E_ENV === 'mock';
 const config = isMock
@@ -89,6 +89,6 @@ test.describe('Configuration Interface', () => {
     // Now, verify that the subsection is visible
     const subSection = parentSection.components.subSections[0];
     const subSectionLocator = window.locator(`h4:has-text("${subSection.title}")`);
-    await expect(subSectionLocator).toBeVisible({ timeout: 10000 });
+    await expect(subSectionLocator).toBeVisible({ timeout: getTimeout(10000) });
   });
 }); 

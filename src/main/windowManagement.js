@@ -1,5 +1,6 @@
 const { BrowserWindow } = require('electron');
 const path = require('path');
+const { debugLog } = require('../utils/debugUtils');
 
 let mainWindow = null;
 

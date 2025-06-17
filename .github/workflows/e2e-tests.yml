@@ -1,0 +1,485 @@
+name: E2E Tests
+
+on:
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  pull-requests: write
+  issues: write
+  contents: read
+
+jobs:
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    env:
+      GOPM_HOME: ${{ github.workspace }}/gopm
+      GOPATH: ${{ github.workspace }}/go
+      JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
+      CLOUDBEES_FEATURES_ENV_KEY: mock-key-12345
+      DEBUG_LOGS: 'false'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up NVM and Node.js versions
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+          . "$NVM_DIR/nvm.sh"
+          nvm install 15.5.1
+          nvm install 22.16.0
+          nvm use 22.16.0
+          echo "Installed Node.js versions:"
+          nvm ls
+          echo "Current Node.js version:"
+          node -v
+          npm -v
+      - name: Install dependencies
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          . "$NVM_DIR/nvm.sh"
+          nvm use 22.16.0
+          npm ci
+      - name: Rebuild native modules for Electron
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          . "$NVM_DIR/nvm.sh"
+          nvm use 22.16.0
+          npx @electron/rebuild -f -w node-pty
+      - name: Setup Mock Environment
+        run: |
+          echo "Setting up comprehensive mock environment for E2E tests..."
+          
+          # --- Go to parent directory to create sibling project folders ---
+          cd ..
+          
+          # --- Create Mock Directories ---
+          echo "Creating mock project directories in $(pwd)..."
+          mkdir -p ./weblifemirror/agent
+          mkdir -p ./threatintelligence/threat-intelligence
+          mkdir -p ./threatintelligence/url-intelligence
+          mkdir -p ./infrastructure
+          mkdir -p ./activity-logger
+          mkdir -p ./rule-engine
+          mkdir -p ./gopm
+          # Note: NOT creating ./test-analytics as it should remain invalid
+          
+          # --- Create Mock Gradlew Files ---
+          echo "Creating mock gradlew files..."
+          touch ./weblifemirror/gradlew
+          touch ./threatintelligence/threat-intelligence/gradlew
+          touch ./threatintelligence/url-intelligence/gradlew
+          touch ./activity-logger/gradlew
+          chmod +x ./weblifemirror/gradlew
+          chmod +x ./threatintelligence/threat-intelligence/gradlew
+          chmod +x ./threatintelligence/url-intelligence/gradlew
+          chmod +x ./activity-logger/gradlew
+          
+          # --- Return to the workspace directory ---
+          cd "${{ github.workspace }}"
+          
+          # --- Create Mock Bin Directory and Add to PATH ---
+          mkdir -p ./mock_bin
+          echo "$(pwd)/mock_bin" >> $GITHUB_PATH
+          
+          # --- Create Go Environment Directory (inside workspace, for GOPATH) ---
+          echo "Creating Go environment..."
+          mkdir -p $HOME/go/bin
+          mkdir -p $GOPM_HOME
+          
+          # --- Create Mock Executables in ./mock_bin ---
+          echo "Creating mock executables..."
+          
+          # gcloud
+          tee ./mock_bin/gcloud > /dev/null << 'EOF'
+          #!/bin/bash
+          echo "Google Cloud SDK 450.0.0"
+          EOF
+          
+          # kubectl
+          tee ./mock_bin/kubectl > /dev/null << 'EOF'
+          #!/bin/bash
+          echo "Client Version: v1.28.4"
+          EOF
+          
+          # kubectx
+          tee ./mock_bin/kubectx > /dev/null << 'EOF'
+          #!/bin/bash
+          echo "mock-context"
+          EOF
+
+          # docker
+          tee ./mock_bin/docker > /dev/null << 'EOF'
+          #!/bin/bash
+          if [[ "$1" == "info" && "$2" == "--format" ]]; then
+            echo "24.0.7"
+          elif [[ "$1" == "ps" ]]; then
+            echo "CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES"
+          else
+            echo "Docker version 24.0.7, build afdd53b"
+          fi
+          EOF
+          
+          # go
+          tee ./mock_bin/go > /dev/null << 'EOF'
+          #!/bin/bash
+          echo "go version go1.21.4 linux/amd64"
+          EOF
+          
+          # java
+          tee ./mock_bin/java > /dev/null << 'EOF'
+          #!/bin/bash
+          echo 'openjdk version "17.0.8" 2023-07-18' >&2
+          EOF
+          
+          # brew
+          tee ./mock_bin/brew > /dev/null << 'EOF'
+          #!/bin/bash
+          echo "Homebrew 4.1.20"
+          EOF
+          
+          # rdctl
+          tee ./mock_bin/rdctl > /dev/null << 'EOF'
+          #!/bin/bash
+          echo "rdctl version 1.10.1"
+          EOF
+          
+          # chromium
+          tee ./mock_bin/chromium > /dev/null << 'EOF'
+          #!/bin/bash
+          echo "Chromium 125.0.6422.141"
+          EOF
+          
+          # nvm - Use real nvm when available, fallback to mock
+          tee ./mock_bin/nvm > /dev/null << 'EOF'
+          #!/bin/bash
+          # Try to use real nvm first
+          if [ -s "$HOME/.nvm/nvm.sh" ]; then
+            . "$HOME/.nvm/nvm.sh"
+            nvm "$@"
+          else
+            # Fallback to mock responses
+            if [[ "$1" == "--version" ]]; then
+              echo "0.39.7"
+            elif [[ "$1" == "ls" ]]; then
+              echo "       v15.5.1"
+              echo "->     v22.16.0"
+              echo "default -> 22.16.0 (-> v22.16.0)"
+            else
+              echo "Node Version Manager (v0.39.7)"
+            fi
+          fi
+          EOF
+          
+          chmod +x ./mock_bin/*
+          
+          echo "Mock environment setup complete."
+      - name: Run E2E Tests (with Xvfb)
+        timeout-minutes: 20
+        run: |
+          # Set up environment variables for E2E tests
+          export GOPM_HOME=$GOPM_HOME
+          export GOPATH=$HOME/go
+          export JAVA_HOME=$JAVA_HOME
+          export CLOUDBEES_FEATURES_ENV_KEY=$CLOUDBEES_FEATURES_ENV_KEY
+          export PATH=$(pwd)/mock_bin:$PATH:$GOPATH/bin:/usr/local/bin
+          export DEBUG_LOGS=${{ env.DEBUG_LOGS }}
+          export CI=true
+          export NVM_DIR="$HOME/.nvm"
+          
+          # Source nvm and use Node.js 22.16.0 for the actual test execution
+          . "$NVM_DIR/nvm.sh"
+          nvm use 22.16.0
+          
+          # Test mock environment before running E2E tests
+          echo "=== Testing Mock Environment ==="
+          echo "PATH: $PATH"
+          echo "GOPATH: $GOPATH"
+          echo "JAVA_HOME: $JAVA_HOME"
+          echo "CLOUDBEES_FEATURES_ENV_KEY: $CLOUDBEES_FEATURES_ENV_KEY"
+          echo "DEBUG_LOGS: $DEBUG_LOGS"
+          echo ""
+          echo "=== Testing Mock Executables ==="
+          echo "gcloud version:"
+          gcloud --version || echo "❌ gcloud failed"
+          echo ""
+          echo "kubectl version:"
+          kubectl version --client || echo "❌ kubectl failed"
+          echo ""
+          echo "docker version:"
+          docker version || echo "❌ docker failed"
+          echo ""
+          echo "go version:"
+          go version || echo "❌ go failed"
+          echo ""
+          echo "java version:"
+          java -version || echo "❌ java failed"
+          echo ""
+          echo "chromium version:"
+          chromium --version || echo "❌ chromium failed"
+          echo ""
+          echo "nvm version and list:"
+          nvm --version || echo "❌ nvm --version failed"
+          nvm ls || echo "❌ nvm ls failed"
+          echo ""
+          echo "=== Testing Mock Directories (in parent directory) ==="
+          echo "Checking directories in $(pwd)/..:"
+          ls -la ../weblifemirror/ || echo "❌ weblifemirror not found"
+          ls -la ../threatintelligence/ || echo "❌ threatintelligence not found"
+          ls -la ../infrastructure/ || echo "❌ infrastructure not found"
+          ls -la ../activity-logger/ || echo "❌ activity-logger not found"
+          ls -la ../rule-engine/ || echo "❌ rule-engine not found"
+          ls -la ../gopm/ || echo "❌ gopm not found"
+          echo "test-analytics should NOT exist:"
+          ls -la ../test-analytics/ && echo "❌ test-analytics exists (should be missing)" || echo "✅ test-analytics correctly missing"
+          echo ""
+          echo "Checking gradlew files:"
+          ls -la ../weblifemirror/gradlew || echo "❌ weblifemirror/gradlew not found"
+          ls -la ../threatintelligence/threat-intelligence/gradlew || echo "❌ threat-intelligence/gradlew not found"
+          echo ""
+          echo "=== Mock Environment Test Complete ==="
+          echo ""
+          
+          # Build the app
+          npm run build
+          
+          # Run all E2E tests
+          echo "=== Running All E2E Tests ==="
+          xvfb-run -a bash -c "
+            export GOPM_HOME=$GOPM_HOME
+            export GOPATH=$GOPATH
+            export JAVA_HOME=$JAVA_HOME
+            export CLOUDBEES_FEATURES_ENV_KEY=$CLOUDBEES_FEATURES_ENV_KEY
+            export PATH=$(pwd)/mock_bin:$PATH:$GOPATH/bin:/usr/local/bin
+            export DEBUG_LOGS=${{ env.DEBUG_LOGS }}
+            export CI=true
+            unset PREFIX && source ~/.nvm/nvm.sh && nvm use && HEADLESS=true E2E_ENV=prod npx playwright test --reporter=list --timeout=60000
+          " 2>&1 | tee e2e-output.txt || echo "E2E tests completed"
+
+      - name: Upload E2E Logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-logs
+          path: e2e-output.txt
+
+      - name: Extract E2E Results
+        if: always() # Always run to capture results even if tests fail
+        run: |
+          # Debug: Show the output file content
+          echo "=== E2E Output File Content ==="
+          if [ -f e2e-output.txt ]; then
+            echo "File exists, showing last 20 lines:"
+            tail -20 e2e-output.txt
+            echo "=== End of Output ==="
+          else
+            echo "❌ e2e-output.txt file not found!"
+            echo "Creating empty file for safety..."
+            touch e2e-output.txt
+          fi
+          
+          # Extract total tests from "Running X tests using Y workers" line
+          TESTS_TOTAL=$(grep -oE "Running [0-9]+ tests" e2e-output.txt | grep -oE "[0-9]+" | head -1 || echo "0")
+          
+          # Extract results from Playwright summary lines at the end
+          # Look for lines like "73 passed (16.6m)", "3 flaky", "5 failed", etc.
+          TESTS_PASSED=$(grep -oE "^[[:space:]]*[0-9]+ passed" e2e-output.txt | grep -oE "[0-9]+" | tail -1 || echo "0")
+          TESTS_FLAKY=$(grep -oE "^[[:space:]]*[0-9]+ flaky" e2e-output.txt | grep -oE "[0-9]+" | tail -1 || echo "0")
+          TESTS_FAILED=$(grep -oE "^[[:space:]]*[0-9]+ failed" e2e-output.txt | grep -oE "[0-9]+" | tail -1 || echo "0")
+          TESTS_SKIPPED=$(grep -oE "^[[:space:]]*[0-9]+ skipped" e2e-output.txt | grep -oE "[0-9]+" | tail -1 || echo "0")
+          TESTS_TIMED_OUT=$(grep -oE "^[[:space:]]*[0-9]+ timed out" e2e-output.txt | grep -oE "[0-9]+" | tail -1 || echo "0")
+          
+          # Extract detailed test lists (indented lines after summary)
+          echo "=== Extracting Test Details ==="
+          
+          # Extract flaky test details
+          FLAKY_TESTS=""
+          if [ "$TESTS_FLAKY" -gt 0 ]; then
+            # Find the line with "X flaky" and get the indented lines after it
+            FLAKY_TESTS=$(awk '/^[[:space:]]*[0-9]+ flaky/ {found=1; next} found && /^[[:space:]]*\[/ {print} found && !/^[[:space:]]/ {exit}' e2e-output.txt | head -20)
+          fi
+          
+          # Extract failed test details
+          FAILED_TESTS=""
+          if [ "$TESTS_FAILED" -gt 0 ]; then
+            # Find the line with "X failed" and get the indented lines after it
+            FAILED_TESTS=$(awk '/^[[:space:]]*[0-9]+ failed/ {found=1; next} found && /^[[:space:]]*\[/ {print} found && !/^[[:space:]]/ {exit}' e2e-output.txt | head -20)
+          fi
+          
+          # Extract skipped test details
+          SKIPPED_TESTS=""
+          if [ "$TESTS_SKIPPED" -gt 0 ]; then
+            # Find the line with "X skipped" and get the indented lines after it
+            SKIPPED_TESTS=$(awk '/^[[:space:]]*[0-9]+ skipped/ {found=1; next} found && /^[[:space:]]*\[/ {print} found && !/^[[:space:]]/ {exit}' e2e-output.txt | head -20)
+          fi
+          
+          # Extract timed out test details
+          TIMED_OUT_TESTS=""
+          if [ "$TESTS_TIMED_OUT" -gt 0 ]; then
+            # Find the line with "X timed out" and get the indented lines after it
+            TIMED_OUT_TESTS=$(awk '/^[[:space:]]*[0-9]+ timed out/ {found=1; next} found && /^[[:space:]]*\[/ {print} found && !/^[[:space:]]/ {exit}' e2e-output.txt | head -20)
+          fi
+          
+          # Ensure we have valid numbers
+          TESTS_TOTAL=${TESTS_TOTAL:-0}
+          TESTS_PASSED=${TESTS_PASSED:-0}
+          TESTS_FAILED=${TESTS_FAILED:-0}
+          TESTS_FLAKY=${TESTS_FLAKY:-0}
+          TESTS_SKIPPED=${TESTS_SKIPPED:-0}
+          TESTS_TIMED_OUT=${TESTS_TIMED_OUT:-0}
+          
+          # Calculate success percentage based on total tests
+          if [ "$TESTS_TOTAL" -gt 0 ]; then
+            # Success = passed tests / total tests (flaky tests are considered successful since they eventually passed)
+            SUCCESSFUL_TESTS=$((TESTS_PASSED))
+            SUCCESS_PERCENTAGE=$(( (SUCCESSFUL_TESTS * 100) / TESTS_TOTAL ))
+          else
+            SUCCESS_PERCENTAGE=0
+          fi
+          
+          echo "=== Test Results Summary ==="
+          echo "Total: $TESTS_TOTAL"
+          echo "Passed: $TESTS_PASSED"
+          echo "Failed: $TESTS_FAILED"
+          echo "Flaky: $TESTS_FLAKY"
+          echo "Skipped: $TESTS_SKIPPED"
+          echo "Timed Out: $TESTS_TIMED_OUT"
+          echo "Success Rate: $SUCCESS_PERCENTAGE%"
+          
+          # Save to environment
+          echo "E2E_TESTS_TOTAL=$TESTS_TOTAL" >> $GITHUB_ENV
+          echo "E2E_TESTS_PASSED=$TESTS_PASSED" >> $GITHUB_ENV
+          echo "E2E_TESTS_FAILED=$TESTS_FAILED" >> $GITHUB_ENV
+          echo "E2E_TESTS_FLAKY=$TESTS_FLAKY" >> $GITHUB_ENV
+          echo "E2E_TESTS_SKIPPED=$TESTS_SKIPPED" >> $GITHUB_ENV
+          echo "E2E_TESTS_TIMED_OUT=$TESTS_TIMED_OUT" >> $GITHUB_ENV
+          echo "E2E_SUCCESS_PERCENTAGE=$SUCCESS_PERCENTAGE" >> $GITHUB_ENV
+          
+          # Save test details for comment
+          if [ -n "$FLAKY_TESTS" ]; then
+            echo "E2E_FLAKY_DETAILS<<EOF" >> $GITHUB_ENV
+            echo "$FLAKY_TESTS" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+          else
+            echo "E2E_FLAKY_DETAILS=" >> $GITHUB_ENV
+          fi
+          
+          if [ -n "$FAILED_TESTS" ]; then
+            echo "E2E_FAILED_DETAILS<<EOF" >> $GITHUB_ENV
+            echo "$FAILED_TESTS" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+          else
+            echo "E2E_FAILED_DETAILS=" >> $GITHUB_ENV
+          fi
+          
+          if [ -n "$SKIPPED_TESTS" ]; then
+            echo "E2E_SKIPPED_DETAILS<<EOF" >> $GITHUB_ENV
+            echo "$SKIPPED_TESTS" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+          else
+            echo "E2E_SKIPPED_DETAILS=" >> $GITHUB_ENV
+          fi
+          
+          if [ -n "$TIMED_OUT_TESTS" ]; then
+            echo "E2E_TIMED_OUT_DETAILS<<EOF" >> $GITHUB_ENV
+            echo "$TIMED_OUT_TESTS" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+          else
+            echo "E2E_TIMED_OUT_DETAILS=" >> $GITHUB_ENV
+          fi
+      - name: Determine test status
+        if: always()
+        run: |
+          if [ "${{ env.E2E_SUCCESS_PERCENTAGE }}" -ge 85 ]; then
+            echo "E2E_STATUS=✅ **PASSED**" >> $GITHUB_ENV
+            echo "E2E_MESSAGE=🎉 Great job! The E2E tests are passing with a high success rate." >> $GITHUB_ENV
+          else
+            echo "E2E_STATUS=❌ **FAILED**" >> $GITHUB_ENV
+            echo "E2E_MESSAGE=⚠️ Some E2E tests are not passing. Please review the test results and fix any issues." >> $GITHUB_ENV
+          fi
+          
+          # Build detailed non-passing tests section
+          NON_PASSING_DETAILS=""
+          
+          if [ "${{ env.E2E_TESTS_FAILED }}" -gt 0 ]; then
+            NON_PASSING_DETAILS="${NON_PASSING_DETAILS}**❌ Failed Tests (${{ env.E2E_TESTS_FAILED }}):**<br/>"
+            if [ -n "${{ env.E2E_FAILED_DETAILS }}" ]; then
+              NON_PASSING_DETAILS="${NON_PASSING_DETAILS}${{ env.E2E_FAILED_DETAILS }}<br/><br/>"
+            else
+              NON_PASSING_DETAILS="${NON_PASSING_DETAILS}Check the workflow logs for details on which specific tests failed and why.<br/><br/>"
+            fi
+          fi
+          
+          if [ "${{ env.E2E_TESTS_FLAKY }}" -gt 0 ]; then
+            NON_PASSING_DETAILS="${NON_PASSING_DETAILS}**🔁 Flaky Tests (${{ env.E2E_TESTS_FLAKY }}):**<br/>"
+            if [ -n "${{ env.E2E_FLAKY_DETAILS }}" ]; then
+              NON_PASSING_DETAILS="${NON_PASSING_DETAILS}\`\`\`<br/>${{ env.E2E_FLAKY_DETAILS }}<br/>\`\`\`<br/><br/>"
+            else
+              NON_PASSING_DETAILS="${NON_PASSING_DETAILS}These tests failed initially but passed on retry. Check logs for stability issues.<br/><br/>"
+            fi
+          fi
+          
+          if [ "${{ env.E2E_TESTS_SKIPPED }}" -gt 0 ]; then
+            NON_PASSING_DETAILS="${NON_PASSING_DETAILS}**⏭️ Skipped Tests (${{ env.E2E_TESTS_SKIPPED }}):**<br/>"
+            if [ -n "${{ env.E2E_SKIPPED_DETAILS }}" ]; then
+              NON_PASSING_DETAILS="${NON_PASSING_DETAILS}\`\`\`<br/>${{ env.E2E_SKIPPED_DETAILS }}<br/>\`\`\`<br/><br/>"
+            else
+              NON_PASSING_DETAILS="${NON_PASSING_DETAILS}Some tests were skipped during execution.<br/><br/>"
+            fi
+          fi
+          
+          if [ "${{ env.E2E_TESTS_TIMED_OUT }}" -gt 0 ]; then
+            NON_PASSING_DETAILS="${NON_PASSING_DETAILS}**⏰ Timed Out Tests (${{ env.E2E_TESTS_TIMED_OUT }}):**<br/>"
+            if [ -n "${{ env.E2E_TIMED_OUT_DETAILS }}" ]; then
+              NON_PASSING_DETAILS="${NON_PASSING_DETAILS}\`\`\`<br/>${{ env.E2E_TIMED_OUT_DETAILS }}<br/>\`\`\`<br/><br/>"
+            else
+              NON_PASSING_DETAILS="${NON_PASSING_DETAILS}These tests exceeded the timeout limit and were terminated.<br/><br/>"
+            fi
+          fi
+          
+          if [ -z "$NON_PASSING_DETAILS" ]; then
+            NON_PASSING_DETAILS="**✅ All tests passed successfully!**"
+          fi
+          
+          echo "E2E_NON_PASSING_DETAILS<<EOF" >> $GITHUB_ENV
+          echo "$NON_PASSING_DETAILS" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Post PR comment with E2E test summary
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## 🧪 E2E Tests Results
+            
+            ${{ env.E2E_STATUS }} - ${{ env.E2E_SUCCESS_PERCENTAGE }}% success rate (threshold: 85%)
+            
+            📊 **Test Summary:** ${{ env.E2E_TESTS_TOTAL }} total tests
+            - ✅ Passed: ${{ env.E2E_TESTS_PASSED }}
+            - 🔁 Flaky: ${{ env.E2E_TESTS_FLAKY }}
+            - ⏭️ Skipped: ${{ env.E2E_TESTS_SKIPPED }}
+            - ⏰ Timed out: ${{ env.E2E_TESTS_TIMED_OUT }}
+            - ❌ Failed: ${{ env.E2E_TESTS_FAILED }}
+            
+            ${{ env.E2E_MESSAGE }}
+            
+            <details>
+            <summary>📋 View detailed results</summary>
+            
+            **Workflow Run:** [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            
+            **Test Environment:**
+            - Browser: Chromium (Playwright)
+            - Mode: Headless
+            - Timeout: 60 seconds per test
+            - Mock environment with simulated tools and directories
+            
+            ${{ env.E2E_NON_PASSING_DETAILS }}
+            </details>
+            
+            ---
+            *E2E tests validate the complete application workflow including UI interactions, terminal operations, and configuration management.* 

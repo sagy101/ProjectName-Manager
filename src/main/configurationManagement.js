@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs').promises;
 const { dialog } = require('electron');
 const { exportConfigToFile, importConfigFromFile } = require('../../configIO');
+const { debugLog } = require('../utils/debugUtils');
 
 // Path to configuration files
 const CONFIG_SIDEBAR_ABOUT_PATH = path.join(__dirname, '../configurationSidebarAbout.json');

@@ -5,6 +5,7 @@ const fs = require('fs').promises;
 const fsSync = require('fs');
 const { resolveEnvVars, checkPathExists } = require('./mainUtils');
 const { getGitBranch, clearGitBranchCache } = require('./gitManagement');
+const { debugLog } = require('../utils/debugUtils');
 
 // Dynamic cache for environment verification
 let environmentCaches = {
@@ -119,6 +120,13 @@ async function verifyEnvironment(mainWindow = null) {
 
   isVerifyingEnvironment = true;
   debugLog('Starting full environment verification process...');
+  
+  // Log current working directory and project root for debugging
+  debugLog('[ENVIRONMENT VERIFICATION] Starting verification process:');
+  debugLog(`  - process.cwd(): ${process.cwd()}`);
+  debugLog(`  - __dirname: ${__dirname}`);
+  debugLog(`  - projectRoot: ${projectRoot}`);
+  debugLog(`  - projectRoot resolved: ${path.resolve(projectRoot)}`);
 
   // For generalResults, we'll populate statuses directly. The config will be stored alongside.
   const generalResultsStatuses = {};
@@ -258,12 +266,21 @@ async function verifyEnvironment(mainWindow = null) {
                 break;
               case 'pathExists':
                 try {
+                  // Add detailed logging for path verification
+                  debugLog(`[GENERAL PATH VERIFICATION] ${id}:`);
+                  debugLog(`  - pathValue: ${pathValue}`);
+                  debugLog(`  - resolvedPathValue: ${resolvedPathValue}`);
+                  debugLog(`  - process.cwd(): ${process.cwd()}`);
+                  debugLog(`  - __dirname: ${__dirname}`);
+                  
                   const stats = await fs.stat(resolvedPathValue);
                   if (pathType === 'directory' && stats.isDirectory()) result = 'valid';
                   else if (pathType === 'file' && stats.isFile()) result = 'valid';
                   else if (!pathType && (stats.isFile() || stats.isDirectory())) result = 'valid';
                   else result = 'invalid';
+                  debugLog(`  - result: ${result}`);
                 } catch (e) {
+                  debugLog(`  - error: ${e.message}`);
                   result = 'invalid';
                 }
                 break;
@@ -342,7 +359,16 @@ async function verifyEnvironment(mainWindow = null) {
               ? path.join(projectRoot, pathValue.slice(2))
               : resolveEnvVars(pathValue);
             
+            // Add detailed logging for path verification
+            debugLog(`[PATH VERIFICATION] ${id}:`);
+            debugLog(`  - pathValue: ${pathValue}`);
+            debugLog(`  - projectRoot: ${projectRoot}`);
+            debugLog(`  - resolvedPath: ${resolvedPath}`);
+            debugLog(`  - process.cwd(): ${process.cwd()}`);
+            debugLog(`  - __dirname: ${__dirname}`);
+            
             const pathStatus = await checkPathExists(projectRoot, pathValue.slice(2), pathType);
+            debugLog(`  - result: ${pathStatus}`);
             result = pathStatus;
             break;
             

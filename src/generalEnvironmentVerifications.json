@@ -9,7 +9,10 @@
         "placeholder": "Select project...",
         "loadingText": "Loading projects...",
         "errorText": "Error loading projects",
-        "noOptionsText": "No projects found"
+        "noOptionsText": "No projects found",
+        "defaultValue": {
+              "contains": "dev5"
+        }
       }
     ]
   },

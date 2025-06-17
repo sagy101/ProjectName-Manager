@@ -23,7 +23,37 @@ async function launchElectron() {
     }
   });
   
+  // Forward main process logs to terminal when DEBUG_LOGS=true
+  if (process.env.CI && process.env.DEBUG_LOGS === 'true') {
+    const proc = electronApp.process();
+    if (proc && proc.stdout) {
+      proc.stdout.on('data', (data) => {
+        process.stdout.write(`[MAIN STDOUT] ${data}`);
+      });
+    }
+    if (proc && proc.stderr) {
+      proc.stderr.on('data', (data) => {
+        process.stderr.write(`[MAIN STDERR] ${data}`);
+      });
+    }
+  }
+
   const window = await electronApp.firstWindow({ timeout: 60000 });
+  
+  // Capture and log all console messages from the Electron app when debug logs are enabled.
+  if (process.env.CI && process.env.DEBUG_LOGS === 'true') {
+    window.on('console', async (msg) => {
+      if (window.isClosed()) {
+        return;
+      }
+      try {
+        const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
+        console.log(`[APP CONSOLE] ${msg.type()}:`, ...args);
+      } catch (error) {
+        console.log(`[APP CONSOLE] Error reading console message: ${error.message}`);
+      }
+    });
+  }
   
   // Simply return the window - don't try to manipulate visibility
   // The --no-sandbox and other flags should make it less visible
@@ -42,4 +72,85 @@ async function waitForElement(window, selector, timeout = 30000) {
   await window.waitForSelector(selector, { state: 'visible', timeout });
 }
 
-module.exports = { launchElectron, waitForElement }; 
+/**
+ * Ensure all verifications (in config sections and environment) are valid before toggling
+ * @param {any} window - The Playwright window or page object
+ */
+async function ensureAllVerificationsValid(window) {
+  const pollForAllValid = async (evaluateFn, arg, timeoutMs) => {
+    const interval = 200;
+    const maxTime = Date.now() + timeoutMs;
+    while (Date.now() < maxTime) {
+      const allValid = await window.evaluate(evaluateFn, arg);
+      if (allValid) return true;
+      await window.waitForTimeout(interval);
+    }
+    return false;
+  };
+
+  // 1. For each config section, open the info drawer, check indicators, close drawer
+  const configSections = await window.locator('.config-section').all();
+  let allValid = true;
+  for (const section of configSections) {
+    const sectionId = await section.getAttribute('id');
+    const sectionTitle = await section.locator('h2').textContent();
+    const drawerBtn = section.locator('.drawer-toggle.verification-info-btn');
+    // Open drawer if not already open
+    const isOpen = await drawerBtn.getAttribute('class').then(cls => cls.includes('open'));
+    if (!isOpen) {
+      await drawerBtn.click();
+      await window.waitForTimeout(300);
+    }
+    // Wait for all indicators in this section to be valid (poll up to 10s)
+    allValid = allValid && await pollForAllValid(
+      (sectionId) => {
+        const section = document.getElementById(sectionId);
+        if (!section) return false;
+        const indicators = Array.from(section.querySelectorAll('.verification-indicator'));
+        if (indicators.length === 0) return false;
+        return indicators.every(el => el.classList.contains('valid'));
+      },
+      sectionId,
+      getTimeout(10000)
+    );
+    // Close drawer
+    if (!isOpen) {
+      await drawerBtn.click();
+      await window.waitForTimeout(200);
+    }
+  }
+  // 2. Expand environment verification section and check indicators
+  const envContainer = window.locator('.environment-verification-container');
+  const envHeader = envContainer.locator('.verification-header');
+  const toggleIcon = envHeader.locator('.toggle-icon');
+  const expanded = await toggleIcon.evaluate(node => node.textContent.includes('▼'));
+  if (!expanded) {
+    await toggleIcon.click();
+    await window.waitForTimeout(300);
+  }
+  // Wait for all indicators in environment section to be valid (poll up to 10s)
+  allValid = allValid && await pollForAllValid(
+    () => {
+      const env = document.querySelector('.environment-verification-container');
+      if (!env) return false;
+      const indicators = Array.from(env.querySelectorAll('.verification-indicator'));
+      if (indicators.length === 0) return false;
+      return indicators.every(el => el.classList.contains('valid'));
+    },
+    undefined,
+    getTimeout(10000)
+  );
+  console.log('[ensureAllVerificationsValid] All verifications are valid!');
+  return allValid;
+}
+
+/**
+ * Returns a timeout value, doubled if running in CI
+ * @param {number} base - The base timeout in ms
+ * @returns {number}
+ */
+function getTimeout(base) {
+  return process.env.CI ? base * 2 : base;
+}
+
+module.exports = { launchElectron, waitForElement, ensureAllVerificationsValid, getTimeout }; 

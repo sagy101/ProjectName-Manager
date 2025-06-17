@@ -1,6 +1,7 @@
 const path = require('path');
 const { exec } = require('child_process');
 const fs = require('fs').promises;
+const { debugLog } = require('../utils/debugUtils');
 
 const projectRoot = path.resolve(__dirname, '../../..'); // Adjusted for new location
 
