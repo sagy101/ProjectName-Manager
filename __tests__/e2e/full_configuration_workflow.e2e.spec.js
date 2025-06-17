@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { launchElectron, waitForElement } = require('./test-helpers');
+const { launchElectron, waitForElement, getTimeout } = require('./test-helpers');
 
 const isMock = process.env.E2E_ENV === 'mock';
 const config = isMock
@@ -42,11 +42,11 @@ test.describe('Full Configuration Workflow', () => {
 
     // Wait for the options list to be visible, then click the first item
     const dropdownList = window.locator('.dropdown-item-list');
-    await dropdownList.waitFor({ state: 'visible', timeout: 15000 });
+    await dropdownList.waitFor({ state: 'visible', timeout: getTimeout(15000) });
     await dropdownList.locator('.dropdown-item').first().click();
 
     // Verify a selection was made
-    await expect(gcloudDropdown.locator('.selected-value')).not.toHaveText('Select project...', { timeout: 5000 });
+    await expect(gcloudDropdown.locator('.selected-value')).not.toHaveText('Select project...', { timeout: getTimeout(5000) });
 
     // Phase 2: Enable and configure sections
     const sectionsToEnable = ['mirror', 'gopm', 'url-intelligence'];
@@ -73,9 +73,9 @@ test.describe('Full Configuration Workflow', () => {
     await runButton.click();
 
     // Verify that the correct tabs appear
-    await expect(window.locator('.tab', { hasText: /Mirror \+ MariaDB/ })).toBeVisible({ timeout: 15000 });
-    await expect(window.locator('.tab', { hasText: /gopm \(Process\)/ })).toBeVisible({ timeout: 15000 });
-    await expect(window.locator('.tab.error-tab-button', { hasText: /URL Intelligence \+ TI \(Cloud\)/ })).toBeVisible({ timeout: 15000 });
+    await expect(window.locator('.tab', { hasText: /Mirror \+ MariaDB/ })).toBeVisible({ timeout: getTimeout(15000) });
+    await expect(window.locator('.tab', { hasText: /gopm \(Process\)/ })).toBeVisible({ timeout: getTimeout(15000) });
+    await expect(window.locator('.tab.error-tab-button', { hasText: /URL Intelligence \+ TI \(Cloud\)/ })).toBeVisible({ timeout: getTimeout(15000) });
     
     // Phase 4: Stop and verify
     const stopButton = window.locator('#run-configuration-button.stop');
@@ -85,17 +85,17 @@ test.describe('Full Configuration Workflow', () => {
     // Log overlay state before waiting for it to disappear
     const stoppingScreen = window.locator('.stopping-status-overlay');
 
-    await expect(stoppingScreen).toBeVisible({ timeout: 5000 });
+    await expect(stoppingScreen).toBeVisible({ timeout: getTimeout(5000) });
     // Wait for the Close button to appear (when isComplete is true)
     const closeButton = stoppingScreen.locator('button.close-button');
-    await expect(closeButton).toBeVisible({ timeout: 30000 });
+    await expect(closeButton).toBeVisible({ timeout: getTimeout(30000) });
     await closeButton.click();
 
-    await expect(stoppingScreen).not.toBeVisible({ timeout: 5000 });
+    await expect(stoppingScreen).not.toBeVisible({ timeout: getTimeout(5000) });
 
     // The tabs should be gone
     const terminalTabs = await window.locator('.tab');
-    await expect(terminalTabs).toHaveCount(0, { timeout: 5000 });
+    await expect(terminalTabs).toHaveCount(0, { timeout: getTimeout(5000) });
   });
 
   test('should handle individual section toggling during runtime', async () => {
@@ -120,19 +120,19 @@ test.describe('Full Configuration Workflow', () => {
     // Initial run with default (process, since container is TBD)
     await window.locator('#run-configuration-button').click();
     const gopmTab = window.locator('.tab', { hasText: /gopm \(Process\)/i });
-    await expect(gopmTab).toBeVisible();
+    await expect(gopmTab).toBeVisible({ timeout: getTimeout(15000) });
 
     await window.locator('#run-configuration-button.stop').click();
     
     // Wait for stopping screen to appear and complete
     const stoppingScreen = window.locator('.stopping-status-overlay');
-    await expect(stoppingScreen).toBeVisible({ timeout: 5000 });
+    await expect(stoppingScreen).toBeVisible({ timeout: getTimeout(5000) });
 
     // Wait for the screen to disappear on its own once processes are stopped
     const closeButton2 = stoppingScreen.locator('button.close-button');
-    await expect(closeButton2).toBeVisible({ timeout: 15000 });
+    await expect(closeButton2).toBeVisible({ timeout: getTimeout(15000) });
     await closeButton2.click();
-    await expect(stoppingScreen).not.toBeVisible({ timeout: 5000 });
+    await expect(stoppingScreen).not.toBeVisible({ timeout: getTimeout(5000) });
 
     // Since container is TBD, we can't test switching to it. 
     // Instead, verify that the process button is already selected (as it's the default)

@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { launchElectron } = require('./test-helpers');
+const { launchElectron, getTimeout } = require('./test-helpers');
 
 test.describe('Health Report Feature', () => {
   let electronApp;
@@ -12,7 +12,7 @@ test.describe('Health Report Feature', () => {
     window = win;
     
     // Wait for the main container to ensure the app has launched
-    await window.waitForSelector('.config-container', { timeout: 20000 });
+    await window.waitForSelector('.config-container', { timeout: getTimeout(20000) });
   });
 
   test.afterEach(async () => {
@@ -129,7 +129,7 @@ test.describe('Health Report Feature', () => {
       const mirrorSection = window.locator('h2:has-text("Mirror + MariaDB")').locator('..').locator('..');
       const toggle = mirrorSection.locator('input[type="checkbox"]').first();
       await toggle.click();
-      await window.waitForTimeout(500);
+      await window.waitForTimeout(getTimeout(500));
       
       // Attach the section
       const attachToggle = mirrorSection.locator('#attach-mirror');
@@ -146,7 +146,7 @@ test.describe('Health Report Feature', () => {
       await runButton.click();
       
       // Wait for terminal to appear
-      await expect(window.locator('.tab').first()).toBeVisible({ timeout: 10000 });
+      await expect(window.locator('.tab').first()).toBeVisible({ timeout: getTimeout(10000) });
       
       // Open health report
       const expandButton = await window.locator('[title="Expand Sidebar"]');

@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { launchElectron, waitForElement } = require('./test-helpers');
+const { launchElectron, waitForElement, getTimeout } = require('./test-helpers');
 
 const isMock = process.env.E2E_ENV === 'mock';
 const config = isMock
@@ -35,7 +35,7 @@ test.describe('Terminal Command Validation', () => {
     const sectionLocator = window.locator(`h2:has-text("${runnableSection.title}")`).locator('..').locator('..');
     const toggle = await sectionLocator.locator('input[type="checkbox"]').first();
     await toggle.click();
-    await window.waitForTimeout(500);
+    await window.waitForTimeout(getTimeout(500));
 
     // Attach the section to make the mode selector visible
     if (runnableSection.components.attachToggle) {
@@ -51,24 +51,24 @@ test.describe('Terminal Command Validation', () => {
       await window.click(runOptionSelector);
     }
     
-    await window.waitForTimeout(1000);
+    await window.waitForTimeout(getTimeout(1000));
 
     const runButton = window.locator('button').filter({ hasText: new RegExp(`RUN.*${displaySettings.projectName}`, 'i') });
     await runButton.click();
 
     // Verify that the correct tab appears
     const terminalTabTitle = window.locator('.tab-title').filter({ hasText: /Mirror \+ MariaDB/ });
-    await expect(terminalTabTitle).toBeVisible({ timeout: 15000 });
+    await expect(terminalTabTitle).toBeVisible({ timeout: getTimeout(15000) });
     await terminalTabTitle.click();
 
     // In no-run mode, verify the command is displayed but not run
     // const expectedCommand = getMockCommand(runnableSection.id, configState[runnableSection.id]); // Removed undefined function
 
     const terminalTabs = await window.locator('.tab');
-    await expect(terminalTabs.first()).toBeVisible({ timeout: 30000 });
+    await expect(terminalTabs.first()).toBeVisible({ timeout: getTimeout(30000) });
 
     const sectionTabTitle = await window.locator('.tab-title').filter({ hasText: /Mirror \+ MariaDB/ });
-    await expect(sectionTabTitle).toBeVisible({ timeout: 15000 });
+    await expect(sectionTabTitle).toBeVisible({ timeout: getTimeout(15000) });
 
   });
 
@@ -82,7 +82,7 @@ test.describe('Terminal Command Validation', () => {
     const toggle = await sectionLocator.locator('input[type="checkbox"]').first();
     if (!await toggle.isChecked()) await toggle.click();
     
-    await window.waitForTimeout(500);
+    await window.waitForTimeout(getTimeout(500));
     const containerButton = await sectionLocator.locator('.deployment-toggle-btn').filter({ hasText: /container/i });
     if (await containerButton.isVisible()) await containerButton.click();
 
@@ -91,7 +91,7 @@ test.describe('Terminal Command Validation', () => {
     
     // The tab name may include deployment type, so we find it by the section title
     const terminalTabTitle2 = window.locator('.tab-title').filter({ hasText: /gopm/i });
-    await terminalTabTitle2.waitFor({ state: 'visible', timeout: 5000 });
+    await terminalTabTitle2.waitFor({ state: 'visible', timeout: getTimeout(5000) });
 
     const terminalTabs = await window.locator('.tab');
     expect(await terminalTabs.count()).toBeGreaterThan(0);
@@ -101,7 +101,7 @@ test.describe('Terminal Command Validation', () => {
       const infoButton = await sectionTabTitle2.locator('.info-button, [title*="about"], [title*="info"]').first();
       if (await infoButton.count() > 0) {
         await infoButton.click();
-        await window.waitForTimeout(1000);
+        await window.waitForTimeout(getTimeout(1000));
         const aboutPanel = await window.locator('.tab-info-panel, .about-panel');
         await expect(aboutPanel).toBeVisible();
       }
@@ -139,16 +139,16 @@ test.describe('Terminal Command Validation', () => {
     
     // Wait for tab to appear before proceeding
     const mirrorTab = window.locator('.tab').filter({ has: window.locator('.tab-title', { hasText: /Mirror \+ MariaDB/ }) });
-    await expect(mirrorTab).toBeVisible({ timeout: 5000 });
+    await expect(mirrorTab).toBeVisible({ timeout: getTimeout(5000) });
 
     const terminalTabs = await window.locator('.tab');
     expect(await terminalTabs.count()).toBeGreaterThan(0);
 
     const stopButton = await window.locator('button').filter({ hasText: /STOP|KILL/i }).or(window.locator('button').filter({ hasText: new RegExp(`STOP.*${displaySettings.projectName}`, 'i') }));
-    await expect(stopButton).toBeVisible({ timeout: 5000 });
+    await expect(stopButton).toBeVisible({ timeout: getTimeout(5000) });
     await stopButton.click();
 
-    await window.waitForTimeout(3000);
+    await window.waitForTimeout(getTimeout(3000));
     const remainingTabs = await window.locator('.tab .status-running').count();
     expect(remainingTabs).toBe(0);
   });
