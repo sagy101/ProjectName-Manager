@@ -119,6 +119,13 @@ async function verifyEnvironment(mainWindow = null) {
 
   isVerifyingEnvironment = true;
   debugLog('Starting full environment verification process...');
+  
+  // Log current working directory and project root for debugging
+  console.log('[ENVIRONMENT VERIFICATION] Starting verification process:');
+  console.log(`  - process.cwd(): ${process.cwd()}`);
+  console.log(`  - __dirname: ${__dirname}`);
+  console.log(`  - projectRoot: ${projectRoot}`);
+  console.log(`  - projectRoot resolved: ${path.resolve(projectRoot)}`);
 
   // For generalResults, we'll populate statuses directly. The config will be stored alongside.
   const generalResultsStatuses = {};
@@ -258,12 +265,21 @@ async function verifyEnvironment(mainWindow = null) {
                 break;
               case 'pathExists':
                 try {
+                  // Add detailed logging for path verification
+                  console.log(`[GENERAL PATH VERIFICATION] ${id}:`);
+                  console.log(`  - pathValue: ${pathValue}`);
+                  console.log(`  - resolvedPathValue: ${resolvedPathValue}`);
+                  console.log(`  - process.cwd(): ${process.cwd()}`);
+                  console.log(`  - __dirname: ${__dirname}`);
+                  
                   const stats = await fs.stat(resolvedPathValue);
                   if (pathType === 'directory' && stats.isDirectory()) result = 'valid';
                   else if (pathType === 'file' && stats.isFile()) result = 'valid';
                   else if (!pathType && (stats.isFile() || stats.isDirectory())) result = 'valid';
                   else result = 'invalid';
+                  console.log(`  - result: ${result}`);
                 } catch (e) {
+                  console.log(`  - error: ${e.message}`);
                   result = 'invalid';
                 }
                 break;
@@ -342,7 +358,16 @@ async function verifyEnvironment(mainWindow = null) {
               ? path.join(projectRoot, pathValue.slice(2))
               : resolveEnvVars(pathValue);
             
+            // Add detailed logging for path verification
+            console.log(`[PATH VERIFICATION] ${id}:`);
+            console.log(`  - pathValue: ${pathValue}`);
+            console.log(`  - projectRoot: ${projectRoot}`);
+            console.log(`  - resolvedPath: ${resolvedPath}`);
+            console.log(`  - process.cwd(): ${process.cwd()}`);
+            console.log(`  - __dirname: ${__dirname}`);
+            
             const pathStatus = await checkPathExists(projectRoot, pathValue.slice(2), pathType);
+            console.log(`  - result: ${pathStatus}`);
             result = pathStatus;
             break;
             
