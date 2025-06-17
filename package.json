@@ -26,7 +26,8 @@
     "test:jest:coverage:html": "npm run test:jest:coverage:base && nyc report --reporter=html-spa --report-dir=coverage/merged --temp-dir=coverage/merged && open coverage/merged/index.html",
 
     "test:e2e": "npm run build && unset PREFIX && source ~/.nvm/nvm.sh && nvm use && E2E_ENV=prod npx playwright test --reporter=list",
-    "test:e2e:report": "npm run build && unset PREFIX && source ~/.nvm/nvm.sh && nvm use && E2E_ENV=prod npx playwright test"
+    "test:e2e:report": "npm run build && unset PREFIX && source ~/.nvm/nvm.sh && nvm use && E2E_ENV=prod npx playwright test",
+    "test:vr": "npm run build && unset PREFIX && source ~/.nvm/nvm.sh && nvm use && E2E_ENV=prod npx playwright test -c playwright.vrt.config.js"
   },
   "nyc": {
     "all": true,

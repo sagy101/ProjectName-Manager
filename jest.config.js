@@ -4,6 +4,7 @@ module.exports = {
   testPathIgnorePatterns: [
     "/node_modules/",
     "/__tests__/e2e/",
+    "/__tests__/visual/",
     "/__tests__/ConfigSection.test.jsx",
     "/__tests__/componentsRender.test.jsx"
   ],
