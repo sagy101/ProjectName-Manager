@@ -282,49 +282,115 @@ jobs:
             touch e2e-output.txt
           fi
           
-          # Extract test results from Playwright output
-          # Look for the final summary line that shows "X passed" or "X failed"
-          SUMMARY_LINE=$(grep -E "^\s*[0-9]+ passed" e2e-output.txt | tail -1 || echo "")
+          # Extract total tests from "Running X tests using Y workers" line
+          TESTS_TOTAL=$(grep -oE "Running [0-9]+ tests" e2e-output.txt | grep -oE "[0-9]+" | head -1 || echo "0")
           
-          if [ -n "$SUMMARY_LINE" ]; then
-            echo "Found summary line: $SUMMARY_LINE"
-            # Extract numbers from summary line like "76 passed (4.7m)"
-            TESTS_PASSED=$(echo "$SUMMARY_LINE" | grep -oE '^[[:space:]]*[0-9]+' | tr -d ' ' || echo "0")
-            # Look for failed tests in the summary
-            FAILED_LINE=$(echo "$SUMMARY_LINE" | grep -oE '[0-9]+ failed' || echo "")
-            if [ -n "$FAILED_LINE" ]; then
-              TESTS_FAILED=$(echo "$FAILED_LINE" | grep -oE '[0-9]+' || echo "0")
-            else
-              TESTS_FAILED="0"
-            fi
-          else
-            echo "No summary line found, using fallback method..."
-            # Fallback: Count individual test results
-            TESTS_PASSED=$(grep -c "✓" e2e-output.txt || echo "0")
-            TESTS_FAILED=$(grep -c "✗" e2e-output.txt || echo "0")
+          # Extract results from Playwright summary lines at the end
+          # Look for lines like "73 passed (16.6m)", "3 flaky", "5 failed", etc.
+          TESTS_PASSED=$(grep -oE "^[[:space:]]*[0-9]+ passed" e2e-output.txt | grep -oE "[0-9]+" | tail -1 || echo "0")
+          TESTS_FLAKY=$(grep -oE "^[[:space:]]*[0-9]+ flaky" e2e-output.txt | grep -oE "[0-9]+" | tail -1 || echo "0")
+          TESTS_FAILED=$(grep -oE "^[[:space:]]*[0-9]+ failed" e2e-output.txt | grep -oE "[0-9]+" | tail -1 || echo "0")
+          TESTS_SKIPPED=$(grep -oE "^[[:space:]]*[0-9]+ skipped" e2e-output.txt | grep -oE "[0-9]+" | tail -1 || echo "0")
+          TESTS_TIMED_OUT=$(grep -oE "^[[:space:]]*[0-9]+ timed out" e2e-output.txt | grep -oE "[0-9]+" | tail -1 || echo "0")
+          
+          # Extract detailed test lists (indented lines after summary)
+          echo "=== Extracting Test Details ==="
+          
+          # Extract flaky test details
+          FLAKY_TESTS=""
+          if [ "$TESTS_FLAKY" -gt 0 ]; then
+            # Find the line with "X flaky" and get the indented lines after it
+            FLAKY_TESTS=$(awk '/^[[:space:]]*[0-9]+ flaky/ {found=1; next} found && /^[[:space:]]*\[/ {print} found && !/^[[:space:]]/ {exit}' e2e-output.txt | head -20)
+          fi
+          
+          # Extract failed test details
+          FAILED_TESTS=""
+          if [ "$TESTS_FAILED" -gt 0 ]; then
+            # Find the line with "X failed" and get the indented lines after it
+            FAILED_TESTS=$(awk '/^[[:space:]]*[0-9]+ failed/ {found=1; next} found && /^[[:space:]]*\[/ {print} found && !/^[[:space:]]/ {exit}' e2e-output.txt | head -20)
+          fi
+          
+          # Extract skipped test details
+          SKIPPED_TESTS=""
+          if [ "$TESTS_SKIPPED" -gt 0 ]; then
+            # Find the line with "X skipped" and get the indented lines after it
+            SKIPPED_TESTS=$(awk '/^[[:space:]]*[0-9]+ skipped/ {found=1; next} found && /^[[:space:]]*\[/ {print} found && !/^[[:space:]]/ {exit}' e2e-output.txt | head -20)
+          fi
+          
+          # Extract timed out test details
+          TIMED_OUT_TESTS=""
+          if [ "$TESTS_TIMED_OUT" -gt 0 ]; then
+            # Find the line with "X timed out" and get the indented lines after it
+            TIMED_OUT_TESTS=$(awk '/^[[:space:]]*[0-9]+ timed out/ {found=1; next} found && /^[[:space:]]*\[/ {print} found && !/^[[:space:]]/ {exit}' e2e-output.txt | head -20)
           fi
           
           # Ensure we have valid numbers
+          TESTS_TOTAL=${TESTS_TOTAL:-0}
           TESTS_PASSED=${TESTS_PASSED:-0}
           TESTS_FAILED=${TESTS_FAILED:-0}
+          TESTS_FLAKY=${TESTS_FLAKY:-0}
+          TESTS_SKIPPED=${TESTS_SKIPPED:-0}
+          TESTS_TIMED_OUT=${TESTS_TIMED_OUT:-0}
           
-          # Calculate total
-          TESTS_TOTAL=$((TESTS_PASSED + TESTS_FAILED))
-          
-          # Calculate success percentage
+          # Calculate success percentage based on total tests
           if [ "$TESTS_TOTAL" -gt 0 ]; then
-            SUCCESS_PERCENTAGE=$(( (TESTS_PASSED * 100) / TESTS_TOTAL ))
+            # Success = passed tests / total tests (flaky tests are considered successful since they eventually passed)
+            SUCCESSFUL_TESTS=$((TESTS_PASSED))
+            SUCCESS_PERCENTAGE=$(( (SUCCESSFUL_TESTS * 100) / TESTS_TOTAL ))
           else
             SUCCESS_PERCENTAGE=0
           fi
           
-          echo "Results: $TESTS_PASSED passed, $TESTS_FAILED failed, $TESTS_TOTAL total ($SUCCESS_PERCENTAGE% success)"
+          echo "=== Test Results Summary ==="
+          echo "Total: $TESTS_TOTAL"
+          echo "Passed: $TESTS_PASSED"
+          echo "Failed: $TESTS_FAILED"
+          echo "Flaky: $TESTS_FLAKY"
+          echo "Skipped: $TESTS_SKIPPED"
+          echo "Timed Out: $TESTS_TIMED_OUT"
+          echo "Success Rate: $SUCCESS_PERCENTAGE%"
           
           # Save to environment
+          echo "E2E_TESTS_TOTAL=$TESTS_TOTAL" >> $GITHUB_ENV
           echo "E2E_TESTS_PASSED=$TESTS_PASSED" >> $GITHUB_ENV
           echo "E2E_TESTS_FAILED=$TESTS_FAILED" >> $GITHUB_ENV
-          echo "E2E_TESTS_TOTAL=$TESTS_TOTAL" >> $GITHUB_ENV
+          echo "E2E_TESTS_FLAKY=$TESTS_FLAKY" >> $GITHUB_ENV
+          echo "E2E_TESTS_SKIPPED=$TESTS_SKIPPED" >> $GITHUB_ENV
+          echo "E2E_TESTS_TIMED_OUT=$TESTS_TIMED_OUT" >> $GITHUB_ENV
           echo "E2E_SUCCESS_PERCENTAGE=$SUCCESS_PERCENTAGE" >> $GITHUB_ENV
+          
+          # Save test details for comment
+          if [ -n "$FLAKY_TESTS" ]; then
+            echo "E2E_FLAKY_DETAILS<<EOF" >> $GITHUB_ENV
+            echo "$FLAKY_TESTS" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+          else
+            echo "E2E_FLAKY_DETAILS=" >> $GITHUB_ENV
+          fi
+          
+          if [ -n "$FAILED_TESTS" ]; then
+            echo "E2E_FAILED_DETAILS<<EOF" >> $GITHUB_ENV
+            echo "$FAILED_TESTS" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+          else
+            echo "E2E_FAILED_DETAILS=" >> $GITHUB_ENV
+          fi
+          
+          if [ -n "$SKIPPED_TESTS" ]; then
+            echo "E2E_SKIPPED_DETAILS<<EOF" >> $GITHUB_ENV
+            echo "$SKIPPED_TESTS" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+          else
+            echo "E2E_SKIPPED_DETAILS=" >> $GITHUB_ENV
+          fi
+          
+          if [ -n "$TIMED_OUT_TESTS" ]; then
+            echo "E2E_TIMED_OUT_DETAILS<<EOF" >> $GITHUB_ENV
+            echo "$TIMED_OUT_TESTS" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+          else
+            echo "E2E_TIMED_OUT_DETAILS=" >> $GITHUB_ENV
+          fi
       - name: Determine test status
         if: always()
         run: |
@@ -333,14 +399,55 @@ jobs:
             echo "E2E_MESSAGE=🎉 Great job! The E2E tests are passing with a high success rate." >> $GITHUB_ENV
           else
             echo "E2E_STATUS=❌ **FAILED**" >> $GITHUB_ENV
-            echo "E2E_MESSAGE=⚠️ Some E2E tests are failing. Please review the failed tests and fix any issues." >> $GITHUB_ENV
+            echo "E2E_MESSAGE=⚠️ Some E2E tests are not passing. Please review the test results and fix any issues." >> $GITHUB_ENV
           fi
           
+          # Build detailed non-passing tests section
+          NON_PASSING_DETAILS=""
+          
           if [ "${{ env.E2E_TESTS_FAILED }}" -gt 0 ]; then
-            echo "E2E_FAILED_DETAILS=**Failed Tests:**<br/>Check the workflow logs above for details on which specific tests failed and why." >> $GITHUB_ENV
-          else
-            echo "E2E_FAILED_DETAILS=**All tests passed successfully!**" >> $GITHUB_ENV
+            NON_PASSING_DETAILS="${NON_PASSING_DETAILS}**❌ Failed Tests (${{ env.E2E_TESTS_FAILED }}):**<br/>"
+            if [ -n "${{ env.E2E_FAILED_DETAILS }}" ]; then
+              NON_PASSING_DETAILS="${NON_PASSING_DETAILS}${{ env.E2E_FAILED_DETAILS }}<br/><br/>"
+            else
+              NON_PASSING_DETAILS="${NON_PASSING_DETAILS}Check the workflow logs for details on which specific tests failed and why.<br/><br/>"
+            fi
           fi
+          
+          if [ "${{ env.E2E_TESTS_FLAKY }}" -gt 0 ]; then
+            NON_PASSING_DETAILS="${NON_PASSING_DETAILS}**🔁 Flaky Tests (${{ env.E2E_TESTS_FLAKY }}):**<br/>"
+            if [ -n "${{ env.E2E_FLAKY_DETAILS }}" ]; then
+              NON_PASSING_DETAILS="${NON_PASSING_DETAILS}\`\`\`<br/>${{ env.E2E_FLAKY_DETAILS }}<br/>\`\`\`<br/><br/>"
+            else
+              NON_PASSING_DETAILS="${NON_PASSING_DETAILS}These tests failed initially but passed on retry. Check logs for stability issues.<br/><br/>"
+            fi
+          fi
+          
+          if [ "${{ env.E2E_TESTS_SKIPPED }}" -gt 0 ]; then
+            NON_PASSING_DETAILS="${NON_PASSING_DETAILS}**⏭️ Skipped Tests (${{ env.E2E_TESTS_SKIPPED }}):**<br/>"
+            if [ -n "${{ env.E2E_SKIPPED_DETAILS }}" ]; then
+              NON_PASSING_DETAILS="${NON_PASSING_DETAILS}\`\`\`<br/>${{ env.E2E_SKIPPED_DETAILS }}<br/>\`\`\`<br/><br/>"
+            else
+              NON_PASSING_DETAILS="${NON_PASSING_DETAILS}Some tests were skipped during execution.<br/><br/>"
+            fi
+          fi
+          
+          if [ "${{ env.E2E_TESTS_TIMED_OUT }}" -gt 0 ]; then
+            NON_PASSING_DETAILS="${NON_PASSING_DETAILS}**⏰ Timed Out Tests (${{ env.E2E_TESTS_TIMED_OUT }}):**<br/>"
+            if [ -n "${{ env.E2E_TIMED_OUT_DETAILS }}" ]; then
+              NON_PASSING_DETAILS="${NON_PASSING_DETAILS}\`\`\`<br/>${{ env.E2E_TIMED_OUT_DETAILS }}<br/>\`\`\`<br/><br/>"
+            else
+              NON_PASSING_DETAILS="${NON_PASSING_DETAILS}These tests exceeded the timeout limit and were terminated.<br/><br/>"
+            fi
+          fi
+          
+          if [ -z "$NON_PASSING_DETAILS" ]; then
+            NON_PASSING_DETAILS="**✅ All tests passed successfully!**"
+          fi
+          
+          echo "E2E_NON_PASSING_DETAILS<<EOF" >> $GITHUB_ENV
+          echo "$NON_PASSING_DETAILS" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Post PR comment with E2E test summary
         uses: peter-evans/create-or-update-comment@v4
@@ -351,8 +458,11 @@ jobs:
             
             ${{ env.E2E_STATUS }} - ${{ env.E2E_SUCCESS_PERCENTAGE }}% success rate (threshold: 85%)
             
-            📊 **Test Summary:** ${{ env.E2E_TESTS_PASSED }}/${{ env.E2E_TESTS_TOTAL }} tests passed
+            📊 **Test Summary:** ${{ env.E2E_TESTS_TOTAL }} total tests
             - ✅ Passed: ${{ env.E2E_TESTS_PASSED }}
+            - 🔁 Flaky: ${{ env.E2E_TESTS_FLAKY }}
+            - ⏭️ Skipped: ${{ env.E2E_TESTS_SKIPPED }}
+            - ⏰ Timed out: ${{ env.E2E_TESTS_TIMED_OUT }}
             - ❌ Failed: ${{ env.E2E_TESTS_FAILED }}
             
             ${{ env.E2E_MESSAGE }}
@@ -365,10 +475,10 @@ jobs:
             **Test Environment:**
             - Browser: Chromium (Playwright)
             - Mode: Headless
-            - Timeout: 30 seconds per test
+            - Timeout: 60 seconds per test
             - Mock environment with simulated tools and directories
             
-            ${{ env.E2E_FAILED_DETAILS }}
+            ${{ env.E2E_NON_PASSING_DETAILS }}
             </details>
             
             ---
