@@ -187,7 +187,9 @@ jobs:
           export NVM_DIR="$HOME/.nvm"
           . "$NVM_DIR/nvm.sh"
           nvm use 22.16.0
-          xvfb-run -a npx playwright test --workers=6 --reporter=list 2>&1 | tee e2e-output.txt || echo "E2E completed with issues"
+          # Use the original script but capture output and add workers flag
+          npm run build
+          xvfb-run -a bash -c "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && E2E_ENV=prod npx playwright test --workers=6 --reporter=list" 2>&1 | tee e2e-output.txt || echo "E2E completed with issues"
       - name: Extract E2E Results
         run: |
           # Extract test results from Playwright output
