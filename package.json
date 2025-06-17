@@ -10,6 +10,7 @@
     "start": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npx @electron/rebuild -f -w node-pty && electron .",
     "build": "webpack --mode development",
     "watch": "webpack --mode development --watch",
+    "lint": "eslint --ext .js,.jsx .",
 
     "test": "npm run test:jest && npm run test:e2e",
     "test:jest": "npm run test:jest:prod -- --silent --verbose=false --noStackTrace --passWithNoTests --reporters=default && npm run test:jest:mock -- --silent --verbose=false --noStackTrace --passWithNoTests --reporters=default",
@@ -70,6 +71,9 @@
     "playwright": "^1.45.3",
     "style-loader": "^4.0.0",
     "webpack": "^5.91.0",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^5.1.4",
+    "eslint": "^9.27.0",
+    "eslint-plugin-react": "^7.34.1",
+    "@eslint/js": "^9.2.0"
   }
 }
