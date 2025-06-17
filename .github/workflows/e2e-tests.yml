@@ -257,7 +257,7 @@ jobs:
             export PATH=$(pwd)/mock_bin:$PATH:$GOPATH/bin:/usr/local/bin
             export DEBUG_LOGS=${{ env.DEBUG_LOGS }}
             export CI=true
-            unset PREFIX && source ~/.nvm/nvm.sh && nvm use && DEBUG_LOGS=true E2E_ENV=prod npx playwright test --grep "should show fix buttons for invalid verifications with fixCommand in general environment" --reporter=list --timeout=30000 __tests__/e2e/FixCommandFeature.e2e.spec.js
+            unset PREFIX && source ~/.nvm/nvm.sh && nvm use && HEADLESS=true DEBUG_LOGS=false E2E_ENV=prod npm run test
           " 2>&1 | tee e2e-output.txt || echo "E2E tests completed"
 
       - name: Upload E2E Logs

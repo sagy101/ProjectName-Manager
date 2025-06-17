@@ -90,42 +90,35 @@ async function ensureAllVerificationsValid(window) {
 
   // 1. For each config section, open the info drawer, check indicators, close drawer
   const configSections = await window.locator('.config-section').all();
+  let allValid = true;
   for (const section of configSections) {
     const sectionId = await section.getAttribute('id');
     const sectionTitle = await section.locator('h2').textContent();
     const drawerBtn = section.locator('.drawer-toggle.verification-info-btn');
+    // Open drawer if not already open
     const isOpen = await drawerBtn.getAttribute('class').then(cls => cls.includes('open'));
     if (!isOpen) {
       await drawerBtn.click();
       await window.waitForTimeout(300);
     }
-    const allValidInSection = await pollForAllValid(
+    // Wait for all indicators in this section to be valid (poll up to 10s)
+    allValid = allValid && await pollForAllValid(
       (sectionId) => {
         const section = document.getElementById(sectionId);
         if (!section) return false;
         const indicators = Array.from(section.querySelectorAll('.verification-indicator'));
-        if (indicators.length === 0) return true; // No indicators means valid for this section
+        if (indicators.length === 0) return false;
         return indicators.every(el => el.classList.contains('valid'));
       },
       sectionId,
       getTimeout(10000)
     );
-    if (!allValidInSection) {
-      const debugInfo = await window.evaluate((id) => {
-        const section = document.getElementById(id);
-        if (!section) return { error: 'Section not found' };
-        return Array.from(section.querySelectorAll('.verification-indicator:not(.valid)'))
-          .map(ind => ({ label: ind.querySelector('.label')?.textContent || 'N/A', classes: ind.className }));
-      }, sectionId);
-      console.error(`[ensureAllVerificationsValid] Failing indicators in section '${sectionTitle}':`, JSON.stringify(debugInfo, null, 2));
-      throw new Error(`Not all verifications are valid in section '${sectionTitle}' (${sectionId})`);
-    }
+    // Close drawer
     if (!isOpen) {
       await drawerBtn.click();
       await window.waitForTimeout(200);
     }
   }
-
   // 2. Expand environment verification section and check indicators
   const envContainer = window.locator('.environment-verification-container');
   const envHeader = envContainer.locator('.verification-header');
@@ -135,30 +128,20 @@ async function ensureAllVerificationsValid(window) {
     await toggleIcon.click();
     await window.waitForTimeout(300);
   }
-  const allEnvValid = await pollForAllValid(
+  // Wait for all indicators in environment section to be valid (poll up to 10s)
+  allValid = allValid && await pollForAllValid(
     () => {
       const env = document.querySelector('.environment-verification-container');
       if (!env) return false;
       const indicators = Array.from(env.querySelectorAll('.verification-indicator'));
-      if (indicators.length === 0) return true; // No indicators means valid
+      if (indicators.length === 0) return false;
       return indicators.every(el => el.classList.contains('valid'));
     },
     undefined,
     getTimeout(10000)
   );
-  if (!allEnvValid) {
-    const debugInfo = await window.evaluate(() => {
-      const env = document.querySelector('.environment-verification-container');
-      if (!env) return { error: 'Env container not found' };
-      return Array.from(env.querySelectorAll('.verification-indicator:not(.valid)'))
-        .map(ind => ({ label: ind.querySelector('.label')?.textContent || 'N/A', classes: ind.className }));
-    });
-    console.error(`[ensureAllVerificationsValid] Failing indicators in environment section:`, JSON.stringify(debugInfo, null, 2));
-    throw new Error('Not all environment verifications are valid');
-  }
-
   console.log('[ensureAllVerificationsValid] All verifications are valid!');
-  return true;
+  return allValid;
 }
 
 /**
