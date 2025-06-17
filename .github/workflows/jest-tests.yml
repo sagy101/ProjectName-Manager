@@ -78,6 +78,13 @@ jobs:
             
             See the [workflow logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for detailed coverage report and any failed tests.
             </details>
+      - name: Fail job if mock tests failed
+        if: always()
+        run: |
+          if [ "${{ env.MOCK_TESTS_FAILED }}" != "0" ]; then
+            echo "Jest mock tests failed"
+            exit 1
+          fi
 
   jest-prod:
     name: Jest Prod Coverage
@@ -146,4 +153,11 @@ jobs:
             <summary>View full results</summary>
             
             See the [workflow logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for detailed coverage report and any failed tests.
-            </details> 
+            </details>
+      - name: Fail job if prod tests failed
+        if: always()
+        run: |
+          if [ "${{ env.PROD_TESTS_FAILED }}" != "0" ]; then
+            echo "Jest prod tests failed"
+            exit 1
+          fi
