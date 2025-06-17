@@ -111,7 +111,14 @@ test.describe('Fix Command Feature E2E Tests', () => {
         
         if (toggleAttempts < maxToggleAttempts) {
           // Try toggling verifications again
-          const expandButton = await page.locator('[title="Expand Sidebar"]');
+          const expandButton = await page.locator('[title="Expand Sidebar"]').waitFor({ timeout: getTimeout(5000) }).catch(() => {
+            console.log('⚠ Expand button not found, continuing to next attempt...');
+            return null;
+          });
+          if (!expandButton) {
+            toggleAttempts++;
+            continue;
+          }
           await expandButton.click();
           
           const debugButton = await page.locator('.debug-section-toggle-button');
