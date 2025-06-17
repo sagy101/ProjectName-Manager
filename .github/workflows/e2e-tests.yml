@@ -325,6 +325,15 @@ jobs:
           echo "$NON_PASSING_DETAILS" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
+      - name: Capture UI screenshots
+        if: always()
+        run: |
+          npm run build
+          node scripts/capture-screenshots.js > screenshot_comment.md
+          echo "SCREENSHOT_COMMENT<<EOF" >> $GITHUB_ENV
+          cat screenshot_comment.md >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
       - name: Post PR comment with E2E test summary
         uses: peter-evans/create-or-update-comment@v4
         with:
@@ -342,7 +351,7 @@ jobs:
             - ❌ Failed: ${{ env.E2E_TESTS_FAILED }}
             
             ${{ env.E2E_MESSAGE }}
-            
+
             <details>
             <summary>📋 View detailed results</summary>
             
@@ -356,6 +365,8 @@ jobs:
             
             ${{ env.E2E_NON_PASSING_DETAILS }}
             </details>
+
+            ${{ env.SCREENSHOT_COMMENT }}
 
             ---
             *E2E tests validate the complete application workflow including UI interactions, terminal operations, and configuration management.*

@@ -102,6 +102,33 @@ const App = () => {
     floatingTerminalHandlers
   });
 
+  // Auto-open specific screens when a `screen` query param is provided
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const screen = params.get('screen');
+    if (!screen) return;
+
+    switch (screen) {
+      case 'health-report':
+        appState.setIsHealthReportVisible(true);
+        break;
+      case 'floating-terminal':
+        floatingTerminalHandlers.openFloatingTerminal(
+          'screenshot',
+          'Screenshot Terminal',
+          'echo screenshot'
+        );
+        break;
+      case 'stopping-status':
+        if (appState.projectConfigRef.current?.showStoppingScreen) {
+          appState.projectConfigRef.current.showStoppingScreen();
+        }
+        break;
+      default:
+        break;
+    }
+  }, []);
+
   // Get live terminal data
   const [liveTerminals, setLiveTerminals] = React.useState([]);
   

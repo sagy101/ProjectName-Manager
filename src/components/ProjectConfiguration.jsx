@@ -144,7 +144,8 @@ const ProjectConfiguration = forwardRef(({ projectName, globalDropdownValues, te
     setStateFromImport: ({ configState: newConfig, attachState: newAttach }) => {
       if (newConfig) setConfigState(newConfig);
       if (newAttach) setAttachState(newAttach);
-    }
+    },
+    showStoppingScreen: () => setShowStoppingScreen(true)
   }));
 
   return (
