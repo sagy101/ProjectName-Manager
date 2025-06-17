@@ -48,7 +48,11 @@ jobs:
           npx @electron/rebuild -f -w node-pty
       - name: Setup Mock Environment
         run: |
-          echo "Setting up mock environment for E2E tests..."
+          echo "Setting up comprehensive mock environment for E2E tests..."
+          
+          # --- Create Mock Bin Directory and Add to PATH ---
+          mkdir -p ./mock_bin
+          echo "$(pwd)/mock_bin" >> $GITHUB_PATH
           
           # --- Create Mock Directories ---
           echo "Creating mock directories..."
@@ -66,24 +70,82 @@ jobs:
           touch ./threatintelligence/threat-intelligence/gradlew
           touch ./threatintelligence/url-intelligence/gradlew
           touch ./activity-logger/gradlew
-          chmod +x ./weblifemirror/gradlew
-          chmod +x ./threatintelligence/threat-intelligence/gradlew
-          chmod +x ./threatintelligence/url-intelligence/gradlew
-          chmod +x ./activity-logger/gradlew
-
-          # --- Create Mock Go Directories and Shell Configs ---
+          chmod +x ./*/gradlew
+          chmod +x ./threatintelligence/*./gradlew
+          
+          # --- Create Mock Go Environment ---
           echo "Creating mock Go environment..."
           mkdir -p $GOPATH/bin
           mkdir -p $GOPM_HOME
-          # Create mock shell config files to satisfy goPathConfig check
           tee -a $HOME/.bashrc $HOME/.zshrc > /dev/null << 'EOF'
           export GOPATH=$HOME/go
           export PATH=$PATH:$GOPATH/bin
           EOF
 
-          # --- Create Mock Executables ---
+          # --- Create Mock Executables in ./mock_bin ---
           echo "Creating mock executables..."
-          # ... existing executable mocks ...
+          
+          # gcloud
+          tee ./mock_bin/gcloud > /dev/null << 'EOF'
+          #!/bin/bash
+          echo "Google Cloud SDK 450.0.0"
+          EOF
+          
+          # kubectl
+          tee ./mock_bin/kubectl > /dev/null << 'EOF'
+          #!/bin/bash
+          echo "Client Version: v1.28.4"
+          EOF
+          
+          # kubectx
+          tee ./mock_bin/kubectx > /dev/null << 'EOF'
+          #!/bin/bash
+          echo "mock-context"
+          EOF
+
+          # docker
+          tee ./mock_bin/docker > /dev/null << 'EOF'
+          #!/bin/bash
+          if [[ "$1" == "info" && "$2" == "--format" ]]; then
+            echo "24.0.7"
+          else
+            echo "Docker version 24.0.7, build afdd53b"
+          fi
+          EOF
+          
+          # go
+          tee ./mock_bin/go > /dev/null << 'EOF'
+          #!/bin/bash
+          echo "go version go1.21.4 linux/amd64"
+          EOF
+          
+          # java
+          tee ./mock_bin/java > /dev/null << 'EOF'
+          #!/bin/bash
+          echo 'openjdk version "17.0.8" 2023-07-18' >&2
+          EOF
+          
+          # brew
+          tee ./mock_bin/brew > /dev/null << 'EOF'
+          #!/bin/bash
+          echo "Homebrew 4.1.20"
+          EOF
+          
+          # rdctl
+          tee ./mock_bin/rdctl > /dev/null << 'EOF'
+          #!/bin/bash
+          echo "rdctl version 1.10.1"
+          EOF
+          
+          # chromium
+          tee ./mock_bin/chromium > /dev/null << 'EOF'
+          #!/bin/bash
+          echo "Chromium 125.0.6422.141"
+          EOF
+          
+          chmod +x ./mock_bin/*
+          
+          echo "Mock environment setup complete."
       - name: Test mock environment
         run: |
           echo "=== Testing Mock Environment ==="
