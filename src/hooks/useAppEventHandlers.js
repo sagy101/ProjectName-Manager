@@ -15,7 +15,7 @@ export const useAppEventHandlers = ({
   setGlobalDropdownValues
 }) => {
   const handleVerificationStatusChange = (sectionKey, status) => {
-    debugLog(`DebugPanel: Attempting to update ${sectionKey} to ${status}. This may need adjustment.`);
+    debugLog(`Debug: Attempting to update ${sectionKey} to ${status}. This may need adjustment.`);
     setVerificationStatuses(prev => {
       const newStatuses = { ...prev };
       // This part needs to be careful if general is now {statuses, config}

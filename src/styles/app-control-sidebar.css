@@ -359,6 +359,17 @@
   border-color: #333;
 }
 
+.debug-section-content button.risky-button {
+  background-color: #D32F2F !important;
+  color: #FFFFFF !important;
+  border-color: #B71C1C !important;
+}
+
+.debug-section-content button.risky-button:hover {
+  background-color: #F44336 !important;
+  border-color: #D32F2F !important;
+}
+
 /* Optional Keyframe for pulsing active debug button in sidebar */
 /* @keyframes pulse-glow-sidebar-debug {
   0%, 100% {

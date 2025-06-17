@@ -52,7 +52,6 @@ graph TB
             J --> M[EnvironmentVerification]
             J --> N[FloatingTerminals]
             J --> O[AppControlSidebar]
-            J --> P[ConfigCollapseButton]
             J --> HR[HealthReportScreen]
             
             subgraph "Custom Hooks"
@@ -149,7 +148,7 @@ The renderer process is built with React and follows a modern, modular architect
 
 #### Component Hierarchy
 -   **Container Components**: High-level components like `ProjectConfiguration` and `TerminalContainer` manage state and orchestrate their children.
--   **Presentational Components**: Smaller, reusable components like `RunButton`, `TerminalPlaceholder`, `ConfigSection`, and `ConfigCollapseButton` focus on rendering specific pieces of the UI.
+-   **Presentational Components**: Smaller, reusable components like `RunButton`, `TerminalPlaceholder`, and `ConfigSection` focus on rendering specific pieces of the UI.
 -   **Custom Hooks**: Complex, reusable stateful logic is extracted into custom hooks for better organization and testability.
 
 #### App Component Architecture
@@ -165,7 +164,6 @@ graph TB
         A --> E[useFloatingTerminals]
         A --> F[useConfigurationManagement]
         A --> G[useFixCommands]
-        A --> H[ConfigCollapseButton]
     end
     
     subgraph "Other Component Hooks"
@@ -183,7 +181,6 @@ graph TB
         E --> S[Floating Terminals<br/>- Terminal lifecycle<br/>- Position management<br/>- Info panel state<br/>- Z-index handling]
         F --> T[Configuration<br/>- Import/Export<br/>- Git branch handling<br/>- Status screen management<br/>- File operations]
         G --> V[Fix Commands<br/>- Verification updates<br/>- Fix command execution<br/>- Toggle verifications<br/>- Auto re-validation]
-        H --> U[Reusable Component<br/>- Collapse/Expand UI<br/>- SVG icons<br/>- Accessibility]
     end
 ```
 
@@ -212,7 +209,7 @@ graph TB
 src/
 ├── App.jsx (clean, modular composition)
 ├── components/
-│   └── ConfigCollapseButton.jsx (reusable component)
+│   └── AppControlSidebar.jsx (sidebar with integrated debug tools)
 └── hooks/
     ├── useAppState.js (App state management)
     ├── useAppEffects.js (App side effects)
@@ -678,24 +675,31 @@ sequenceDiagram
 
 ## Safety & Debug Features
 
-The application includes comprehensive safety mechanisms and debugging tools:
+The application includes comprehensive safety mechanisms and debugging tools integrated into the AppControlSidebar:
 
 ```mermaid
 graph TB
-    A[Debug Panel] --> B[Developer Tools]
+    A[AppControlSidebar Debug Section] --> B[Developer Tools]
     A --> C[Application Reload]
     A --> D[Test Section Toggle]
     A --> E[No Run Mode]
     A --> F[Terminal Input Toggle]
+    A --> G[Configuration Management]
+    A --> H[Environment Export]
+    A --> I[Verification Testing]
     
-    E --> G[Command Preview]
-    E --> H[Safe Testing]
+    E --> J[Command Preview]
+    E --> K[Safe Testing]
     
-    F --> I[Read-Only Protection]
-    F --> J[Writable Override]
+    F --> L[Read-Only Protection]
+    F --> M[Writable Override]
     
-    G --> K[Show Commands Without Execution]
-    I --> L[Prevent Accidental Input]
+    G --> N[Import/Export Config]
+    H --> O[Environment Data Export]
+    I --> P[Toggle All Verifications]
+    
+    J --> Q[Show Commands Without Execution]
+    L --> R[Prevent Accidental Input]
     
     style A fill:#fff3e0
     style E fill:#e8f5e8
@@ -704,17 +708,27 @@ graph TB
 
 ### Safety Features
 
-- **Read-Only Terminals**: Main terminals default to read-only mode
-- **No Run Mode**: Preview commands without execution
+- **Read-Only Terminals**: Main terminals default to read-only mode (can be toggled via debug section)
+- **No Run Mode**: Preview commands without execution for safe testing
+- **Runtime Protection**: Critical debug features disabled while project is running to prevent conflicts
+- **User Notifications**: Warning messages when attempting unsafe operations
 - **Container Cleanup**: Automatic cleanup on process termination
 - **Process Isolation**: Secure separation between UI and system operations
+- **Risky Operation Warnings**: Clear labeling of potentially dangerous operations (like app reload)
 
 ### Debug Tools
 
-- **Chrome DevTools Integration**: Full debugging capabilities
-- **Test Section Management**: Hide/show development sections
-- **Live Configuration Reload**: Update behavior without restart
-- **Process Monitoring**: Real-time process and container status
+The debug section is integrated into the AppControlSidebar and provides the following tools:
+
+- **Chrome DevTools Integration**: Opens browser developer tools for debugging
+- **Application Reload**: Reloads the entire application (marked as risky due to potential variable substitution issues)
+- **Test Section Toggle**: Show/hide development and test sections (disabled while project is running)
+- **No Run Mode**: Preview commands without execution for safe testing
+- **Terminal Input Toggle**: Switch between read-only and writable terminal modes
+- **Configuration Management**: Import and export application configuration files
+- **Environment Data Export**: Export complete environment verification data for debugging
+- **Verification Testing**: Toggle all verifications between valid/invalid states for testing fix button functionality
+- **Safety Mechanisms**: Most debug features are automatically disabled when the project is running to prevent conflicts
 
 ## Data Flow Summary
 

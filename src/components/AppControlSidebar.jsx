@@ -16,10 +16,9 @@ const AppControlSidebar = ({
   showTestSections, // New prop
   noRunMode, // New prop
   isProjectRunning, // New prop
-  // Props for debug actions, formerly passed to DebugPanel
   onToggleTestSections,
   onToggleNoRunMode,
-  showAppNotification, // Though showAppNotification might not be directly used by buttons here, it was part of DebugPanel
+  showAppNotification, 
   isMainTerminalWritable, // New prop
   onToggleMainTerminalWritable, // New prop
   onExportConfig,
@@ -60,7 +59,6 @@ const AppControlSidebar = ({
     }
   };
 
-  // Debug actions (logic adapted from DebugPanel.jsx)
   const openDevTools = () => {
     if (window.electron) window.electron.openDevTools();
     else console.warn('Electron API not available for openDevTools');
@@ -204,9 +202,9 @@ const AppControlSidebar = ({
             <ComputerDesktopIcon className="icon" />
             <span>DevTools</span>
           </button>
-          <button onClick={reloadApp} title="Reload Application">
+          <button onClick={reloadApp} title="⚠️ May cause variable substitution issues" className="risky-button">
             <ArrowPathIcon className="icon" />
-            <span>Reload</span>
+            <span>⚠️ Reload (Risky)</span>
           </button>
           <button
             onClick={handleToggleTestSectionsClick}

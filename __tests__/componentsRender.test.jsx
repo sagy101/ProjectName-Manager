@@ -5,7 +5,7 @@ import { render, fireEvent, waitFor, act } from '@testing-library/react';
 import AppControlSidebar from '../src/components/AppControlSidebar.jsx';
 import AttachToggle from '../src/components/AttachToggle.jsx';
 import ConfigSection from '../src/components/ConfigSection.jsx';
-import DebugPanel from '../src/components/DebugPanel.jsx';
+
 import DeploymentOptions from '../src/components/DeploymentOptions.jsx';
 import DropdownSelector from '../src/components/DropdownSelector.jsx';
 import EnvironmentVerification from '../src/components/EnvironmentVerification.jsx';
@@ -412,21 +412,7 @@ describe('Component render tests', () => {
     );
   });
 
-  test('DebugPanel renders', () => {
-    render(
-      <DebugPanel
-        onToggleVerificationStatus={() => {}}
-        onToggleTestSections={() => {}}
-        showTestSections={false}
-        onToggleNoRunMode={() => {}}
-        noRunMode={false}
-        isProjectRunning={false}
-        showAppNotification={() => {}}
-        isOpen={false}
-        onClose={() => {}}
-      />
-    );
-  });
+
 
   test('EnvironmentVerification renders', () => {
     render(
