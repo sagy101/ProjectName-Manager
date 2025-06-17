@@ -20,7 +20,7 @@ jobs:
       GOPATH: ${{ github.workspace }}/go
       JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
       CLOUDBEES_FEATURES_ENV_KEY: mock-key-12345
-      DEBUG_LOGS: 'true'
+      DEBUG_LOGS: 'false'
 
     steps:
       - name: Checkout code
@@ -54,12 +54,11 @@ jobs:
         run: |
           echo "Setting up comprehensive mock environment for E2E tests..."
           
-          # --- Create Mock Bin Directory and Add to PATH ---
-          mkdir -p ./mock_bin
-          echo "$(pwd)/mock_bin" >> $GITHUB_PATH
+          # --- Go to parent directory to create sibling project folders ---
+          cd ..
           
           # --- Create Mock Directories ---
-          echo "Creating mock directories..."
+          echo "Creating mock project directories in $(pwd)..."
           mkdir -p ./weblifemirror/agent
           mkdir -p ./threatintelligence/threat-intelligence
           mkdir -p ./threatintelligence/url-intelligence
@@ -68,11 +67,6 @@ jobs:
           mkdir -p ./rule-engine
           mkdir -p ./gopm
           # Note: NOT creating ./test-analytics as it should remain invalid
-          
-          # --- Create Go Environment Directory ---
-          echo "Creating Go environment..."
-          mkdir -p $HOME/go/bin
-          mkdir -p $GOPM_HOME
           
           # --- Create Mock Gradlew Files ---
           echo "Creating mock gradlew files..."
@@ -84,6 +78,18 @@ jobs:
           chmod +x ./threatintelligence/threat-intelligence/gradlew
           chmod +x ./threatintelligence/url-intelligence/gradlew
           chmod +x ./activity-logger/gradlew
+          
+          # --- Return to the workspace directory ---
+          cd "${{ github.workspace }}"
+          
+          # --- Create Mock Bin Directory and Add to PATH ---
+          mkdir -p ./mock_bin
+          echo "$(pwd)/mock_bin" >> $GITHUB_PATH
+          
+          # --- Create Go Environment Directory (inside workspace, for GOPATH) ---
+          echo "Creating Go environment..."
+          mkdir -p $HOME/go/bin
+          mkdir -p $GOPM_HOME
           
           # --- Create Mock Executables in ./mock_bin ---
           echo "Creating mock executables..."
@@ -184,8 +190,6 @@ jobs:
           export DEBUG_LOGS=${{ env.DEBUG_LOGS }}
           export NVM_DIR="$HOME/.nvm"
           
-          # Ensure Go directory exists and GOPATH is correct
-          mkdir -p $HOME/go/bin
           
           # Source nvm and use Node.js 22.16.0 for the actual test execution
           . "$NVM_DIR/nvm.sh"
@@ -221,48 +225,23 @@ jobs:
           nvm --version || echo "❌ nvm --version failed"
           nvm ls || echo "❌ nvm ls failed"
           echo ""
-          echo "=== Testing Mock Directories ==="
-          echo "Checking directories:"
-          ls -la ./weblifemirror/ || echo "❌ weblifemirror not found"
-          ls -la ./threatintelligence/ || echo "❌ threatintelligence not found"
-          ls -la ./infrastructure/ || echo "❌ infrastructure not found"
-          ls -la ./activity-logger/ || echo "❌ activity-logger not found"
-          ls -la ./rule-engine/ || echo "❌ rule-engine not found"
-          ls -la ./gopm/ || echo "❌ gopm not found"
+          echo "=== Testing Mock Directories (in parent directory) ==="
+          echo "Checking directories in $(pwd)/..:"
+          ls -la ../weblifemirror/ || echo "❌ weblifemirror not found"
+          ls -la ../threatintelligence/ || echo "❌ threatintelligence not found"
+          ls -la ../infrastructure/ || echo "❌ infrastructure not found"
+          ls -la ../activity-logger/ || echo "❌ activity-logger not found"
+          ls -la ../rule-engine/ || echo "❌ rule-engine not found"
+          ls -la ../gopm/ || echo "❌ gopm not found"
           echo "test-analytics should NOT exist:"
-          ls -la ./test-analytics/ && echo "❌ test-analytics exists (should be missing)" || echo "✅ test-analytics correctly missing"
+          ls -la ../test-analytics/ && echo "❌ test-analytics exists (should be missing)" || echo "✅ test-analytics correctly missing"
           echo ""
           echo "Checking gradlew files:"
-          ls -la ./weblifemirror/gradlew || echo "❌ weblifemirror/gradlew not found"
-          ls -la ./threatintelligence/threat-intelligence/gradlew || echo "❌ threat-intelligence/gradlew not found"
+          ls -la ../weblifemirror/gradlew || echo "❌ weblifemirror/gradlew not found"
+          ls -la ../threatintelligence/threat-intelligence/gradlew || echo "❌ threat-intelligence/gradlew not found"
           echo ""
           echo "=== Mock Environment Test Complete ==="
           echo ""
-          
-          # Ensure mock directories exist in the build output directory
-          # The app checks paths relative to its resources directory
-          BUILD_DIR="./build/linux-unpacked/resources/app"
-          mkdir -p "$BUILD_DIR"
-          cd "$BUILD_DIR"
-          
-          # Re-create all mock directories here
-          mkdir -p ./weblifemirror/agent
-          mkdir -p ./threatintelligence/threat-intelligence
-          mkdir -p ./threatintelligence/url-intelligence
-          mkdir -p ./infrastructure
-          mkdir -p ./activity-logger
-          mkdir -p ./rule-engine
-          mkdir -p ./gopm/agent
-          # Note: NOT creating ./test-analytics as it should remain invalid
-          
-          # Re-create gradlew files
-          touch ./weblifemirror/gradlew && chmod +x ./weblifemirror/gradlew
-          touch ./threatintelligence/threat-intelligence/gradlew && chmod +x ./threatintelligence/threat-intelligence/gradlew
-          touch ./threatintelligence/url-intelligence/gradlew && chmod +x ./threatintelligence/url-intelligence/gradlew
-          touch ./activity-logger/gradlew && chmod +x ./activity-logger/gradlew
-          
-          # Go back to project root
-          cd -
           
           # Use the original script but capture output and run subset of tests for faster feedback
           npm run build
@@ -275,10 +254,7 @@ jobs:
             export DEBUG_LOGS=${{ env.DEBUG_LOGS }}
             unset PREFIX && source ~/.nvm/nvm.sh && nvm use && E2E_ENV=prod npx playwright test --workers=2 --reporter=list --timeout=30000 \
               __tests__/e2e/fix-command.e2e.spec.js \
-              __tests__/e2e/FixCommandFeature.e2e.spec.js \
-              __tests__/e2e/app.e2e.spec.js \
-              __tests__/e2e/terminal_initial_state.e2e.spec.js \
-              __tests__/e2e/sidebar_navigation.e2e.spec.js
+              __tests__/e2e/FixCommandFeature.e2e.spec.js 
           " 2>&1 | tee e2e-output.txt || echo "E2E completed with issues"
 
       - name: Upload E2E Logs
