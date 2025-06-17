@@ -25,6 +25,7 @@ Testing practices follow `docs/testing-guide.md`:
 - Run all tests with `npm test`. Pretest and posttest scripts rebuild `node-pty` for the appropriate environment.
 - Jest tests only: `npm run test:jest` (use `:prod` or `:mock` for different data sets).
 - End-to-end tests: `HEADLESS=true npm run test:e2e` (or `npm run test:e2e:report`).
+- If Electron can't open an X display, install Xvfb and run: `xvfb-run -a bash -c 'HEADLESS=true npm run test:e2e'`.
 - For tests that require the DOM, add `/** @jest-environment jsdom */` at the top of the file.
 - Mock configuration data lives under `__tests__/mock-data`.
 - If `node-pty` build errors occur, run `npx @electron/rebuild -f -w node-pty`.
