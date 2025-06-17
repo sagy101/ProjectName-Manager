@@ -32,18 +32,19 @@ jobs:
           . "$NVM_DIR/nvm.sh"
           nvm use 22.16.0
           npm run test:jest:mock:coverage
-      - name: Print Jest Mock Coverage Summary
-        run: |
-          if [ -f coverage/mock/coverage-summary.json ]; then
-            npx nyc report --reporter=text-summary --report-dir=coverage/mock --temp-dir=coverage/mock;
-          else
-            echo "No mock coverage summary found.";
-          fi
       - name: Upload Mock Coverage Report
         uses: actions/upload-artifact@v4
         with:
           name: jest-mock-coverage
           path: coverage/mock/
+      - name: Post PR comment with mock test summary
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            **Jest Mock Coverage**
+            
+            ✅ All tests completed. See the logs above for detailed results and coverage summary.
 
   jest-prod:
     name: Jest Prod Coverage
@@ -72,18 +73,19 @@ jobs:
           . "$NVM_DIR/nvm.sh"
           nvm use 22.16.0
           npm run test:jest:prod:coverage
-      - name: Print Jest Prod Coverage Summary
-        run: |
-          if [ -f coverage/prod/coverage-summary.json ]; then
-            npx nyc report --reporter=text-summary --report-dir=coverage/prod --temp-dir=coverage/prod;
-          else
-            echo "No prod coverage summary found.";
-          fi
       - name: Upload Prod Coverage Report
         uses: actions/upload-artifact@v4
         with:
           name: jest-prod-coverage
           path: coverage/prod/
+      - name: Post PR comment with prod test summary
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            **Jest Prod Coverage**
+            
+            ✅ All tests completed. See the logs above for detailed results and coverage summary.
 
   e2e:
     name: E2E Tests
@@ -124,4 +126,12 @@ jobs:
           export NVM_DIR="$HOME/.nvm"
           . "$NVM_DIR/nvm.sh"
           nvm use 22.16.0
-          xvfb-run -a npm run test:e2e 
+          xvfb-run -a npm run test:e2e
+      - name: Post PR comment with E2E test summary
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            **E2E Tests**
+            
+            ✅ All E2E tests completed. See the logs above for detailed results. 
