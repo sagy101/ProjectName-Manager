@@ -67,12 +67,19 @@ jobs:
           chmod +x ./threatintelligence/url-intelligence/gradlew
           chmod +x ./activity-logger/gradlew
           
-          # Set up environment variables
+          # Set up environment variables (both for GitHub and current session)
           echo "export GOPM_HOME=$HOME/gopm" >> $GITHUB_ENV
           echo "export GOPATH=$HOME/go" >> $GITHUB_ENV
           echo "export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
           echo "export CLOUDBEES_FEATURES_ENV_KEY=mock-key-12345" >> $GITHUB_ENV
           echo "export PATH=$PATH:$HOME/go/bin:/usr/local/bin" >> $GITHUB_ENV
+          
+          # Also export for current session
+          export GOPM_HOME=$HOME/gopm
+          export GOPATH=$HOME/go
+          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+          export CLOUDBEES_FEATURES_ENV_KEY=mock-key-12345
+          export PATH=$PATH:$HOME/go/bin:/usr/local/bin
           
           # Create mock gcloud CLI
           sudo tee /usr/local/bin/gcloud > /dev/null << 'EOF'
@@ -223,7 +230,7 @@ jobs:
           EOF
           sudo chmod +x /usr/local/bin/chromium
           
-          # Create mock nvm
+          # Create mock nvm (ensure it shows v16 to satisfy verification)
           mkdir -p $HOME/.nvm
           tee $HOME/.nvm/nvm.sh > /dev/null << 'EOF'
           #!/bin/bash
@@ -253,6 +260,7 @@ jobs:
           echo "PATH: $PATH"
           echo "GOPATH: $GOPATH"
           echo "JAVA_HOME: $JAVA_HOME"
+          echo "CLOUDBEES_FEATURES_ENV_KEY: $CLOUDBEES_FEATURES_ENV_KEY"
           echo ""
           echo "=== Testing Mock Executables ==="
           echo "gcloud version:"
@@ -273,6 +281,9 @@ jobs:
           echo "chromium version:"
           chromium --version || echo "❌ chromium failed"
           echo ""
+          echo "nvm version and list:"
+          source $HOME/.nvm/nvm.sh && nvm --version && nvm ls || echo "❌ nvm failed"
+          echo ""
           echo "=== Testing Mock Directories ==="
           echo "Checking directories:"
           ls -la ./weblifemirror/ || echo "❌ weblifemirror not found"
@@ -288,12 +299,26 @@ jobs:
       - name: Run E2E Tests (with Xvfb)
         timeout-minutes: 20
         run: |
+          # Set up environment variables for E2E tests
+          export GOPM_HOME=$HOME/gopm
+          export GOPATH=$HOME/go
+          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+          export CLOUDBEES_FEATURES_ENV_KEY=mock-key-12345
+          export PATH=$PATH:$HOME/go/bin:/usr/local/bin
+          
           export NVM_DIR="$HOME/.nvm"
           . "$NVM_DIR/nvm.sh"
           nvm use 22.16.0
           # Use the original script but capture output and add workers flag
           npm run build
-          xvfb-run -a bash -c "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && E2E_ENV=prod npx playwright test --workers=6 --reporter=list --timeout=30000" 2>&1 | tee e2e-output.txt || echo "E2E completed with issues"
+          xvfb-run -a bash -c "
+            export GOPM_HOME=$HOME/gopm
+            export GOPATH=$HOME/go
+            export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+            export CLOUDBEES_FEATURES_ENV_KEY=mock-key-12345
+            export PATH=$PATH:$HOME/go/bin:/usr/local/bin
+            unset PREFIX && source ~/.nvm/nvm.sh && nvm use && E2E_ENV=prod npx playwright test --workers=6 --reporter=list --timeout=30000
+          " 2>&1 | tee e2e-output.txt || echo "E2E completed with issues"
       - name: Extract E2E Results
         run: |
           # Extract test results from Playwright output
