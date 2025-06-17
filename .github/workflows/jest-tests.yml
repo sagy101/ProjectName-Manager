@@ -1,0 +1,149 @@
+name: Jest Tests
+
+on:
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  pull-requests: write
+  issues: write
+  contents: read
+
+jobs:
+  jest-mock:
+    name: Jest Mock Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up NVM and Node.js 22.16.0
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+          . "$NVM_DIR/nvm.sh"
+          nvm install 22.16.0
+          nvm use 22.16.0
+          node -v
+          npm -v
+      - name: Install dependencies
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          . "$NVM_DIR/nvm.sh"
+          nvm use 22.16.0
+          npm ci
+      - name: Run Jest Mock Coverage
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          . "$NVM_DIR/nvm.sh"
+          nvm use 22.16.0
+          npm run test:jest:mock:coverage 2>&1 | tee jest-mock-output.txt || echo "Jest completed with issues"
+      - name: Extract Jest Mock Results
+        run: |
+          # Extract test results
+          TESTS_PASSED=$(grep -o "Tests:.*passed" jest-mock-output.txt | grep -o "[0-9]\+ passed" | grep -o "[0-9]\+" || echo "0")
+          TESTS_FAILED=$(grep -o "Tests:.*failed" jest-mock-output.txt | grep -o "[0-9]\+ failed" | grep -o "[0-9]\+" || echo "0")
+          TESTS_SKIPPED=$(grep -o "Tests:.*skipped" jest-mock-output.txt | grep -o "[0-9]\+ skipped" | grep -o "[0-9]\+" || echo "0")
+          TESTS_TOTAL=$(grep -o "Tests:.*total" jest-mock-output.txt | grep -o "[0-9]\+ total" | grep -o "[0-9]\+" || echo "0")
+          
+          # Extract coverage
+          COVERAGE=$(grep "All files" jest-mock-output.txt | awk '{print $4}' | head -1 || echo "N/A")
+          
+          # Save to environment
+          echo "MOCK_TESTS_PASSED=$TESTS_PASSED" >> $GITHUB_ENV
+          echo "MOCK_TESTS_FAILED=$TESTS_FAILED" >> $GITHUB_ENV
+          echo "MOCK_TESTS_SKIPPED=$TESTS_SKIPPED" >> $GITHUB_ENV
+          echo "MOCK_TESTS_TOTAL=$TESTS_TOTAL" >> $GITHUB_ENV
+          echo "MOCK_COVERAGE=$COVERAGE" >> $GITHUB_ENV
+      - name: Upload Mock Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: jest-mock-coverage
+          path: coverage/mock/
+      - name: Post PR comment with mock test summary
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            **Jest Mock Coverage**
+            
+            📊 **Test Results:** ${{ env.MOCK_TESTS_PASSED }}/${{ env.MOCK_TESTS_TOTAL }} passed
+            - ✅ Passed: ${{ env.MOCK_TESTS_PASSED }}
+            - ❌ Failed: ${{ env.MOCK_TESTS_FAILED }}
+            - ⏭️ Skipped: ${{ env.MOCK_TESTS_SKIPPED }}
+            
+            📈 **Coverage:** ${{ env.MOCK_COVERAGE }}
+            
+            <details>
+            <summary>View full results</summary>
+            
+            See the [workflow logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for detailed coverage report and any failed tests.
+            </details>
+
+  jest-prod:
+    name: Jest Prod Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up NVM and Node.js 22.16.0
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+          . "$NVM_DIR/nvm.sh"
+          nvm install 22.16.0
+          nvm use 22.16.0
+          node -v
+          npm -v
+      - name: Install dependencies
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          . "$NVM_DIR/nvm.sh"
+          nvm use 22.16.0
+          npm ci
+      - name: Run Jest Prod Coverage
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          . "$NVM_DIR/nvm.sh"
+          nvm use 22.16.0
+          npm run test:jest:prod:coverage 2>&1 | tee jest-prod-output.txt || echo "Jest completed with issues"
+      - name: Extract Jest Prod Results
+        run: |
+          # Extract test results
+          TESTS_PASSED=$(grep -o "Tests:.*passed" jest-prod-output.txt | grep -o "[0-9]\+ passed" | grep -o "[0-9]\+" || echo "0")
+          TESTS_FAILED=$(grep -o "Tests:.*failed" jest-prod-output.txt | grep -o "[0-9]\+ failed" | grep -o "[0-9]\+" || echo "0")
+          TESTS_SKIPPED=$(grep -o "Tests:.*skipped" jest-prod-output.txt | grep -o "[0-9]\+ skipped" | grep -o "[0-9]\+" || echo "0")
+          TESTS_TOTAL=$(grep -o "Tests:.*total" jest-prod-output.txt | grep -o "[0-9]\+ total" | grep -o "[0-9]\+" || echo "0")
+          
+          # Extract coverage
+          COVERAGE=$(grep "All files" jest-prod-output.txt | awk '{print $4}' | head -1 || echo "N/A")
+          
+          # Save to environment
+          echo "PROD_TESTS_PASSED=$TESTS_PASSED" >> $GITHUB_ENV
+          echo "PROD_TESTS_FAILED=$TESTS_FAILED" >> $GITHUB_ENV
+          echo "PROD_TESTS_SKIPPED=$TESTS_SKIPPED" >> $GITHUB_ENV
+          echo "PROD_TESTS_TOTAL=$TESTS_TOTAL" >> $GITHUB_ENV
+          echo "PROD_COVERAGE=$COVERAGE" >> $GITHUB_ENV
+      - name: Upload Prod Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: jest-prod-coverage
+          path: coverage/prod/
+      - name: Post PR comment with prod test summary
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            **Jest Prod Coverage**
+            
+            📊 **Test Results:** ${{ env.PROD_TESTS_PASSED }}/${{ env.PROD_TESTS_TOTAL }} passed
+            - ✅ Passed: ${{ env.PROD_TESTS_PASSED }}
+            - ❌ Failed: ${{ env.PROD_TESTS_FAILED }}
+            - ⏭️ Skipped: ${{ env.PROD_TESTS_SKIPPED }}
+            
+            📈 **Coverage:** ${{ env.PROD_COVERAGE }}
+            
+            <details>
+            <summary>View full results</summary>
+            
+            See the [workflow logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for detailed coverage report and any failed tests.
+            </details> 
