@@ -336,7 +336,13 @@ jobs:
       - name: Prepare Comment Body
         id: comment-body
         run: |
-          BODY="
+          if [ -z "${{ steps.fc.outputs.comment-id }}" ]; then
+            cat >> $GITHUB_OUTPUT << 'EOF'
+          body<<BODY_DELIMITER
+          <!-- GITHUB_ACTION_TEST_SUMMARY -->
+          
+          ## 🔎 Test Summary
+          
           ---
           ### 🧪 E2E Tests Results
           - **${{ env.E2E_STATUS }}** - ${{ env.E2E_SUCCESS_PERCENTAGE }}% success rate
@@ -344,12 +350,23 @@ jobs:
           - 🔁 Flaky: ${{ env.E2E_TESTS_FLAKY }}
           - ⏭️ Skipped: ${{ env.E2E_TESTS_SKIPPED }}
           - ⏰ Timed out: ${{ env.E2E_TESTS_TIMED_OUT }}
-          - ❌ Failed: ${{ env.E2E_TESTS_FAILED }}"
-          if [ -z "${{ steps.fc.outputs.comment-id }}" ]; then
-            HEADER="<!-- GITHUB_ACTION_TEST_SUMMARY -->\n\n## 🔎 Test Summary\n"
-            echo "body=$(printf "${HEADER}${BODY}")" >> $GITHUB_OUTPUT
+          - ❌ Failed: ${{ env.E2E_TESTS_FAILED }}
+          BODY_DELIMITER
+          EOF
           else
-            echo "body=$(printf "${BODY}")" >> $GITHUB_OUTPUT
+            cat >> $GITHUB_OUTPUT << 'EOF'
+          body<<BODY_DELIMITER
+          
+          ---
+          ### 🧪 E2E Tests Results
+          - **${{ env.E2E_STATUS }}** - ${{ env.E2E_SUCCESS_PERCENTAGE }}% success rate
+          - ✅ Passed: ${{ env.E2E_TESTS_PASSED }}
+          - 🔁 Flaky: ${{ env.E2E_TESTS_FLAKY }}
+          - ⏭️ Skipped: ${{ env.E2E_TESTS_SKIPPED }}
+          - ⏰ Timed out: ${{ env.E2E_TESTS_TIMED_OUT }}
+          - ❌ Failed: ${{ env.E2E_TESTS_FAILED }}
+          BODY_DELIMITER
+          EOF
           fi
 
       - name: Create or Update Comment

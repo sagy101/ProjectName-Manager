@@ -60,16 +60,29 @@ jobs:
       - name: Prepare Comment Body
         id: comment-body
         run: |
-          BODY="
+          if [ -z "${{ steps.fc.outputs.comment-id }}" ]; then
+            cat >> $GITHUB_OUTPUT << 'EOF'
+          body<<BODY_DELIMITER
+          <!-- GITHUB_ACTION_TEST_SUMMARY -->
+          
+          ## 🔎 Test Summary
+          
           ---
           ### ESLint Results
           - ❌ Errors: ${{ env.ESLINT_ERRORS }}
-          - ⚠️ Warnings: ${{ env.ESLINT_WARNINGS }}"
-          if [ -z "${{ steps.fc.outputs.comment-id }}" ]; then
-            HEADER="<!-- GITHUB_ACTION_TEST_SUMMARY -->\n\n## 🔎 Test Summary\n"
-            echo "body=$(printf "${HEADER}${BODY}")" >> $GITHUB_OUTPUT
+          - ⚠️ Warnings: ${{ env.ESLINT_WARNINGS }}
+          BODY_DELIMITER
+          EOF
           else
-            echo "body=$(printf "${BODY}")" >> $GITHUB_OUTPUT
+            cat >> $GITHUB_OUTPUT << 'EOF'
+          body<<BODY_DELIMITER
+          
+          ---
+          ### ESLint Results
+          - ❌ Errors: ${{ env.ESLINT_ERRORS }}
+          - ⚠️ Warnings: ${{ env.ESLINT_WARNINGS }}
+          BODY_DELIMITER
+          EOF
           fi
 
       - name: Create or Update Comment

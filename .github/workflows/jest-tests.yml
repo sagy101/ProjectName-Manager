@@ -71,18 +71,33 @@ jobs:
       - name: Prepare Comment Body
         id: comment-body
         run: |
-          BODY="
+          if [ -z "${{ steps.fc.outputs.comment-id }}" ]; then
+            cat >> $GITHUB_OUTPUT << 'EOF'
+          body<<BODY_DELIMITER
+          <!-- GITHUB_ACTION_TEST_SUMMARY -->
+          
+          ## 🔎 Test Summary
+          
           ---
           ### Jest Mock Coverage
           - ✅ Passed: ${{ env.MOCK_TESTS_PASSED }}
           - ❌ Failed: ${{ env.MOCK_TESTS_FAILED }}
           - ⏭️ Skipped: ${{ env.MOCK_TESTS_SKIPPED }}
-          - 📈 Coverage: ${{ env.MOCK_COVERAGE }}%"
-          if [ -z "${{ steps.fc.outputs.comment-id }}" ]; then
-            HEADER="<!-- GITHUB_ACTION_TEST_SUMMARY -->\n\n## 🔎 Test Summary\n"
-            echo "body=$(printf "${HEADER}${BODY}")" >> $GITHUB_OUTPUT
+          - 📈 Coverage: ${{ env.MOCK_COVERAGE }}%
+          BODY_DELIMITER
+          EOF
           else
-            echo "body=$(printf "${BODY}")" >> $GITHUB_OUTPUT
+            cat >> $GITHUB_OUTPUT << 'EOF'
+          body<<BODY_DELIMITER
+          
+          ---
+          ### Jest Mock Coverage
+          - ✅ Passed: ${{ env.MOCK_TESTS_PASSED }}
+          - ❌ Failed: ${{ env.MOCK_TESTS_FAILED }}
+          - ⏭️ Skipped: ${{ env.MOCK_TESTS_SKIPPED }}
+          - 📈 Coverage: ${{ env.MOCK_COVERAGE }}%
+          BODY_DELIMITER
+          EOF
           fi
 
       - name: Create or Update Comment
@@ -162,18 +177,33 @@ jobs:
       - name: Prepare Comment Body
         id: comment-body
         run: |
-          BODY="
+          if [ -z "${{ steps.fc.outputs.comment-id }}" ]; then
+            cat >> $GITHUB_OUTPUT << 'EOF'
+          body<<BODY_DELIMITER
+          <!-- GITHUB_ACTION_TEST_SUMMARY -->
+          
+          ## 🔎 Test Summary
+          
           ---
           ### Jest Prod Coverage
           - ✅ Passed: ${{ env.PROD_TESTS_PASSED }}
           - ❌ Failed: ${{ env.PROD_TESTS_FAILED }}
           - ⏭️ Skipped: ${{ env.PROD_TESTS_SKIPPED }}
-          - 📈 Coverage: ${{ env.PROD_COVERAGE }}%"
-          if [ -z "${{ steps.fc.outputs.comment-id }}" ]; then
-            HEADER="<!-- GITHUB_ACTION_TEST_SUMMARY -->\n\n## 🔎 Test Summary\n"
-            echo "body=$(printf "${HEADER}${BODY}")" >> $GITHUB_OUTPUT
+          - 📈 Coverage: ${{ env.PROD_COVERAGE }}%
+          BODY_DELIMITER
+          EOF
           else
-            echo "body=$(printf "${BODY}")" >> $GITHUB_OUTPUT
+            cat >> $GITHUB_OUTPUT << 'EOF'
+          body<<BODY_DELIMITER
+          
+          ---
+          ### Jest Prod Coverage
+          - ✅ Passed: ${{ env.PROD_TESTS_PASSED }}
+          - ❌ Failed: ${{ env.PROD_TESTS_FAILED }}
+          - ⏭️ Skipped: ${{ env.PROD_TESTS_SKIPPED }}
+          - 📈 Coverage: ${{ env.PROD_COVERAGE }}%
+          BODY_DELIMITER
+          EOF
           fi
 
       - name: Create or Update Comment
