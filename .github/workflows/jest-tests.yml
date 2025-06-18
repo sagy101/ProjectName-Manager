@@ -63,8 +63,10 @@ jobs:
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
+          comment-title: "🔎 Test Summary"
+          edit-mode: append
           body: |
-            **Jest Mock Coverage**
+            ### Jest Mock Coverage
             
             📊 **Test Results:** ${{ env.MOCK_TESTS_PASSED }}/${{ env.MOCK_TESTS_TOTAL }} passed
             - ✅ Passed: ${{ env.MOCK_TESTS_PASSED }}
@@ -139,8 +141,10 @@ jobs:
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
+          comment-title: "🔎 Test Summary"
+          edit-mode: append
           body: |
-            **Jest Prod Coverage**
+            ### Jest Prod Coverage
             
             📊 **Test Results:** ${{ env.PROD_TESTS_PASSED }}/${{ env.PROD_TESTS_TOTAL }} passed
             - ✅ Passed: ${{ env.PROD_TESTS_PASSED }}

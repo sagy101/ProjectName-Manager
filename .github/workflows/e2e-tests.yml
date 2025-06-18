@@ -329,8 +329,10 @@ jobs:
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
+          comment-title: "🔎 Test Summary"
+          edit-mode: append
           body: |
-            ## 🧪 E2E Tests Results
+            ### 🧪 E2E Tests Results
             
             ${{ env.E2E_STATUS }} - ${{ env.E2E_SUCCESS_PERCENTAGE }}% success rate (threshold: 85%)
             
