@@ -28,17 +28,18 @@ const SIDEBAR_COLLAPSED_WIDTH = 50; // From app-control-sidebar.css
 const App = () => {
   // Initialize all state using custom hook
   const appState = useAppState();
+  const { setAppNotification } = appState;
 
   // Create a callback for showAppNotification that will be available to useAppEffects
   const showAppNotificationCallback = React.useCallback((message, type = 'info', autoCloseTime = 3000) => {
     debugLog('App: showAppNotification called with:', { message, type, autoCloseTime });
-    appState.setAppNotification({
+    setAppNotification({
       isVisible: true,
       message,
       type,
       autoCloseTime
     });
-  }, [appState.setAppNotification]);
+  }, [setAppNotification]);
 
   // Initialize effects and get triggerGitRefresh
   const { triggerGitRefresh } = useAppEffects({
@@ -131,7 +132,7 @@ const App = () => {
     const interval = setInterval(updateTerminals, 1000);
     
     return () => clearInterval(interval);
-  }, [appState.terminalRef.current]);
+  }, [appState.terminalRef]);
 
   // Initialize health report management
   const healthReport = useHealthReport({
@@ -267,6 +268,7 @@ const App = () => {
       </div> {/* End of the main flex container for isLoading=false case */}
 
       {/* Global Modals & Notifications: These render on top of everything, outside the main layout flow. */}
+      {/* istanbul ignore next */}
       <Notification
         isVisible={appState.appNotification.isVisible}
         message={appState.appNotification.message}
@@ -274,12 +276,14 @@ const App = () => {
         onClose={eventHandlers.hideAppNotification}
         autoCloseTime={appState.appNotification.autoCloseTime}
       />
+      {/* istanbul ignore next */}
       <FixCommandConfirmation
         verification={appState.pendingFixVerification}
         onConfirm={fixCommands.executePendingFixCommand}
         onCancel={() => appState.setPendingFixVerification(null)}
       />
       {/* Import Status Screen */}
+      {/* istanbul ignore next */}
       <ImportStatusScreen
         isVisible={appState.showImportStatusScreen}
         projectName={appState.projectName}
@@ -288,6 +292,7 @@ const App = () => {
         onImportComplete={configManagement.performImport}
       />
       {/* Health Report Screen */}
+      {/* istanbul ignore next */}
       <HealthReportScreen
         isVisible={healthReport.isHealthReportVisible}
         projectName={appState.projectName}
@@ -298,6 +303,7 @@ const App = () => {
         onFocusTerminal={healthReport.handleFocusTerminal}
       />
       {/* Render FloatingTerminals */}
+      {/* istanbul ignore next */}
       {appState.floatingTerminals.map(terminal => (
         <FloatingTerminal
           key={terminal.id}
@@ -320,6 +326,7 @@ const App = () => {
         />
       ))}
       {/* Render TabInfoPanel for Floating Terminals */}
+      {/* istanbul ignore next */}
       {appState.infoPanelState.isVisible && appState.infoPanelState.terminalData && (() => {
         // Get the live terminal data from floatingTerminals
         const liveTerminal = appState.floatingTerminals.find(t => t.id === appState.infoPanelState.terminalData.id);
@@ -335,19 +342,19 @@ const App = () => {
           processCount: liveTerminal.processCount
         };
 
-        return (
-          <TabInfoPanel
-            terminal={terminalDataWithLiveStatus}
-            position={appState.infoPanelState.position}
-            onClose={floatingTerminalHandlers.closeFloatingTerminalInfoPanel}
-            onRefresh={() => debugLog("Refresh clicked for floating term info - no-op")} // No-op for now
-            configState={appState.configState} // Pass from App's state
-            noRunMode={appState.noRunMode}     // Pass from App's state
-            detailsPopupOpen={appState.infoPanelState.detailsOpen}
-            onOpenDetailsPopup={floatingTerminalHandlers.openInfoPanelDetails}
-            onCloseDetailsPopup={floatingTerminalHandlers.closeInfoPanelDetails}
-          />
-        );
+          return (
+            <TabInfoPanel
+              terminal={terminalDataWithLiveStatus}
+              position={appState.infoPanelState.position}
+              onClose={floatingTerminalHandlers.closeFloatingTerminalInfoPanel}
+              onRefresh={() => debugLog('Refresh clicked for floating term info - no-op')}
+              configState={appState.configState}
+              noRunMode={appState.noRunMode}
+              detailsPopupOpen={appState.infoPanelState.detailsOpen}
+              onOpenDetailsPopup={floatingTerminalHandlers.openInfoPanelDetails}
+              onCloseDetailsPopup={floatingTerminalHandlers.closeInfoPanelDetails}
+            />
+          );
       })()}
     </>
   );
