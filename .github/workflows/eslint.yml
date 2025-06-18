@@ -36,5 +36,34 @@ jobs:
           export NVM_DIR="$HOME/.nvm"
           . "$NVM_DIR/nvm.sh"
           nvm use 22.16.0
-          npm run lint
+          # Run ESLint and save output
+          npm run lint 2>&1 | tee eslint-output.txt || true
+
+      - name: Extract ESLint Results
+        run: |
+          # Find the problems summary line (e.g., "✖ 38 problems (0 errors, 38 warnings)")
+          PROBLEMS_LINE=$(grep -E "problems \(" eslint-output.txt | head -1 || echo "")
+          ERRORS=$(echo "$PROBLEMS_LINE" | grep -oE '[0-9]+ errors' | grep -oE '[0-9]+' || echo "0")
+          WARNINGS=$(echo "$PROBLEMS_LINE" | grep -oE '[0-9]+ warnings' | grep -oE '[0-9]+' || echo "0")
+          echo "ESLINT_ERRORS=$ERRORS" >> $GITHUB_ENV
+          echo "ESLINT_WARNINGS=$WARNINGS" >> $GITHUB_ENV
+
+      - name: Post PR comment with ESLint summary
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-title: "🔎 Test Summary"
+          edit-mode: append
+          body: |
+            ### ESLint Results
+            
+            ✏️ **${{ env.ESLINT_ERRORS }} errors, ${{ env.ESLINT_WARNINGS }} warnings**
+
+      - name: Fail job if ESLint errors detected
+        if: always()
+        run: |
+          if [ "${{ env.ESLINT_ERRORS }}" != "0" ]; then
+            echo "ESLint reported errors"
+            exit 1
+          fi
 
