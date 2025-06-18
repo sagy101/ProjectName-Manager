@@ -172,4 +172,36 @@ describe('windowManagement', () => {
     win.webContents.isLoading.mockReturnValue(true);
     expect(isWindowReady()).toBe(false);
   });
+
+  test('getWindowState fails when window destroyed', () => {
+    const win = createWindow();
+    win.isDestroyed.mockReturnValue(true);
+    const state = getWindowState();
+    expect(state.success).toBe(false);
+  });
+
+  test('setWindowState fails when window destroyed', () => {
+    const win = createWindow();
+    win.isDestroyed.mockReturnValue(true);
+    const res = setWindowState({});
+    expect(res.success).toBe(false);
+  });
+
+  test('setWindowState minimizes window', () => {
+    const win = createWindow();
+    const res = setWindowState({ isMinimized: true });
+    expect(win.minimize).toHaveBeenCalled();
+    expect(res.success).toBe(true);
+  });
+
+  test('setWindowState returns error on exception', () => {
+    const error = new Error('fail');
+    const win = createWindow();
+    win.setSize.mockImplementation(() => { throw error; });
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const res = setWindowState({ width: 1, height: 1 });
+    expect(spy).toHaveBeenCalled();
+    expect(res.success).toBe(false);
+    spy.mockRestore();
+  });
 });
