@@ -333,43 +333,33 @@ jobs:
           comment-author: 'github-actions[bot]'
           body-includes: '<!-- GITHUB_ACTION_TEST_SUMMARY -->'
 
-      - name: Post PR comment with E2E test summary
+      - name: Prepare Comment Body
+        id: comment-body
+        run: |
+          BODY="
+          ---
+          ### 🧪 E2E Tests Results
+          - **${{ env.E2E_STATUS }}** - ${{ env.E2E_SUCCESS_PERCENTAGE }}% success rate
+          - ✅ Passed: ${{ env.E2E_TESTS_PASSED }}
+          - 🔁 Flaky: ${{ env.E2E_TESTS_FLAKY }}
+          - ⏭️ Skipped: ${{ env.E2E_TESTS_SKIPPED }}
+          - ⏰ Timed out: ${{ env.E2E_TESTS_TIMED_OUT }}
+          - ❌ Failed: ${{ env.E2E_TESTS_FAILED }}"
+          if [ -z "${{ steps.fc.outputs.comment-id }}" ]; then
+            HEADER="<!-- GITHUB_ACTION_TEST_SUMMARY -->\n\n## 🔎 Test Summary\n"
+            echo "body=$(printf "${HEADER}${BODY}")" >> $GITHUB_OUTPUT
+          else
+            echo "body=$(printf "${BODY}")" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create or Update Comment
         uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           edit-mode: append
-          body: |
-            ${{ steps.fc.outputs.comment-id == '' && '<!-- GITHUB_ACTION_TEST_SUMMARY -->\n\n## 🔎 Test Summary\n' || '' }}
-            ### 🧪 E2E Tests Results
-            
-            ${{ env.E2E_STATUS }} - ${{ env.E2E_SUCCESS_PERCENTAGE }}% success rate (threshold: 85%)
-            
-            📊 **Test Summary:** ${{ env.E2E_TESTS_TOTAL }} total tests
-            - ✅ Passed: ${{ env.E2E_TESTS_PASSED }}
-            - 🔁 Flaky: ${{ env.E2E_TESTS_FLAKY }}
-            - ⏭️ Skipped: ${{ env.E2E_TESTS_SKIPPED }}
-            - ⏰ Timed out: ${{ env.E2E_TESTS_TIMED_OUT }}
-            - ❌ Failed: ${{ env.E2E_TESTS_FAILED }}
-            
-            ${{ env.E2E_MESSAGE }}
-            
-            <details>
-            <summary>📋 View detailed results</summary>
-            
-            **Workflow Run:** [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            
-            **Test Environment:**
-            - Browser: Chromium (Playwright)
-            - Mode: Headless
-            - Timeout: 60 seconds per test
-            - Mock environment with simulated tools and directories
-            
-            ${{ env.E2E_NON_PASSING_DETAILS }}
-            </details>
+          body: ${{ steps.comment-body.outputs.body }}
 
-            ---
-            *E2E tests validate the complete application workflow including UI interactions, terminal operations, and configuration management.*
       - name: Fail job if E2E success rate below threshold
         if: always()
         run: |

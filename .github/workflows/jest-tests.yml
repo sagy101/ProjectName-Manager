@@ -68,28 +68,31 @@ jobs:
           comment-author: 'github-actions[bot]'
           body-includes: '<!-- GITHUB_ACTION_TEST_SUMMARY -->'
 
-      - name: Post PR comment with mock test summary
+      - name: Prepare Comment Body
+        id: comment-body
+        run: |
+          BODY="
+          ---
+          ### Jest Mock Coverage
+          - ✅ Passed: ${{ env.MOCK_TESTS_PASSED }}
+          - ❌ Failed: ${{ env.MOCK_TESTS_FAILED }}
+          - ⏭️ Skipped: ${{ env.MOCK_TESTS_SKIPPED }}
+          - 📈 Coverage: ${{ env.MOCK_COVERAGE }}%"
+          if [ -z "${{ steps.fc.outputs.comment-id }}" ]; then
+            HEADER="<!-- GITHUB_ACTION_TEST_SUMMARY -->\n\n## 🔎 Test Summary\n"
+            echo "body=$(printf "${HEADER}${BODY}")" >> $GITHUB_OUTPUT
+          else
+            echo "body=$(printf "${BODY}")" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create or Update Comment
         uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           edit-mode: append
-          body: |
-            ${{ steps.fc.outputs.comment-id == '' && '<!-- GITHUB_ACTION_TEST_SUMMARY -->\n\n## 🔎 Test Summary\n' || '' }}
-            ### Jest Mock Coverage
-            
-            📊 **Test Results:** ${{ env.MOCK_TESTS_PASSED }}/${{ env.MOCK_TESTS_TOTAL }} passed
-            - ✅ Passed: ${{ env.MOCK_TESTS_PASSED }}
-            - ❌ Failed: ${{ env.MOCK_TESTS_FAILED }}
-            - ⏭️ Skipped: ${{ env.MOCK_TESTS_SKIPPED }}
-            
-            📈 **Coverage:** ${{ env.MOCK_COVERAGE }}
-            
-            <details>
-            <summary>View full results</summary>
-            
-            See the [workflow logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for detailed coverage report and any failed tests.
-            </details>
+          body: ${{ steps.comment-body.outputs.body }}
+
       - name: Fail job if mock tests failed
         if: always()
         run: |
@@ -156,28 +159,31 @@ jobs:
           comment-author: 'github-actions[bot]'
           body-includes: '<!-- GITHUB_ACTION_TEST_SUMMARY -->'
 
-      - name: Post PR comment with prod test summary
+      - name: Prepare Comment Body
+        id: comment-body
+        run: |
+          BODY="
+          ---
+          ### Jest Prod Coverage
+          - ✅ Passed: ${{ env.PROD_TESTS_PASSED }}
+          - ❌ Failed: ${{ env.PROD_TESTS_FAILED }}
+          - ⏭️ Skipped: ${{ env.PROD_TESTS_SKIPPED }}
+          - 📈 Coverage: ${{ env.PROD_COVERAGE }}%"
+          if [ -z "${{ steps.fc.outputs.comment-id }}" ]; then
+            HEADER="<!-- GITHUB_ACTION_TEST_SUMMARY -->\n\n## 🔎 Test Summary\n"
+            echo "body=$(printf "${HEADER}${BODY}")" >> $GITHUB_OUTPUT
+          else
+            echo "body=$(printf "${BODY}")" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create or Update Comment
         uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           edit-mode: append
-          body: |
-            ${{ steps.fc.outputs.comment-id == '' && '<!-- GITHUB_ACTION_TEST_SUMMARY -->\n\n## 🔎 Test Summary\n' || '' }}
-            ### Jest Prod Coverage
-            
-            📊 **Test Results:** ${{ env.PROD_TESTS_PASSED }}/${{ env.PROD_TESTS_TOTAL }} passed
-            - ✅ Passed: ${{ env.PROD_TESTS_PASSED }}
-            - ❌ Failed: ${{ env.PROD_TESTS_FAILED }}
-            - ⏭️ Skipped: ${{ env.PROD_TESTS_SKIPPED }}
-            
-            📈 **Coverage:** ${{ env.PROD_COVERAGE }}
-            
-            <details>
-            <summary>View full results</summary>
-            
-            See the [workflow logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for detailed coverage report and any failed tests.
-            </details>
+          body: ${{ steps.comment-body.outputs.body }}
+
       - name: Fail job if prod tests failed
         if: always()
         run: |

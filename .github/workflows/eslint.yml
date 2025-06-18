@@ -57,17 +57,28 @@ jobs:
           comment-author: 'github-actions[bot]'
           body-includes: '<!-- GITHUB_ACTION_TEST_SUMMARY -->'
 
-      - name: Post PR comment with ESLint summary
+      - name: Prepare Comment Body
+        id: comment-body
+        run: |
+          BODY="
+          ---
+          ### ESLint Results
+          - ❌ Errors: ${{ env.ESLINT_ERRORS }}
+          - ⚠️ Warnings: ${{ env.ESLINT_WARNINGS }}"
+          if [ -z "${{ steps.fc.outputs.comment-id }}" ]; then
+            HEADER="<!-- GITHUB_ACTION_TEST_SUMMARY -->\n\n## 🔎 Test Summary\n"
+            echo "body=$(printf "${HEADER}${BODY}")" >> $GITHUB_OUTPUT
+          else
+            echo "body=$(printf "${BODY}")" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create or Update Comment
         uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           edit-mode: append
-          body: |
-            ${{ steps.fc.outputs.comment-id == '' && '<!-- GITHUB_ACTION_TEST_SUMMARY -->\n\n## 🔎 Test Summary\n' || '' }}
-            ### ESLint Results
-            - ❌ Errors: ${{ env.ESLINT_ERRORS }}
-            - ⚠️ Warnings: ${{ env.ESLINT_WARNINGS }}
+          body: ${{ steps.comment-body.outputs.body }}
 
       - name: Fail job if ESLint errors detected
         if: always()
