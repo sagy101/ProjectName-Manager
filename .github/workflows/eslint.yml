@@ -9,6 +9,10 @@ permissions:
   issues: write
   contents: read
 
+concurrency:
+  group: eslint-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   eslint:
     name: ESLint
@@ -36,5 +40,68 @@ jobs:
           export NVM_DIR="$HOME/.nvm"
           . "$NVM_DIR/nvm.sh"
           nvm use 22.16.0
-          npm run lint
+          # Run ESLint and save output
+          npm run lint 2>&1 | tee eslint-output.txt || true
+
+      - name: Extract ESLint Results
+        id: eslint-results
+        run: |
+          # Find the problems summary line (e.g., "✖ 38 problems (0 errors, 38 warnings)")
+          PROBLEMS_LINE=$(grep -E "problems \(" eslint-output.txt | head -1 || echo "")
+          ERRORS=$(echo "$PROBLEMS_LINE" | grep -oE '[0-9]+ errors' | grep -oE '[0-9]+' || echo "0")
+          WARNINGS=$(echo "$PROBLEMS_LINE" | grep -oE '[0-9]+ warnings' | grep -oE '[0-9]+' || echo "0")
+          echo "ESLINT_ERRORS=$ERRORS" >> $GITHUB_ENV
+          echo "ESLINT_WARNINGS=$WARNINGS" >> $GITHUB_ENV
+
+      - name: Find Test Summary Comment
+        uses: peter-evans/find-comment@v3
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- GITHUB_ACTION_TEST_SUMMARY:${{ github.event.pull_request.head.sha }} -->'
+
+      - name: Prepare Comment Body
+        id: comment-body
+        run: |
+          if [ -z "${{ steps.fc.outputs.comment-id }}" ]; then
+            cat >> $GITHUB_OUTPUT << 'EOF'
+          body<<BODY_DELIMITER
+          <!-- GITHUB_ACTION_TEST_SUMMARY:${{ github.event.pull_request.head.sha }} -->
+          
+          ## 🔎 Test Summary
+          
+          ---
+          ### ESLint Results
+          - ❌ Errors: ${{ env.ESLINT_ERRORS }}
+          - ⚠️ Warnings: ${{ env.ESLINT_WARNINGS }}
+          BODY_DELIMITER
+          EOF
+          else
+            cat >> $GITHUB_OUTPUT << 'EOF'
+          body<<BODY_DELIMITER
+          
+          ---
+          ### ESLint Results
+          - ❌ Errors: ${{ env.ESLINT_ERRORS }}
+          - ⚠️ Warnings: ${{ env.ESLINT_WARNINGS }}
+          BODY_DELIMITER
+          EOF
+          fi
+
+      - name: Create or Update Comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: append
+          body: ${{ steps.comment-body.outputs.body }}
+
+      - name: Fail job if ESLint errors detected
+        if: always()
+        run: |
+          if [ "${{ env.ESLINT_ERRORS }}" != "0" ]; then
+            echo "ESLint reported errors"
+            exit 1
+          fi
 

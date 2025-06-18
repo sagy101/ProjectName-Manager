@@ -9,6 +9,10 @@ permissions:
   issues: write
   contents: read
 
+concurrency:
+  group: e2e-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   e2e:
     name: E2E Tests
@@ -325,40 +329,58 @@ jobs:
           echo "$NON_PASSING_DETAILS" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      - name: Post PR comment with E2E test summary
-        uses: peter-evans/create-or-update-comment@v4
+      - name: Find Test Summary Comment
+        uses: peter-evans/find-comment@v3
+        id: fc
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            ## 🧪 E2E Tests Results
-            
-            ${{ env.E2E_STATUS }} - ${{ env.E2E_SUCCESS_PERCENTAGE }}% success rate (threshold: 85%)
-            
-            📊 **Test Summary:** ${{ env.E2E_TESTS_TOTAL }} total tests
-            - ✅ Passed: ${{ env.E2E_TESTS_PASSED }}
-            - 🔁 Flaky: ${{ env.E2E_TESTS_FLAKY }}
-            - ⏭️ Skipped: ${{ env.E2E_TESTS_SKIPPED }}
-            - ⏰ Timed out: ${{ env.E2E_TESTS_TIMED_OUT }}
-            - ❌ Failed: ${{ env.E2E_TESTS_FAILED }}
-            
-            ${{ env.E2E_MESSAGE }}
-            
-            <details>
-            <summary>📋 View detailed results</summary>
-            
-            **Workflow Run:** [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            
-            **Test Environment:**
-            - Browser: Chromium (Playwright)
-            - Mode: Headless
-            - Timeout: 60 seconds per test
-            - Mock environment with simulated tools and directories
-            
-            ${{ env.E2E_NON_PASSING_DETAILS }}
-            </details>
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- GITHUB_ACTION_TEST_SUMMARY:${{ github.event.pull_request.head.sha }} -->'
 
-            ---
-            *E2E tests validate the complete application workflow including UI interactions, terminal operations, and configuration management.*
+      - name: Prepare Comment Body
+        id: comment-body
+        run: |
+          if [ -z "${{ steps.fc.outputs.comment-id }}" ]; then
+            cat >> $GITHUB_OUTPUT << 'EOF'
+          body<<BODY_DELIMITER
+          <!-- GITHUB_ACTION_TEST_SUMMARY:${{ github.event.pull_request.head.sha }} -->
+          
+          ## 🔎 Test Summary
+          
+          ---
+          ### 🧪 E2E Tests Results
+          - **${{ env.E2E_STATUS }}** - ${{ env.E2E_SUCCESS_PERCENTAGE }}% success rate
+          - ✅ Passed: ${{ env.E2E_TESTS_PASSED }}
+          - 🔁 Flaky: ${{ env.E2E_TESTS_FLAKY }}
+          - ⏭️ Skipped: ${{ env.E2E_TESTS_SKIPPED }}
+          - ⏰ Timed out: ${{ env.E2E_TESTS_TIMED_OUT }}
+          - ❌ Failed: ${{ env.E2E_TESTS_FAILED }}
+          BODY_DELIMITER
+          EOF
+          else
+            cat >> $GITHUB_OUTPUT << 'EOF'
+          body<<BODY_DELIMITER
+          
+          ---
+          ### 🧪 E2E Tests Results
+          - **${{ env.E2E_STATUS }}** - ${{ env.E2E_SUCCESS_PERCENTAGE }}% success rate
+          - ✅ Passed: ${{ env.E2E_TESTS_PASSED }}
+          - 🔁 Flaky: ${{ env.E2E_TESTS_FLAKY }}
+          - ⏭️ Skipped: ${{ env.E2E_TESTS_SKIPPED }}
+          - ⏰ Timed out: ${{ env.E2E_TESTS_TIMED_OUT }}
+          - ❌ Failed: ${{ env.E2E_TESTS_FAILED }}
+          BODY_DELIMITER
+          EOF
+          fi
+
+      - name: Create or Update Comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: append
+          body: ${{ steps.comment-body.outputs.body }}
+
       - name: Fail job if E2E success rate below threshold
         if: always()
         run: |

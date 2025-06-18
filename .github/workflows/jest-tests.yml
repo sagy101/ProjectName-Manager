@@ -9,6 +9,10 @@ permissions:
   issues: write
   contents: read
 
+concurrency:
+  group: jest-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   jest-mock:
     name: Jest Mock Coverage
@@ -59,25 +63,55 @@ jobs:
         with:
           name: jest-mock-coverage
           path: coverage/mock/
-      - name: Post PR comment with mock test summary
-        uses: peter-evans/create-or-update-comment@v4
+
+      - name: Find Test Summary Comment
+        uses: peter-evans/find-comment@v3
+        id: fc
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            **Jest Mock Coverage**
-            
-            📊 **Test Results:** ${{ env.MOCK_TESTS_PASSED }}/${{ env.MOCK_TESTS_TOTAL }} passed
-            - ✅ Passed: ${{ env.MOCK_TESTS_PASSED }}
-            - ❌ Failed: ${{ env.MOCK_TESTS_FAILED }}
-            - ⏭️ Skipped: ${{ env.MOCK_TESTS_SKIPPED }}
-            
-            📈 **Coverage:** ${{ env.MOCK_COVERAGE }}
-            
-            <details>
-            <summary>View full results</summary>
-            
-            See the [workflow logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for detailed coverage report and any failed tests.
-            </details>
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- GITHUB_ACTION_TEST_SUMMARY:${{ github.event.pull_request.head.sha }} -->'
+
+      - name: Prepare Comment Body
+        id: comment-body
+        run: |
+          if [ -z "${{ steps.fc.outputs.comment-id }}" ]; then
+            cat >> $GITHUB_OUTPUT << 'EOF'
+          body<<BODY_DELIMITER
+          <!-- GITHUB_ACTION_TEST_SUMMARY:${{ github.event.pull_request.head.sha }} -->
+          
+          ## 🔎 Test Summary
+          
+          ---
+          ### Jest Mock Coverage
+          - ✅ Passed: ${{ env.MOCK_TESTS_PASSED }}
+          - ❌ Failed: ${{ env.MOCK_TESTS_FAILED }}
+          - ⏭️ Skipped: ${{ env.MOCK_TESTS_SKIPPED }}
+          - 📈 Coverage: ${{ env.MOCK_COVERAGE }}%
+          BODY_DELIMITER
+          EOF
+          else
+            cat >> $GITHUB_OUTPUT << 'EOF'
+          body<<BODY_DELIMITER
+          
+          ---
+          ### Jest Mock Coverage
+          - ✅ Passed: ${{ env.MOCK_TESTS_PASSED }}
+          - ❌ Failed: ${{ env.MOCK_TESTS_FAILED }}
+          - ⏭️ Skipped: ${{ env.MOCK_TESTS_SKIPPED }}
+          - 📈 Coverage: ${{ env.MOCK_COVERAGE }}%
+          BODY_DELIMITER
+          EOF
+          fi
+
+      - name: Create or Update Comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: append
+          body: ${{ steps.comment-body.outputs.body }}
+
       - name: Fail job if mock tests failed
         if: always()
         run: |
@@ -135,25 +169,55 @@ jobs:
         with:
           name: jest-prod-coverage
           path: coverage/prod/
-      - name: Post PR comment with prod test summary
-        uses: peter-evans/create-or-update-comment@v4
+
+      - name: Find Test Summary Comment
+        uses: peter-evans/find-comment@v3
+        id: fc
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            **Jest Prod Coverage**
-            
-            📊 **Test Results:** ${{ env.PROD_TESTS_PASSED }}/${{ env.PROD_TESTS_TOTAL }} passed
-            - ✅ Passed: ${{ env.PROD_TESTS_PASSED }}
-            - ❌ Failed: ${{ env.PROD_TESTS_FAILED }}
-            - ⏭️ Skipped: ${{ env.PROD_TESTS_SKIPPED }}
-            
-            📈 **Coverage:** ${{ env.PROD_COVERAGE }}
-            
-            <details>
-            <summary>View full results</summary>
-            
-            See the [workflow logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for detailed coverage report and any failed tests.
-            </details>
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- GITHUB_ACTION_TEST_SUMMARY:${{ github.event.pull_request.head.sha }} -->'
+
+      - name: Prepare Comment Body
+        id: comment-body
+        run: |
+          if [ -z "${{ steps.fc.outputs.comment-id }}" ]; then
+            cat >> $GITHUB_OUTPUT << 'EOF'
+          body<<BODY_DELIMITER
+          <!-- GITHUB_ACTION_TEST_SUMMARY:${{ github.event.pull_request.head.sha }} -->
+          
+          ## 🔎 Test Summary
+          
+          ---
+          ### Jest Prod Coverage
+          - ✅ Passed: ${{ env.PROD_TESTS_PASSED }}
+          - ❌ Failed: ${{ env.PROD_TESTS_FAILED }}
+          - ⏭️ Skipped: ${{ env.PROD_TESTS_SKIPPED }}
+          - 📈 Coverage: ${{ env.PROD_COVERAGE }}%
+          BODY_DELIMITER
+          EOF
+          else
+            cat >> $GITHUB_OUTPUT << 'EOF'
+          body<<BODY_DELIMITER
+          
+          ---
+          ### Jest Prod Coverage
+          - ✅ Passed: ${{ env.PROD_TESTS_PASSED }}
+          - ❌ Failed: ${{ env.PROD_TESTS_FAILED }}
+          - ⏭️ Skipped: ${{ env.PROD_TESTS_SKIPPED }}
+          - 📈 Coverage: ${{ env.PROD_COVERAGE }}%
+          BODY_DELIMITER
+          EOF
+          fi
+
+      - name: Create or Update Comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: append
+          body: ${{ steps.comment-body.outputs.body }}
+
       - name: Fail job if prod tests failed
         if: always()
         run: |
