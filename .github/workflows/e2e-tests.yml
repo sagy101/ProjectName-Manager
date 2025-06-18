@@ -331,7 +331,7 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: 'github-actions[bot]'
-          body-includes: '<!-- GITHUB_ACTION_TEST_SUMMARY -->'
+          body-includes: '<!-- GITHUB_ACTION_TEST_SUMMARY:${{ github.event.pull_request.head.sha }} -->'
 
       - name: Prepare Comment Body
         id: comment-body
@@ -339,7 +339,7 @@ jobs:
           if [ -z "${{ steps.fc.outputs.comment-id }}" ]; then
             cat >> $GITHUB_OUTPUT << 'EOF'
           body<<BODY_DELIMITER
-          <!-- GITHUB_ACTION_TEST_SUMMARY -->
+          <!-- GITHUB_ACTION_TEST_SUMMARY:${{ github.event.pull_request.head.sha }} -->
           
           ## 🔎 Test Summary
           
