@@ -14,14 +14,10 @@ jest.mock('fs', () => {
 });
 
 // Mock electron module
+const mockWindow = { isDestroyed: () => false, webContents: { send: jest.fn() } };
 jest.mock('electron', () => ({
   BrowserWindow: {
-    getAllWindows: jest.fn(() => [{
-      isDestroyed: () => false,
-      webContents: {
-        send: jest.fn()
-      }
-    }])
+    getAllWindows: jest.fn(() => [mockWindow])
   }
 }));
 
@@ -30,6 +26,7 @@ const { getDropdownOptions, precacheGlobalDropdowns, handleDropdownValueChange, 
 
 beforeEach(() => {
   jest.clearAllMocks();
+  dropdown.clearDropdownCache();
 });
 
 describe('getDropdownOptions', () => {
@@ -194,5 +191,66 @@ describe('setupDropdownIpcHandlers', () => {
     expect(mockIpcMain.handle).toHaveBeenCalledWith('precache-global-dropdowns', expect.any(Function));
     expect(mockIpcMain.on).toHaveBeenCalledTimes(1);
     expect(mockIpcMain.handle).toHaveBeenCalledTimes(2);
+  });
+
+  test('dropdown-value-changed handler executes command and sends result', async () => {
+    const mockIpcMain = {
+      on: jest.fn(),
+      handle: jest.fn()
+    };
+    child_process.exec.mockImplementation((cmd, opts, cb) => cb(null, 'ok', ''));
+    fs.promises.readFile.mockResolvedValue(JSON.stringify({ header: { dropdownSelectors: [] } }));
+
+    setupDropdownIpcHandlers(mockIpcMain);
+    const handler = mockIpcMain.on.mock.calls[0][1];
+
+    await handler({}, { dropdownId: 'd', value: 'v', globalDropdownValues: { a: 1 } });
+
+    expect(mockWindow.webContents.send).toHaveBeenCalledWith('dropdown-command-executed', expect.objectContaining({
+      dropdownId: 'd',
+      value: 'v'
+    }));
+  });
+
+  test('dropdown-value-changed handler reports errors', async () => {
+    const mockIpcMain = {
+      on: jest.fn(),
+      handle: jest.fn()
+    };
+    child_process.exec.mockImplementation((cmd, opts, cb) => cb(new Error('fail'), '', 'fail'));
+    const cfg = {
+      header: { dropdownSelectors: [{ id: 'd', command: 'echo d', commandOnChange: 'echo ${d}' }] }
+    };
+    fs.promises.readFile.mockResolvedValue(JSON.stringify(cfg));
+    setupDropdownIpcHandlers(mockIpcMain);
+    const handler = mockIpcMain.on.mock.calls[0][1];
+
+    await handler({}, { dropdownId: 'd', value: 'v' });
+
+    expect(mockWindow.webContents.send).toHaveBeenCalledWith('dropdown-command-executed', {
+      dropdownId: 'd',
+      value: 'v',
+      result: expect.objectContaining({ success: false, error: 'fail' })
+    });
+  });
+});
+
+describe('clearDropdownCache', () => {
+  test('clears specific dropdown cache', async () => {
+    child_process.exec.mockImplementation((cmd, opts, cb) => cb(null, 'x', ''));
+    const config = { id: 'c1', command: 'echo x', parseResponse: 'lines', args: {} };
+    await getDropdownOptions(config);
+    expect(dropdown.getDropdownCacheStats().cacheSize).toBeGreaterThan(0);
+    dropdown.clearDropdownCache('c1');
+    expect(dropdown.getDropdownCacheStats().cacheSize).toBe(0);
+  });
+
+  test('clears all dropdown caches', async () => {
+    child_process.exec.mockImplementation((cmd, opts, cb) => cb(null, 'a', ''));
+    await getDropdownOptions({ id: 'c1', command: 'echo a', parseResponse: 'lines', args: {} });
+    await getDropdownOptions({ id: 'c2', command: 'echo b', parseResponse: 'lines', args: {} });
+    expect(dropdown.getDropdownCacheStats().cacheSize).toBeGreaterThanOrEqual(2);
+    dropdown.clearDropdownCache();
+    expect(dropdown.getDropdownCacheStats().cacheSize).toBe(0);
   });
 });
