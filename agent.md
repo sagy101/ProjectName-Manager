@@ -31,6 +31,10 @@ Testing practices follow `docs/testing-guide.md`:
 - Mock configuration data lives under `__tests__/mock-data`.
 - If `node-pty` build errors occur, run `npx @electron/rebuild -f -w node-pty`.
 
+Every code change must pass:
+1. `npm run test:jest` with no fails.
+2. `npm run lint` with no errors (warnings are ok).
+
 ## Additional documentation
 
 - `docs/architecture.md` – system design and data flow
