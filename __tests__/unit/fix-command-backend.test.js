@@ -1,3 +1,4 @@
+/* eslint-disable jest/no-conditional-expect */
 const path = require('path');
 const fs = require('fs');
 

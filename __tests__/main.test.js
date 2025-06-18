@@ -506,7 +506,7 @@ describe('Main Process Tests', () => {
       expect(mockIpcMain.on).toBeDefined();
     });
 
-    test('IPC error handling sends responses', () => {
+    test('IPC error handling sends responses', async () => {
       const ipcErrHandler = jest.fn();
       mockIpcMain.handle.mockImplementation((channel, handler) => {
         if (channel === 'test-error') {
@@ -517,9 +517,7 @@ describe('Main Process Tests', () => {
       const { ipcMain } = require('electron');
       ipcMain.handle('test-error', async () => { throw new Error('bad'); });
 
-      return ipcErrHandler().catch(err => {
-        expect(err).toBeDefined();
-      });
+      await expect(ipcErrHandler()).rejects.toThrow('bad');
     });
   });
 
