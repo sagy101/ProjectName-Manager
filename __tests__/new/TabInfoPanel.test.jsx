@@ -16,6 +16,11 @@ describe('TabInfoPanel', () => {
 
   const position = { x: 10, y: 20 };
 
+  afterEach(() => {
+    jest.clearAllTimers();
+    if (window.electron) delete window.electron;
+  });
+
   test('renders info and triggers handlers', () => {
     const onClose = jest.fn();
     const onRefresh = jest.fn();
@@ -57,5 +62,79 @@ describe('TabInfoPanel', () => {
     );
     expect(screen.getByText('No Run Mode is active - refresh disabled')).toBeInTheDocument();
     expect(screen.getByText('🔄 Refresh')).toBeDisabled();
+  });
+
+  test('fetches container statuses when popup open', async () => {
+    jest.useFakeTimers();
+    const getStatus = jest.fn()
+      .mockResolvedValueOnce('running')
+      .mockResolvedValueOnce('stopped');
+    window.electron = { getContainerStatus: getStatus };
+    render(
+      <TabInfoPanel
+        terminal={{ ...terminal, associatedContainers: ['a', 'b'] }}
+        position={position}
+        onClose={() => {}}
+        onRefresh={() => {}}
+        configState={{}}
+        noRunMode={false}
+        detailsPopupOpen={true}
+        onOpenDetailsPopup={() => {}}
+        onCloseDetailsPopup={() => {}}
+      />
+    );
+    await Promise.resolve();
+    await Promise.resolve();
+    jest.runOnlyPendingTimers();
+    await screen.findByText('running');
+    await screen.findByText('stopped');
+    expect(getStatus).toHaveBeenCalledTimes(2);
+  });
+
+  test('closes when clicking outside but not on popup', () => {
+    jest.useFakeTimers();
+    const onClose = jest.fn();
+    render(
+      <TabInfoPanel
+        terminal={{ ...terminal, associatedContainers: ['c'] }}
+        position={position}
+        onClose={onClose}
+        onRefresh={() => {}}
+        configState={{}}
+        noRunMode={false}
+        detailsPopupOpen={true}
+        onOpenDetailsPopup={() => {}}
+        onCloseDetailsPopup={() => {}}
+      />
+    );
+    const overlay = document.querySelector('.command-popup-overlay');
+    fireEvent.mouseDown(overlay);
+    expect(onClose).not.toHaveBeenCalled();
+    fireEvent.mouseDown(document.body);
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  test('copy command button copies text and resets label', () => {
+    jest.useFakeTimers();
+    navigator.clipboard = { writeText: jest.fn() };
+    render(
+      <TabInfoPanel
+        terminal={terminal}
+        position={position}
+        onClose={() => {}}
+        onRefresh={() => {}}
+        configState={{}}
+        noRunMode={false}
+        detailsPopupOpen={true}
+        onOpenDetailsPopup={() => {}}
+        onCloseDetailsPopup={() => {}}
+      />
+    );
+    const button = screen.getByText('Copy Command');
+    fireEvent.click(button);
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('echo hi');
+    expect(button.textContent).toBe('Copied!');
+    jest.advanceTimersByTime(1500);
+    expect(button.textContent).toBe('Copy Command');
   });
 });
