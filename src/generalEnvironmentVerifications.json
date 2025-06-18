@@ -12,7 +12,8 @@
         "noOptionsText": "No projects found",
         "defaultValue": {
               "contains": "dev5"
-        }
+        },
+        "commandOnChange": "gcloud config set project ${gcloudProject}"
       }
     ]
   },

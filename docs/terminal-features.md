@@ -6,19 +6,19 @@ This document provides detailed information about {ProjectName} Manager's termin
 
 {ProjectName} Manager offers two primary types of terminals to cater to different needs:
 
-1.  **Main Tabbed Terminals**: Used for running the primary commands associated with your ISO configuration sections. These are integrated into the main terminal area with a tabbed interface.
+1.  **Main Tabbed Terminals**: Used for running the primary commands associated with your {ProjectName} configuration sections. These are integrated into the main terminal area with a tabbed interface.
 2.  **Floating Terminals**: Independent, windowed terminals typically launched for specific auxiliary tasks, such as viewing logs or executing one-off commands defined by `customButton` components.
 
 --- 
 
 ## Main Tabbed Terminals
 
-These are the primary terminals for executing and monitoring your ISO configurations.
+These are the primary terminals for executing and monitoring your {ProjectName} configurations.
 
 ### Key Features
 
 -   **Multiple Tabs**: Open multiple terminal sessions for main sections and sub-sections, managed within a tab bar.
--   **Read-Only by Default**: For safety during ISO runs, input to these terminals is disabled by default. Writable input can be enabled via the debug tools in the App Control Sidebar (this option is disabled if an ISO configuration is currently running).
+-   **Read-Only by Default**: For safety during {ProjectName} runs, input to these terminals is disabled by default. Writable input can be enabled via the debug tools in the App Control Sidebar (this option is disabled if a {ProjectName} configuration is currently running).
 -   **Interactive Command Execution**: When writable, allows direct interaction with the running process.
 -   **Process Lifecycle Management**: Clean process handling, including associated Docker containers, with proper resource cleanup on tab close or application quit.
 -   **Tab Information Panel**: Detailed insights into each tab's process.

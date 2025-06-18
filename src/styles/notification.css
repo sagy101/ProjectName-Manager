@@ -37,6 +37,10 @@
   background-color: #f44336;
 }
 
+.notification-success {
+  background-color: #4caf50;
+}
+
 .notification-close {
   background: none;
   border: none;

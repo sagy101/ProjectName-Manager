@@ -31,7 +31,8 @@ This file defines the verifications shown in the "General Environment" section a
         "placeholder": "Select project...",
         "loadingText": "Loading projects...",
         "errorText": "Error loading projects",
-        "noOptionsText": "No projects found"
+        "noOptionsText": "No projects found",
+        "commandOnChange": "gcloud config set project ${gcloudProject}"
       }
     ]
   },
@@ -260,7 +261,7 @@ Adds generic dropdown selectors that execute commands and populate options dynam
 ```json
 "testSection": true
 ```
-Marks a section as a test/development section. Test sections are hidden by default and can be shown/hidden via the debug tools in the **App Control Sidebar**. Commands from hidden test sections are excluded when "Run {ProjectName}" (e.g., "Run {ProjectName}") is pressed.
+Marks a section as a test/development section. Test sections are hidden by default and can be shown/hidden via the debug tools in the **App Control Sidebar**. Commands from hidden test sections are excluded when "Run {ProjectName}" is pressed.
 
 ## Custom Sidebar Buttons and Floating Terminals
 
@@ -625,7 +626,8 @@ Dropdown selectors provide a generic, JSON-configurable way to create dynamic dr
   "defaultValue": {
     "exact": "exact match string",
     "contains": "substring to match"
-  }
+  },
+  "commandOnChange": "shell command to execute when value changes"
 }
 ```
 
@@ -646,6 +648,11 @@ Dropdown selectors provide a generic, JSON-configurable way to create dynamic dr
   - `contains`: Substring match for default selection (first match is selected)
   - If both `exact` and `contains` are provided, `exact` takes precedence
   - If no match is found, falls back to first option or placeholder
+- `commandOnChange`: Shell command to execute when dropdown value changes
+  - Variables can be referenced using `${dropdownId}` syntax
+  - Executed automatically when user selects a different option
+  - Provides user feedback via notifications (success/error messages)
+  - Non-blocking: command failures don't prevent dropdown value changes
 
 **Default Selection Behavior:**
 1. If `defaultValue` is provided:
@@ -669,6 +676,28 @@ Dropdown selectors provide a generic, JSON-configurable way to create dynamic dr
   }
 }
 ```
+
+**Example with Command on Change:**
+```json
+{
+  "id": "gcloudProject",
+  "command": "gcloud projects list --format=\"value(projectId)\"",
+  "parseResponse": "lines",
+  "placeholder": "Select project...",
+  "defaultValue": {
+    "contains": "dev"
+  },
+  "commandOnChange": "gcloud config set project ${gcloudProject}"
+}
+```
+
+**Command on Change Features:**
+- **Variable Substitution**: Use `${dropdownId}` to reference the selected value
+- **Multiple Variable Support**: Can reference other dropdown values like `${kubectlContext}`
+- **Environment Variables**: Standard environment variable resolution is supported
+- **User Feedback**: Success/failure notifications are automatically shown
+- **Error Handling**: Command failures are logged but don't block dropdown operations
+- **Performance**: Commands are executed asynchronously without blocking the UI
 
 #### Marking Options as "TBD" (To Be Determined)
 

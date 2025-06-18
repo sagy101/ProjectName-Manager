@@ -93,8 +93,9 @@ The main process has been refactored into a modular architecture for better main
 
 #### `main.js` - Orchestration Layer
 - **Purpose**: Application lifecycle management and IPC handler registration
-- **Responsibilities**: Window creation, IPC routing, startup coordination
+- **Responsibilities**: Window creation, IPC routing, startup coordination, modular IPC handler setup
 - **Dependencies**: All other modules as imports
+- **Modular Architecture**: Delegates IPC handler setup to specialized modules (e.g., `dropdownManagement.setupDropdownIpcHandlers()`)
 
 #### `environmentVerification.js` - Environment Management
 - **Purpose**: System environment checking and verification
@@ -119,9 +120,10 @@ The main process has been refactored into a modular architecture for better main
 - **Key Functions**: `checkoutGitBranch()`, `listLocalGitBranches()`, `getGitBranch()`, cache management
 
 #### `dropdownManagement.js` - Command Execution & Parsing
-- **Purpose**: Dynamic dropdown population and command parsing
-- **Responsibilities**: Command execution, response parsing, caching, dependency handling
-- **Key Functions**: `executeDropdownCommand()`, `fetchDropdownOptions()`, cache management
+- **Purpose**: Dynamic dropdown population, command parsing, and change command execution
+- **Responsibilities**: Command execution, response parsing, caching, dependency handling, IPC handler setup, change command execution
+- **Key Functions**: `getDropdownOptions()`, `executeDropdownChangeCommand()`, `setupDropdownIpcHandlers()`, cache management
+- **New Features**: Automatic command execution on dropdown value changes with variable substitution
 
 #### `configurationManagement.js` - Configuration Management
 - **Purpose**: Application configuration loading, import/export
@@ -276,12 +278,19 @@ sequenceDiagram
     Main-->>UI: Real-time output via pty-output events
     
     Note over UI,Main: 3. Dynamic Dropdowns
-    UI->>+Preload: fetchDropdownOptions(config)
-    Preload->>+Main: IPC: fetch-dropdown-options
+    UI->>+Preload: getDropdownOptions(config)
+    Preload->>+Main: IPC: get-dropdown-options
     Main->>+System: Execute dropdown command
     System-->>-Main: Options list
     Main-->>-Preload: Cached results
     Preload-->>-UI: Dropdown options
+    
+    Note over UI,Main: 4. Dropdown Value Changes
+    UI->>+Preload: dropdownValueChanged(id, value, globalValues)
+    Preload->>+Main: IPC: dropdown-value-changed
+    Main->>+System: Execute commandOnChange (if configured)
+    System-->>-Main: Command result
+    Main-->>-UI: Notification (success/error)
 ```
 
 ### IPC Communication Patterns

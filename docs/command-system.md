@@ -488,6 +488,14 @@ The command system handles various error conditions:
 
 Generated commands are executed in the integrated terminal system. Variable substitution (e.g., `${kubectlContext}`, `${urlIntelPod}`) occurs before execution, drawing values from the relevant section or parent section's configuration state, or global dropdowns.
 
+### Dropdown Integration
+
+Commands can reference dropdown values using variable substitution:
+- **Global Dropdowns**: Values from environment verification dropdowns (e.g., `${gcloudProject}`)
+- **Section Dropdowns**: Values from dropdowns within configuration sections
+- **Automatic Updates**: Commands are regenerated when dropdown values change
+- **Command-on-Change**: Dropdowns can execute commands automatically when values change (see [Configuration Guide](configuration-guide.md#dropdown-selectors))
+
 1. **Tab Creation**: Each command gets its own terminal tab
 2. **Process Management**: Commands run as separate PTY processes
 3. **Output Handling**: Real-time output streaming to terminal UI
