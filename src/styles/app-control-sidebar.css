@@ -185,6 +185,112 @@
   align-items: center; /* Center buttons when collapsed */
 }
 
+/* Auto Setup Button Container */
+.sidebar-bottom-controls .auto-setup-button-container {
+  width: 100%;
+}
+
+.auto-setup-button {
+  background-color: #353b48;
+  color: #cccccc;
+  border: 1px solid #4a505c;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+  line-height: 1;
+  font-size: 0.9em;
+}
+
+/* Expanded state styles */
+.app-control-sidebar.expanded .auto-setup-button {
+  width: 100%;
+  padding: 10px;
+  justify-content: flex-start;
+}
+
+.app-control-sidebar.expanded .auto-setup-button .icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.app-control-sidebar.expanded .auto-setup-text {
+  white-space: nowrap;
+}
+
+/* Collapsed state styles */
+.app-control-sidebar.collapsed .auto-setup-button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  margin: 0 auto 8px auto;
+  justify-content: center;
+}
+
+.app-control-sidebar.collapsed .auto-setup-button .icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 0;
+}
+
+.app-control-sidebar.collapsed .auto-setup-text {
+  display: none;
+}
+
+/* Auto setup button states */
+.auto-setup-button:hover:not(:disabled) {
+  background-color: #4a505c;
+  color: #FEB32E;
+  border-color: #FEB32E;
+}
+
+.auto-setup-button.running {
+  background-color: #3B82F6;
+  color: white;
+  border-color: #2563EB;
+  animation: pulse-running 2s infinite;
+}
+
+.auto-setup-button.success {
+  background-color: #10B981;
+  color: white;
+  border-color: #059669;
+}
+
+.auto-setup-button.failed {
+  background-color: #EF4444;
+  color: white;
+  border-color: #DC2626;
+}
+
+.auto-setup-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #3D3E3A;
+  color: #666;
+  border-color: #4A4A45;
+}
+
+.auto-setup-button:disabled:hover {
+  background-color: #3D3E3A;
+  color: #666;
+  border-color: #4A4A45;
+}
+
+@keyframes pulse-running {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+}
+
 /* Health Report Button Container */
 .sidebar-bottom-controls .health-report-button-container {
   width: 100%;

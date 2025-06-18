@@ -33,7 +33,9 @@ describe('FloatingTerminal component', () => {
 
   test('does not render when not visible', () => {
     const { container } = render(<FloatingTerminal {...baseProps} isVisible={false} />);
-    expect(container.firstChild).toBeNull();
+    const floatingTerminal = container.firstChild;
+    expect(floatingTerminal).not.toBeNull();
+    expect(floatingTerminal).toHaveStyle('display: none');
   });
 
   test('auto closes when command finishes', () => {

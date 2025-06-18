@@ -8,6 +8,7 @@ This document provides a comprehensive overview of the {ProjectName} Manager's a
 - [Architecture Diagram](#architecture-diagram)
 - [Communication Flow](#communication-flow)
 - [Environment Verification System](#environment-verification-system)
+- [Auto Setup System](#auto-setup-system)
 - [Terminal System Architecture](#terminal-system-architecture)
 - [Command Generation & Execution](#command-generation--execution)
 - [Configuration System](#configuration-system)
@@ -53,6 +54,7 @@ graph TB
             J --> N[FloatingTerminals]
             J --> O[AppControlSidebar]
             J --> HR[HealthReportScreen]
+            J --> AS[AutoSetupScreen]
             
             subgraph "Custom Hooks"
                 Q[useAppState<br/>State Management]
@@ -60,6 +62,7 @@ graph TB
                 S[useAppEventHandlers<br/>Event Handling]
                 T[useFloatingTerminals<br/>Terminal Management]
                 U[useConfigurationManagement<br/>Configuration]
+                V[useAutoSetup<br/>Auto Setup Management]
             end
             
             J -.->|Uses| Q
@@ -67,6 +70,7 @@ graph TB
             J -.->|Uses| S
             J -.->|Uses| T
             J -.->|Uses| U
+            J -.->|Uses| V
         end
     end
     
@@ -196,6 +200,7 @@ graph TB
 | `useFloatingTerminals` | Terminal Management | Floating terminal lifecycle, positioning, info panels |
 | `useConfigurationManagement` | Configuration | Import/export, git operations, status screens |
 | `useFixCommands` | Fix Commands | Fix command execution, verification updates, toggle verifications |
+| `useAutoSetup` | Auto Setup | Priority-based command execution, progress tracking, smart terminal management |
 
 #### Benefits of the Modular Architecture
 
@@ -211,7 +216,12 @@ graph TB
 src/
 ├── App.jsx (clean, modular composition)
 ├── components/
-│   └── AppControlSidebar.jsx (sidebar with integrated debug tools)
+│   ├── AppControlSidebar.jsx (sidebar with integrated debug tools)
+│   └── AutoSetupScreen.jsx (auto setup interface)
+├── constants/
+│   └── autoSetupConstants.js (auto setup enums and config)
+├── utils/
+│   └── autoSetupUtils.js (auto setup utility functions)
 └── hooks/
     ├── useAppState.js (App state management)
     ├── useAppEffects.js (App side effects)
@@ -219,6 +229,7 @@ src/
     ├── useFloatingTerminals.js (App terminal management)
     ├── useConfigurationManagement.js (App configuration)
     ├── useFixCommands.js (Fix commands & verification management)
+    ├── useAutoSetup.js (Auto Setup management)
     ├── useTerminals.js (TerminalContainer hooks)
     ├── useIpcListeners.js (IPC communication hooks)
     ├── useProjectConfig.js (ProjectConfiguration hooks)
@@ -353,6 +364,174 @@ flowchart TD
 - **envVarExists/envVarEquals**: Environment variable validation
 
 See [verification-types.md](verification-types.md) for detailed information.
+
+## Auto Setup System
+
+The Auto Setup system provides automated environment configuration by running fix commands in priority order. It builds on the Environment Verification System and Terminal System to provide one-click environment setup.
+
+```mermaid
+flowchart TD
+    A[User Clicks Auto Setup] --> B[Scan All Verifications]
+    B --> C[Collect Invalid Verifications with Fix Commands]
+    C --> D[Group by Priority]
+    D --> E[Display Auto Setup Screen]
+    
+    E --> F{User Starts Setup?}
+    F -->|Yes| G[Execute Priority Group 1]
+    F -->|No| H[Preview Mode]
+    
+    G --> I[Spawn Auto Setup Terminals]
+    I --> J[Run Commands in Parallel]
+    J --> K[Monitor Command Completion]
+    K --> L{All Commands in Group Success?}
+    
+    L -->|Yes| M[Re-run Verifications]
+    L -->|No| N[Stop on Failure]
+    
+    M --> O{More Priority Groups?}
+    O -->|Yes| P[Execute Next Priority Group]
+    O -->|No| Q[Auto Setup Complete]
+    
+    P --> G
+    N --> R[Show Error State]
+    R --> S[Allow Individual Retry]
+    
+    style G fill:#e3f2fd
+    style I fill:#e8f5e8
+    style Q fill:#e8f5e8
+    style N fill:#ffebee
+```
+
+### Auto Setup Architecture
+
+The Auto Setup system consists of several key components:
+
+#### Core Components
+
+| Component | Purpose | Key Responsibilities |
+|-----------|---------|---------------------|
+| `useAutoSetup` hook | State management | Command collection, execution tracking, terminal management |
+| `AutoSetupScreen` | User interface | Progress display, command grouping, status visualization |
+| `autoSetupUtils` | Utility functions | Command filtering, status calculation, priority sorting |
+| `autoSetupConstants` | Constants | Status enums, configuration values |
+
+#### Auto Setup Workflow
+
+```mermaid
+sequenceDiagram
+    participant UI as AutoSetupScreen
+    participant Hook as useAutoSetup
+    participant Utils as autoSetupUtils
+    participant Terminal as FloatingTerminal
+    participant Verification as EnvironmentVerification
+    
+    Note over UI,Verification: 1. Setup Initialization
+    UI->>Hook: openAutoSetup()
+    Hook->>Utils: collectFixCommands()
+    Utils->>Utils: Group by priority
+    Utils-->>Hook: Command groups
+    Hook-->>UI: Display grouped commands
+    
+    Note over UI,Verification: 2. Execution Phase
+    UI->>Hook: startAutoSetup()
+    Hook->>Hook: Execute priority group 1
+    
+    loop For each command in group
+        Hook->>Terminal: Create auto setup terminal
+        Terminal->>Terminal: Execute fix command
+        Terminal-->>Hook: Command completion
+        Hook->>Verification: Re-run verification
+    end
+    
+    Hook->>Utils: calculateGroupStatus()
+    Utils-->>Hook: Group complete
+    Hook->>Hook: Move to next priority group
+    
+    Note over UI,Verification: 3. Completion
+    Hook-->>UI: All groups complete
+    UI->>UI: Show success state
+```
+
+#### Priority-Based Execution
+
+The Auto Setup system organizes fix commands into priority groups for optimal execution order:
+
+```mermaid
+graph LR
+    A[Priority 1<br/>System Tools] --> B[Priority 2<br/>Dev Environments]
+    B --> C[Priority 3<br/>Cloud Tools] 
+    C --> D[Priority 4<br/>Project Setup]
+    D --> E[Priority 999<br/>No Priority Set]
+    
+    subgraph "Execution Rules"
+        F[Sequential Groups]
+        G[Parallel Within Group]
+        H[Stop on Failure]
+    end
+    
+    A -.-> F
+    B -.-> G
+    C -.-> H
+```
+
+#### Auto Setup Terminal Management
+
+Auto Setup terminals have special characteristics:
+
+- **Dedicated Terminals**: Each fix command runs in its own floating terminal
+- **Auto-Minimized**: Start minimized to avoid UI clutter
+- **Hidden from Sidebar**: Don't appear in regular terminal management
+- **Special Configuration**: Tagged with `isAutoSetup: true` and `hideFromSidebar: true`
+- **Completion Handling**: Auto-close on success, remain open on failure
+- **High Z-Index**: Appear above the Auto Setup screen when viewed
+- **Timeout Management**: Automatic 60-second timeout with process termination
+- **Manual Control**: User can terminate long-running commands before timeout
+
+#### Timeout & Visual Feedback System
+
+The Auto Setup system provides comprehensive timeout management:
+
+- **Automatic Timeouts**: All commands timeout after 60 seconds
+- **Visual Countdown**: Live timer display (⏱ 45s) updates every second
+- **Progressive Warnings**: Timer changes color and pulses when ≤10 seconds remain
+- **Status Indicators**: Clear visual distinction between failed, timeout, and stopped commands
+- **Manual Termination**: "Terminate" button available for running commands
+- **Process Cleanup**: Proper process termination and resource cleanup
+
+#### Integration with App Control Sidebar
+
+The Auto Setup system integrates with the App Control Sidebar:
+
+```mermaid
+graph TB
+    A[App Control Sidebar] --> B[Auto Setup Button 🔧]
+    B --> C{Auto Setup Status}
+    
+    C -->|Idle| D[Blue Wrench Icon]
+    C -->|Running| E[Blue Icon with Pulse Animation]
+    C -->|Success| F[Green Icon]
+    C -->|Failed| G[Red Icon]
+    
+    B --> H[Opens AutoSetupScreen]
+    H --> I[Priority Groups Display]
+    H --> J[Progress Tracking]
+    H --> K[Individual Command Status]
+```
+
+#### Error Handling & Recovery
+
+The Auto Setup system provides comprehensive error handling:
+
+- **Flexible Failure Handling**: Execution stops when any command in a priority group fails, but users can choose to continue
+- **Continue from Failure**: "Continue" button allows proceeding to next priority group despite failures
+- **Individual Retry**: Failed commands can be retried without restarting
+- **Manual Termination**: "Terminate" button allows stopping long-running commands
+- **Automatic Timeouts**: Commands automatically timeout after 60 seconds with visual countdown
+- **Terminal Access**: "View Terminal" shows command output for debugging
+- **Status Persistence**: Failed states persist until manually resolved
+- **Graceful Degradation**: Partial success scenarios are handled appropriately
+
+See [auto-setup-guide.md](auto-setup-guide.md) for detailed usage information.
 
 ## Terminal System Architecture
 
@@ -688,7 +867,8 @@ The application includes comprehensive safety mechanisms and debugging tools int
 
 ```mermaid
 graph TB
-    A[AppControlSidebar Debug Section] --> B[Developer Tools]
+    A[AppControlSidebar] --> AA[Auto Setup Button]
+    A --> B[Developer Tools]
     A --> C[Application Reload]
     A --> D[Test Section Toggle]
     A --> E[No Run Mode]
@@ -696,6 +876,8 @@ graph TB
     A --> G[Configuration Management]
     A --> H[Environment Export]
     A --> I[Verification Testing]
+    
+    AA --> AB[One-Click Environment Setup]
     
     E --> J[Command Preview]
     E --> K[Safe Testing]
@@ -727,7 +909,14 @@ graph TB
 
 ### Debug Tools
 
-The debug section is integrated into the AppControlSidebar and provides the following tools:
+The AppControlSidebar provides comprehensive tools for both regular operation and debugging:
+
+**Main Features:**
+- **Auto Setup**: One-click automated environment setup with priority-based fix command execution
+- **Health Report**: Real-time monitoring of all running services and containers
+- **Floating Terminal Management**: Show, minimize, and manage auxiliary terminals
+
+**Debug Tools:**
 
 - **Chrome DevTools Integration**: Opens browser developer tools for debugging
 - **Application Reload**: Reloads the entire application (marked as risky due to potential variable substitution issues)
@@ -760,6 +949,7 @@ The debug section is integrated into the AppControlSidebar and provides the foll
 ## Related Documentation
 
 - [Configuration Guide](configuration-guide.md) - Detailed configuration options
+- [Auto Setup Guide](auto-setup-guide.md) - Complete guide to automated environment setup
 - [Terminal Features](terminal-features.md) - Terminal system capabilities
 - [Command System](command-system.md) - Command generation and execution
 - [Verification Types](verification-types.md) - Environment verification reference

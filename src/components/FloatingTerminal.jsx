@@ -16,6 +16,7 @@ const FloatingTerminal = ({
   onMinimize, // New prop for minimize action
   onOpenInfo, // New prop for opening info panel
   isFixCommand = false, // New prop to identify fix commands
+  isAutoSetup = false, // New prop to identify auto setup terminals
   onShowNotification, // New prop for showing notifications
   onCommandComplete, // New prop for when command completes
   noRunMode // New prop for no-run mode
@@ -26,6 +27,7 @@ const FloatingTerminal = ({
   const [isCloseDisabled, setIsCloseDisabled] = useState(false);
   const [disableTimeRemaining, setDisableTimeRemaining] = useState(0);
   const [terminalStatus, setTerminalStatus] = useState('idle');
+  const [wasVisible, setWasVisible] = useState(isVisible);
   const dragOffset = useRef({ x: 0, y: 0 });
 
   // Effect to update position if initialPosition prop changes externally (e.g., centering on re-open)
@@ -34,6 +36,23 @@ const FloatingTerminal = ({
   useEffect(() => {
     setPosition(initialPosition || { x: 50, y: 50 });
   }, [initialPosition?.x, initialPosition?.y]); // Only re-run if initialPosition object reference itself changes or x/y
+
+  // Effect to handle terminal resize when becoming visible (for auto setup terminals that start hidden)
+  useEffect(() => {
+    if (isVisible && !wasVisible) {
+      // Terminal just became visible, trigger resize after a short delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        if (window.electron?.resizeTerminal) {
+          window.electron.resizeTerminal({ terminalId: id });
+        }
+        // Also trigger a window resize event that xterm.js might be listening to
+        window.dispatchEvent(new Event('resize'));
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+    setWasVisible(isVisible);
+  }, [isVisible, wasVisible, id]);
 
   // Effect for fix command close button disable timer
   useEffect(() => {
@@ -58,29 +77,49 @@ const FloatingTerminal = ({
 
   // Effect to listen for terminal status changes and auto-close
   useEffect(() => {
-    if (!window.electron) return;
-
     const handleCommandFinished = ({ terminalId, status, exitCode }) => {
+      console.log('🔵 FLOATING_TERMINAL: handleCommandFinished called for terminalId:', terminalId, 'status:', status, 'exitCode:', exitCode);
+      console.log('🔵 FLOATING_TERMINAL: My ID:', id, 'isAutoSetup:', isAutoSetup, 'isMinimized:', isMinimized);
+      
       if (terminalId === id) {
+        console.log('🔵 FLOATING_TERMINAL: This event is for me! Setting status to:', status);
         setTerminalStatus(status);
         
         // Auto-close conditions:
         // 1. If it's a fix command and command finished (done/error/stopped)
-        // 2. If terminal is minimized and command finished
-        const shouldAutoClose = (isFixCommand || isMinimized) && 
+        // 2. If it's an auto setup command and command finished (done/error/stopped)
+        // 3. If terminal is minimized and command finished
+        const shouldAutoClose = (isFixCommand || isAutoSetup || isMinimized) && 
                                ['done', 'error', 'stopped'].includes(status);
         
+        console.log('🔵 FLOATING_TERMINAL: Auto-close check:', {
+          isFixCommand,
+          isAutoSetup,
+          isMinimized,
+          status,
+          shouldAutoClose
+        });
+        
         if (shouldAutoClose) {
+          console.log('🔵 FLOATING_TERMINAL: Will auto-close in 2 seconds');
           // Small delay to let user see the final status
           setTimeout(() => {
+            console.log('🔵 FLOATING_TERMINAL: Auto-closing now');
             onClose(id);
           }, 2000);
+        } else {
+          console.log('🔵 FLOATING_TERMINAL: Will NOT auto-close');
         }
         
         // Notify parent component that command completed (for verification re-run)
         if (onCommandComplete && ['done', 'error', 'stopped'].includes(status)) {
+          console.log('🔵 FLOATING_TERMINAL: Calling onCommandComplete with:', id, status, exitCode);
           onCommandComplete(id, status, exitCode);
+        } else {
+          console.log('🔵 FLOATING_TERMINAL: NOT calling onCommandComplete');
         }
+      } else {
+        console.log('🔵 FLOATING_TERMINAL: Event not for me (terminalId:', terminalId, 'vs my id:', id, ')');
       }
     };
 
@@ -90,15 +129,30 @@ const FloatingTerminal = ({
       }
     };
 
-    // Listen for command events
-    const removeCommandFinished = window.electron.onCommandFinished?.(handleCommandFinished);
-    const removeCommandStarted = window.electron.onCommandStarted?.(handleCommandStarted);
+    // Handler for simulation events (No Run Mode for Auto Setup)
+    const handleSimulationEvent = (event) => {
+      const { terminalId, status, exitCode } = event.detail;
+      if (terminalId === id) {
+        handleCommandFinished({ terminalId, status, exitCode });
+      }
+    };
+
+    // Listen for real command events (when electron is available)
+    let removeCommandFinished, removeCommandStarted;
+    if (window.electron) {
+      removeCommandFinished = window.electron.onCommandFinished?.(handleCommandFinished);
+      removeCommandStarted = window.electron.onCommandStarted?.(handleCommandStarted);
+    }
+
+    // Listen for simulation events (No Run Mode)
+    window.addEventListener('autoSetupSimulation', handleSimulationEvent);
 
     return () => {
       removeCommandFinished?.();
       removeCommandStarted?.();
+      window.removeEventListener('autoSetupSimulation', handleSimulationEvent);
     };
-  }, [id, isFixCommand, isMinimized, onClose, onCommandComplete]);
+  }, [id, isFixCommand, isAutoSetup, isMinimized, onClose, onCommandComplete]);
 
   const handleMouseDown = (e) => {
     if (!terminalRef.current) return;
@@ -166,16 +220,13 @@ const FloatingTerminal = ({
     onClose(id);
   };
 
-  if (!isVisible) {
-    return null;
-  }
-
   // Apply zIndex and initialPosition in style
   const style = {
     position: 'fixed', // Ensure it's fixed for proper positioning
     top: `${position.y}px`, // Use provided position or fallback
     left: `${position.x}px`,
     zIndex: zIndex || 1000, // Apply zIndex or a default
+    display: isVisible ? 'block' : 'none' // Control visibility with CSS
   };
 
   return (
@@ -219,14 +270,14 @@ const FloatingTerminal = ({
         </div>
       </div>
       <div className="floating-terminal-content">
-        {/* Render TerminalComponent only when visible and not minimized,
-            or let TerminalComponent handle its own internal active state based on a prop */}
+        {/* Always render TerminalComponent to preserve state and allow background execution */}
         <TerminalComponent
           key={id} // Important for React to treat new terminals as distinct
           id={id}
-          active={true} // Floating terminals, when visible, are considered active
+          active={true} // Always active for background execution
           initialCommand={command}
           noRunMode={noRunMode} // Pass down the noRunMode prop
+          isAutoSetup={isAutoSetup} // Pass down auto setup flag for simulation
         />
       </div>
     </div>

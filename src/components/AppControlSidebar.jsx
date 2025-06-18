@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import '../styles/app-control-sidebar.css'; // Renamed CSS
 import HealthReportButton from './HealthReportButton';
 // Import XMarkIcon as CloseIcon for clarity, or use XMarkIcon directly if no conflict
-import { Bars3Icon, XMarkIcon, EyeIcon, EyeSlashIcon, InformationCircleIcon, XMarkIcon as CloseIcon, Cog6ToothIcon, ArrowPathIcon, ComputerDesktopIcon, TrashIcon, ArrowDownTrayIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon, EyeIcon, EyeSlashIcon, InformationCircleIcon, XMarkIcon as CloseIcon, Cog6ToothIcon, ArrowPathIcon, ComputerDesktopIcon, TrashIcon, ArrowDownTrayIcon, ArrowUpTrayIcon, WrenchScrewdriverIcon } from '@heroicons/react/24/outline';
 
 const AppControlSidebar = ({
   floatingTerminals,
@@ -26,7 +26,10 @@ const AppControlSidebar = ({
   onToggleAllVerifications, // New prop for toggling all verification statuses
   // Health Report props
   healthStatus, // Health report status (green/blue/red)
-  onOpenHealthReport // Health report open handler
+  onOpenHealthReport, // Health report open handler
+  // Auto Setup props
+  autoSetupStatus, // Auto setup status (idle/preparing/running/success/failed/stopped)
+  onOpenAutoSetup // Auto setup open handler
 }) => {
   const sidebarRef = useRef(null);
   const [isDebugSectionOpen, setIsDebugSectionOpen] = useState(false);
@@ -130,9 +133,9 @@ const AppControlSidebar = ({
       {isExpanded && (
         <div className="sidebar-content">
           <h3>Active Terminals</h3>
-          {floatingTerminals.length === 0 && <p className="empty-message">No active floating terminals.</p>}
+          {floatingTerminals.filter(t => !t.hideFromSidebar).length === 0 && <p className="empty-message">No active floating terminals.</p>}
           <ul>
-            {floatingTerminals.map(terminal => (
+            {floatingTerminals.filter(terminal => !terminal.hideFromSidebar).map(terminal => (
               <li key={terminal.id} className={terminal.id === activeFloatingTerminalId ? 'active' : ''}>
                 <span className="terminal-title" title={terminal.title}>{terminal.title}</span>
                 <div className="terminal-actions">
@@ -160,7 +163,7 @@ const AppControlSidebar = ({
 
       {!isExpanded && (
         <div className="sidebar-minimized-icons">
-          {floatingTerminals.map(terminal => (
+          {floatingTerminals.filter(terminal => !terminal.hideFromSidebar).map(terminal => (
             <button
               key={terminal.id}
               className="minimized-icon-button"
@@ -171,14 +174,25 @@ const AppControlSidebar = ({
               <span>{terminal.title.substring(0,1)}</span>
             </button>
           ))}
-          {floatingTerminals.length === 0 && (
+          {floatingTerminals.filter(t => !t.hideFromSidebar).length === 0 && (
             <span className="empty-minimized-message"></span>
           )}
         </div>
       )}
 
-      {/* Health Report and Debug Section Toggle Buttons - always visible at the bottom */}
+      {/* Auto Setup, Health Report and Debug Section Toggle Buttons - always visible at the bottom */}
       <div className="sidebar-bottom-controls">
+        <div className="auto-setup-button-container">
+          <button
+            className={`auto-setup-button ${autoSetupStatus === 'running' ? 'running' : ''} ${autoSetupStatus === 'success' ? 'success' : ''} ${autoSetupStatus === 'failed' ? 'failed' : ''}`}
+            onClick={onOpenAutoSetup}
+            title="Auto Setup - Run all fix commands automatically"
+            disabled={isProjectRunning}
+          >
+            <WrenchScrewdriverIcon className="icon" />
+            {isExpanded && <span className="auto-setup-text">Auto Setup</span>}
+          </button>
+        </div>
         <div className="health-report-button-container">
           <HealthReportButton
             healthStatus={healthStatus}

@@ -3,7 +3,7 @@ import { Terminal as XTerm } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
 
-const TerminalComponent = ({ id, active, initialCommand, noRunMode, isReadOnly, isErrorTab, errorMessage, onProcessStarted }) => {
+const TerminalComponent = ({ id, active, initialCommand, noRunMode, isReadOnly, isErrorTab, errorMessage, onProcessStarted, isAutoSetup }) => {
   const terminalRef = useRef(null);
   const xtermRef = useRef(null);
   const fitAddonRef = useRef(null);
@@ -49,6 +49,33 @@ const TerminalComponent = ({ id, active, initialCommand, noRunMode, isReadOnly, 
           write: (data) => term.write(data),
           term: term
         };
+        
+        // For Auto Setup terminals, simulate successful completion after a delay
+        if (isAutoSetup) {
+          // Simulate command execution with visual feedback
+          setTimeout(() => {
+            term.write('\x1b[33mStarting simulation...\x1b[0m\r\n');
+          }, 500);
+          
+          // Simulate successful completion
+          setTimeout(() => {
+            term.write('\x1b[32m[SIMULATED SUCCESS]\x1b[0m\r\n');
+            term.write('Command would have completed successfully.\r\n');
+            
+            // Create a custom event to simulate command completion
+            const simulationEvent = new CustomEvent('autoSetupSimulation', {
+              detail: { 
+                terminalId: id, 
+                status: 'done', 
+                exitCode: 0,
+                exitStatus: 'Command completed successfully (simulated)'
+              }
+            });
+            
+            // Dispatch the event to be caught by FloatingTerminal
+            window.dispatchEvent(simulationEvent);
+          }, 2000); // 2 second delay to simulate command execution
+        }
       } else {
         // Normal mode - spawn PTY and execute command
         window.electron.ptySpawn(initialCommand, String(id), cols, rows);

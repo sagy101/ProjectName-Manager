@@ -17,6 +17,7 @@ This project is also an experiment in "vibe coding" mixed with solid code practi
 
 - **Dynamic Environment Verification**: JSON-configurable verification system for tools and dependencies
   - **Auto-Fix Commands**: One-click fix buttons for failed verifications with automatic re-validation
+  - **Auto Setup**: One-click automated environment setup that runs all fix commands in priority order
 - **Generic Dropdown Selectors**: Command-driven dropdowns with dependency chains, default value selection, and automatic command execution on change (e.g., gcloud projects, kubectl contexts)
 - **Header Configuration**: Configurable environment section headers with integrated dropdowns
 - **Integrated Terminal**: Full PTY terminal support with tab management for main tasks
@@ -43,6 +44,7 @@ This project is also an experiment in "vibe coding" mixed with solid code practi
   - [Custom Buttons & Floating Terminals](#custom-buttons--floating-terminals)
 - [Adding New Sections](#🔧-adding-new-sections)
 - [Environment Verification](#🔍-environment-verification)
+- [Auto Setup](#🚀-auto-setup)
 - [Terminal Integration](#💻-terminal-integration)
   - [Main Terminals](#main-terminals)
   - [Floating Terminals](#floating-terminals)
@@ -356,6 +358,41 @@ Failed verifications can include fix commands that automatically attempt to reso
 
 For complete verification reference, see [docs/verification-types.md](docs/verification-types.md).
 
+## 🚀 Auto Setup
+
+The Auto Setup feature provides one-click automated environment configuration by running all necessary fix commands in priority order.
+
+### Key Features
+
+- **Automatic Detection**: Identifies failed verifications with fix commands
+- **Priority-Based Execution**: Sequential execution by priority groups (1, 2, 3, etc.)
+- **Parallel Processing**: Commands within the same priority run simultaneously
+- **Smart Terminals**: Dedicated floating terminals that start minimized
+- **Progress Tracking**: Real-time status updates and progress monitoring
+- **Failure Handling**: Stops on errors with individual retry options
+
+### Quick Start
+
+1. Click the Auto Setup button (🔧) in the App Control Sidebar
+2. Review the organized command groups by priority
+3. Click "Start Auto Setup" to begin automated execution
+4. Monitor progress and handle any failures as needed
+
+### Configuration
+
+Add `fixPriority` to fix commands in your configuration files:
+
+```json
+{
+  "fixCommand": "git clone https://github.com/...",
+  "fixPriority": 1
+}
+```
+
+**Priority Guidelines**: 1 (system tools) → 2 (dev environments) → 3 (cloud tools) → 4 (project setup)
+
+For complete setup instructions, configuration examples, and troubleshooting, see the [Auto Setup Guide](docs/auto-setup-guide.md).
+
 ## 💻 Terminal Integration
 
 {ProjectName} Manager provides a rich terminal experience.
@@ -378,8 +415,10 @@ For detailed documentation on terminal features, see [Terminal Features Guide](d
 
 ## 🛠️ App Control Sidebar & Debug Tools
 The **App Control Sidebar**, accessible from the right edge of the application, provides:
-- Management of active **Floating Terminals** (show, minimize, view "About" info, close).
-- Access to **Debug Tools** via a gear icon at the bottom.
+- **Auto Setup**: One-click automated environment setup (wrench icon)
+- Management of active **Floating Terminals** (show, minimize, view "About" info, close)
+- **Health Report**: Real-time status overview of all running services
+- Access to **Debug Tools** via a gear icon at the bottom
 
 When any debug options are active, the gear icon will show an orange border.
 
@@ -480,6 +519,7 @@ This will print more verbose logs to the developer console, which can be helpful
 
 - [System Architecture](docs/architecture.md) - Overview of the system design and component interactions
 - [Configuration Guide](docs/configuration-guide.md) - Detailed configuration options
+- [Auto Setup Guide](docs/auto-setup-guide.md) - Complete guide to automated environment setup
 - [Verification Types](docs/verification-types.md) - Complete verification reference
 - [Command System](docs/command-system.md) - Command generation and execution
 - [Terminal Features](docs/terminal-features.md) - Tab information panel

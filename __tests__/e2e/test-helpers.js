@@ -1,4 +1,5 @@
 const { _electron: electron } = require('playwright');
+const { expect } = require('@playwright/test');
 
 /**
  * Launch Electron for E2E tests
@@ -153,4 +154,112 @@ function getTimeout(base) {
   return process.env.CI ? base * 2 : base;
 }
 
-module.exports = { launchElectron, waitForElement, ensureAllVerificationsValid, getTimeout }; 
+async function expandSidebar(window) {
+  const isExpanded = await window.locator('.app-control-sidebar.expanded').isVisible();
+  if (!isExpanded) {
+    await window.locator('.sidebar-toggle-button').click();
+  }
+}
+
+async function expandDebugMenu(window) {
+  await expandSidebar(window);
+  const isDebugOpen = await window.locator('.debug-section-content').isVisible();
+  if (!isDebugOpen) {
+    await window.locator('.debug-section-toggle-button').click();
+    await window.waitForSelector('.debug-section-content', { state: 'visible' });
+  }
+}
+
+async function clickNoRunMode(window) {
+  await expandDebugMenu(window);
+  await window.locator('button:has-text("No Run Mode")').click();
+}
+
+async function toggleAllVerifications(window) {
+  await window.click('.debug-section-toggle-button');
+  await window.click('button:has-text("Toggle Verifications")');
+  await window.waitForTimeout(500); // Wait for state to update
+}
+
+async function clickAutoSetupButton(window) {
+  await window.click('.auto-setup-button');
+  await window.waitForSelector('.auto-setup-container', { state: 'visible' });
+}
+
+async function clickStartAutoSetup(window) {
+  await window.click('button:has-text("Start Auto Setup")');
+}
+
+async function clickStartPriorityGroup(window, priority) {
+  const group = window.locator(`.priority-group:has-text("Priority ${priority}")`);
+  await group.locator('button:has-text("Start Priority")').click();
+}
+
+async function checkGroupCompleted(window, priority) {
+  const group = window.locator(`.priority-group:has-text("Priority ${priority}")`);
+  await expect(group).toHaveAttribute('data-status', 'success', { timeout: getTimeout(30000) });
+}
+
+async function checkAllGroupsCompleted(window) {
+  await window.waitForSelector('.summary-status--success', { timeout: getTimeout(30000) });
+}
+
+async function launchElectronApp() {
+  const electronApp = await electron.launch({ 
+    args: ['.', '--no-sandbox'],
+    env: { ...process.env, ELECTRON_DISABLE_SECURITY_WARNINGS: 'true', NODE_ENV: 'test' }
+  });
+  const window = await electronApp.firstWindow({ timeout: 60000 });
+  return { app: electronApp, window };
+}
+
+async function openAutoSetupScreen(window) {
+  await window.click('.auto-setup-button');
+  await window.waitForSelector('.auto-setup-container', { state: 'visible' });
+}
+
+async function startPriorityGroup(window, priority) {
+  const group = window.locator(`.priority-group:has-text("Priority ${priority}")`);
+  await group.locator('button:has-text("Start Priority")').click();
+}
+
+async function waitForPriorityGroupCompleted(window, priority) {
+  const group = window.locator(`.priority-group:has-text("Priority ${priority}")`);
+  await expect(group).toHaveAttribute('data-status', 'success', { timeout: 60000 });
+}
+
+async function assertPriorityGroupCompleted(window, priority) {
+  const group = window.locator(`.priority-group:has-text("Priority ${priority}")`);
+  await expect(group).toHaveAttribute('data-status', 'success');
+}
+
+async function waitForAllGroupsCompleted(window) {
+  await window.waitForSelector('.summary-status--success', { timeout: 120000 });
+}
+
+async function assertAllGroupsCompleted(window) {
+  await expect(window.locator('.summary-status--success')).toBeVisible();
+}
+
+module.exports = { 
+  launchElectron, 
+  waitForElement, 
+  ensureAllVerificationsValid, 
+  getTimeout,
+  toggleAllVerifications,
+  clickAutoSetupButton,
+  clickStartAutoSetup,
+  clickStartPriorityGroup,
+  checkGroupCompleted,
+  checkAllGroupsCompleted,
+  expandSidebar,
+  expandDebugMenu,
+  clickNoRunMode,
+  launchElectronApp,
+  openAutoSetupScreen,
+  startPriorityGroup,
+  waitForPriorityGroupCompleted,
+  assertPriorityGroupCompleted,
+  waitForAllGroupsCompleted,
+  assertAllGroupsCompleted
+}; 

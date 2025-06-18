@@ -9,6 +9,7 @@ import AppControlSidebar from './components/AppControlSidebar';
 import TabInfoPanel from './components/TabInfoPanel';
 import ImportStatusScreen from './components/ImportStatusScreen';
 import HealthReportScreen from './components/HealthReportScreen';
+import AutoSetupScreen from './components/AutoSetupScreen';
 import FixCommandConfirmation from './components/FixCommandConfirmation';
 import './styles/app.css';
 
@@ -19,6 +20,7 @@ import { useConfigurationManagement } from './hooks/useConfigurationManagement';
 import { useAppEventHandlers } from './hooks/useAppEventHandlers';
 import { useAppEffects } from './hooks/useAppEffects';
 import { useFixCommands } from './hooks/useFixCommands';
+import { useAutoSetup } from './hooks/useAutoSetup';
 import useHealthReport from './hooks/useHealthReport';
 
 // Constants for sidebar dimensions
@@ -112,6 +114,23 @@ const App = () => {
     appState,
     eventHandlers,
     floatingTerminalHandlers
+  });
+
+  // Initialize auto setup management
+  const autoSetup = useAutoSetup({
+    verificationStatuses: appState.verificationStatuses,
+    generalVerificationConfig: appState.generalVerificationConfig,
+    configSidebarAbout: require('./configurationSidebarAbout.json'),
+    showTestSections: appState.showTestSections,
+    onOpenFloatingTerminal: floatingTerminalHandlers.openFloatingTerminal,
+    onCommandComplete: fixCommands.handleFixCommandComplete,
+    onVerificationRerun: (verificationId) => {
+      // Re-run verification after successful fix
+      if (window.electron?.rerunSingleVerification) {
+        window.electron.rerunSingleVerification(verificationId);
+      }
+    },
+    showAppNotification: eventHandlers.showAppNotification
   });
 
   // Get live terminal data
@@ -262,6 +281,8 @@ const App = () => {
             onToggleAllVerifications={fixCommands.handleToggleAllVerifications}
             healthStatus={healthReport.healthStatus}
             onOpenHealthReport={healthReport.handleOpenHealthReport}
+            autoSetupStatus={autoSetup.autoSetupStatus}
+            onOpenAutoSetup={autoSetup.openAutoSetup}
           />
         )}
       </div> {/* End of the main flex container for isLoading=false case */}
@@ -297,6 +318,26 @@ const App = () => {
         onRefreshTerminal={healthReport.handleRefreshTerminal}
         onFocusTerminal={healthReport.handleFocusTerminal}
       />
+      {/* Auto Setup Screen */}
+      <AutoSetupScreen
+        isVisible={autoSetup.isAutoSetupVisible}
+        projectName={appState.projectName}
+        onClose={autoSetup.closeAutoSetup}
+        autoSetupStatus={autoSetup.autoSetupStatus}
+        commandGroups={autoSetup.commandGroups}
+        commandStatuses={autoSetup.commandStatuses}
+        activeTerminals={autoSetup.activeTerminals}
+        floatingTerminals={appState.floatingTerminals}
+        commandTimeouts={autoSetup.commandTimeouts}
+        progress={autoSetup.progress}
+        onStartAutoSetup={autoSetup.startAutoSetup}
+        onStopAutoSetup={autoSetup.stopAutoSetup}
+        onStartPriorityGroup={autoSetup.startPriorityGroup}
+        onRetryCommand={autoSetup.retryCommand}
+        onTerminateCommand={autoSetup.terminateCommand}
+        onViewTerminal={floatingTerminalHandlers.showFloatingTerminal}
+        noRunMode={appState.noRunMode}
+      />
       {/* Render FloatingTerminals */}
       {appState.floatingTerminals.map(terminal => (
         <FloatingTerminal
@@ -313,8 +354,14 @@ const App = () => {
           onMinimize={floatingTerminalHandlers.toggleMinimizeFloatingTerminal}
           onOpenInfo={floatingTerminalHandlers.showFloatingTerminalInfoPanel}
           isFixCommand={terminal.isFixCommand || false}
+          isAutoSetup={terminal.isAutoSetup || false}
           onShowNotification={eventHandlers.showAppNotification}
-          onCommandComplete={fixCommands.handleFixCommandComplete}
+          onCommandComplete={(terminalId, status, exitCode) => {
+          console.log('🟣 APP_LEVEL: onCommandComplete called with:', terminalId, status, exitCode);
+          const handler = terminal.onCommandComplete || fixCommands.handleFixCommandComplete;
+          console.log('🟣 APP_LEVEL: Using handler:', handler.name || 'anonymous');
+          handler(terminalId, status, exitCode);
+        }}
           isReadOnly={false}
           noRunMode={appState.noRunMode}
         />

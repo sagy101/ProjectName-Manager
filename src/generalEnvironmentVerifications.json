@@ -29,7 +29,8 @@
             "checkType": "outputContains",
             "expectedValue": "Google Cloud SDK",
             "outputStream": "stdout",
-            "fixCommand": "brew install --cask google-cloud-sdk"
+            "fixCommand": "brew install --cask google-cloud-sdk",
+            "fixPriority": 3
           },
           {
             "id": "cloudKubectlCLI",
@@ -38,14 +39,16 @@
             "checkType": "outputContains",
             "expectedValue": "Client Version:",
             "outputStream": "stdout",
-            "fixCommand": "brew install kubectl"
+            "fixCommand": "brew install kubectl",
+            "fixPriority": 3
           },
           {
             "id": "cloudKubectx",
             "title": "kubectx",
             "command": "kubectx --help",
             "checkType": "commandSuccess",
-            "fixCommand": "brew install kubectx"
+            "fixCommand": "brew install kubectx",
+            "fixPriority": 3
           }
         ]
       }
@@ -73,7 +76,8 @@
             "checkType": "outputContains",
             "expectedValue": "",
             "outputStream": "stdout",
-            "fixCommand": "brew install --cask rancher"
+            "fixCommand": "brew install --cask rancher",
+            "fixPriority": 4
           },
           {
             "id": "containerRuntime",
@@ -98,7 +102,8 @@
             "expectedValue": ["v15.", "v16."],
             "versionId": "nodeVersion",
             "outputStream": "stdout",
-            "fixCommand": "nvm install 16"
+            "fixCommand": "nvm install 16",
+            "fixPriority": 2
           },
           {
             "id": "nvmInstalled",
@@ -158,7 +163,8 @@
             "checkType": "outputContains",
             "expectedValue": "openjdk version \"17.",
             "outputStream": "stderr",
-            "fixCommand": "brew install openjdk@17"
+            "fixCommand": "brew install openjdk@17",
+            "fixPriority": 2
           },
           {
             "id": "additionalCloudbees",
@@ -171,7 +177,8 @@
             "title": "Homebrew installed",
             "command": "brew --version",
             "checkType": "commandSuccess",
-            "fixCommand": "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
+            "fixCommand": "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"",
+            "fixPriority": 1
           }
         ]
       }

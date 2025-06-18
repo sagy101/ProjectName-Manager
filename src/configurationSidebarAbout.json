@@ -15,7 +15,8 @@
         "checkType": "pathExists",
         "pathValue": "./weblifemirror",
         "pathType": "directory",
-        "fixCommand": "git clone https://github.com/PFPT-Isolation/weblifemirror.git ./weblifemirror"
+        "fixCommand": "git clone https://github.com/PFPT-Isolation/weblifemirror.git ./weblifemirror",
+        "fixPriority": 1
       },
       {
         "id": "mirrorGradlewExists",
@@ -50,7 +51,8 @@
         "title": "Chromium installed",
         "command": "chromium --version",
         "checkType": "commandSuccess",
-        "fixCommand": "curl -L -o ungoogled-chromium.dmg \"https://github.com/ungoogled-software/ungoogled-chromium-macos/releases/download/125.0.6422.141-1.1/ungoogled-chromium_125.0.6422.141-1.1_arm64-macos.dmg\" && hdiutil attach ungoogled-chromium.dmg && cp -R /Volumes/Chromium/Chromium.app /Applications/ && hdiutil detach /Volumes/Chromium && rm ungoogled-chromium.dmg && open /Applications/Chromium.app"
+        "fixCommand": "curl -L -o ungoogled-chromium.dmg \"https://github.com/ungoogled-software/ungoogled-chromium-macos/releases/download/125.0.6422.141-1.1/ungoogled-chromium_125.0.6422.141-1.1_arm64-macos.dmg\" && hdiutil attach ungoogled-chromium.dmg && cp -R /Volumes/Chromium/Chromium.app /Applications/ && hdiutil detach /Volumes/Chromium && rm ungoogled-chromium.dmg && open /Applications/Chromium.app",
+        "fixPriority": 3
       }
     ]
   },
@@ -65,7 +67,8 @@
         "checkType": "pathExists",
         "pathValue": "./threatintelligence",
         "pathType": "directory",
-        "fixCommand": "git clone https://github.com/PFPT-Isolation/threatintelligence.git ./threatintelligence"
+        "fixCommand": "git clone https://github.com/PFPT-Isolation/threatintelligence.git ./threatintelligence",
+        "fixPriority": 1
       },
       {
         "id": "threatIntelligenceGradlewExists",
@@ -87,7 +90,8 @@
         "checkType": "pathExists",
         "pathValue": "./infrastructure",
         "pathType": "directory",
-        "fixCommand": "git clone https://github.com/PFPT-Isolation/infrastructure.git ./infrastructure"
+        "fixCommand": "git clone https://github.com/PFPT-Isolation/infrastructure.git ./infrastructure",
+        "fixPriority": 1
       }
     ]
   },
@@ -102,7 +106,8 @@
         "checkType": "pathExists",
         "pathValue": "./activity-logger",
         "pathType": "directory",
-        "fixCommand": "git clone https://github.com/PFPT-Isolation/activity-logger.git ./activity-logger"
+        "fixCommand": "git clone https://github.com/PFPT-Isolation/activity-logger.git ./activity-logger",
+        "fixPriority": 1
       },
       {
         "id": "activityLoggerGradlewExists",
@@ -124,7 +129,8 @@
         "checkType": "pathExists",
         "pathValue": "./rule-engine",
         "pathType": "directory",
-        "fixCommand": "git clone https://github.com/PFPT-Isolation/rule-engine.git ./rule-engine"
+        "fixCommand": "git clone https://github.com/PFPT-Isolation/rule-engine.git ./rule-engine",
+        "fixPriority": 1
       }
     ]
   },
@@ -139,7 +145,8 @@
         "checkType": "pathExists",
         "pathValue": "./test-analytics",
         "pathType": "directory",
-        "fixCommand": "mkdir -p ./test-analytics"
+        "fixCommand": "mkdir -p ./test-analytics",
+        "fixPriority": 2
       }
     ]
   },

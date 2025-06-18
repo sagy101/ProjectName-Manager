@@ -24,15 +24,30 @@ export const useFloatingTerminals = ({
 }) => {
   // Define showFloatingTerminal first
   const showFloatingTerminal = useCallback((terminalId) => {
-    setFloatingTerminals(prevTerminals =>
-      prevTerminals.map(t =>
+    console.log('showFloatingTerminal called with terminalId:', terminalId);
+    
+    setFloatingTerminals(prevTerminals => {
+      const terminal = prevTerminals.find(t => t.id === terminalId);
+      console.log('showFloatingTerminal found terminal:', terminal);
+      console.log('showFloatingTerminal isAutoSetup:', terminal?.isAutoSetup);
+      
+      return prevTerminals.map(t =>
         t.id === terminalId
-          ? { ...t, isVisible: true, isMinimized: false }
+          ? { 
+              ...t, 
+              isVisible: true, 
+              isMinimized: false,
+              // Use higher z-index for auto setup terminals to appear above AutoSetupScreen (z-index: 10000)
+              zIndex: t.isAutoSetup ? 15000 : (t.zIndex || nextZIndex)
+            }
           : t
-      )
-    );
+      );
+    });
     setActiveFloatingTerminalId(terminalId); // Set as active
-  }, []); // Ensure its own dependencies are correct (empty if none from App scope)
+    
+    // Increment nextZIndex if we used it
+    setNextZIndex(prevZ => prevZ + 1);
+  }, [nextZIndex, setActiveFloatingTerminalId, setFloatingTerminals, setNextZIndex]); // Added dependencies
 
   // Define focusFloatingTerminal next
   const focusFloatingTerminal = useCallback((terminalId) => {
@@ -40,7 +55,11 @@ export const useFloatingTerminals = ({
     setFloatingTerminals(prevTerminals =>
       prevTerminals.map(t =>
         t.id === terminalId
-          ? { ...t, zIndex: nextZIndex } // Bring to front
+          ? { 
+              ...t, 
+              // Preserve high z-index for auto setup terminals, use nextZIndex for others
+              zIndex: t.isAutoSetup ? Math.max(15000, nextZIndex) : nextZIndex 
+            }
           : t
       )
     );
@@ -48,28 +67,44 @@ export const useFloatingTerminals = ({
   }, [nextZIndex, setActiveFloatingTerminalId, setFloatingTerminals, setNextZIndex]); // Depends on nextZIndex
 
   // Now define openFloatingTerminal, which depends on the two above
-  const openFloatingTerminal = useCallback((commandId, title, command, isFixCommand = false) => {
-    let newTerminalId = null;
+  const openFloatingTerminal = useCallback((commandId, title, command, options = {}) => {
+    // Support both old signature and new options object
+    let actualOptions = {};
+    if (typeof options === 'boolean') {
+      // Old signature: openFloatingTerminal(commandId, title, command, isFixCommand)
+      actualOptions = { isFixCommand: options };
+    } else {
+      // New signature: openFloatingTerminal(commandId, title, command, options)
+      actualOptions = options;
+    }
     
-    setFloatingTerminals(prevTerminals => {
-      newTerminalId = `ft-${Date.now()}-${commandId}`;
-      const existingTerminal = prevTerminals.find(t => t.commandId === commandId && t.title === title);
+    const {
+      isFixCommand = false,
+      isAutoSetup = false,
+      startMinimized = false,
+      hideFromSidebar = false,
+      onCommandComplete = null
+    } = actualOptions;
+    
+    // Check for existing terminal first
+    const existingTerminal = floatingTerminals.find(t => t.commandId === commandId && t.title === title);
 
       if (existingTerminal && !isFixCommand) {
         // If terminal exists and it's not a fix command, show and focus it.
-        // If it was minimized, ensure it un-minimizes and becomes visible.
-        setFloatingTerminals(currentTerminals =>
-          currentTerminals.map(t =>
+      setFloatingTerminals(prevTerminals =>
+        prevTerminals.map(t => 
             t.id === existingTerminal.id
-              ? { ...t, isVisible: true, isMinimized: false, zIndex: nextZIndex } // Bring to front, ensure visible & not minimized
+            ? { ...t, isVisible: true, isMinimized: false, zIndex: nextZIndex } 
               : t
           )
         );
         setActiveFloatingTerminalId(existingTerminal.id);
         setNextZIndex(prevZ => prevZ + 1);
-        newTerminalId = existingTerminal.id; // Return existing terminal ID
-        return prevTerminals.map(t => t.id === existingTerminal.id ? { ...t, isVisible: true, isMinimized: false } : t); // This return might be redundant due to setFloatingTerminals above
+      return existingTerminal.id; // Return existing terminal ID
       }
+
+    // Generate terminal ID for new terminal
+    const newTerminalId = `ft-${Date.now()}-${commandId}`;
 
       // Calculate centered position for new terminals
       const sidebarCurrentWidth = isFloatingSidebarExpanded ? SIDEBAR_EXPANDED_WIDTH : SIDEBAR_COLLAPSED_WIDTH;
@@ -83,7 +118,7 @@ export const useFloatingTerminals = ({
       centeredY = Math.max(10, centeredY);
 
       // Apply simple staggering for new terminals to avoid exact overlap
-      const staggerOffset = (prevTerminals.filter(t => t.isVisible).length % 5) * positionOffset; // Stagger based on visible terminals
+    const staggerOffset = (floatingTerminals.filter(t => t.isVisible).length % 5) * positionOffset; // Stagger based on visible terminals
       const finalX = centeredX + staggerOffset;
       const finalY = centeredY + staggerOffset;
 
@@ -92,23 +127,26 @@ export const useFloatingTerminals = ({
         commandId,
         title,
         command,
-        isVisible: true,
-        isMinimized: false,
+      isVisible: !startMinimized,
+      isMinimized: startMinimized,
         position: { x: finalX, y: finalY }, // Use calculated and staggered position
         zIndex: nextZIndex,
         status: 'idle', // Track actual terminal status
         exitStatus: null,
         startTime: Date.now(),
         associatedContainers: [], // Initialize associated containers
-        isFixCommand: isFixCommand || false // Track if this is a fix command terminal
+      isFixCommand: isFixCommand || false, // Track if this is a fix command terminal
+      isAutoSetup: isAutoSetup || false, // Track if this is an auto setup terminal
+      hideFromSidebar: hideFromSidebar || false, // Whether to hide from sidebar
+      onCommandComplete: onCommandComplete // Callback for command completion
       };
+    
+    setFloatingTerminals(prevTerminals => [...prevTerminals, newTerminal]);
       setNextZIndex(prevZ => prevZ + 1);
       setActiveFloatingTerminalId(newTerminalId);
-      return [...prevTerminals, newTerminal];
-    });
     
     return newTerminalId; // Return the terminal ID
-  }, [nextZIndex, focusFloatingTerminal, showFloatingTerminal, positionOffset, isFloatingSidebarExpanded, setFloatingTerminals, setActiveFloatingTerminalId, setNextZIndex]); // Added isFloatingSidebarExpanded
+  }, [floatingTerminals, nextZIndex, positionOffset, isFloatingSidebarExpanded, setFloatingTerminals, setActiveFloatingTerminalId, setNextZIndex]); // Added floatingTerminals dependency
 
   const closeFloatingTerminal = useCallback((terminalId) => {
     setFloatingTerminals(prevTerminals =>
