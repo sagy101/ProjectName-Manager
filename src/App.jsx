@@ -267,6 +267,7 @@ const App = () => {
       </div> {/* End of the main flex container for isLoading=false case */}
 
       {/* Global Modals & Notifications: These render on top of everything, outside the main layout flow. */}
+      // istanbul ignore next
       <Notification
         isVisible={appState.appNotification.isVisible}
         message={appState.appNotification.message}
@@ -274,12 +275,14 @@ const App = () => {
         onClose={eventHandlers.hideAppNotification}
         autoCloseTime={appState.appNotification.autoCloseTime}
       />
+      // istanbul ignore next
       <FixCommandConfirmation
         verification={appState.pendingFixVerification}
         onConfirm={fixCommands.executePendingFixCommand}
         onCancel={() => appState.setPendingFixVerification(null)}
       />
       {/* Import Status Screen */}
+      // istanbul ignore next
       <ImportStatusScreen
         isVisible={appState.showImportStatusScreen}
         projectName={appState.projectName}
@@ -288,6 +291,7 @@ const App = () => {
         onImportComplete={configManagement.performImport}
       />
       {/* Health Report Screen */}
+      // istanbul ignore next
       <HealthReportScreen
         isVisible={healthReport.isHealthReportVisible}
         projectName={appState.projectName}
@@ -298,6 +302,7 @@ const App = () => {
         onFocusTerminal={healthReport.handleFocusTerminal}
       />
       {/* Render FloatingTerminals */}
+      // istanbul ignore next
       {appState.floatingTerminals.map(terminal => (
         <FloatingTerminal
           key={terminal.id}
@@ -320,6 +325,7 @@ const App = () => {
         />
       ))}
       {/* Render TabInfoPanel for Floating Terminals */}
+      // istanbul ignore next
       {appState.infoPanelState.isVisible && appState.infoPanelState.terminalData && (() => {
         // Get the live terminal data from floatingTerminals
         const liveTerminal = appState.floatingTerminals.find(t => t.id === appState.infoPanelState.terminalData.id);

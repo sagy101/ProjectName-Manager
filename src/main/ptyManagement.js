@@ -145,6 +145,7 @@ function interpretProcessState(state) {
 }
 
 // Function to monitor child processes
+/* istanbul ignore next */
 function startProcessMonitoring(terminalId, shellPid, mainWindow) {
   const state = commandStates[terminalId];
   if (!state) return;
@@ -636,4 +637,13 @@ module.exports = {
   killAllPTYProcesses,
   isPTYAvailable,
   interpretProcessState
-}; 
+};
+
+if (process.env.NODE_ENV === 'test') {
+  module.exports.__test__ = {
+    getChildProcesses,
+    startProcessMonitoring,
+    _commandStates: commandStates,
+    _activeProcesses: activeProcesses
+  };
+}

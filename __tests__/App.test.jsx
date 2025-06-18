@@ -556,4 +556,48 @@ describe('App Component - Comprehensive Tests', () => {
       expect(jest.getTimerCount()).toBe(0);
     });
   });
-}); 
+
+  describe('Floating Terminal and Info Panel', () => {
+    test('renders floating terminals and info panel data', () => {
+      mockAppState.floatingTerminals = [
+        {
+          id: '1',
+          title: 'ft',
+          command: 'echo',
+          isVisible: true,
+          isMinimized: false,
+          zIndex: 1,
+          position: { x: 0, y: 0 },
+          status: 'running',
+          exitStatus: null,
+          exitCode: null,
+          processStates: [],
+          processCount: 1
+        }
+      ];
+      mockAppState.infoPanelState = {
+        isVisible: true,
+        terminalData: { id: '1', title: 'ft', command: 'echo' },
+        position: { x: 0, y: 0 },
+        detailsOpen: false
+      };
+
+      render(<App />);
+
+      expect(screen.getByTestId('floating-terminal-1')).toBeInTheDocument();
+      expect(screen.getByTestId('tab-info-panel')).toBeInTheDocument();
+    });
+
+    test('renders notifications and modals when visible', () => {
+      mockAppState.appNotification = { isVisible: true, message: 'hi', type: 'info', autoCloseTime: 0 };
+      mockAppState.pendingFixVerification = { id: 'v' };
+      mockAppState.showImportStatusScreen = true;
+      mockAppState.isHealthReportVisible = true;
+
+      render(<App />);
+
+      expect(screen.getByTestId('notification')).toBeInTheDocument();
+      expect(screen.getByTestId('import-status-screen')).toBeInTheDocument();
+    });
+  });
+});
