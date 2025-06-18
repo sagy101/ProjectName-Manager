@@ -91,14 +91,8 @@ async function loadDisplaySettings() {
 
 // ==================== IPC HANDLERS ====================
 
-// Environment verification handlers
-ipcMain.handle('get-dropdown-options', async (event, config) => {
-  return await dropdownManagement.getDropdownOptions(config);
-});
-
-ipcMain.handle('precache-global-dropdowns', async () => {
-  return await dropdownManagement.precacheGlobalDropdowns();
-});
+// Setup modular IPC handlers
+dropdownManagement.setupDropdownIpcHandlers(ipcMain);
 
 ipcMain.handle('get-environment-verification', async () => {
   return environmentVerification.getEnvironmentVerification();
@@ -172,11 +166,7 @@ ipcMain.on('reload-app', (event) => {
   }
 });
 
-// Dropdown value changes
-ipcMain.on('dropdown-value-changed', (event, { dropdownId, value }) => {
-  console.log(`Dropdown value changed: ${dropdownId} = ${value}`);
-  dropdownManagement.handleDropdownValueChange(dropdownId, value);
-});
+
 
 // Git management
 ipcMain.handle('git-checkout-branch', async (event, { projectPath, branchName }) => {

@@ -29,6 +29,17 @@ const App = () => {
   // Initialize all state using custom hook
   const appState = useAppState();
 
+  // Create a callback for showAppNotification that will be available to useAppEffects
+  const showAppNotificationCallback = React.useCallback((message, type = 'info', autoCloseTime = 3000) => {
+    debugLog('App: showAppNotification called with:', { message, type, autoCloseTime });
+    appState.setAppNotification({
+      isVisible: true,
+      message,
+      type,
+      autoCloseTime
+    });
+  }, [appState.setAppNotification]);
+
   // Initialize effects and get triggerGitRefresh
   const { triggerGitRefresh } = useAppEffects({
     projectName: appState.projectName,
@@ -42,7 +53,8 @@ const App = () => {
     setLoadingProgress: appState.setLoadingProgress,
     setIsLoading: appState.setIsLoading,
     setAppNotification: appState.setAppNotification,
-    terminalRef: appState.terminalRef
+    terminalRef: appState.terminalRef,
+    showAppNotification: showAppNotificationCallback
   });
 
   // Initialize event handlers

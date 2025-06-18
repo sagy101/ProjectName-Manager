@@ -12,7 +12,8 @@ export const useAppEffects = ({
   setLoadingProgress,
   setIsLoading,
   setAppNotification,
-  terminalRef
+  terminalRef,
+  showAppNotification
 }) => {
   const triggerGitRefresh = useCallback(async () => {
     debugLog('App: Triggering targeted git status refresh...');
@@ -97,11 +98,36 @@ export const useAppEffects = ({
       }
     });
     
+    // Handle dropdown command execution results
+    const removeDropdownCommandListener = window.electron.onDropdownCommandExecuted((data) => {
+      debugLog('App: Received dropdown-command-executed event:', data);
+      const { dropdownId, value, result } = data;
+      
+      if (result.success) {
+        if (showAppNotification) {
+          showAppNotification(
+            `${dropdownId} updated to "${value}"${result.stdout ? ': ' + result.stdout : ''}`,
+            'success',
+            4000
+          );
+        }
+      } else {
+        if (showAppNotification) {
+          showAppNotification(
+            `Failed to update ${dropdownId}: ${result.error || 'Unknown error'}`,
+            'error',
+            6000
+          );
+        }
+      }
+    });
+    
     return () => {
       if (removeVerificationListener) removeVerificationListener();
       if (removeProgressListener) removeProgressListener();
       if (removeQuitListener) removeQuitListener();
       if (removeReloadListener) removeReloadListener();
+      if (removeDropdownCommandListener) removeDropdownCommandListener();
     };
   }, []); // Setup listener once
 

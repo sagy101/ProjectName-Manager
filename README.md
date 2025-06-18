@@ -1,6 +1,6 @@
 # {ProjectName} Manager
 
-> **Note:** The Electron app requires Node.js **22.16.0**. Terminal commands for Isolation Project can run on Node.js **15** or **16**. It is recommended to use [nvm](https://github.com/nvm-sh/nvm) to manage multiple Node.js versions. Once you have `nvm` installed, you can run `nvm use` in the project directory to automatically switch to the correct version for the Electron runtime.
+> **Note:** The Electron app requires Node.js **22.16.0**. Terminal commands for the Isolation projects can run on Node.js **15** or **16**. It is recommended to use [nvm](https://github.com/nvm-sh/nvm) to manage multiple Node.js versions. Once you have `nvm` installed, you can run `nvm use` in the project directory to automatically switch to the correct version for the Electron runtime.
 
 > The application has been tested on **macOS**. It should also work on **Linux**, though this has not been verified. Windows compatibility is not planned at this time.
 
@@ -9,7 +9,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-Latest-339933?style=flat&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux-lightgrey)](https://github.com/electron/electron)
 
-A powerful, modular desktop application for managing {ProjectName} environments with integrated terminal support, environment verification, and dynamic configuration management.
+A powerful, modular desktop application for managing Project environments with integrated terminal support, environment verification, and dynamic configuration management.
 
 This project is also an experiment in "vibe coding" mixed with solid code practices. I explored a variety of AI tools and language models to see how they complement traditional development. Details can be found in the [AI Coding Experiment](docs/llm-experiments.md) document.
 
@@ -17,7 +17,7 @@ This project is also an experiment in "vibe coding" mixed with solid code practi
 
 - **Dynamic Environment Verification**: JSON-configurable verification system for tools and dependencies
   - **Auto-Fix Commands**: One-click fix buttons for failed verifications with automatic re-validation
-- **Generic Dropdown Selectors**: Command-driven dropdowns with dependency chains and default value selection (e.g., gcloud projects, kubectl contexts)
+- **Generic Dropdown Selectors**: Command-driven dropdowns with dependency chains, default value selection, and automatic command execution on change (e.g., gcloud projects, kubectl contexts)
 - **Header Configuration**: Configurable environment section headers with integrated dropdowns
 - **Integrated Terminal**: Full PTY terminal support with tab management for main tasks
   - **Read-Only Main Terminals**: Main execution terminals are read-only by default for safety, with a debug option to enable input
@@ -65,8 +65,8 @@ This project is also an experiment in "vibe coding" mixed with solid code practi
 
 ```bash
 # Clone the repository
-git clone <repository-url>
-cd {project-name}-manager
+git clone https://github.com/sagy101/ProjectName-Manager.git
+cd ProjectName-Manager
 
 # Install dependencies
 npm install
@@ -145,11 +145,11 @@ Define the main section, any sub-sections, and components like `customButton`.
         "infoButton": true,
         "gitBranch": true,
         "deploymentOptions": true,
-                  "modeSelector": {
-            "options": ["run", "suspend"],
-            "labels": ["Run", "Suspend"],
-            "default": "suspend"
-          },
+        "modeSelector": {
+          "options": ["run", "suspend"],
+          "labels": ["Run", "Suspend"],
+          "default": "suspend"
+        },
         "attachToggle": {
           "enabled": true,
           "mutuallyExclusiveWith": ["other-section-id"]
@@ -352,56 +352,7 @@ Failed verifications can include fix commands that automatically attempt to reso
 - **Safety Features**: Close button disabled for 20 seconds to prevent accidental closure
 - **Smart Notifications**: Success/failure feedback after fix attempts
 
-<details>
-<summary><strong>Verification Types</strong></summary>
 
-### Command Success (`commandSuccess`)
-Checks if a command executes successfully:
-```json
-{
-  "id": "nodeInstalled",
-  "title": "Node.js installed",
-  "checkType": "commandSuccess",
-  "command": "node --version"
-}
-```
-
-### Output Contains (`outputContains`)
-Verifies command output contains specific text. Can also check for one of multiple values and capture the found value.
-```json
-{
-  "id": "nodeVersionCheck",
-  "title": "Node.js 15.x or 16.x",
-  "checkType": "outputContains",
-  "command": "nvm ls",
-  "expectedValue": ["v15.", "v16."],
-  "versionId": "nodeVersion",
-  "outputStream": "stderr"
-}
-```
-
-### Environment Variable Checks
-```json
-{
-  "id": "homeSet",
-  "title": "$HOME environment variable set",
-  "checkType": "envVarExists",
-  "variableName": "HOME"
-}
-```
-
-### Path Existence
-```json
-{
-  "id": "projectDir",
-  "title": "Project directory exists",
-  "checkType": "pathExists",
-  "pathValue": "./my-project",
-  "pathType": "directory"
-}
-```
-
-</details>
 
 For complete verification reference, see [docs/verification-types.md](docs/verification-types.md).
 
@@ -448,7 +399,7 @@ When any debug options are active, the gear icon will show an orange border.
 
 **Execution Modes**
 - **No Run Mode**: Commands are displayed but not executed in both main and floating terminals.
-- **Terminal Input Mode**: Toggle the main tabbed terminals between read-only (default) and writable. Disabled when an {ProjectName} configuration is running.
+- **Terminal Input Mode**: Toggle the main tabbed terminals between read-only (default) and writable. Disabled when a {ProjectName} configuration is running.
 
 ## 🛠️ Development
 
@@ -521,7 +472,7 @@ This will print more verbose logs to the developer console, which can be helpful
 
 ### Main Terminals Not Accepting Input
 - Main terminals are read-only by default.
-- Enable input via Debug Tools: App Control Sidebar -> Gear Icon -> "Terminals Read-Only" button. This is disabled if an {ProjectName} is running.
+- Enable input via Debug Tools: App Control Sidebar -> Gear Icon -> "Terminals Read-Only" button. This is disabled if a {ProjectName} configuration is running.
 
 </details>
 

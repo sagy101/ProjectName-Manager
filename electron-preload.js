@@ -7,6 +7,7 @@ const eventListeners = {
   'process-ended': [],
   'process-killed': [],
   'backend-progress': [],
+  'dropdown-command-executed': [],
   'pty-output': {} // Changed to an object to store listeners by terminalId
 };
 
@@ -25,7 +26,7 @@ contextBridge.exposeInMainWorld('electron', {
   // Generic dropdown functions
   getDropdownOptions: (config) => ipcRenderer.invoke('get-dropdown-options', config),
   precacheGlobalDropdowns: () => ipcRenderer.invoke('precache-global-dropdowns'),
-  dropdownValueChanged: (dropdownId, value) => ipcRenderer.send('dropdown-value-changed', { dropdownId, value }),
+      dropdownValueChanged: (dropdownId, value, globalDropdownValues) => ipcRenderer.send('dropdown-value-changed', { dropdownId, value, globalDropdownValues }),
 
   onBackendProgress: (callback) => {
     const wrapperFn = (event, data) => callback(data);
@@ -284,6 +285,26 @@ contextBridge.exposeInMainWorld('electron', {
     ipcRenderer.on('stop-all-containers-before-reload', wrapperFn);
     return () => {
       ipcRenderer.removeListener('stop-all-containers-before-reload', wrapperFn);
+    };
+  },
+
+  // Dropdown command execution event handler
+  onDropdownCommandExecuted: (callback) => {
+    const wrapperFn = (event, data) => callback(data);
+    eventListeners['dropdown-command-executed'].push({
+      callback: callback,
+      wrapper: wrapperFn
+    });
+    ipcRenderer.on('dropdown-command-executed', wrapperFn);
+    
+    return () => {
+      ipcRenderer.removeListener('dropdown-command-executed', wrapperFn);
+      const index = eventListeners['dropdown-command-executed'].findIndex(
+        listener => listener.wrapper === wrapperFn
+      );
+      if (index !== -1) {
+        eventListeners['dropdown-command-executed'].splice(index, 1);
+      }
     };
   }
 }); 

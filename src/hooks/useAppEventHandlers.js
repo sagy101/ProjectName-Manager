@@ -85,12 +85,18 @@ export const useAppEventHandlers = ({
   // Callback to handle dropdown value changes from any global selector
   const handleGlobalDropdownChange = useCallback((dropdownId, value) => {
     debugLog(`App: Global dropdown '${dropdownId}' changed to:`, value);
-    setGlobalDropdownValues(prev => ({ ...prev, [dropdownId]: value }));
     
-    // Notify backend about dropdown value change for cache management
-    if (window.electron && window.electron.dropdownValueChanged) {
-      window.electron.dropdownValueChanged(dropdownId, value);
-    }
+    // Update the state first to get the updated values
+    setGlobalDropdownValues(prev => {
+      const updatedValues = { ...prev, [dropdownId]: value };
+      
+      // Notify backend about dropdown value change for cache management and commandOnChange
+      if (window.electron && window.electron.dropdownValueChanged) {
+        window.electron.dropdownValueChanged(dropdownId, value, updatedValues);
+      }
+      
+      return updatedValues;
+    });
   }, [setGlobalDropdownValues]);
 
   return {
