@@ -237,4 +237,6 @@ const ProjectConfiguration = forwardRef(({ projectName, globalDropdownValues, te
   );
 });
 
+ProjectConfiguration.displayName = 'ProjectConfiguration';
+
 export default ProjectConfiguration;

@@ -234,4 +234,6 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
   );
 });
 
+TerminalContainer.displayName = 'TerminalContainer';
+
 export default TerminalContainer; 
