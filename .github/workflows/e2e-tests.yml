@@ -325,13 +325,22 @@ jobs:
           echo "$NON_PASSING_DETAILS" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
+      - name: Find Test Summary Comment
+        uses: peter-evans/find-comment@v3
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- GITHUB_ACTION_TEST_SUMMARY -->'
+
       - name: Post PR comment with E2E test summary
         uses: peter-evans/create-or-update-comment@v4
         with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
-          comment-title: "🔎 Test Summary"
           edit-mode: append
           body: |
+            ${{ steps.fc.outputs.comment-id == '' && '<!-- GITHUB_ACTION_TEST_SUMMARY -->\n\n## 🔎 Test Summary\n' || '' }}
             ### 🧪 E2E Tests Results
             
             ${{ env.E2E_STATUS }} - ${{ env.E2E_SUCCESS_PERCENTAGE }}% success rate (threshold: 85%)

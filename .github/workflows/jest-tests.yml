@@ -59,13 +59,23 @@ jobs:
         with:
           name: jest-mock-coverage
           path: coverage/mock/
+
+      - name: Find Test Summary Comment
+        uses: peter-evans/find-comment@v3
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- GITHUB_ACTION_TEST_SUMMARY -->'
+
       - name: Post PR comment with mock test summary
         uses: peter-evans/create-or-update-comment@v4
         with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
-          comment-title: "🔎 Test Summary"
           edit-mode: append
           body: |
+            ${{ steps.fc.outputs.comment-id == '' && '<!-- GITHUB_ACTION_TEST_SUMMARY -->\n\n## 🔎 Test Summary\n' || '' }}
             ### Jest Mock Coverage
             
             📊 **Test Results:** ${{ env.MOCK_TESTS_PASSED }}/${{ env.MOCK_TESTS_TOTAL }} passed
@@ -137,13 +147,23 @@ jobs:
         with:
           name: jest-prod-coverage
           path: coverage/prod/
+
+      - name: Find Test Summary Comment
+        uses: peter-evans/find-comment@v3
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- GITHUB_ACTION_TEST_SUMMARY -->'
+
       - name: Post PR comment with prod test summary
         uses: peter-evans/create-or-update-comment@v4
         with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
-          comment-title: "🔎 Test Summary"
           edit-mode: append
           body: |
+            ${{ steps.fc.outputs.comment-id == '' && '<!-- GITHUB_ACTION_TEST_SUMMARY -->\n\n## 🔎 Test Summary\n' || '' }}
             ### Jest Prod Coverage
             
             📊 **Test Results:** ${{ env.PROD_TESTS_PASSED }}/${{ env.PROD_TESTS_TOTAL }} passed

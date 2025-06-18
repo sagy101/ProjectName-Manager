@@ -40,6 +40,7 @@ jobs:
           npm run lint 2>&1 | tee eslint-output.txt || true
 
       - name: Extract ESLint Results
+        id: eslint-results
         run: |
           # Find the problems summary line (e.g., "✖ 38 problems (0 errors, 38 warnings)")
           PROBLEMS_LINE=$(grep -E "problems \(" eslint-output.txt | head -1 || echo "")
@@ -48,16 +49,25 @@ jobs:
           echo "ESLINT_ERRORS=$ERRORS" >> $GITHUB_ENV
           echo "ESLINT_WARNINGS=$WARNINGS" >> $GITHUB_ENV
 
+      - name: Find Test Summary Comment
+        uses: peter-evans/find-comment@v3
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- GITHUB_ACTION_TEST_SUMMARY -->'
+
       - name: Post PR comment with ESLint summary
         uses: peter-evans/create-or-update-comment@v4
         with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
-          comment-title: "🔎 Test Summary"
           edit-mode: append
           body: |
+            ${{ steps.fc.outputs.comment-id == '' && '<!-- GITHUB_ACTION_TEST_SUMMARY -->\n\n## 🔎 Test Summary\n' || '' }}
             ### ESLint Results
-            
-            ✏️ **${{ env.ESLINT_ERRORS }} errors, ${{ env.ESLINT_WARNINGS }} warnings**
+            - ❌ Errors: ${{ env.ESLINT_ERRORS }}
+            - ⚠️ Warnings: ${{ env.ESLINT_WARNINGS }}
 
       - name: Fail job if ESLint errors detected
         if: always()
