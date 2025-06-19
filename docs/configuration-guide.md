@@ -277,7 +277,7 @@ To define a custom button, add a `customButton` object to the `components` array
 
 ### Linking to Commands:
 
-The `commandId` from your `customButton` configuration maps to an entry in `src/configurationSidebarCommands.json`. In this file, you need an object where the `sectionId` property matches your `customButton.commandId`.
+The `commandId` from your `customButton` configuration maps to an entry in `src/configurationSidebarCommands.json`. In this file, you need an object where the `id` property matches your `customButton.commandId`.
 
 This command object defines:
 -   `command.base` (string): The actual shell command to be executed in the floating terminal.
@@ -316,7 +316,7 @@ Let's say you want to add a button to the "alpha + MariaDB" section to quickly v
 [
   // ... other commands ...
   {
-    "sectionId": "alphaLogViewerCommand",
+    "id": "alphaLogViewerCommand",
     "command": {
       "base": "tail -f /var/log/alpha.log", // Example command
       "tabTitle": "alpha Logs"
@@ -378,14 +378,14 @@ Contains section descriptions and verification definitions.
 
 **File**: `src/configurationSidebarCommands.json`
 
-Defines command generation logic for each top-level section and also for individual sub-sections if they need to run their own commands in separate tabs. The `sectionId` in a command definition should match an `id` from `configurationSidebarSections.json` (for a top-level section) or a `subSection.id` (for a sub-section within a top-level section).
+Defines command generation logic for each top-level section and also for individual sub-sections if they need to run their own commands in separate tabs. The command `id` should match an `id` from `configurationSidebarSections.json` (for a top-level section) or a `subSection.id` (for a sub-section within a top-level section).
 
 Commands should be defined using separate command objects for each variant. This approach provides better reliability, maintainability, and clarity.
 
 ```json
 [
   {
-    "sectionId": "your-section",
+    "id": "your-section",
     "conditions": {
       "enabled": true,
       "deploymentType": "container"
@@ -397,7 +397,7 @@ Commands should be defined using separate command objects for each variant. This
     }
   },
   {
-    "sectionId": "your-section", 
+    "id": "your-section",
     "conditions": {
       "enabled": true,
       "deploymentType": "process"
@@ -412,7 +412,7 @@ Commands should be defined using separate command objects for each variant. This
 ```
 
 **Command Structure**:
-- `sectionId`: ID of the section or sub-section (must match an ID from `configurationSidebarSections.json`)
+- `id`: ID of the section or sub-section (must match an ID from `configurationSidebarSections.json`)
 - `conditions`: Object with condition properties that must all be true for the command to be generated
 - `command`: Command configuration object
 
@@ -497,7 +497,7 @@ To add a new section:
 2. **Add to `configurationSidebarAbout.json`**:
    ```json
    {
-     "sectionId": "my-new-section",
+     "id": "my-new-section",
      "directoryPath": "my-new-section",
      "description": "Description of my new section.",
      "verifications": []
@@ -514,10 +514,10 @@ To add a new section:
    ```
 
 3. **Add to `configurationSidebarCommands.json`**:
-   Define command logic. The `sectionId` here can be the ID of your new top-level section, or the ID of a sub-section if it needs its own command tab.
+   Define command logic. The `id` here can be the ID of your new top-level section, or the ID of a sub-section if it needs its own command tab.
    ```json
    {
-     "sectionId": "my-new-section",
+     "id": "my-new-section",
      "conditions": {
        "enabled": true
      },
@@ -566,7 +566,7 @@ This will:
 ## Best Practices
 
 ### Naming Conventions
-- Use kebab-case for `sectionId` in JSON files
+- Use kebab-case for `id` in JSON files
 - Use camelCase for state property names (automatically converted)
 - Use descriptive, unique IDs for verifications and commands
 
@@ -592,7 +592,7 @@ This will:
 
 ### Common Issues
 
-1. **Section not appearing**: Check that `sectionId` matches across all three configuration files
+1. **Section not appearing**: Check that the `id` matches across all three configuration files
 2. **Commands not generating**: Verify condition expressions and state property names
 3. **Verifications failing**: Test verification commands manually and check paths
 4. **UI components not working**: Ensure component definitions are valid JSON

@@ -256,7 +256,7 @@ describe('ConfigSection', () => {
         };
 
         const mockCommands = [{
-            "sectionId": "testAnalyticsLogCommand",
+            "id": "testAnalyticsLogCommand",
             "command": {
                 "base": "tail -f /var/log/analytics.log",
                 "tabTitle": "Analytics Logs"
@@ -308,7 +308,7 @@ describe('ConfigSection', () => {
         };
 
         const mockCommands = [{
-            sectionId: 'childLogCommand',
+            id: 'childLogCommand',
             command: {
                 base: 'echo child log',
                 tabTitle: 'Child Logs'
