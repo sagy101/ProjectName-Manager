@@ -180,63 +180,7 @@ function generateCommandList(config, globalDropdowns, {
       finalCommand = command.prefix + finalCommand;
     }
 
-    finalCommand = finalCommand.replace(/\${(\w+)}/g, (match, varName) => {
-      if (discoveredVersions[varName]) {
-        return discoveredVersions[varName];
-      }
-      let replacementValue = match;
-      let found = false;
-
-      let parentSectionId = null;
-      let subSectionConfigObjectName = null;
-      const currentCommandSectionIsSubSection = configSidebarSectionsActual.some(s => {
-        if (s.components?.subSections?.some(sub => sub.id === cmdSectionId)) {
-          parentSectionId = s.id;
-          subSectionConfigObjectName = `${cmdSectionId.replace(/-sub$/, '')}Config`;
-          return true;
-        }
-        return false;
-      });
-
-      if (currentCommandSectionIsSubSection && parentSectionId) {
-        if (config[parentSectionId]?.[varName] !== undefined) {
-          replacementValue = config[parentSectionId][varName];
-          found = true;
-        } else if (subSectionConfigObjectName && config[parentSectionId]?.[subSectionConfigObjectName]?.[varName] !== undefined) {
-          replacementValue = config[parentSectionId][subSectionConfigObjectName][varName];
-          found = true;
-        }
-      } else {
-        if (config[cmdSectionId]?.[varName] !== undefined) {
-          replacementValue = config[cmdSectionId][varName];
-          found = true;
-        }
-      }
-
-      if (!found && globalDropdowns?.[varName] !== undefined) {
-        replacementValue = globalDropdowns[varName];
-        found = true;
-      }
-
-      if (!found && varName === 'mode') {
-        let modeValue;
-        if (currentCommandSectionIsSubSection && parentSectionId && subSectionConfigObjectName) {
-          modeValue = config[parentSectionId]?.[subSectionConfigObjectName]?.mode;
-        } else {
-          modeValue = config[cmdSectionId]?.mode;
-        }
-        
-        if (typeof modeValue === 'object' && modeValue !== null) {
-            replacementValue = modeValue.value || match;
-        } else {
-            replacementValue = modeValue || match;
-        }
-
-        if (replacementValue !== match) found = true;
-      }
-
-      return replacementValue;
-    });
+    finalCommand = substituteCommandVariables(finalCommand, discoveredVersions, globalDropdowns, config, cmdSectionId, configSidebarSectionsActual);
 
     let tabTitle = command.tabTitle;
     if (typeof tabTitle === 'object') {
@@ -342,4 +286,50 @@ function generateCommandList(config, globalDropdowns, {
   return commands;
 }
 
-module.exports = { evaluateCondition, generateCommandList };
+function substituteCommandVariables(command, discoveredVersions = {}, globalDropdowns = {}, config = {}, cmdSectionId = null, configSidebarSectionsActual = []) {
+  if (!command) return '';
+
+  return command.replace(/\${(\w+)}/g, (match, varName) => {
+    if (discoveredVersions[varName]) {
+      return discoveredVersions[varName];
+    }
+    if (globalDropdowns[varName]) {
+      return globalDropdowns[varName];
+    }
+    if (cmdSectionId) {
+      let replacementValue = match;
+      let found = false;
+
+      let parentSectionId = null;
+      let subSectionConfigObjectName = null;
+      const currentCommandSectionIsSubSection = configSidebarSectionsActual.some(s => {
+        if (s.components?.subSections?.some(sub => sub.id === cmdSectionId)) {
+          parentSectionId = s.id;
+          subSectionConfigObjectName = `${cmdSectionId.replace(/-sub$/, '')}Config`;
+          return true;
+        }
+        return false;
+      });
+
+      if (currentCommandSectionIsSubSection && parentSectionId) {
+        if (config[parentSectionId]?.[varName] !== undefined) {
+          replacementValue = config[parentSectionId][varName];
+          found = true;
+        } else if (subSectionConfigObjectName && config[parentSectionId]?.[subSectionConfigObjectName]?.[varName] !== undefined) {
+          replacementValue = config[parentSectionId][subSectionConfigObjectName][varName];
+          found = true;
+        }
+      } else {
+        if (config[cmdSectionId]?.[varName] !== undefined) {
+          replacementValue = config[cmdSectionId][varName];
+          found = true;
+        }
+      }
+      
+      if (found) return replacementValue;
+    }
+    return match; // Return original if no substitution found
+  });
+}
+
+module.exports = { evaluateCondition, generateCommandList, substituteCommandVariables };

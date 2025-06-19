@@ -20,6 +20,13 @@
           "labels": ["Run", "Suspend"],
           "default": "run"
         },
+        "customButtons": [
+          {
+            "id": "runStorybookButton",
+            "label": "Run Storybook",
+            "commandId": "runStorybook"
+          }
+        ],
         "subSections": [
           {
             "id": "frontend",
