@@ -24,12 +24,12 @@ process.on('message', (msg) => {
 
 process.on('SIGTERM', () => {
   cleanup();
-  process.exit(0);
+  process.exit(0); // eslint-disable-line n/no-process-exit
 });
 
 process.on('SIGINT', () => {
   cleanup();
-  process.exit(0);
+  process.exit(0); // eslint-disable-line n/no-process-exit
 });
 
 process.on('exit', cleanup);

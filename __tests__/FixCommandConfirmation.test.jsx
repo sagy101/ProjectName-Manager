@@ -1,7 +1,7 @@
 /** @jest-environment jsdom */
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
-import FixCommandConfirmation from '../src/components/FixCommandConfirmation.jsx';
+import FixCommandConfirmation from '../src/project-config/FixCommandConfirmation.jsx';
 
 describe('FixCommandConfirmation Component', () => {
   const verification = { id: 'test', title: 'Test', fixCommand: 'echo hello' };

@@ -3,7 +3,7 @@ jest.mock('child_process', () => ({
 }));
 
 const child_process = require('child_process');
-const containerManagement = require('../src/main/containerManagement');
+const containerManagement = require('../src/main-process/containerManagement');
 const {
   getContainerStatus,
   listContainers,

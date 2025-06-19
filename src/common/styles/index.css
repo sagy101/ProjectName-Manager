@@ -1,0 +1,15 @@
+/* Import all component styles */
+@import './global.css';
+@import '../../tab-info/styles/tabs.css';
+@import '../../terminal/terminal.css';
+@import '../../project-config/styles/config.css';
+@import './toggle.css';
+@import '../../project-config/styles/deployment.css';
+@import '../../project-config/styles/run-button.css';
+@import './selector.css';
+@import './dropdown-selector.css';
+@import '../../loading-screen/styles/loading-screen.css';
+@import '../../environment-verification/environment-verification.css';
+@import '../../tab-info/styles/tab-info-panel.css';
+@import '../../project-config/styles/fix-command-confirmation.css';
+@import '../../import-status-screen/styles/import-status-screen.css';

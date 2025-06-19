@@ -1,8 +1,8 @@
 /** @jest-environment jsdom */
 import React from 'react';
 import { render, fireEvent, act } from '@testing-library/react';
-import AutoSetupScreen from '../src/components/AutoSetupScreen.jsx';
-import { AUTO_SETUP_STATUS, COMMAND_EXECUTION_STATUS } from '../src/constants/autoSetupConstants';
+import AutoSetupScreen from '../src/auto-setup/AutoSetupScreen.jsx';
+import { AUTO_SETUP_STATUS, COMMAND_EXECUTION_STATUS } from '../src/auto-setup/constants/autoSetupConstants';
 
 // helper command
 const baseCommand = { id: 'c1', title: 'Cmd1', category: 'Cat', source: 'general' };

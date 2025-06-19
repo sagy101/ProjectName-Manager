@@ -1,8 +1,8 @@
 const { app, ipcMain, dialog, BrowserWindow } = require('electron');
 const path = require('path');
 const { exec } = require('child_process');
-const { generateCommandList } = require('./src/utils/evalUtils');
-const { debugLog } = require('./src/utils/debugUtils');
+const { generateCommandList } = require('./src/common/utils/evalUtils');
+const { debugLog } = require('./src/common/utils/debugUtils');
 
 // Make debugLog available globally for any modules that might expect it
 global.debugLog = debugLog;
@@ -20,16 +20,16 @@ if (process.env.NODE_ENV === 'test') {
 }
 
 // Import our modular components
-const environmentVerification = require('./src/main/environmentVerification');
-const gitManagement = require('./src/main/gitManagement');
-const dropdownManagement = require('./src/main/dropdownManagement');
-const ptyManagement = require('./src/main/ptyManagement');
-const containerManagement = require('./src/main/containerManagement');
-const configurationManagement = require('./src/main/configurationManagement');
-const windowManagement = require('./src/main/windowManagement');
+const environmentVerification = require('./src/main-process/environmentVerification');
+const gitManagement = require('./src/main-process/gitManagement');
+const dropdownManagement = require('./src/main-process/dropdownManagement');
+const ptyManagement = require('./src/main-process/ptyManagement');
+const containerManagement = require('./src/main-process/containerManagement');
+const configurationManagement = require('./src/main-process/configurationManagement');
+const windowManagement = require('./src/main-process/windowManagement');
 
 // Import shared constants
-const { projectSelectorFallbacks } = require('./src/constants/selectors');
+const { projectSelectorFallbacks } = require('./src/environment-verification/constants/selectors');
 
 let mainWindow; // This will be managed by windowManagement module
 
@@ -162,8 +162,11 @@ ipcMain.on('reload-app', (event) => {
     // Give some time for containers to stop, then reload
     setTimeout(() => {
       mainWindow.reload();
-    }, 1000);
+    }, 4000);
+    return true;
   }
+  
+  return false; // Return false if mainWindow doesn't exist or if setTimeout times out
 });
 
 
@@ -213,7 +216,7 @@ ipcMain.on('process-exited', (event, data) => {
 
 // ==================== APP LIFECYCLE ====================
 
-app.whenReady().then(async () => {
+app.whenReady().then(async () => { // eslint-disable-line promise/always-return
   console.log('=== APPLICATION STARTUP ===');
   console.log('1. Loading display settings...');
   const displaySettings = await loadDisplaySettings();
@@ -231,9 +234,14 @@ app.whenReady().then(async () => {
     }
   } catch (error) {
     console.error('Error during initial environment verification:', error);
+    return false;
   }
 
   // Initial dropdown data will be fetched on demand from frontend
+  return true;
+}).catch(error => {
+  console.error('Error during app initialization:', error);
+  return false;
 });
 
 app.on('window-all-closed', () => {
@@ -244,8 +252,18 @@ app.on('window-all-closed', () => {
 
 app.on('activate', async () => {
   if (BrowserWindow.getAllWindows().length === 0) {
-    const displaySettings = await loadDisplaySettings();
-    createWindow(displaySettings);
+    try {
+      const displaySettings = await loadDisplaySettings();
+      const window = createWindow(displaySettings);
+      if (!window) {
+        console.error('Failed to create window on activate');
+        return false;
+      }
+    } catch (error) {
+      console.error('Error creating window on activate:', error);
+      return false;
+    }
+    return true;
   }
 });
 
@@ -266,6 +284,7 @@ app.on('will-quit', async (event) => {
     
     // Wait a bit for containers to stop
     await new Promise(resolve => setTimeout(resolve, 2000));
+    return true;
   }
   
   // Now really quit

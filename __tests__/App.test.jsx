@@ -16,7 +16,7 @@ jest.mock('react', () => {
   };
 });
 
-jest.mock('../src/hooks/useConfigurationManagement', () => ({
+jest.mock('../src/project-config/hooks/useConfigurationManagement', () => ({
   useConfigurationManagement: () => ({
     handleExportConfig: jest.fn(),
     handleImportConfig: jest.fn(),
@@ -25,7 +25,7 @@ jest.mock('../src/hooks/useConfigurationManagement', () => ({
   }),
 }));
 
-jest.mock('../src/hooks/useFloatingTerminals', () => ({
+jest.mock('../src/floating-terminal/useFloatingTerminals', () => ({
   useFloatingTerminals: () => ({
     showFloatingTerminal: jest.fn(),
     focusFloatingTerminal: jest.fn(),
@@ -42,7 +42,7 @@ jest.mock('../src/hooks/useFloatingTerminals', () => ({
   }),
 }));
 
-jest.mock('../src/hooks/useAppEventHandlers', () => ({
+jest.mock('../src/common/hooks/useAppEventHandlers', () => ({
   useAppEventHandlers: () => ({
     handleVerificationStatusChange: jest.fn(),
     handleToggleTestSections: jest.fn(),
@@ -59,7 +59,7 @@ jest.mock('../src/hooks/useAppEventHandlers', () => ({
   }),
 }));
 
-jest.mock('../src/hooks/useAppEffects', () => ({
+jest.mock('../src/common/hooks/useAppEffects', () => ({
   useAppEffects: () => ({}),
 }));
 
@@ -127,11 +127,11 @@ const mockAppState = {
   initializeVerificationStatuses: jest.fn()
 };
 
-jest.mock('../src/hooks/useAppState', () => ({
+jest.mock('../src/common/hooks/useAppState', () => ({
   useAppState: () => mockAppState,
 }));
 
-jest.mock('../src/hooks/useHealthReport', () => ({
+jest.mock('../src/health-report/useHealthReport', () => ({
   __esModule: true,
   default: () => ({
     healthStatus: 'green',
@@ -144,7 +144,7 @@ jest.mock('../src/hooks/useHealthReport', () => ({
   }),
 }));
 
-jest.mock('../src/hooks/useFixCommands', () => ({
+jest.mock('../src/project-config/hooks/useFixCommands', () => ({
   useFixCommands: () => ({
     handleFixCommand: jest.fn(),
     handleFixCommandComplete: jest.fn(),
@@ -153,7 +153,7 @@ jest.mock('../src/hooks/useFixCommands', () => ({
 }));
 
 // Mock all child components to focus on App logic
-jest.mock('../src/components/ProjectConfiguration', () => {
+jest.mock('../src/project-config/ProjectConfiguration', () => {
   const mockReact = require('react');
   return mockReact.forwardRef((props, ref) => {
     mockReact.useImperativeHandle(ref, () => ({
@@ -164,7 +164,7 @@ jest.mock('../src/components/ProjectConfiguration', () => {
   });
 });
 
-jest.mock('../src/components/TerminalContainer', () => {
+jest.mock('../src/terminal/components/TerminalContainer', () => {
   const mockReact = require('react');
   return mockReact.forwardRef((props, ref) => {
     mockReact.useImperativeHandle(ref, () => ({
@@ -175,37 +175,37 @@ jest.mock('../src/components/TerminalContainer', () => {
   });
 });
 
-jest.mock('../src/components/EnvironmentVerification', () => {
+jest.mock('../src/environment-verification/EnvironmentVerification', () => {
   const mockReact = require('react');
   return (props) => mockReact.createElement('div', { 'data-testid': 'environment-verification' }, 'EnvironmentVerification');
 });
 
-jest.mock('../src/components/LoadingScreen', () => {
+jest.mock('../src/loading-screen/LoadingScreen', () => {
   const mockReact = require('react');
-  return (props) => mockReact.createElement('div', { 'data-testid': 'loading-screen' }, `Loading: ${props.statusMessage}`);
+  return (props) => props.progress < 100 ? mockReact.createElement('div', { 'data-testid': 'loading-screen' }, 'LoadingScreen') : null;
 });
 
-jest.mock('../src/components/Notification', () => {
+jest.mock('../src/common/components/Notification', () => {
   const mockReact = require('react');
   return (props) => props.isVisible ? mockReact.createElement('div', { 'data-testid': 'notification' }, props.message) : null;
 });
 
-jest.mock('../src/components/FloatingTerminal', () => {
+jest.mock('../src/floating-terminal/FloatingTerminal', () => {
   const mockReact = require('react');
   return (props) => props.isVisible ? mockReact.createElement('div', { 'data-testid': `floating-terminal-${props.id}` }, 'FloatingTerminal') : null;
 });
 
-jest.mock('../src/components/AppControlSidebar', () => {
+jest.mock('../src/project-config/AppControlSidebar', () => {
   const mockReact = require('react');
   return (props) => mockReact.createElement('div', { 'data-testid': 'app-control-sidebar' }, 'AppControlSidebar');
 });
 
-jest.mock('../src/components/TabInfoPanel', () => {
+jest.mock('../src/tab-info/components/TabInfoPanel', () => {
   const mockReact = require('react');
   return (props) => mockReact.createElement('div', { 'data-testid': 'tab-info-panel' }, 'TabInfoPanel');
 });
 
-jest.mock('../src/components/ImportStatusScreen', () => {
+jest.mock('../src/import-status-screen/ImportStatusScreen', () => {
   const mockReact = require('react');
   return (props) => props.isVisible ? mockReact.createElement('div', { 'data-testid': 'import-status-screen' }, 'ImportStatusScreen') : null;
 });
@@ -342,7 +342,7 @@ describe('App Component - Comprehensive Tests', () => {
       mockAppState.isLoading = true;
       render(<App />);
       expect(screen.getByTestId('loading-screen')).toBeInTheDocument();
-      expect(screen.getByText(/Loading:/)).toBeInTheDocument();
+      expect(screen.getByText('LoadingScreen')).toBeInTheDocument();
     });
 
     test('should complete loading and show main app components', async () => {

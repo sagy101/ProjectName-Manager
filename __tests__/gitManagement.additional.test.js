@@ -3,7 +3,7 @@ const child_process = require('child_process');
 
 jest.mock('child_process', () => ({ exec: jest.fn() }));
 
-const git = require('../src/main/gitManagement');
+const git = require('../src/main-process/gitManagement');
 const {
   getGitBranch,
   clearGitBranchCache,

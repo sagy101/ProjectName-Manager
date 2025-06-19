@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import DeploymentOptions from '../src/components/DeploymentOptions.jsx';
+import DeploymentOptions from '../src/project-config/DeploymentOptions.jsx';
 
 describe('DeploymentOptions', () => {
   const defaultProps = {

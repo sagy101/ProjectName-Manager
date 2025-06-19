@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import TabInfoPanel from '../../src/components/TabInfoPanel.jsx';
+import TabInfoPanel from '../../src/tab-info/components/TabInfoPanel.jsx';
 
 /** @jest-environment jsdom */
 

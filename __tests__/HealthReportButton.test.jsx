@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import HealthReportButton from '../src/components/HealthReportButton';
+import HealthReportButton from '../src/health-report/HealthReportButton';
 
 describe('HealthReportButton', () => {
   const mockOnOpenHealthReport = jest.fn();

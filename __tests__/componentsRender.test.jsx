@@ -2,27 +2,27 @@
 
 import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react';
-import AppControlSidebar from '../src/components/AppControlSidebar.jsx';
-import AttachToggle from '../src/components/AttachToggle.jsx';
-import ConfigSection from '../src/components/ConfigSection.jsx';
+import AppControlSidebar from '../src/project-config/AppControlSidebar.jsx';
+import AttachToggle from '../src/project-config/AttachToggle.jsx';
+import ConfigSection from '../src/project-config/ConfigSection.jsx';
 
-import DeploymentOptions from '../src/components/DeploymentOptions.jsx';
-import DropdownSelector from '../src/components/DropdownSelector.jsx';
-import EnvironmentVerification from '../src/components/EnvironmentVerification.jsx';
-import FloatingTerminal from '../src/components/FloatingTerminal.jsx';
-import GitBranchSwitcher from '../src/components/GitBranchSwitcher.jsx';
-import ImportStatusScreen from '../src/components/ImportStatusScreen.jsx';
-import ProjectConfiguration from '../src/components/ProjectConfiguration.jsx';
-import LoadingScreen from '../src/components/LoadingScreen.jsx';
-import Notification from '../src/components/Notification.jsx';
-import StoppingStatusScreen from '../src/components/StoppingStatusScreen.jsx';
-import TabInfoPanel from '../src/components/TabInfoPanel.jsx';
-import TerminalComponent from '../src/components/Terminal.jsx';
-import TerminalContainer from '../src/components/TerminalContainer.jsx';
-import TerminalTab from '../src/components/TerminalTab.jsx';
-import Toggle from '../src/components/Toggle.jsx';
-import VerificationIndicator from '../src/components/VerificationIndicator.jsx';
-import sectionsData from '../src/configurationSidebarSections.json';
+import DeploymentOptions from '../src/project-config/DeploymentOptions.jsx';
+import DropdownSelector from '../src/common/components/DropdownSelector.jsx';
+import EnvironmentVerification from '../src/environment-verification/EnvironmentVerification.jsx';
+import FloatingTerminal from '../src/floating-terminal/FloatingTerminal.jsx';
+import GitBranchSwitcher from '../src/project-config/GitBranchSwitcher.jsx';
+import ImportStatusScreen from '../src/import-status-screen/ImportStatusScreen.jsx';
+import ProjectConfiguration from '../src/project-config/ProjectConfiguration.jsx';
+import LoadingScreen from '../src/loading-screen/LoadingScreen.jsx';
+import Notification from '../src/common/components/Notification.jsx';
+import StoppingStatusScreen from '../src/stopping-status/StoppingStatusScreen.jsx';
+import TabInfoPanel from '../src/tab-info/components/TabInfoPanel.jsx';
+import TerminalComponent from '../src/terminal/components/Terminal.jsx';
+import TerminalContainer from '../src/terminal/components/TerminalContainer.jsx';
+import TerminalTab from '../src/terminal/components/TerminalTab.jsx';
+import Toggle from '../src/common/components/Toggle.jsx';
+import VerificationIndicator from '../src/environment-verification/VerificationIndicator.jsx';
+import sectionsData from './mock-data/mockConfigurationSidebarSections.json';
 
 jest.mock('@xterm/xterm', () => ({
   Terminal: jest.fn().mockImplementation(() => ({

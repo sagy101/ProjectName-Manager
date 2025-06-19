@@ -1,6 +1,6 @@
 /** @jest-environment jsdom */
 import { renderHook } from '@testing-library/react';
-import { useTitleOverflow } from '../src/hooks/useTitleOverflow';
+import { useTitleOverflow } from '../src/tab-info/hooks/useTitleOverflow';
 
 global.ResizeObserver = class {
   constructor(cb){ this.cb=cb; }

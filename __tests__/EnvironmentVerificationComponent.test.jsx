@@ -1,7 +1,7 @@
 /** @jest-environment jsdom */
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
-import EnvironmentVerification from '../src/components/EnvironmentVerification.jsx';
+import EnvironmentVerification from '../src/environment-verification/EnvironmentVerification.jsx';
 
 window.electron = {
   refreshEnvironmentVerification: jest.fn().mockResolvedValue({}),

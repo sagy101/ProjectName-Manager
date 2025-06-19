@@ -2,7 +2,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import LoadingScreen from '../src/components/LoadingScreen.jsx';
+import LoadingScreen from '../src/loading-screen/LoadingScreen.jsx';
 
 describe('LoadingScreen', () => {
   test('shows appropriate default status based on progress', () => {

@@ -11,7 +11,7 @@ jest.mock('fs', () => {
   };
 });
 
-const dropdown = require('../src/main/dropdownManagement');
+const dropdown = require('../src/main-process/dropdownManagement');
 const {
   getDropdownOptions,
   precacheGlobalDropdowns,

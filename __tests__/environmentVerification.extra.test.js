@@ -45,7 +45,7 @@ describe('environmentVerification additional checks', () => {
     setupConfig(config);
     const mockedFs = require('fs');
     mockedFs.promises.stat.mockResolvedValue({ isFile: () => true, isDirectory: () => false });
-    const envVerify = require('../src/main/environmentVerification');
+    const envVerify = require('../src/main-process/environmentVerification');
     const results = await envVerify.verifyEnvironment();
     expect(results.general.statuses.v1).toBe('valid');
     expect(results.general.statuses.v2).toBe('valid');
@@ -71,7 +71,7 @@ describe('environmentVerification additional checks', () => {
     setupConfig(config);
     const mockedFs = require('fs');
     mockedFs.promises.stat.mockRejectedValue(new Error('nope'));
-    const envVerify = require('../src/main/environmentVerification');
+    const envVerify = require('../src/main-process/environmentVerification');
     const results = await envVerify.verifyEnvironment();
     expect(results.general.statuses.x1).toBe('invalid');
     expect(results.general.statuses.x2).toBe('invalid');
@@ -90,7 +90,7 @@ test('rerunSingleVerification returns failure when not found', async () => {
     if (p.includes('configurationSidebarAbout.json')) return Promise.resolve('[]');
     return Promise.reject(new Error('unknown path'));
   });
-  const envVerify = require('../src/main/environmentVerification');
+  const envVerify = require('../src/main-process/environmentVerification');
   await envVerify.verifyEnvironment();
   const res = await envVerify.rerunSingleVerification('missing');
   expect(res.success).toBe(false);
@@ -115,7 +115,7 @@ test('verifyEnvironment processes sidebar section verifications', async () => {
   mockedFs.promises.stat.mockResolvedValue({ isFile: () => true, isDirectory: () => false });
   const { exec } = require('child_process');
   exec.mockImplementation((cmd, opts, cb) => cb(null, 'ok', ''));
-  const envVerify = require('../src/main/environmentVerification');
+  const envVerify = require('../src/main-process/environmentVerification');
   await envVerify.refreshEnvironmentVerification();
   const res = await envVerify.verifyEnvironment();
   expect(res.sec1.p1).toBe('valid');

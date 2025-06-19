@@ -1,27 +1,27 @@
 import React from 'react';
-import ProjectConfiguration from './components/ProjectConfiguration';
-import TerminalContainer from './components/TerminalContainer';
-import EnvironmentVerification from './components/EnvironmentVerification';
-import LoadingScreen from './components/LoadingScreen';
-import Notification from './components/Notification';
-import FloatingTerminal from './components/FloatingTerminal';
-import AppControlSidebar from './components/AppControlSidebar';
-import TabInfoPanel from './components/TabInfoPanel';
-import ImportStatusScreen from './components/ImportStatusScreen';
-import HealthReportScreen from './components/HealthReportScreen';
-import AutoSetupScreen from './components/AutoSetupScreen';
-import FixCommandConfirmation from './components/FixCommandConfirmation';
-import './styles/app.css';
+import ProjectConfiguration from './project-config/ProjectConfiguration';
+import TerminalContainer from './terminal/components/TerminalContainer';
+import EnvironmentVerification from './environment-verification/EnvironmentVerification';
+import LoadingScreen from './loading-screen/LoadingScreen';
+import Notification from './common/components/Notification';
+import FloatingTerminal from './floating-terminal/FloatingTerminal';
+import AppControlSidebar from './project-config/AppControlSidebar';
+import TabInfoPanel from './tab-info/components/TabInfoPanel';
+import ImportStatusScreen from './import-status-screen/ImportStatusScreen';
+import HealthReportScreen from './health-report/HealthReportScreen';
+import AutoSetupScreen from './auto-setup/AutoSetupScreen';
+import FixCommandConfirmation from './project-config/FixCommandConfirmation';
+import './common/styles/app.css';
 
 // Import custom hooks
-import { useAppState } from './hooks/useAppState';
-import { useFloatingTerminals } from './hooks/useFloatingTerminals';
-import { useConfigurationManagement } from './hooks/useConfigurationManagement';
-import { useAppEventHandlers } from './hooks/useAppEventHandlers';
-import { useAppEffects } from './hooks/useAppEffects';
-import { useFixCommands } from './hooks/useFixCommands';
-import { useAutoSetup } from './hooks/useAutoSetup';
-import useHealthReport from './hooks/useHealthReport';
+import { useAppState } from './common/hooks/useAppState';
+import { useFloatingTerminals } from './floating-terminal/useFloatingTerminals';
+import { useConfigurationManagement } from './project-config/hooks/useConfigurationManagement';
+import { useAppEventHandlers } from './common/hooks/useAppEventHandlers';
+import { useAppEffects } from './common/hooks/useAppEffects';
+import { useFixCommands } from './project-config/hooks/useFixCommands';
+import { useAutoSetup } from './auto-setup/useAutoSetup';
+import useHealthReport from './health-report/useHealthReport';
 
 // Constants for sidebar dimensions
 const SIDEBAR_EXPANDED_WIDTH = 280; // From app-control-sidebar.css
@@ -121,7 +121,7 @@ const App = () => {
   const autoSetup = useAutoSetup({
     verificationStatuses: appState.verificationStatuses,
     generalVerificationConfig: appState.generalVerificationConfig,
-    configSidebarAbout: require('./configurationSidebarAbout.json'),
+    configSidebarAbout: require('./project-config/config/configurationSidebarAbout.json'),
     showTestSections: appState.showTestSections,
     onOpenFloatingTerminal: floatingTerminalHandlers.openFloatingTerminal,
     onCommandComplete: fixCommands.handleFixCommandComplete,

@@ -38,25 +38,25 @@ jest.mock('child_process', () => ({
 }));
 
 // Mock the modular components
-jest.mock('../src/main/environmentVerification', () => ({
+jest.mock('../src/main-process/environmentVerification', () => ({
   verifyEnvironment: jest.fn().mockResolvedValue({ success: true }),
   refreshEnvironmentVerification: jest.fn().mockResolvedValue({ success: true }),
   getEnvironmentVerification: jest.fn().mockResolvedValue({ success: true })
 }));
 
-jest.mock('../src/main/gitManagement', () => ({
+jest.mock('../src/main-process/gitManagement', () => ({
   checkoutGitBranch: jest.fn(),
   listLocalGitBranches: jest.fn(),
   clearGitBranchCache: jest.fn()
 }));
 
-jest.mock('../src/main/dropdownManagement', () => ({
+jest.mock('../src/main-process/dropdownManagement', () => ({
   fetchDropdownOptions: jest.fn(),
   executeDropdownCommand: jest.fn(),
   handleDropdownValueChange: jest.fn()
 }));
 
-jest.mock('../src/main/ptyManagement', () => ({
+jest.mock('../src/main-process/ptyManagement', () => ({
   spawnPTY: jest.fn(),
   writeToPTY: jest.fn(),
   resizePTY: jest.fn(),
@@ -64,19 +64,19 @@ jest.mock('../src/main/ptyManagement', () => ({
   killAllPTYProcesses: jest.fn()
 }));
 
-jest.mock('../src/main/containerManagement', () => ({
+jest.mock('../src/main-process/containerManagement', () => ({
   stopContainers: jest.fn(),
   getContainerStatus: jest.fn()
 }));
 
-jest.mock('../src/main/configurationManagement', () => ({
+jest.mock('../src/main-process/configurationManagement', () => ({
   loadDisplaySettings: jest.fn().mockResolvedValue({ success: true, displaySettings: {} }),
   getAboutConfig: jest.fn(),
   exportConfiguration: jest.fn(),
   importConfiguration: jest.fn()
 }));
 
-jest.mock('../src/main/windowManagement', () => ({
+jest.mock('../src/main-process/windowManagement', () => ({
   createWindow: jest.fn()
 }));
 
@@ -95,7 +95,7 @@ describe('Main Process Startup Bug Fixes', () => {
 
   test('should load display settings correctly', async () => {
     // This test verifies that display settings loading works correctly
-    const configurationManagement = require('../src/main/configurationManagement');
+    const configurationManagement = require('../src/main-process/configurationManagement');
     
     const result = await configurationManagement.loadDisplaySettings();
     expect(result.success).toBe(true);
@@ -107,7 +107,7 @@ describe('Main Process Startup Bug Fixes', () => {
     // The frontend expects configState, attachState, globalDropdownValues, gitBranches as top-level properties
     
     // Mock the actual configurationManagement module temporarily
-    jest.unmock('../src/main/configurationManagement');
+    jest.unmock('../src/main-process/configurationManagement');
     const { dialog } = require('electron');
     const fs = require('fs').promises;
     
@@ -134,7 +134,7 @@ describe('Main Process Startup Bug Fixes', () => {
     
     fs.readFile.mockResolvedValue(JSON.stringify(mockConfigData));
     
-    const configurationManagement = require('../src/main/configurationManagement');
+    const configurationManagement = require('../src/main-process/configurationManagement');
     const result = await configurationManagement.importConfiguration();
     
     // Should have top-level properties, not wrapped in 'data'
@@ -148,7 +148,7 @@ describe('Main Process Startup Bug Fixes', () => {
     expect(result.data).toBeUndefined();
     
     // Re-mock for other tests
-    jest.doMock('../src/main/configurationManagement', () => ({
+    jest.doMock('../src/main-process/configurationManagement', () => ({
       loadDisplaySettings: jest.fn().mockResolvedValue({ success: true, displaySettings: {} }),
       getAboutConfig: jest.fn(),
       exportConfiguration: jest.fn(),
@@ -158,7 +158,7 @@ describe('Main Process Startup Bug Fixes', () => {
 
   test('should handle import configuration when user cancels', async () => {
     // Test the cancel case
-    jest.unmock('../src/main/configurationManagement');
+    jest.unmock('../src/main-process/configurationManagement');
     const { dialog } = require('electron');
     
     dialog.showOpenDialog.mockResolvedValue({
@@ -166,14 +166,14 @@ describe('Main Process Startup Bug Fixes', () => {
       filePaths: []
     });
     
-    const configurationManagement = require('../src/main/configurationManagement');
+    const configurationManagement = require('../src/main-process/configurationManagement');
     const result = await configurationManagement.importConfiguration();
     
     expect(result.success).toBe(false);
     expect(result.canceled).toBe(true);
     
     // Re-mock for other tests
-    jest.doMock('../src/main/configurationManagement', () => ({
+    jest.doMock('../src/main-process/configurationManagement', () => ({
       loadDisplaySettings: jest.fn().mockResolvedValue({ success: true, displaySettings: {} }),
       getAboutConfig: jest.fn(),
       exportConfiguration: jest.fn(),
@@ -186,7 +186,7 @@ describe('Main Process Startup Bug Fixes', () => {
     // The GitBranchSwitcher component expects result.branch to update the UI
     
     // Mock the actual gitManagement module temporarily
-    jest.unmock('../src/main/gitManagement');
+    jest.unmock('../src/main-process/gitManagement');
     const { exec } = require('child_process');
     
     // Mock exec to simulate successful git checkout
@@ -203,7 +203,7 @@ describe('Main Process Startup Bug Fixes', () => {
     require('child_process').exec = mockExec;
     
     try {
-      const gitManagement = require('../src/main/gitManagement');
+      const gitManagement = require('../src/main-process/gitManagement');
       const result = await gitManagement.checkoutGitBranch('/test/project', 'test-branch');
       
       // Should return success and branch property
@@ -217,7 +217,7 @@ describe('Main Process Startup Bug Fixes', () => {
       require('child_process').exec = originalExec;
       
       // Re-mock the module for other tests
-      jest.doMock('../src/main/gitManagement', () => ({
+      jest.doMock('../src/main-process/gitManagement', () => ({
         checkoutGitBranch: jest.fn(),
         listLocalGitBranches: jest.fn(),
         clearGitBranchCache: jest.fn()
@@ -230,9 +230,9 @@ describe('Main Process Startup Bug Fixes', () => {
     // causing import config git branch switching to fail with "aboutConfig.forEach is not a function"
     
     // Mock the actual configurationManagement module temporarily
-    jest.unmock('../src/main/configurationManagement');
+    jest.unmock('../src/main-process/configurationManagement');
     
-    const configurationManagement = require('../src/main/configurationManagement');
+    const configurationManagement = require('../src/main-process/configurationManagement');
     const fs = require('fs').promises;
     
     // Mock fs.readFile to return valid config array
@@ -266,7 +266,7 @@ describe('Main Process Startup Bug Fixes', () => {
       fs.readFile = originalReadFile;
       
       // Re-mock the module for other tests
-      jest.doMock('../src/main/configurationManagement', () => ({
+      jest.doMock('../src/main-process/configurationManagement', () => ({
         loadDisplaySettings: jest.fn().mockResolvedValue({ success: true, displaySettings: {} }),
         getAboutConfig: jest.fn(),
         exportConfiguration: jest.fn(),

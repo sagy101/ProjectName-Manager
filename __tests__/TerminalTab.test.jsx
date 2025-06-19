@@ -1,9 +1,9 @@
 /** @jest-environment jsdom */
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
-import TerminalTab from '../src/components/TerminalTab';
+import TerminalTab from '../src/terminal/components/TerminalTab';
 
-jest.mock('../src/hooks/useTitleOverflow', () => ({
+jest.mock('../src/tab-info/hooks/useTitleOverflow', () => ({
   useTitleOverflow: jest.fn(() => false)
 }));
 
@@ -27,7 +27,7 @@ describe('TerminalTab', () => {
   });
 
   test('shows title attribute when overflowing', () => {
-    const useTitleOverflow = require('../src/hooks/useTitleOverflow').useTitleOverflow;
+    const useTitleOverflow = require('../src/tab-info/hooks/useTitleOverflow').useTitleOverflow;
     useTitleOverflow.mockReturnValueOnce(true);
     const { getByTestId } = render(
       <TerminalTab id={3} title="LongTitle" status="idle" active={false} onSelect={() => {}} onInfo={() => {}} />

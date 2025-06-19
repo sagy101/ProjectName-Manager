@@ -75,10 +75,10 @@ graph TB
     end
     
     subgraph "Configuration Files"
-        P[configurationSidebarSections.json<br/>UI Structure & Components]
-        Q[configurationSidebarCommands.json<br/>Command Generation Logic]
-        R[configurationSidebarAbout.json<br/>Descriptions & Info]
-        S[generalEnvironmentVerifications.json<br/>Tool Verification Config]
+        P[project-config/config/configurationSidebarSections.json]
+        Q[project-config/config/configurationSidebarCommands.json]
+        R[project-config/config/configurationSidebarAbout.json]
+        S[environment-verification/generalEnvironmentVerifications.json]
     end
     
     A -.->|IPC| I
@@ -91,7 +91,7 @@ graph TB
 
 ## Main Process Modular Architecture
 
-The main process has been refactored into a modular architecture for better maintainability, testing, and separation of concerns. Each module handles a specific domain of functionality:
+The main process has been refactored into a modular architecture for better maintainability, testing, and separation of concerns. Each module, located in `src/main-process/`, handles a specific domain of functionality:
 
 ### Core Modules
 
@@ -214,27 +214,43 @@ graph TB
 #### File Structure
 ```
 src/
-├── App.jsx (clean, modular composition)
-├── components/
-│   ├── AppControlSidebar.jsx (sidebar with integrated debug tools)
-│   └── AutoSetupScreen.jsx (auto setup interface)
-├── constants/
-│   └── autoSetupConstants.js (auto setup enums and config)
-├── utils/
-│   └── autoSetupUtils.js (auto setup utility functions)
-└── hooks/
-    ├── useAppState.js (App state management)
-    ├── useAppEffects.js (App side effects)
-    ├── useAppEventHandlers.js (App event handling)
-    ├── useFloatingTerminals.js (App terminal management)
-    ├── useConfigurationManagement.js (App configuration)
-    ├── useFixCommands.js (Fix commands & verification management)
-    ├── useAutoSetup.js (Auto Setup management)
-    ├── useTerminals.js (TerminalContainer hooks)
-    ├── useIpcListeners.js (IPC communication hooks)
-    ├── useProjectConfig.js (ProjectConfiguration hooks)
-    ├── useTabManagement.js (Tab management hooks)
-    └── useTitleOverflow.js (UI utility hooks)
+├── App.jsx
+├── main-process/             # Main process modules
+│   ├── configurationManagement.js
+│   ├── containerManagement.js
+│   ├── dropdownManagement.js
+│   ├── environmentVerification.js
+│   ├── gitManagement.js
+│   ├── mainUtils.js
+│   ├── ptyManagement.js
+│   └── windowManagement.js
+├── common/                   # Shared components, hooks, and styles
+│   ├── components/
+│   ├── hooks/
+│   └── styles/
+├── project-config/           # Project configuration UI and logic
+│   ├── components/           # (Now named with .jsx, e.g., ProjectConfiguration.jsx)
+│   ├── hooks/
+│   ├── styles/
+│   └── config/               # JSON configuration files
+│       ├── configurationSidebarAbout.json
+│       ├── configurationSidebarCommands.json
+│       └── configurationSidebarSections.json
+├── environment-verification/ # Environment verification UI and logic
+│   ├── constants/
+│   └── generalEnvironmentVerifications.json
+├── terminal/                 # Main terminal components and hooks
+│   ├── components/
+│   └── useTerminals.js
+├── floating-terminal/        # Floating terminal components and hooks
+├── auto-setup/               # Auto-setup feature components and hooks
+├── health-report/            # Health report feature components and hooks
+├── tab-info/                 # Tab info panel components and hooks
+├── loading-screen/           # Loading screen component and styles
+├── import-status-screen/     # Import status screen component and styles
+├── stopping-status/          # Stopping status screen component
+├── renderer.jsx              # Renderer process entry point
+└── styles.css                # Top-level CSS imports
 ```
 
 This separation of concerns makes the UI code easier to test, debug, and maintain.
@@ -254,14 +270,12 @@ The modular hook architecture enables better unit testing of individual concerns
 
 #### Broader Hook Ecosystem
 
-Beyond the App component refactoring, the project employs a comprehensive hook-based architecture throughout:
+Beyond the App component refactoring, the project employs a comprehensive hook-based architecture throughout, organized by feature:
 
-- **App-specific hooks**: The 6 hooks extracted from App.jsx for state, effects, events, terminals, configuration, and fix commands
-- **Component-specific hooks**: Other components like `ProjectConfiguration` and `TerminalContainer` use their own dedicated hooks (`useProjectConfig`, `useTerminals`, etc.)
-- **Shared utility hooks**: Common functionality like `useIpcListeners`, `useTabManagement`, and `useTitleOverflow` are reused across components
-- **Separation of concerns**: Each hook focuses on a specific domain (IPC communication, tab management, UI utilities)
-
-This creates a scalable architecture where complex logic is extracted into testable, reusable hooks while keeping components focused on rendering and composition.
+- **App-specific hooks**: The 6 core hooks extracted from `App.jsx` are now located in `src/common/hooks`, `src/floating-terminal`, `src/project-config/hooks`, and `src/auto-setup`.
+- **Feature-specific hooks**: Other components like `ProjectConfiguration` and `TerminalContainer` use their own dedicated hooks (`useProjectConfig`, `useTerminals`, etc.) located within their respective feature directories (e.g., `src/project-config/hooks/`, `src/terminal/`).
+- **Shared utility hooks**: Common functionality like `useIpcListeners` is located in `src/common/hooks` and reused across components.
+- **Separation of concerns**: Each hook focuses on a specific domain (IPC communication, tab management, UI utilities), and its location in the file system reflects its domain.
 
 ## Communication Flow
 
@@ -767,10 +781,10 @@ The entire application behavior is defined through JSON configuration files, ena
 
 ```mermaid
 graph TD
-    A[JSON Configuration Files] --> B[configurationSidebarSections.json]
-    A --> C[configurationSidebarCommands.json] 
-    A --> D[configurationSidebarAbout.json]
-    A --> E[generalEnvironmentVerifications.json]
+    A[JSON Configuration Files] --> B[project-config/config/configurationSidebarSections.json]
+    A --> C[project-config/config/configurationSidebarCommands.json] 
+    A --> D[project-config/config/configurationSidebarAbout.json]
+    A --> E[environment-verification/generalEnvironmentVerifications.json]
     
     B --> F[UI Structure]
     B --> G[Component Definitions]
@@ -808,10 +822,10 @@ graph TD
 
 | File | Purpose | Key Features |
 |------|---------|-------------|
-| `configurationSidebarSections.json` | UI structure and components | Sections, sub-sections, toggles, dropdowns, custom buttons |
-| `configurationSidebarCommands.json` | Command generation logic | Conditional commands, modifiers, container associations |
-| `configurationSidebarAbout.json` | Documentation and help | Section descriptions, verification details, help text |
-| `generalEnvironmentVerifications.json` | Environment verification | Tool checks, system requirements, validation rules |
+| `src/project-config/config/configurationSidebarSections.json` | UI structure and components | Sections, sub-sections, toggles, dropdowns, custom buttons |
+| `src/project-config/config/configurationSidebarCommands.json` | Command generation logic | Conditional commands, modifiers, container associations |
+| `src/project-config/config/configurationSidebarAbout.json` | Documentation and help | Section descriptions, verification details, help text |
+| `src/environment-verification/generalEnvironmentVerifications.json` | Environment verification | Tool checks, system requirements, validation rules |
 
 See [configuration-guide.md](configuration-guide.md) for detailed information.
 
@@ -937,6 +951,17 @@ The AppControlSidebar provides comprehensive tools for both regular operation an
 5. **Real-time Updates**: Live streaming of terminal output and status changes
 6. **State Management**: Centralized state with intelligent caching
 7. **Cleanup**: Graceful shutdown with container and process cleanup
+
+## Development Environment
+
+The project is configured with a robust ESLint setup to ensure code quality and prevent common errors. The configuration (`eslint.config.js`) includes plugins for:
+
+- **Imports (`eslint-plugin-import`)**: Validates module paths and prevents resolution errors.
+- **Promises (`eslint-plugin-promise`)**: Enforces best practices for handling Promises.
+- **Node.js (`eslint-plugin-n`)**: Enforces Node.js best practices and style.
+- **React & Jest**: Standard linting for React components and Jest tests.
+
+This setup was instrumental in identifying and fixing pathing issues after the major file restructure.
 
 ## Performance Characteristics
 

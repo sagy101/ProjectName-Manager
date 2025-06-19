@@ -28,7 +28,7 @@ jest.mock('os', () => {
 });
 
 const { exec } = require('child_process');
-const envVerify = require('../src/main/environmentVerification');
+const envVerify = require('../src/main-process/environmentVerification');
 const { execCommand, verifyEnvironment } = envVerify;
 
 beforeEach(() => {
@@ -81,7 +81,7 @@ describe('verifyEnvironment', () => {
     const { exec: mockedExec } = require('child_process');
     mockedExec.mockImplementation((cmd, opts, cb) => cb(null, 'hi\n', ''));
     
-    const { verifyEnvironment } = require('../src/main/environmentVerification');
+    const { verifyEnvironment } = require('../src/main-process/environmentVerification');
     const results = await verifyEnvironment();
     expect(results.general.statuses.v1).toBe('valid');
   });
@@ -138,7 +138,7 @@ describe('verifyEnvironment', () => {
       }
     });
 
-    const { verifyEnvironment } = require('../src/main/environmentVerification');
+    const { verifyEnvironment } = require('../src/main-process/environmentVerification');
     
     const result = await verifyEnvironment();
     
@@ -176,7 +176,7 @@ describe('additional environmentVerification functions', () => {
 
   test('refreshEnvironmentVerification re-runs verification and sends result', async () => {
     setupMocks();
-    const envVerify = require('../src/main/environmentVerification');
+    const envVerify = require('../src/main-process/environmentVerification');
     const mainWindow = { webContents: { send: jest.fn() } };
 
     const result = await envVerify.refreshEnvironmentVerification(mainWindow);
@@ -186,7 +186,7 @@ describe('additional environmentVerification functions', () => {
 
   test('getEnvironmentExportData returns caches and platform info', async () => {
     setupMocks();
-    const envVerify = require('../src/main/environmentVerification');
+    const envVerify = require('../src/main-process/environmentVerification');
     await envVerify.verifyEnvironment();
 
     const data = envVerify.getEnvironmentExportData();
@@ -197,7 +197,7 @@ describe('additional environmentVerification functions', () => {
 
   test('rerunSingleVerification updates single result', async () => {
     setupMocks();
-    const envVerify = require('../src/main/environmentVerification');
+    const envVerify = require('../src/main-process/environmentVerification');
     await envVerify.verifyEnvironment();
     const mainWindow = { webContents: { send: jest.fn() } };
 

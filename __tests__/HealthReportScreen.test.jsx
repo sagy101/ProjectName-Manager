@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import HealthReportScreen from '../src/components/HealthReportScreen';
+import HealthReportScreen from '../src/health-report/HealthReportScreen';
 
 // Mock ReactDOM.createPortal
 jest.mock('react-dom', () => ({
