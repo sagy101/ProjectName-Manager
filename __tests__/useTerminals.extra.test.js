@@ -1,10 +1,10 @@
 /** @jest-environment jsdom */
 import { renderHook, act } from '@testing-library/react';
-jest.mock('../src/utils/evalUtils', () => ({
+jest.mock('../src/common/utils/evalUtils', () => ({
   evaluateCommandCondition: jest.fn(() => true)
 }));
-import { useTerminals } from '../src/hooks/useTerminals';
-import { evaluateCommandCondition } from '../src/utils/evalUtils';
+import { useTerminals } from '../src/terminal/useTerminals';
+import { evaluateCommandCondition } from '../src/common/utils/evalUtils';
 
 describe('useTerminals extra scenarios', () => {
   beforeEach(() => {

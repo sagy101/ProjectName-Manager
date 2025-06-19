@@ -2,7 +2,7 @@
 const fs = require('fs').promises;
 const path = require('path');
 const os = require('os');
-const { resolveEnvVars, checkPathExists } = require('../src/main/mainUtils');
+const { resolveEnvVars, checkPathExists } = require('../src/main-process/mainUtils');
 
 describe('mainUtils additional', () => {
   test('resolveEnvVars returns input when not a string', () => {

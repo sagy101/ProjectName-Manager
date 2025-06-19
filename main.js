@@ -20,13 +20,13 @@ if (process.env.NODE_ENV === 'test') {
 }
 
 // Import our modular components
-const environmentVerification = require('./src/main/environmentVerification');
-const gitManagement = require('./src/main/gitManagement');
-const dropdownManagement = require('./src/main/dropdownManagement');
-const ptyManagement = require('./src/main/ptyManagement');
-const containerManagement = require('./src/main/containerManagement');
-const configurationManagement = require('./src/main/configurationManagement');
-const windowManagement = require('./src/main/windowManagement');
+const environmentVerification = require('./src/main-process/environmentVerification');
+const gitManagement = require('./src/main-process/gitManagement');
+const dropdownManagement = require('./src/main-process/dropdownManagement');
+const ptyManagement = require('./src/main-process/ptyManagement');
+const containerManagement = require('./src/main-process/containerManagement');
+const configurationManagement = require('./src/main-process/configurationManagement');
+const windowManagement = require('./src/main-process/windowManagement');
 
 // Import shared constants
 const { projectSelectorFallbacks } = require('./src/constants/selectors');

@@ -1,6 +1,6 @@
 /** @jest-environment jsdom */
 import { renderHook, act } from '@testing-library/react';
-import { useTabManagement } from '../src/hooks/useTabManagement';
+import { useTabManagement } from '../src/tab-info/hooks/useTabManagement';
 
 describe('useTabManagement hook', () => {
   test('toggleOverflowTabs toggles state', () => {

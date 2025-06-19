@@ -1,6 +1,6 @@
-const { collectFixCommands, calculateGroupStatus, generateAutoSetupTerminalId, canGroupStart } = require('../src/utils/autoSetupUtils');
-const { STATUS } = require('../src/constants/verificationConstants');
-const { DEFAULT_FIX_PRIORITY, SECTION_STATUS } = require('../src/constants/autoSetupConstants');
+const { collectFixCommands, calculateGroupStatus, generateAutoSetupTerminalId, canGroupStart } = require('../src/auto-setup/utils/autoSetupUtils');
+const { STATUS } = require('../src/environment-verification/constants/verificationConstants');
+const { DEFAULT_FIX_PRIORITY, SECTION_STATUS } = require('../src/auto-setup/constants/autoSetupConstants');
 
 describe('autoSetupUtils', () => {
   describe('collectFixCommands', () => {

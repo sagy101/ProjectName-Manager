@@ -1,10 +1,10 @@
 import { renderHook, act } from '@testing-library/react';
-import { useAutoSetup } from '../src/hooks/useAutoSetup';
-import { AUTO_SETUP_STATUS, COMMAND_EXECUTION_STATUS, SECTION_STATUS } from '../src/constants/autoSetupConstants';
-import * as autoSetupUtils from '../src/utils/autoSetupUtils';
+import { useAutoSetup } from '../src/auto-setup/useAutoSetup';
+import { AUTO_SETUP_STATUS, COMMAND_EXECUTION_STATUS, SECTION_STATUS } from '../src/auto-setup/constants/autoSetupConstants';
+import * as autoSetupUtils from '../src/auto-setup/utils/autoSetupUtils';
 
-jest.mock('../src/utils/autoSetupUtils', () => ({
-  ...jest.requireActual('../src/utils/autoSetupUtils'),
+jest.mock('../src/auto-setup/utils/autoSetupUtils', () => ({
+  ...jest.requireActual('../src/auto-setup/utils/autoSetupUtils'),
   collectFixCommands: jest.fn(() => []),
 }));
 

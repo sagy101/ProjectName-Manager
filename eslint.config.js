@@ -63,7 +63,7 @@ export default [
       "electron-preload.js",
       "configIO.js",
       "scripts/**/*.js",
-      "src/main/**/*.js",
+      "src/main-process/**/*.js",
       "src/utils/**/*.js",
       "test-utils/**/*.js"
     ],

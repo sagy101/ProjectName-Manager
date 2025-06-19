@@ -1,7 +1,7 @@
 jest.mock('child_process', () => ({ exec: jest.fn() }));
 const child_process = require('child_process');
 const os = require('os');
-const mod = require('../src/main/ptyManagement');
+const mod = require('../src/main-process/ptyManagement');
 const { getChildProcesses } = mod.__test__;
 
 describe('getChildProcesses', () => {

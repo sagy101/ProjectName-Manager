@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
-import './styles/index.css';
+import './styles.css';
 
 // Simple debug logger controlled by DEBUG_LOGS env var
 window.debugLog = (...args) => {

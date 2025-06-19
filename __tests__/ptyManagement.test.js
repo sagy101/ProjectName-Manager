@@ -27,7 +27,7 @@ const {
   getActivePTYProcesses,
   isPTYAvailable,
   interpretProcessState
-} = require('../src/main/ptyManagement');
+} = require('../src/main-process/ptyManagement');
 
 beforeEach(() => {
   pty.__data.last = null;
@@ -143,7 +143,7 @@ test('killProcess handles kill errors', () => {
 test('isPTYAvailable reflects missing spawn function', () => {
   jest.resetModules();
   jest.doMock('node-pty', () => ({}));
-  const mod = require('../src/main/ptyManagement');
+  const mod = require('../src/main-process/ptyManagement');
   expect(mod.isPTYAvailable()).toBe(false);
 });
 

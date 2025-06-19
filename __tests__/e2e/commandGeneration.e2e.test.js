@@ -1,8 +1,8 @@
 /** @jest-environment node */
 
-const { generateCommandList } = require('../../src/utils/evalUtils');
-const configSidebarCommands = require('../../src/configurationSidebarCommands.json');
-const { sections: configSidebarSectionsActual } = require('../../src/configurationSidebarSections.json');
+const { generateCommandList } = require('../../src/common/utils/evalUtils');
+const configSidebarCommands = require('../../src/project-config/config/configurationSidebarCommands.json');
+const { sections: configSidebarSectionsActual } = require('../../src/project-config/config/configurationSidebarSections.json');
 const { test, expect } = require('@playwright/test');
 const { launchElectron, getTimeout } = require('./test-helpers');
 

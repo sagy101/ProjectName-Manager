@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 const { launchElectron } = require('./test-helpers');
-const { sections } = require('../../src/configurationSidebarSections.json');
+const { sections } = require('../../src/project-config/config/configurationSidebarSections.json');
 
 test.describe('Sidebar Navigation', () => {
   let electronApp;

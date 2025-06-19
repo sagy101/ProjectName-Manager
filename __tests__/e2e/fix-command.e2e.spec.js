@@ -5,10 +5,10 @@ const { launchElectron, ensureAllVerificationsValid, getTimeout } = require('./t
 
 // Import configuration data to validate test scenarios
 const generalEnvironmentVerifications = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '../../src/generalEnvironmentVerifications.json'), 'utf8')
+  fs.readFileSync(path.join(__dirname, '../../src/environment-verification/generalEnvironmentVerifications.json'), 'utf8')
 );
 const configurationSidebarAbout = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '../../src/configurationSidebarAbout.json'), 'utf8')
+  fs.readFileSync(path.join(__dirname, '../../src/project-config/config/configurationSidebarAbout.json'), 'utf8')
 );
 
 // Define mock statuses to be used in tests

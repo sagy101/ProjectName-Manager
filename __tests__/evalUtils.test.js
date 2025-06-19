@@ -1,4 +1,4 @@
-const { evaluateCondition, generateCommandList } = require('../src/utils/evalUtils');
+const { evaluateCondition, generateCommandList } = require('../src/common/utils/evalUtils');
 
 describe('evaluateCondition', () => {
   test('evaluates boolean expression with config and globals', () => {

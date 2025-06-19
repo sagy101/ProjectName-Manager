@@ -19,7 +19,7 @@ const {
   exportConfiguration,
   importConfiguration,
   saveConfiguration
-} = require('../src/main/configurationManagement');
+} = require('../src/main-process/configurationManagement');
 
 const { exportConfigToFile, importConfigFromFile } = require('../configIO');
 

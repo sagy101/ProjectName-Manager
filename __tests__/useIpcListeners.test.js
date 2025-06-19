@@ -1,7 +1,7 @@
 /** @jest-environment jsdom */
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
-import { useIpcListeners } from '../src/hooks/useIpcListeners';
+import { useIpcListeners } from '../src/common/hooks/useIpcListeners';
 
 describe('useIpcListeners', () => {
   let callbacks;

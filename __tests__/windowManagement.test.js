@@ -39,7 +39,7 @@ jest.mock('electron', () => ({
   BrowserWindow: jest.fn((options) => new MockBrowserWindow(options))
 }));
 
-const wm = require('../src/main/windowManagement');
+const wm = require('../src/main-process/windowManagement');
 const {
   createWindow,
   openDevTools,

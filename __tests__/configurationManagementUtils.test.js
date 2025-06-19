@@ -5,7 +5,7 @@ const {
   validateConfiguration,
   loadSectionConfiguration,
   checkConfigurationFiles
-} = require('../src/main/configurationManagement');
+} = require('../src/main-process/configurationManagement');
 
 describe('configurationManagement utilities', () => {
   test('validateConfiguration detects errors', () => {

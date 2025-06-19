@@ -2,25 +2,25 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-import ConfigSection from '../src/components/ConfigSection.jsx';
-import sectionsData from '../src/configurationSidebarSections.json';
-import aboutData from '../src/configurationSidebarAbout.json';
-import commandsData from '../src/configurationSidebarCommands.json';
+import ConfigSection from '../src/project-config/ConfigSection.jsx';
+import sectionsData from './mock-data/mockConfigurationSidebarSections.json';
+import aboutData from './mock-data/mockConfigurationSidebarAbout.json';
+import commandsData from './mock-data/mockConfigurationSidebarCommands.json';
 
 // --- Mocks ---
 // Mock all child components to isolate ConfigSection and prevent module errors.
 // Each mock is a simple, resilient functional component.
-jest.mock('../src/components/Toggle', () => (props) => {
+jest.mock('../src/common/components/Toggle', () => (props) => {
     const { id, checked, onChange, disabled } = props || {};
     return <input type="checkbox" data-testid={id} defaultChecked={checked} onChange={(e) => onChange && onChange(e.target.checked)} disabled={disabled} />;
 });
 
-jest.mock('../src/components/AttachToggle', () => (props) => {
+jest.mock('../src/project-config/AttachToggle', () => (props) => {
     const { id, isAttached, onToggle, isWarning, disabled } = props || {};
     return <button data-testid={id} onClick={() => onToggle && onToggle(!isAttached)} disabled={disabled}>{isWarning ? 'Warning' : (isAttached ? 'Attached' : 'Detached')}</button>;
 });
 
-jest.mock('../src/components/DeploymentOptions', () => (props) => {
+jest.mock('../src/project-config/DeploymentOptions', () => (props) => {
     const { sectionId, currentType, onChange, disabled } = props || {};
     return (
         <div data-testid={`deployment-options-${sectionId}`}>
@@ -30,7 +30,7 @@ jest.mock('../src/components/DeploymentOptions', () => (props) => {
     );
 });
 
-jest.mock('../src/components/ModeSelector', () => (props) => {
+jest.mock('../src/project-config/ModeSelector', () => (props) => {
     const { sectionId, options = [], labels = [], currentMode, onModeChange, disabled, showAppNotification } = props || {};
     return (
         <div data-testid={`mode-selector-${sectionId}`}>
@@ -61,7 +61,7 @@ jest.mock('../src/components/ModeSelector', () => (props) => {
     );
 });
 
-jest.mock('../src/components/DropdownSelector', () => (props) => {
+jest.mock('../src/common/components/DropdownSelector', () => (props) => {
     const { id, onChange, disabled } = props || {};
     return (
         <select data-testid={`dropdown-${id}`} onChange={(e) => onChange(e.target.value)} disabled={disabled}>
@@ -72,12 +72,12 @@ jest.mock('../src/components/DropdownSelector', () => (props) => {
     );
 });
 
-jest.mock('../src/components/GitBranchSwitcher', () => (props) => {
+jest.mock('../src/project-config/GitBranchSwitcher', () => (props) => {
     const { currentBranch, disabled } = props || {};
     return <div data-testid="git-branch-switcher" data-disabled={disabled}>Branch: {currentBranch}</div>;
 });
 
-jest.mock('../src/components/VerificationIndicator', () => (props) => {
+jest.mock('../src/environment-verification/VerificationIndicator', () => (props) => {
     const { label } = props || {};
     return <div data-testid="verification-indicator">{label}</div>;
 });

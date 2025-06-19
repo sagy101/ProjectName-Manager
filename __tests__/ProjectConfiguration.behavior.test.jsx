@@ -3,18 +3,18 @@ import React, { createRef } from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react';
 
 // Mock child components to isolate ProjectConfiguration logic
-jest.mock('../src/components/ConfigSection', () => () => <div data-testid="config-section" />);
-jest.mock('../src/components/Notification', () => props => props.isVisible ? <div data-testid="notification">{props.message}</div> : null);
-jest.mock('../src/components/StoppingStatusScreen', () => props => props.isVisible ? <div data-testid="stopping">Stopping</div> : null);
-jest.mock('../src/components/RunButton', () => props => <button data-testid="run-btn" disabled={props.disabled} onClick={props.onClick}>Run</button>);
+jest.mock('../src/project-config/ConfigSection', () => () => <div data-testid="config-section" />);
+jest.mock('../src/common/components/Notification', () => props => props.isVisible ? <div data-testid="notification">{props.message}</div> : null);
+jest.mock('../src/stopping-status/StoppingStatusScreen', () => props => props.isVisible ? <div data-testid="stopping">Stopping</div> : null);
+jest.mock('../src/project-config/RunButton', () => props => <button data-testid="run-btn" disabled={props.disabled} onClick={props.onClick}>Run</button>);
 
 // Mock generateCommandList to return a deterministic command list
-jest.mock('../src/utils/evalUtils', () => ({
+jest.mock('../src/common/utils/evalUtils', () => ({
   generateCommandList: jest.fn(() => [{ command: 'echo 1', sectionId: 'sec1', tabTitle: 'T1' }])
 }));
 
 // Mock useProjectConfig hook
-jest.mock('../src/hooks/useProjectConfig', () => ({
+jest.mock('../src/project-config/hooks/useProjectConfig', () => ({
   useProjectConfig: () => ({
     configState: { sec1: { enabled: true } },
     attachState: {},
@@ -30,8 +30,8 @@ jest.mock('../src/hooks/useProjectConfig', () => ({
   })
 }));
 
-import ProjectConfiguration from '../src/components/ProjectConfiguration.jsx';
-import { generateCommandList } from '../src/utils/evalUtils';
+import ProjectConfiguration from '../src/project-config/ProjectConfiguration.jsx';
+import { generateCommandList } from '../src/common/utils/evalUtils';
 
 describe('ProjectConfiguration run logic', () => {
   const setup = () => {

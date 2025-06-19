@@ -1,4 +1,4 @@
-const { debugLog } = require('../src/utils/debugUtils');
+const { debugLog } = require('../src/common/utils/debugUtils');
 
 beforeEach(() => {
   jest.restoreAllMocks();

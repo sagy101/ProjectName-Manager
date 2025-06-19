@@ -4,7 +4,7 @@ const { launchElectron, waitForElement, ensureAllVerificationsValid, getTimeout 
 const isMock = process.env.E2E_ENV === 'mock';
 const config = isMock
   ? require('../mock-data/mockConfigurationSidebarSections.json')
-  : require('../../src/configurationSidebarSections.json');
+  : require('../../src/project-config/config/configurationSidebarSections.json');
 
 const { sections, displaySettings } = config;
 

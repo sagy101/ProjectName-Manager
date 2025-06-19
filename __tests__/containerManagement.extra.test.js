@@ -7,7 +7,7 @@ const {
   listContainers,
   stopContainers,
   removeContainers
-} = require('../src/main/containerManagement');
+} = require('../src/main-process/containerManagement');
 
 describe('containerManagement additional', () => {
   beforeEach(() => {
@@ -85,7 +85,7 @@ describe('containerManagement additional', () => {
   });
 
   test('getContainerStatus unknown for missing name', async () => {
-    const mod = require('../src/main/containerManagement');
+    const mod = require('../src/main-process/containerManagement');
     const status = await mod.getContainerStatus('');
     expect(status).toBe('unknown');
   });

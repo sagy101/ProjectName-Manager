@@ -75,12 +75,12 @@ jest.mock('../configIO', () => ({
   importConfigFromFile: jest.fn()
 }));
 
-jest.mock('../src/main/mainUtils', () => ({
+jest.mock('../src/main-process/mainUtils', () => ({
   resolveEnvVars: jest.fn(),
   checkPathExists: jest.fn()
 }));
 
-jest.mock('../src/constants/selectors', () => ({
+jest.mock('../src/environment-verification/constants/selectors', () => ({
   projectSelectorFallbacks: []
 }));
 
@@ -141,7 +141,7 @@ describe('Main Process Tests', () => {
       fs.readFile.mockResolvedValue(minimalConfig);
       exec.mockImplementation((cmd, opts, cb) => cb(null, '', ''));
 
-      const env = require('../src/main/environmentVerification');
+      const env = require('../src/main-process/environmentVerification');
       const { verifyEnvironment } = env;
 
       await verifyEnvironment();
@@ -163,7 +163,7 @@ describe('Main Process Tests', () => {
     });
 
     test('should resolve environment variables in commands', () => {
-      const { resolveEnvVars } = require('../src/main/mainUtils');
+      const { resolveEnvVars } = require('../src/main-process/mainUtils');
       resolveEnvVars.mockReturnValue('/resolved/path');
       
       const result = resolveEnvVars('$HOME/test');
@@ -188,7 +188,7 @@ describe('Main Process Tests', () => {
 
     test('caches git branch lookups', async () => {
       const { exec } = require('child_process');
-      const git = require('../src/main/gitManagement');
+      const git = require('../src/main-process/gitManagement');
 
       exec.mockImplementation((cmd, opts, cb) => cb(null, 'main\n', ''));
 
@@ -243,7 +243,7 @@ describe('Main Process Tests', () => {
     });
 
     test('clears dropdown cache entries', async () => {
-      const dropdown = require('../src/main/dropdownManagement');
+      const dropdown = require('../src/main-process/dropdownManagement');
       const { exec } = require('child_process');
 
       exec.mockImplementation((cmd, opts, cb) => cb(null, 'one\n', ''));
@@ -257,7 +257,7 @@ describe('Main Process Tests', () => {
     });
 
     test('waits while dropdown options load', async () => {
-      const dropdown = require('../src/main/dropdownManagement');
+      const dropdown = require('../src/main-process/dropdownManagement');
       const { exec } = require('child_process');
 
       exec.mockImplementation((cmd, opts, cb) => setTimeout(() => cb(null, 'x', ''), 50));
@@ -299,7 +299,7 @@ describe('Main Process Tests', () => {
 
     test('tracks active PTY processes', () => {
       const pty = require('node-pty');
-      const ptyMgmt = require('../src/main/ptyManagement');
+      const ptyMgmt = require('../src/main-process/ptyManagement');
 
       pty.spawn.mockReturnValue({ pid: 1, write: jest.fn(), kill: jest.fn(), on: jest.fn(), onData: jest.fn(), onExit: jest.fn() });
 
@@ -312,7 +312,7 @@ describe('Main Process Tests', () => {
 
     test('cleans up PTY processes', () => {
       const pty = require('node-pty');
-      const ptyMgmt = require('../src/main/ptyManagement');
+      const ptyMgmt = require('../src/main-process/ptyManagement');
 
       pty.spawn.mockReturnValue({ pid: 2, write: jest.fn(), kill: jest.fn(), on: jest.fn(), onData: jest.fn(), onExit: jest.fn() });
 
@@ -324,7 +324,7 @@ describe('Main Process Tests', () => {
 
     test('handles architecture mismatch errors', () => {
       const pty = require('node-pty');
-      const ptyMgmt = require('../src/main/ptyManagement');
+      const ptyMgmt = require('../src/main-process/ptyManagement');
 
       pty.spawn.mockImplementation(() => { throw new Error('arch'); });
 
@@ -358,7 +358,7 @@ describe('Main Process Tests', () => {
 
     test('parses container status output', async () => {
       const { exec } = require('child_process');
-      const cm = require('../src/main/containerManagement');
+      const cm = require('../src/main-process/containerManagement');
 
       exec.mockImplementation((cmd, opts, cb) => cb(null, 'running\n', ''));
       const status = await cm.getContainerStatus('c1');
@@ -434,7 +434,7 @@ describe('Main Process Tests', () => {
     });
 
     test('attaches focus and blur handlers', () => {
-      const wm = require('../src/main/windowManagement');
+      const wm = require('../src/main-process/windowManagement');
       wm.createWindow();
 
       expect(mockBrowserWindowInstance.on).toHaveBeenCalledWith('focus', expect.any(Function));
@@ -455,7 +455,7 @@ describe('Main Process Tests', () => {
 
     test('tracks running processes', () => {
       const pty = require('node-pty');
-      const ptyMgmt = require('../src/main/ptyManagement');
+      const ptyMgmt = require('../src/main-process/ptyManagement');
 
       pty.spawn.mockReturnValue({ pid: 10, write: jest.fn(), kill: jest.fn(), on: jest.fn(), onData: jest.fn(), onExit: jest.fn() });
 
@@ -466,7 +466,7 @@ describe('Main Process Tests', () => {
     });
 
     test('process error handling for missing PTY', () => {
-      const ptyMgmt = require('../src/main/ptyManagement');
+      const ptyMgmt = require('../src/main-process/ptyManagement');
       const window = { webContents: { send: jest.fn() } };
 
       expect(() => ptyMgmt.killProcess('none', window)).not.toThrow();
@@ -528,7 +528,7 @@ describe('Main Process Tests', () => {
     });
 
     test('logs when opening dev tools', () => {
-      const wm = require('../src/main/windowManagement');
+      const wm = require('../src/main-process/windowManagement');
       wm.createWindow();
       const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
       wm.openDevTools();
@@ -537,13 +537,13 @@ describe('Main Process Tests', () => {
     });
 
     test('module loading error handling logs failure', () => {
-      expect(() => require('../src/main/does-not-exist')).toThrow();
+      expect(() => require('../src/main-process/does-not-exist')).toThrow();
     });
   });
 
   describe('Cache Management', () => {
     test('dropdown cache stats reflect entries', async () => {
-      const dropdown = require('../src/main/dropdownManagement');
+      const dropdown = require('../src/main-process/dropdownManagement');
       const { exec } = require('child_process');
 
       exec.mockImplementation((cmd, opts, cb) => cb(null, 'a', ''));
@@ -562,7 +562,7 @@ describe('Main Process Tests', () => {
       const { exec } = require('child_process');
       fs.readFile.mockResolvedValue(JSON.stringify({ header: {}, categories: [] }));
       exec.mockImplementation((cmd, opts, cb) => cb(null, '', ''));
-      const env = require('../src/main/environmentVerification');
+      const env = require('../src/main-process/environmentVerification');
       await env.verifyEnvironment();
       const first = env.getEnvironmentVerification();
       await env.refreshEnvironmentVerification();
@@ -572,7 +572,7 @@ describe('Main Process Tests', () => {
 
     test('cache clearing removes git branch cache', async () => {
       const { exec } = require('child_process');
-      const git = require('../src/main/gitManagement');
+      const git = require('../src/main-process/gitManagement');
 
       exec.mockImplementation((cmd, opts, cb) => cb(null, 'main\n', ''));
       await git.getGitBranch('repo');
@@ -583,7 +583,7 @@ describe('Main Process Tests', () => {
     });
 
     test('cache invalidation on dropdown change', async () => {
-      const dropdown = require('../src/main/dropdownManagement');
+      const dropdown = require('../src/main-process/dropdownManagement');
       const { exec } = require('child_process');
 
       exec.mockImplementation((cmd, opts, cb) => cb(null, 'b', ''));
