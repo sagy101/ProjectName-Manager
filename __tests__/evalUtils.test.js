@@ -48,22 +48,22 @@ describe('generateCommandList', () => {
   ];
   const commands = [
     {
-      sectionId: 'sectionA',
+      id: 'sectionA',
       conditions: { enabled: true, 'attachState.sectionA': false },
       command: { base: 'cmdA', tabTitle: 'A' }
     },
     {
-      sectionId: 'sectionA',
+      id: 'sectionA',
       conditions: { enabled: true, 'attachState.sectionA': true },
       command: { base: 'cmdA-debug', tabTitle: 'A debug' }
     },
     {
-      sectionId: 'sectionB',
+      id: 'sectionB',
       conditions: { enabled: true, mode: 'dev' },
       command: { base: 'cmdB-dev', tabTitle: 'B dev' }
     },
     {
-      sectionId: 'sectionB',
+      id: 'sectionB',
       conditions: { enabled: true, deploymentType: 'container' },
       command: { base: 'cmdB-container', tabTitle: 'B container' }
     }
@@ -139,7 +139,7 @@ test('handles associated container conditions and strings', () => {
   const sections = [{ id: 'sec', title: 'Sec', components: {} }];
   const commands = [
     {
-      sectionId: 'sec',
+      id: 'sec',
       command: {
         base: 'run',
         tabTitle: 'T',
@@ -178,7 +178,7 @@ test('produces error for enabled sub-section when no matching command', () => {
   }];
   const commands = [
     {
-      sectionId: 'child-sub',
+      id: 'child-sub',
       conditions: { enabled: false },
       command: { base: 'cmd', tabTitle: 'child' }
     }
@@ -198,7 +198,7 @@ test('handles prefixes, final appends and conditional tab titles', () => {
   const sections = [{ id: 'sec', title: 'Sec', components: {} }];
   const commands = [
     {
-      sectionId: 'sec',
+      id: 'sec',
       conditions: { enabled: true },
       command: {
         base: 'run ${version} ${mode}',
@@ -233,7 +233,7 @@ test('generateCommandList resolves placeholders from multiple sources', () => {
   ];
   const commands = [
     {
-      sectionId: 'child-sub',
+      id: 'child-sub',
       command: { base: 'run ${var} ${mode} ${ver} ${g}', tabTitle: 'T' }
     }
   ];

@@ -1,6 +1,6 @@
 [
   {
-    "sectionId": "generic-section-1",
+    "id": "generic-section-1",
     "conditions": {
       "enabled": true,
       "mode": "run"
@@ -11,7 +11,7 @@
     }
   },
   {
-    "sectionId": "generic-subsection-1",
+    "id": "generic-subsection-1",
     "conditions": {
       "generic-section-1Config.enabled": true,
       "generic-subsection-1Config.enabled": true,
@@ -23,7 +23,7 @@
     }
   },
   {
-    "sectionId": "generic-section-2",
+    "id": "generic-section-2",
     "conditions": {
       "enabled": true,
       "deploymentType": "container"
@@ -34,14 +34,14 @@
     }
   },
   {
-    "sectionId": "mock-button-command",
+    "id": "mock-button-command",
     "command": {
       "base": "echo 'Floating terminal for mock button'",
       "tabTitle": "Mock Button Logs"
     }
   },
   {
-    "sectionId": "test-section-generic",
+    "id": "test-section-generic",
     "conditions": {
       "enabled": true,
       "mode": "alpha"
@@ -52,7 +52,7 @@
     }
   },
   {
-    "sectionId": "testSubLogCommand",
+    "id": "testSubLogCommand",
     "command": {
       "base": "echo 'Sub section logs'",
       "tabTitle": "Sub Logs"

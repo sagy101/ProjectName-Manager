@@ -21,7 +21,7 @@ Commands are defined in `src/configurationSidebarCommands.json`:
 ```json
 [
   {
-    "sectionId": "frontend",
+    "id": "frontend",
     "conditions": {
       "enabled": true
     },
@@ -65,7 +65,7 @@ Commands are defined in `src/configurationSidebarCommands.json`:
 
 ### Basic Properties
 
-- **`sectionId`** (string, required): ID that links this command definition. It can be:
+- **`id`** (string, required): ID that links this command definition. It can be:
     - The `id` of a top-level section defined in `src/configurationSidebarSections.json` (for commands run in main tabs).
     - The `id` of a sub-section defined within a top-level section in `src/configurationSidebarSections.json` (for commands run in main tabs).
     - The `commandId` of a `customButton` defined in `src/configurationSidebarSections.json` (for commands typically run in floating terminals).
@@ -101,7 +101,7 @@ Use separate command objects when handling multiple command variants. They:
 ```json
 [
   {
-    "sectionId": "your-analytics-section",
+    "id": "your-analytics-section",
     "conditions": {
       "enabled": true,
       "mode": "run"
@@ -114,7 +114,7 @@ Use separate command objects when handling multiple command variants. They:
     }
   },
   {
-    "sectionId": "your-analytics-section",
+    "id": "your-analytics-section",
     "conditions": {
       "enabled": true,
       "mode": "suspend"
@@ -133,7 +133,7 @@ Use separate command objects when handling multiple command variants. They:
 ```json
 [
   {
-    "sectionId": "url-intelligence-sub",
+    "id": "url-intelligence-sub",
     "conditions": {
       "enabled": true,
       "url-intelligenceConfig.enabled": true,
@@ -148,7 +148,7 @@ Use separate command objects when handling multiple command variants. They:
     }
   },
   {
-    "sectionId": "url-intelligence-sub",
+    "id": "url-intelligence-sub",
     "conditions": {
       "enabled": true,
       "url-intelligenceConfig.enabled": true,
@@ -163,7 +163,7 @@ Use separate command objects when handling multiple command variants. They:
     }
   },
   {
-    "sectionId": "url-intelligence-sub",
+    "id": "url-intelligence-sub",
     "conditions": {
       "enabled": true,
       "url-intelligenceConfig.enabled": true,
@@ -283,12 +283,12 @@ Conditions are JavaScript expressions evaluated against the `configState` and `a
 
 ### Available Context for Conditions
 
-When defining conditions in `configurationSidebarCommands.json` for a command associated with a `sectionId`:
+When defining conditions in `configurationSidebarCommands.json` for a command entry with a given `id`:
 
-1.  **Direct Properties of the `sectionId`'s Config Object**:
-    *   If `sectionId` refers to a **top-level section** (e.g., `"alpha"`), simple keys like `"enabled"` or `"deploymentType"` refer to `configState.alpha.enabled` or `configState.alpha.deploymentType`.
-    *   If `sectionId` refers to a **sub-section** (e.g., `"frontend"`, which is a sub-section of `"alpha"`), simple keys like `"enabled"` or `"deploymentType"` refer to properties within that sub-section's specific config object (e.g., `configState.alpha.frontendConfig.enabled` or `configState.alpha.frontendConfig.deploymentType`).
-    *   **Dropdown Values for Sub-section Dropdowns**: If a dropdown is defined within a sub-section (e.g., `urlIntelPod` in `url-intelligence-sub` which is under `url-intelligence`), its value is stored directly on the parent section's config object (e.g., `configState['url-intelligence'].urlIntelPod`). Conditions for the sub-section command can reference this as `urlIntelPod` (if `sectionId` for the command is `url-intelligence-sub`, the variable resolver will check its parent `url-intelligence` for `urlIntelPod`). A boolean flag like `urlIntelPodSelected` is also available on the parent section's config: `configState['url-intelligence'].urlIntelPodSelected`.
+1.  **Direct Properties of the referenced section's config object**:
+    *   If the `id` refers to a **top-level section** (e.g., `"alpha"`), simple keys like `"enabled"` or `"deploymentType"` refer to `configState.alpha.enabled` or `configState.alpha.deploymentType`.
+    *   If the `id` refers to a **sub-section** (e.g., `"frontend"`, which is a sub-section of `"alpha"`), simple keys like `"enabled"` or `"deploymentType"` refer to properties within that sub-section's specific config object (e.g., `configState.alpha.frontendConfig.enabled` or `configState.alpha.frontendConfig.deploymentType`).
+    *   **Dropdown Values for Sub-section Dropdowns**: If a dropdown is defined within a sub-section (e.g., `urlIntelPod` in `url-intelligence-sub` which is under `url-intelligence`), its value is stored directly on the parent section's config object (e.g., `configState['url-intelligence'].urlIntelPod`). Conditions for the sub-section command can reference this as `urlIntelPod` (if the command `id` is `url-intelligence-sub`, the variable resolver will check its parent `url-intelligence` for `urlIntelPod`). A boolean flag like `urlIntelPodSelected` is also available on the parent section's config: `configState['url-intelligence'].urlIntelPodSelected`.
 
 2.  **Properties of Other Top-Level Section Configs (Cross-Section References)**:
     *   Use the format `"sectionNameConfig.propertyName"` (e.g., `"alphaConfig.enabled"`). This will correctly resolve to `configState.alpha.enabled`.
@@ -303,7 +303,7 @@ When defining conditions in `configurationSidebarCommands.json` for a command as
 
 ### Expression Examples
 
-**For a command with `"sectionId": "alpha"`:**
+**For a command with `"id": "alpha"`:**
 ```javascript
 // Checks configState.alpha.enabled
 "enabled": true
@@ -312,7 +312,7 @@ When defining conditions in `configurationSidebarCommands.json` for a command as
 "frontendConfig.deploymentType": "dev"
 ```
 
-**For a command with `"sectionId": "frontend"` (sub-section of `alpha`):**
+**For a command with `"id": "frontend"` (sub-section of `alpha`):**
 ```javascript
 // Checks configState.alpha.enabled (parent section enabled status)
 "alphaConfig.enabled": true
@@ -328,9 +328,9 @@ When defining conditions in `configurationSidebarCommands.json` for a command as
 "frontendConfig.deploymentType": "dev"
 ```
 
-**For a command with `"sectionId": "url-intelligence-sub"` (sub-section of `url-intelligence` with a dropdown `urlIntelPod`):**
+**For a command with `"id": "url-intelligence-sub"` (sub-section of `url-intelligence` with a dropdown `urlIntelPod`):**
 ```json
-// "sectionId": "url-intelligence-sub"
+// "id": "url-intelligence-sub"
 "conditions": {
   // Checks configState['url-intelligence'].urlIntelPodSelected (boolean flag for the dropdown)
   "urlIntelPodSelected": true
@@ -512,7 +512,7 @@ Define associated containers in your command configuration:
 
 ```json
 {
-  "sectionId": "backend",
+  "id": "backend",
   "conditions": {
     "enabled": true
   },
@@ -563,7 +563,7 @@ Container status is available in the Tab Information Panel:
 **Mixed Deployment Modes:**
 ```json
 {
-  "sectionId": "your-section-beta",
+  "id": "your-section-beta",
   "conditions": {
     "enabled": true,
     "deploymentType": "container"
