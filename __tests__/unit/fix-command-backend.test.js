@@ -449,6 +449,7 @@ describe('Fix Command Backend Tests', () => {
         expect(result.success).toBe(false);
         expect(result.error).toContain('not found');
         expect(result.verificationId).toBe('nonexistentVerification');
+        return result;
       });
     });
 
@@ -467,6 +468,7 @@ describe('Fix Command Backend Tests', () => {
         expect(result.success).toBe(false);
         expect(result.result).toBe('invalid');
         expect(result.error).toContain('execution failed');
+        return result;
       });
     });
   });

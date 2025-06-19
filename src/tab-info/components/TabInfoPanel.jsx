@@ -235,7 +235,7 @@ const TabInfoPanel = ({
             </button>
             
             <button 
-              className="action-button refresh-button"
+              className="action-button"
               onClick={handleRefresh}
               disabled={noRunMode || !terminal}
               title={noRunMode ? 'Cannot refresh in No Run Mode' : 'Refresh and re-run command'}

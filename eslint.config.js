@@ -3,6 +3,9 @@ import js from "@eslint/js";
 import jestPlugin from "eslint-plugin-jest";
 import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
+import importPlugin from "eslint-plugin-import";
+import promisePlugin from "eslint-plugin-promise";
+import nodePlugin from "eslint-plugin-n";
 
 export default [
   {
@@ -25,16 +28,37 @@ export default [
     plugins: {
       react: reactPlugin,
       "react-hooks": reactHooksPlugin,
+      import: importPlugin,
+      promise: promisePlugin,
     },
     rules: {
       ...reactPlugin.configs["jsx-runtime"].rules,
       ...reactPlugin.configs.recommended.rules,
       ...reactHooksPlugin.configs.recommended.rules,
-      "react/prop-types": "off" // Disabled for now
+      ...importPlugin.configs.recommended.rules,
+      ...promisePlugin.configs.recommended.rules,
+      "react/prop-types": "off", // Disabled for now
+      "import/no-unresolved": "error",
+      "import/named": "error",
+      "import/default": "error",
+      "import/namespace": "error",
+      "import/no-absolute-path": "error",
+      "import/no-self-import": "error",
+      "import/no-cycle": "warn",
+      "import/no-unused-modules": "warn",
+      "promise/always-return": "error",
+      "promise/no-nesting": "warn",
+      "promise/param-names": "error",
+      "promise/no-return-wrap": "error"
     },
     settings: {
       react: {
         version: "detect"
+      },
+      "import/resolver": {
+        node: {
+          extensions: [".js", ".jsx", ".json"]
+        }
       }
     }
   },
@@ -67,11 +91,21 @@ export default [
       "src/utils/**/*.js",
       "test-utils/**/*.js"
     ],
+    plugins: {
+      n: nodePlugin,
+      promise: promisePlugin,
+    },
     languageOptions: {
       sourceType: "commonjs",
       globals: {
         ...globals.node
       }
+    },
+    rules: {
+      ...nodePlugin.configs.recommended.rules,
+      ...promisePlugin.configs.recommended.rules,
+      "n/no-unpublished-require": "off", // Allow dev dependencies in config files
+      "n/no-missing-require": "off" // Import plugin handles this better
     }
   }
 ];
