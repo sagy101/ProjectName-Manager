@@ -342,7 +342,7 @@ describe('App Component - Comprehensive Tests', () => {
       mockAppState.isLoading = true;
       render(<App />);
       expect(screen.getByTestId('loading-screen')).toBeInTheDocument();
-      expect(screen.getByText(/Loading:/)).toBeInTheDocument();
+      expect(screen.getByText('LoadingScreen')).toBeInTheDocument();
     });
 
     test('should complete loading and show main app components', async () => {
