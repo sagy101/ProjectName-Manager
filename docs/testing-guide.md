@@ -138,6 +138,27 @@ To see detailed logs from both the Electron main process (backend) and the rende
 - Both backend and frontend logs are visible in the Actions log output for debugging.
 - Artifacts (e.g., logs, coverage reports) may be uploaded for further review.
 
+### Jest Tests Matrix Strategy
+
+The Jest tests workflow uses a **Matrix Strategy** to run both mock and prod tests efficiently:
+
+- **Parallel Execution**: Mock and prod tests run simultaneously as separate matrix jobs
+- **Unified PR Comments**: A dedicated job collects results from both test runs and creates a single, consistent PR comment
+- **Race Condition Prevention**: The comment update job waits for all test jobs to complete, eliminating timing issues
+- **GitHub Checks**: Each test type appears as a separate check (`Jest mock Coverage`, `Jest prod Coverage`)
+
+**Benefits of this approach:**
+- ✅ No more race conditions with PR comment updates
+- ✅ Cleaner workflow code with less duplication
+- ✅ Easy to add more test types by extending the matrix
+- ✅ Reliable PR comments that always include all test results
+
+**Implementation details:**
+- Test jobs save results as JSON artifacts
+- Comment job downloads all artifacts and parses results
+- Single comment is created/updated with complete test summary
+- `edit-mode: replace` ensures comment consistency
+
 ### Running E2E Tests Headless (Electron)
 
 For end-to-end (E2E) tests that launch the Electron app, you should run tests in headless mode to avoid opening windows during CI or automated runs. This is done by setting the `HEADLESS` environment variable:

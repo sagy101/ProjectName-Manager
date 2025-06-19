@@ -14,12 +14,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  jest-mock:
-    name: Jest Mock Coverage
+  jest-tests:
+    name: Jest ${{ matrix.test-type }} Coverage
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test-type: [mock, prod]
+      fail-fast: false  # Don't cancel other matrix jobs if one fails
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+      
       - name: Set up NVM and Node.js 22.16.0
         run: |
           export NVM_DIR="$HOME/.nvm"
@@ -29,199 +35,174 @@ jobs:
           nvm use 22.16.0
           node -v
           npm -v
+      
       - name: Install dependencies
         run: |
           export NVM_DIR="$HOME/.nvm"
           . "$NVM_DIR/nvm.sh"
           nvm use 22.16.0
           npm ci
-      - name: Run Jest Mock Coverage
+      
+      - name: Run Jest ${{ matrix.test-type }} Coverage
         run: |
           export NVM_DIR="$HOME/.nvm"
           . "$NVM_DIR/nvm.sh"
           nvm use 22.16.0
-          npm run test:jest:mock:coverage 2>&1 | tee jest-mock-output.txt || echo "Jest completed with issues"
-      - name: Extract Jest Mock Results
+          npm run test:jest:${{ matrix.test-type }}:coverage 2>&1 | tee jest-${{ matrix.test-type }}-output.txt || echo "Jest completed with issues"
+      
+      - name: Extract Jest ${{ matrix.test-type }} Results
+        id: extract-results
         run: |
           # Extract test results
-          TESTS_PASSED=$(grep -o "Tests:.*passed" jest-mock-output.txt | grep -o "[0-9]\+ passed" | grep -o "[0-9]\+" || echo "0")
-          TESTS_FAILED=$(grep -o "Tests:.*failed" jest-mock-output.txt | grep -o "[0-9]\+ failed" | grep -o "[0-9]\+" || echo "0")
-          TESTS_SKIPPED=$(grep -o "Tests:.*skipped" jest-mock-output.txt | grep -o "[0-9]\+ skipped" | grep -o "[0-9]\+" || echo "0")
-          TESTS_TOTAL=$(grep -o "Tests:.*total" jest-mock-output.txt | grep -o "[0-9]\+ total" | grep -o "[0-9]\+" || echo "0")
+          TESTS_PASSED=$(grep -o "Tests:.*passed" jest-${{ matrix.test-type }}-output.txt | grep -o "[0-9]\+ passed" | grep -o "[0-9]\+" || echo "0")
+          TESTS_FAILED=$(grep -o "Tests:.*failed" jest-${{ matrix.test-type }}-output.txt | grep -o "[0-9]\+ failed" | grep -o "[0-9]\+" || echo "0")
+          TESTS_SKIPPED=$(grep -o "Tests:.*skipped" jest-${{ matrix.test-type }}-output.txt | grep -o "[0-9]\+ skipped" | grep -o "[0-9]\+" || echo "0")
+          TESTS_TOTAL=$(grep -o "Tests:.*total" jest-${{ matrix.test-type }}-output.txt | grep -o "[0-9]\+ total" | grep -o "[0-9]\+" || echo "0")
           
           # Extract coverage
-          COVERAGE=$(grep "All files" jest-mock-output.txt | awk '{print $4}' | head -1 || echo "N/A")
+          COVERAGE=$(grep "All files" jest-${{ matrix.test-type }}-output.txt | awk '{print $4}' | head -1 || echo "N/A")
           
-          # Save to environment
-          echo "MOCK_TESTS_PASSED=$TESTS_PASSED" >> $GITHUB_ENV
-          echo "MOCK_TESTS_FAILED=$TESTS_FAILED" >> $GITHUB_ENV
-          echo "MOCK_TESTS_SKIPPED=$TESTS_SKIPPED" >> $GITHUB_ENV
-          echo "MOCK_TESTS_TOTAL=$TESTS_TOTAL" >> $GITHUB_ENV
-          echo "MOCK_COVERAGE=$COVERAGE" >> $GITHUB_ENV
-      - name: Upload Mock Coverage Report
+          # Save to JSON file for artifact
+          cat > test-results-${{ matrix.test-type }}.json << EOF
+          {
+            "test_type": "${{ matrix.test-type }}",
+            "passed": "$TESTS_PASSED",
+            "failed": "$TESTS_FAILED",
+            "skipped": "$TESTS_SKIPPED",
+            "total": "$TESTS_TOTAL",
+            "coverage": "$COVERAGE"
+          }
+          EOF
+          
+          # Output for debugging
+          echo "=== Test Results for ${{ matrix.test-type }} ==="
+          echo "Passed: $TESTS_PASSED"
+          echo "Failed: $TESTS_FAILED"
+          echo "Skipped: $TESTS_SKIPPED"
+          echo "Total: $TESTS_TOTAL"
+          echo "Coverage: $COVERAGE%"
+      
+      - name: Upload ${{ matrix.test-type }} Coverage Report
         uses: actions/upload-artifact@v4
         with:
-          name: jest-mock-coverage
-          path: coverage/mock/
-
-      - name: Find Test Summary Comment
-        uses: peter-evans/find-comment@v3
-        id: fc
+          name: jest-${{ matrix.test-type }}-coverage
+          path: coverage/${{ matrix.test-type }}/
+      
+      - name: Upload ${{ matrix.test-type }} Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
         with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: 'github-actions[bot]'
-          body-includes: '<!-- GITHUB_ACTION_TEST_SUMMARY:${{ github.event.pull_request.head.sha }} -->'
-
-      - name: Prepare Comment Body
-        id: comment-body
-        run: |
-          if [ -z "${{ steps.fc.outputs.comment-id }}" ]; then
-            cat >> $GITHUB_OUTPUT << 'EOF'
-          body<<BODY_DELIMITER
-          <!-- GITHUB_ACTION_TEST_SUMMARY:${{ github.event.pull_request.head.sha }} -->
-          
-          ## 🔎 Test Summary
-          
-          ---
-          ### Jest Mock Coverage
-          - ✅ Passed: ${{ env.MOCK_TESTS_PASSED }}
-          - ❌ Failed: ${{ env.MOCK_TESTS_FAILED }}
-          - ⏭️ Skipped: ${{ env.MOCK_TESTS_SKIPPED }}
-          - 📈 Coverage: ${{ env.MOCK_COVERAGE }}%
-          BODY_DELIMITER
-          EOF
-          else
-            cat >> $GITHUB_OUTPUT << 'EOF'
-          body<<BODY_DELIMITER
-          
-          ---
-          ### Jest Mock Coverage
-          - ✅ Passed: ${{ env.MOCK_TESTS_PASSED }}
-          - ❌ Failed: ${{ env.MOCK_TESTS_FAILED }}
-          - ⏭️ Skipped: ${{ env.MOCK_TESTS_SKIPPED }}
-          - 📈 Coverage: ${{ env.MOCK_COVERAGE }}%
-          BODY_DELIMITER
-          EOF
-          fi
-
-      - name: Create or Update Comment
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          comment-id: ${{ steps.fc.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          edit-mode: append
-          body: ${{ steps.comment-body.outputs.body }}
-
-      - name: Fail job if mock tests failed
+          name: jest-${{ matrix.test-type }}-results
+          path: |
+            jest-${{ matrix.test-type }}-output.txt
+            test-results-${{ matrix.test-type }}.json
+      
+      - name: Fail job if tests failed
         if: always()
         run: |
-          if [ "${{ env.MOCK_TESTS_FAILED }}" != "0" ]; then
-            echo "Jest mock tests failed"
+          # Read the results file
+          FAILED_COUNT=$(jq -r '.failed' test-results-${{ matrix.test-type }}.json)
+          if [ "$FAILED_COUNT" != "0" ]; then
+            echo "Jest ${{ matrix.test-type }} tests failed"
             exit 1
           fi
 
-  jest-prod:
-    name: Jest Prod Coverage
+  update-pr-comment:
+    name: Update PR Comment
+    needs: jest-tests
     runs-on: ubuntu-latest
+    if: always()  # Run even if tests fail
+    permissions:
+      pull-requests: write
+      issues: write
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Set up NVM and Node.js 22.16.0
-        run: |
-          export NVM_DIR="$HOME/.nvm"
-          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-          . "$NVM_DIR/nvm.sh"
-          nvm install 22.16.0
-          nvm use 22.16.0
-          node -v
-          npm -v
-      - name: Install dependencies
-        run: |
-          export NVM_DIR="$HOME/.nvm"
-          . "$NVM_DIR/nvm.sh"
-          nvm use 22.16.0
-          npm ci
-      - name: Run Jest Prod Coverage
-        run: |
-          export NVM_DIR="$HOME/.nvm"
-          . "$NVM_DIR/nvm.sh"
-          nvm use 22.16.0
-          npm run test:jest:prod:coverage 2>&1 | tee jest-prod-output.txt || echo "Jest completed with issues"
-      - name: Extract Jest Prod Results
-        run: |
-          # Extract test results
-          TESTS_PASSED=$(grep -o "Tests:.*passed" jest-prod-output.txt | grep -o "[0-9]\+ passed" | grep -o "[0-9]\+" || echo "0")
-          TESTS_FAILED=$(grep -o "Tests:.*failed" jest-prod-output.txt | grep -o "[0-9]\+ failed" | grep -o "[0-9]\+" || echo "0")
-          TESTS_SKIPPED=$(grep -o "Tests:.*skipped" jest-prod-output.txt | grep -o "[0-9]\+ skipped" | grep -o "[0-9]\+" || echo "0")
-          TESTS_TOTAL=$(grep -o "Tests:.*total" jest-prod-output.txt | grep -o "[0-9]\+ total" | grep -o "[0-9]\+" || echo "0")
-          
-          # Extract coverage
-          COVERAGE=$(grep "All files" jest-prod-output.txt | awk '{print $4}' | head -1 || echo "N/A")
-          
-          # Save to environment
-          echo "PROD_TESTS_PASSED=$TESTS_PASSED" >> $GITHUB_ENV
-          echo "PROD_TESTS_FAILED=$TESTS_FAILED" >> $GITHUB_ENV
-          echo "PROD_TESTS_SKIPPED=$TESTS_SKIPPED" >> $GITHUB_ENV
-          echo "PROD_TESTS_TOTAL=$TESTS_TOTAL" >> $GITHUB_ENV
-          echo "PROD_COVERAGE=$COVERAGE" >> $GITHUB_ENV
-      - name: Upload Prod Coverage Report
-        uses: actions/upload-artifact@v4
+      - name: Download all test results
+        uses: actions/download-artifact@v4
         with:
-          name: jest-prod-coverage
-          path: coverage/prod/
-
-      - name: Find Test Summary Comment
+          pattern: jest-*-results
+          path: test-results/
+      
+      - name: Parse test results
+        id: parse-results
+        run: |
+          # Function to safely extract value from JSON
+          extract_value() {
+            local file=$1
+            local field=$2
+            local default=$3
+            if [ -f "$file" ]; then
+              value=$(jq -r ".$field // \"$default\"" "$file" 2>/dev/null || echo "$default")
+              echo "$value"
+            else
+              echo "$default"
+            fi
+          }
+          
+          # Parse mock results
+          MOCK_JSON="test-results/jest-mock-results/test-results-mock.json"
+          if [ -f "$MOCK_JSON" ]; then
+            echo "mock-passed=$(extract_value "$MOCK_JSON" "passed" "0")" >> $GITHUB_OUTPUT
+            echo "mock-failed=$(extract_value "$MOCK_JSON" "failed" "0")" >> $GITHUB_OUTPUT
+            echo "mock-skipped=$(extract_value "$MOCK_JSON" "skipped" "0")" >> $GITHUB_OUTPUT
+            echo "mock-coverage=$(extract_value "$MOCK_JSON" "coverage" "N/A")" >> $GITHUB_OUTPUT
+          else
+            echo "Mock results file not found, using defaults"
+            echo "mock-passed=0" >> $GITHUB_OUTPUT
+            echo "mock-failed=0" >> $GITHUB_OUTPUT
+            echo "mock-skipped=0" >> $GITHUB_OUTPUT
+            echo "mock-coverage=N/A" >> $GITHUB_OUTPUT
+          fi
+          
+          # Parse prod results
+          PROD_JSON="test-results/jest-prod-results/test-results-prod.json"
+          if [ -f "$PROD_JSON" ]; then
+            echo "prod-passed=$(extract_value "$PROD_JSON" "passed" "0")" >> $GITHUB_OUTPUT
+            echo "prod-failed=$(extract_value "$PROD_JSON" "failed" "0")" >> $GITHUB_OUTPUT
+            echo "prod-skipped=$(extract_value "$PROD_JSON" "skipped" "0")" >> $GITHUB_OUTPUT
+            echo "prod-coverage=$(extract_value "$PROD_JSON" "coverage" "N/A")" >> $GITHUB_OUTPUT
+          else
+            echo "Prod results file not found, using defaults"
+            echo "prod-passed=0" >> $GITHUB_OUTPUT
+            echo "prod-failed=0" >> $GITHUB_OUTPUT
+            echo "prod-skipped=0" >> $GITHUB_OUTPUT
+            echo "prod-coverage=N/A" >> $GITHUB_OUTPUT
+          fi
+          
+          # Debug output
+          echo "=== Parsed Results ==="
+          echo "Mock: passed=${{ steps.parse-results.outputs.mock-passed }}, failed=${{ steps.parse-results.outputs.mock-failed }}"
+          echo "Prod: passed=${{ steps.parse-results.outputs.prod-passed }}, failed=${{ steps.parse-results.outputs.prod-failed }}"
+      
+      - name: Find existing comment
         uses: peter-evans/find-comment@v3
         id: fc
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: 'github-actions[bot]'
           body-includes: '<!-- GITHUB_ACTION_TEST_SUMMARY:${{ github.event.pull_request.head.sha }} -->'
-
-      - name: Prepare Comment Body
-        id: comment-body
-        run: |
-          if [ -z "${{ steps.fc.outputs.comment-id }}" ]; then
-            cat >> $GITHUB_OUTPUT << 'EOF'
-          body<<BODY_DELIMITER
-          <!-- GITHUB_ACTION_TEST_SUMMARY:${{ github.event.pull_request.head.sha }} -->
-          
-          ## 🔎 Test Summary
-          
-          ---
-          ### Jest Prod Coverage
-          - ✅ Passed: ${{ env.PROD_TESTS_PASSED }}
-          - ❌ Failed: ${{ env.PROD_TESTS_FAILED }}
-          - ⏭️ Skipped: ${{ env.PROD_TESTS_SKIPPED }}
-          - 📈 Coverage: ${{ env.PROD_COVERAGE }}%
-          BODY_DELIMITER
-          EOF
-          else
-            cat >> $GITHUB_OUTPUT << 'EOF'
-          body<<BODY_DELIMITER
-          
-          ---
-          ### Jest Prod Coverage
-          - ✅ Passed: ${{ env.PROD_TESTS_PASSED }}
-          - ❌ Failed: ${{ env.PROD_TESTS_FAILED }}
-          - ⏭️ Skipped: ${{ env.PROD_TESTS_SKIPPED }}
-          - 📈 Coverage: ${{ env.PROD_COVERAGE }}%
-          BODY_DELIMITER
-          EOF
-          fi
-
-      - name: Create or Update Comment
+      
+      - name: Create or update comment
         uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
-          edit-mode: append
-          body: ${{ steps.comment-body.outputs.body }}
-
-      - name: Fail job if prod tests failed
-        if: always()
-        run: |
-          if [ "${{ env.PROD_TESTS_FAILED }}" != "0" ]; then
-            echo "Jest prod tests failed"
-            exit 1
-          fi
+          edit-mode: replace  # Replace entire comment to ensure consistency
+          body: |
+            <!-- GITHUB_ACTION_TEST_SUMMARY:${{ github.event.pull_request.head.sha }} -->
+            
+            ## 🔎 Test Summary
+            
+            ---
+            ### Jest Mock Coverage
+            - ✅ Passed: ${{ steps.parse-results.outputs.mock-passed }}
+            - ❌ Failed: ${{ steps.parse-results.outputs.mock-failed }}
+            - ⏭️ Skipped: ${{ steps.parse-results.outputs.mock-skipped }}
+            - 📈 Coverage: ${{ steps.parse-results.outputs.mock-coverage }}%
+            
+            ---
+            ### Jest Prod Coverage
+            - ✅ Passed: ${{ steps.parse-results.outputs.prod-passed }}
+            - ❌ Failed: ${{ steps.parse-results.outputs.prod-failed }}
+            - ⏭️ Skipped: ${{ steps.parse-results.outputs.prod-skipped }}
+            - 📈 Coverage: ${{ steps.parse-results.outputs.prod-coverage }}%
