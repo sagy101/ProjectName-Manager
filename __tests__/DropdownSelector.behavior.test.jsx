@@ -1,7 +1,7 @@
 /** @jest-environment jsdom */
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react';
-import DropdownSelector from '../src/components/DropdownSelector.jsx';
+import DropdownSelector from '../src/common/components/DropdownSelector.jsx';
 
 beforeEach(() => {
   global.ResizeObserver = class { observe(){} unobserve(){} disconnect(){} };

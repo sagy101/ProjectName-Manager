@@ -1,11 +1,11 @@
 const { launchElectron, getTimeout } = require('./test-helpers');
 const { test, expect } = require('@playwright/test');
-const { displaySettings } = require('../../src/configurationSidebarSections.json');
+const { displaySettings } = require('../../src/project-config/config/configurationSidebarSections.json');
 
 const isMock = process.env.E2E_ENV === 'mock';
 const sectionsConfig = isMock
   ? require('../mock-data/mockConfigurationSidebarSections.json')
-  : require('../../src/configurationSidebarSections.json');
+  : require('../../src/project-config/config/configurationSidebarSections.json');
 
 const expectedTitle = `${sectionsConfig.displaySettings.projectName} Manager`;
 

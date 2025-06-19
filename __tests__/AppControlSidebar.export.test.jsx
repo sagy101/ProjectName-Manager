@@ -1,7 +1,7 @@
 /** @jest-environment jsdom */
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react';
-import AppControlSidebar from '../src/components/AppControlSidebar';
+import AppControlSidebar from '../src/project-config/AppControlSidebar';
 
 beforeEach(() => {
   global.ResizeObserver = class { observe(){} unobserve(){} disconnect(){} };

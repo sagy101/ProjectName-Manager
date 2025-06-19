@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import ModeSelector from '../src/components/ModeSelector.jsx';
+import ModeSelector from '../src/project-config/ModeSelector.jsx';
 
 describe('ModeSelector', () => {
   const defaultProps = {

@@ -3,13 +3,13 @@
 import React from 'react';
 import { render, fireEvent, waitFor, screen } from '@testing-library/react';
 import { jest } from '@jest/globals';
-import VerificationIndicator from '../src/components/VerificationIndicator.jsx';
-import { STATUS } from '../src/constants/verificationConstants.js';
+import VerificationIndicator from '../src/environment-verification/VerificationIndicator.jsx';
+import { STATUS } from '../src/environment-verification/constants/verificationConstants.js';
 import fs from 'fs';
 import path from 'path';
 
-const generalEnvironmentVerifications = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../src/generalEnvironmentVerifications.json'), 'utf8'));
-const configurationSidebarAbout = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../src/configurationSidebarAbout.json'), 'utf8'));
+const generalEnvironmentVerifications = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../src/environment-verification/generalEnvironmentVerifications.json'), 'utf8'));
+const configurationSidebarAbout = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../src/project-config/config/configurationSidebarAbout.json'), 'utf8'));
 
 // Mock electron API
 const mockElectron = {

@@ -35,7 +35,7 @@ describe('rerunSingleVerification with sidebar config', () => {
     });
     const { exec } = require('child_process');
     exec.mockImplementation((cmd, opts, cb) => cb(null, 'ok', ''));
-    const envVerify = require('../src/main/environmentVerification');
+    const envVerify = require('../src/main-process/environmentVerification');
     await envVerify.verifyEnvironment();
     const res = await envVerify.rerunSingleVerification('sid1');
     expect(res.success).toBe(true);

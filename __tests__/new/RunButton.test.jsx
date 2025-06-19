@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import RunButton from '../../src/components/RunButton';
+import RunButton from '../../src/project-config/RunButton';
 
 /** @jest-environment jsdom */
 

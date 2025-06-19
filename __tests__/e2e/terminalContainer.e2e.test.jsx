@@ -4,8 +4,8 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react';
 global.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
-jest.mock("../../src/components/Terminal", () => () => <div data-testid="mock-term"></div>);
-import TerminalContainer from "../../src/components/TerminalContainer";
+jest.mock("../../src/terminal/components/Terminal", () => () => <div data-testid="mock-term"></div>);
+import TerminalContainer from "../../src/terminal/components/TerminalContainer";
 const { test, expect } = require('@playwright/test');
 const { launchElectron, getTimeout } = require('./test-helpers');
 

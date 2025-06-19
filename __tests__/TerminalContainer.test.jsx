@@ -2,14 +2,14 @@
 
 import React from 'react';
 import { render, screen, act } from '@testing-library/react';
-import TerminalContainer from '../src/components/TerminalContainer';
+import TerminalContainer from '../src/terminal/components/TerminalContainer';
 
 // Mock child components and dependencies
-jest.mock('../src/components/TerminalTab', () => ({ id, title, active }) => <div data-testid={`terminal-tab-${id}`} data-active={active}>{title}</div>);
-jest.mock('../src/components/Terminal', () => (props) => <div data-testid={`terminal-component-${props.id}`} data-active={props.active}>{props.initialCommand}</div>);
-jest.mock('../src/components/TabInfoPanel', () => () => <div data-testid="tab-info-panel"></div>);
-jest.mock('../src/components/TerminalPlaceholder', () => ({ projectName }) => <div data-testid="terminal-placeholder">Waiting to Run {projectName}</div>);
-jest.mock('../src/components/OverflowTabsDropdown', () => () => <div data-testid="overflow-dropdown"></div>);
+jest.mock('../src/terminal/components/TerminalTab', () => ({ id, title, active }) => <div data-testid={`terminal-tab-${id}`} data-active={active}>{title}</div>);
+jest.mock('../src/terminal/components/Terminal', () => (props) => <div data-testid={`terminal-component-${props.id}`} data-active={props.active}>{props.initialCommand}</div>);
+jest.mock('../src/tab-info/components/TabInfoPanel', () => () => <div data-testid="tab-info-panel"></div>);
+jest.mock('../src/terminal/components/TerminalPlaceholder', () => ({ projectName }) => <div data-testid="terminal-placeholder">Waiting to Run {projectName}</div>);
+jest.mock('../src/tab-info/components/OverflowTabsDropdown', () => () => <div data-testid="overflow-dropdown"></div>);
 
 
 describe('TerminalContainer', () => {

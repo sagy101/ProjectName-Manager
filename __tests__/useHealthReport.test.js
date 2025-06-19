@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
-import useHealthReport from '../src/hooks/useHealthReport';
+import useHealthReport from '../src/health-report/useHealthReport';
 
 describe('useHealthReport', () => {
   const mockSetIsHealthReportVisible = jest.fn();

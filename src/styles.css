@@ -1,15 +1,15 @@
 /* Main styles file */
-@import './styles/index.css';
-@import './styles/global.css';
-@import './styles/app.css';
-@import './styles/config.css';
-@import './styles/toggle.css';
-@import './styles/selector.css';
-@import './styles/tabs.css';
-@import './styles/terminal.css';
+@import './common/styles/index.css';
+@import './common/styles/global.css';
+@import './common/styles/app.css';
+@import './project-config/styles/config.css';
+@import './common/styles/toggle.css';
+@import './common/styles/selector.css';
+@import './tab-info/styles/tabs.css';
+@import './terminal/terminal.css';
 
-@import './styles/deployment.css';
-@import './styles/run-button.css';
-@import './styles/attachToggle.css';
-@import './styles/notification.css';
-@import './styles/environment-verification.css'; 
+@import './project-config/styles/deployment.css';
+@import './project-config/styles/run-button.css';
+@import './project-config/styles/attachToggle.css';
+@import './common/styles/notification.css';
+@import './environment-verification/environment-verification.css';

@@ -1,7 +1,7 @@
 /** @jest-environment jsdom */
 import React from 'react';
 import { render } from '@testing-library/react';
-import TabStatusIndicator from '../src/components/TabStatusIndicator';
+import TabStatusIndicator from '../src/tab-info/components/TabStatusIndicator';
 
 describe('TabStatusIndicator', () => {
   const cases = [

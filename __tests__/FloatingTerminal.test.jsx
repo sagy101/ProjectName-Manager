@@ -1,9 +1,9 @@
 /** @jest-environment jsdom */
 import React from 'react';
 import { render, fireEvent, act } from '@testing-library/react';
-import FloatingTerminal from '../src/components/FloatingTerminal.jsx';
+import FloatingTerminal from '../src/floating-terminal/FloatingTerminal.jsx';
 
-jest.mock('../src/components/Terminal.jsx', () => () => <div data-testid="terminal"/>);
+jest.mock('../src/terminal/components/Terminal.jsx', () => () => <div data-testid="terminal"/>);
 
 describe('FloatingTerminal component', () => {
   const baseProps = {

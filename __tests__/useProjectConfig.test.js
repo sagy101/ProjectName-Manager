@@ -1,4 +1,4 @@
-jest.mock('../src/configurationSidebarSections.json', () => {
+jest.mock('../src/project-config/config/configurationSidebarSections.json', () => {
   const fs = require('fs');
   const path = require('path');
   const file = fs.readFileSync(path.join(__dirname, 'mock-data/mockConfigurationSidebarSections.json'), 'utf-8');
@@ -6,7 +6,7 @@ jest.mock('../src/configurationSidebarSections.json', () => {
 });
 
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useProjectConfig } from '../src/hooks/useProjectConfig';
+import { useProjectConfig } from '../src/project-config/hooks/useProjectConfig';
 
 const noop = () => {};
 

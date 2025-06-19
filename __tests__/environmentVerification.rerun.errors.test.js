@@ -35,7 +35,7 @@ describe('rerunSingleVerification error scenarios', () => {
     setupConfig(config);
     const { exec } = require('child_process');
     exec.mockImplementation((cmd, opts, cb) => cb(new Error('boom'), '', 'err'));
-    const envVerify = require('../src/main/environmentVerification');
+    const envVerify = require('../src/main-process/environmentVerification');
     await envVerify.verifyEnvironment();
     const res = await envVerify.rerunSingleVerification('cmd1');
     expect(res).toEqual({ success: true, verificationId: 'cmd1', result: 'invalid', source: 'general' });
@@ -57,7 +57,7 @@ describe('rerunSingleVerification error scenarios', () => {
       }]
     };
     setupConfig(config);
-    const envVerify = require('../src/main/environmentVerification');
+    const envVerify = require('../src/main-process/environmentVerification');
     await envVerify.verifyEnvironment();
 
     const res1 = await envVerify.rerunSingleVerification('e1');
@@ -69,7 +69,7 @@ describe('rerunSingleVerification error scenarios', () => {
   test('returns error when configuration read fails', async () => {
     const config = { header: {}, categories: [] };
     setupConfig(config);
-    const envVerify = require('../src/main/environmentVerification');
+    const envVerify = require('../src/main-process/environmentVerification');
     await envVerify.verifyEnvironment();
     const mockedFs = require('fs');
     mockedFs.promises.readFile.mockRejectedValue(new Error('fail'));

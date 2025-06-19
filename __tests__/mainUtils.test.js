@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
-const { resolveEnvVars, checkPathExists } = require('../src/main/mainUtils');
+const { resolveEnvVars, checkPathExists } = require('../src/main-process/mainUtils');
 
 describe('resolveEnvVars', () => {
   test('replaces $HOME with user home directory', () => {

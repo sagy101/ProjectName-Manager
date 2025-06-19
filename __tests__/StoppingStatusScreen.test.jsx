@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import StoppingStatusScreen from '../src/components/StoppingStatusScreen';
+import StoppingStatusScreen from '../src/stopping-status/StoppingStatusScreen';
 
 // Mock the electron API
 const mockElectron = {

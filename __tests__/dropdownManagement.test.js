@@ -21,7 +21,7 @@ jest.mock('electron', () => ({
   }
 }));
 
-const dropdown = require('../src/main/dropdownManagement');
+const dropdown = require('../src/main-process/dropdownManagement');
 const { getDropdownOptions, precacheGlobalDropdowns, handleDropdownValueChange, executeDropdownChangeCommand, setupDropdownIpcHandlers } = dropdown;
 
 beforeEach(() => {
