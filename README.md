@@ -467,6 +467,21 @@ npm run build
 npm run watch
 ```
 
+### Using Mock Configuration
+
+You can bundle the app with the mock JSON files used in the test suite. This is
+handy for quick demonstrations or development without altering the real
+configuration:
+
+```bash
+npm run build:mock
+```
+
+The script sets the `CONFIG_SIDEBAR_SECTIONS`, `CONFIG_SIDEBAR_ABOUT`, and
+`CONFIG_SIDEBAR_COMMANDS` environment variables to the mock files under
+`__tests__/mock-data` before running the regular build. You can also set these
+variables manually to load custom configuration files.
+
 ### Native Module Rebuilding
 
 After installing new native dependencies:

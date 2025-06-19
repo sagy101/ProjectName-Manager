@@ -8,7 +8,9 @@ import { InformationCircleIcon } from '@heroicons/react/24/outline';
 import { STATUS } from '../constants/verificationConstants';
 import VerificationIndicator from './VerificationIndicator';
 import GitBranchSwitcher from './GitBranchSwitcher';
-import configSidebarAbout from '../configurationSidebarAbout.json';
+const configSidebarAbout = require(
+  process.env.CONFIG_SIDEBAR_ABOUT || '../configurationSidebarAbout.json'
+);
 import '../styles/config-section.css';
 
 const ConfigSection = ({ 

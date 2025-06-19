@@ -5,8 +5,10 @@ const { exportConfigToFile, importConfigFromFile } = require('../../configIO');
 const { debugLog } = require('../utils/debugUtils');
 
 // Path to configuration files
-const CONFIG_SIDEBAR_ABOUT_PATH = path.join(__dirname, '../configurationSidebarAbout.json');
-const CONFIG_SIDEBAR_SECTIONS_PATH = path.join(__dirname, '../configurationSidebarSections.json');
+const CONFIG_SIDEBAR_ABOUT_PATH = process.env.CONFIG_SIDEBAR_ABOUT ||
+  path.join(__dirname, '../configurationSidebarAbout.json');
+const CONFIG_SIDEBAR_SECTIONS_PATH = process.env.CONFIG_SIDEBAR_SECTIONS ||
+  path.join(__dirname, '../configurationSidebarSections.json');
 
 // Function to load display settings
 async function loadDisplaySettings() {

@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react';
 import { STATUS } from '../constants/verificationConstants';
-import appConfig from '../configurationSidebarSections.json';
+const appConfig = require(
+  process.env.CONFIG_SIDEBAR_SECTIONS || '../configurationSidebarSections.json'
+);
 
 const { displaySettings, sections: configSidebarSections } = appConfig;
 

@@ -97,7 +97,8 @@ async function getDropdownOptions(config) {
 async function precacheGlobalDropdowns() {
     debugLog('Starting global dropdown pre-caching...');
     try {
-        const configPath = path.join(__dirname, '..', 'generalEnvironmentVerifications.json');
+        const configPath = process.env.GENERAL_VERIFICATIONS ||
+          path.join(__dirname, '..', 'generalEnvironmentVerifications.json');
         const configData = await fs.readFile(configPath, 'utf-8');
         const config = JSON.parse(configData);
 
@@ -199,7 +200,8 @@ async function executeDropdownChangeCommand(dropdownId, value, globalDropdownVal
 async function getDropdownConfig(dropdownId) {
   try {
     // Check generalEnvironmentVerifications.json first
-    const generalConfigPath = path.join(__dirname, '..', 'generalEnvironmentVerifications.json');
+    const generalConfigPath = process.env.GENERAL_VERIFICATIONS ||
+      path.join(__dirname, '..', 'generalEnvironmentVerifications.json');
     const generalConfigData = await fs.readFile(generalConfigPath, 'utf-8');
     const generalConfig = JSON.parse(generalConfigData);
     
@@ -209,7 +211,8 @@ async function getDropdownConfig(dropdownId) {
     }
 
     // Check configurationSidebarAbout.json for section-specific dropdowns
-    const aboutConfigPath = path.join(__dirname, '..', 'configurationSidebarAbout.json');
+    const aboutConfigPath = process.env.CONFIG_SIDEBAR_ABOUT ||
+      path.join(__dirname, '..', 'configurationSidebarAbout.json');
     const aboutConfigData = await fs.readFile(aboutConfigPath, 'utf-8');
     const aboutConfig = JSON.parse(aboutConfigData);
     

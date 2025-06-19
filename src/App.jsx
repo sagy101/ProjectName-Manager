@@ -121,7 +121,9 @@ const App = () => {
   const autoSetup = useAutoSetup({
     verificationStatuses: appState.verificationStatuses,
     generalVerificationConfig: appState.generalVerificationConfig,
-    configSidebarAbout: require('./configurationSidebarAbout.json'),
+    configSidebarAbout: require(
+      process.env.CONFIG_SIDEBAR_ABOUT || './configurationSidebarAbout.json'
+    ),
     showTestSections: appState.showTestSections,
     onOpenFloatingTerminal: floatingTerminalHandlers.openFloatingTerminal,
     onCommandComplete: fixCommands.handleFixCommandComplete,

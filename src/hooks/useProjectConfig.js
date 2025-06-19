@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { projectSelectorFallbacks } from '../constants/selectors';
-import configSidebarSections from '../configurationSidebarSections.json';
+const configSidebarSections = require(
+  process.env.CONFIG_SIDEBAR_SECTIONS || '../configurationSidebarSections.json'
+);
 
 const configSidebarSectionsActual = configSidebarSections.sections;
 

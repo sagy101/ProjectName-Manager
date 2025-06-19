@@ -3,8 +3,12 @@ import ConfigSection from './ConfigSection';
 import Notification from './Notification';
 import StoppingStatusScreen from './StoppingStatusScreen';
 import { STATUS } from '../constants/verificationConstants';
-import configSidebarSections from '../configurationSidebarSections.json';
-import configSidebarCommands from '../configurationSidebarCommands.json';
+const configSidebarSections = require(
+  process.env.CONFIG_SIDEBAR_SECTIONS || '../configurationSidebarSections.json'
+);
+const configSidebarCommands = require(
+  process.env.CONFIG_SIDEBAR_COMMANDS || '../configurationSidebarCommands.json'
+);
 import { generateCommandList } from '../utils/evalUtils';
 import { useProjectConfig } from '../hooks/useProjectConfig';
 import RunButton from './RunButton';

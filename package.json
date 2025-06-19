@@ -9,6 +9,7 @@
   "scripts": {
     "start": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npx @electron/rebuild -f -w node-pty && electron .",
     "build": "webpack --mode development",
+    "build:mock": "CONFIG_SIDEBAR_SECTIONS=/workspace/ProjectName-Manager/__tests__/mock-data/mockConfigurationSidebarSections.json CONFIG_SIDEBAR_ABOUT=/workspace/ProjectName-Manager/__tests__/mock-data/mockConfigurationSidebarAbout.json CONFIG_SIDEBAR_COMMANDS=/workspace/ProjectName-Manager/__tests__/mock-data/mockConfigurationSidebarCommands.json npm run build",
     "watch": "webpack --mode development --watch",
     "lint": "eslint --ext .js,.jsx .",
     "test": "npm run test:jest && npm run test:e2e",

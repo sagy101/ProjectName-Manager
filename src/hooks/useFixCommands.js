@@ -1,7 +1,11 @@
 import { useCallback, useEffect } from 'react';
 import { STATUS } from '../constants/verificationConstants';
-import configurationSidebarAbout from '../configurationSidebarAbout.json';
-import configurationSidebarSections from '../configurationSidebarSections.json';
+const configurationSidebarAbout = require(
+  process.env.CONFIG_SIDEBAR_ABOUT || '../configurationSidebarAbout.json'
+);
+const configurationSidebarSections = require(
+  process.env.CONFIG_SIDEBAR_SECTIONS || '../configurationSidebarSections.json'
+);
 
 export const useFixCommands = ({
   appState,

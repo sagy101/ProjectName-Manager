@@ -20,8 +20,10 @@ let isVerifyingEnvironment = false; // Global flag for the whole process
 const projectRoot = path.resolve(__dirname, '../../..'); // Adjusted for new location
 
 // Path to the verifications configuration file
-const VERIFICATIONS_CONFIG_PATH = path.join(__dirname, '../generalEnvironmentVerifications.json');
-const CONFIG_SIDEBAR_ABOUT_PATH = path.join(__dirname, '../configurationSidebarAbout.json');
+const VERIFICATIONS_CONFIG_PATH = process.env.GENERAL_VERIFICATIONS ||
+  path.join(__dirname, '../generalEnvironmentVerifications.json');
+const CONFIG_SIDEBAR_ABOUT_PATH = process.env.CONFIG_SIDEBAR_ABOUT ||
+  path.join(__dirname, '../configurationSidebarAbout.json');
 
 const execCommand = async (commandString) => {
   debugLog(`Executing command: ${commandString}`);

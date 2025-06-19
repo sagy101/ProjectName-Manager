@@ -8,7 +8,8 @@ const projectRoot = path.resolve(__dirname, '../../..'); // Adjusted for new loc
 // Helper function to get Git branch with caching
 const gitBranchCache = {};
 
-const CONFIG_SIDEBAR_ABOUT_PATH = path.join(__dirname, '../configurationSidebarAbout.json');
+const CONFIG_SIDEBAR_ABOUT_PATH = process.env.CONFIG_SIDEBAR_ABOUT ||
+  path.join(__dirname, '../configurationSidebarAbout.json');
 
 const getGitBranch = async (relativePath) => {
   // Check cache first

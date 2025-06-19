@@ -5,7 +5,9 @@ import TabInfoPanel from './TabInfoPanel';
 import TerminalPlaceholder from './TerminalPlaceholder';
 import OverflowTabsDropdown from './OverflowTabsDropdown';
 import '@xterm/xterm/css/xterm.css';
-import configSidebarCommands from '../configurationSidebarCommands.json';
+const configSidebarCommands = require(
+  process.env.CONFIG_SIDEBAR_COMMANDS || '../configurationSidebarCommands.json'
+);
 import { useTerminals } from '../hooks/useTerminals';
 import { useTabManagement } from '../hooks/useTabManagement';
 import { useIpcListeners } from '../hooks/useIpcListeners';

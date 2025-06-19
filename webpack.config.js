@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack');
 
 module.exports = {
   mode: 'development',
@@ -54,6 +55,26 @@ module.exports = {
       }
     ],
   },
+  plugins: [
+    ...(process.env.CONFIG_SIDEBAR_SECTIONS ? [
+      new webpack.NormalModuleReplacementPlugin(
+        /configurationSidebarSections\.json$/,
+        path.resolve(__dirname, process.env.CONFIG_SIDEBAR_SECTIONS)
+      )
+    ] : []),
+    ...(process.env.CONFIG_SIDEBAR_ABOUT ? [
+      new webpack.NormalModuleReplacementPlugin(
+        /configurationSidebarAbout\.json$/,
+        path.resolve(__dirname, process.env.CONFIG_SIDEBAR_ABOUT)
+      )
+    ] : []),
+    ...(process.env.CONFIG_SIDEBAR_COMMANDS ? [
+      new webpack.NormalModuleReplacementPlugin(
+        /configurationSidebarCommands\.json$/,
+        path.resolve(__dirname, process.env.CONFIG_SIDEBAR_COMMANDS)
+      )
+    ] : [])
+  ],
   resolve: {
     extensions: ['.js', '.jsx']
   },
