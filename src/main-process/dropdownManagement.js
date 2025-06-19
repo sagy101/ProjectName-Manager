@@ -15,7 +15,7 @@ let dropdownCache = {}; // Keyed by dropdown ID and args
 let dropdownLoadingState = {}; // Track loading state for each dropdown
 
 async function getDropdownOptions(config) {
-  const { id, command, args, parseResponse } = config;
+  const { id, command, args, parseResponse, forceRefresh = false } = config;
 
   // Replace placeholders in the command with actual values
   let processedCommand = command;
@@ -44,10 +44,14 @@ async function getDropdownOptions(config) {
     });
   }
 
-  // Check cache first
-  if (dropdownCache[cacheKey]) {
+  // Check cache first (unless force refresh is requested)
+  if (!forceRefresh && dropdownCache[cacheKey]) {
     debugLog(`Returning cached options for dropdown ${id}`);
     return dropdownCache[cacheKey];
+  }
+
+  if (forceRefresh) {
+    debugLog(`Force refresh requested for dropdown ${id}, bypassing cache`);
   }
 
   // Mark as loading
