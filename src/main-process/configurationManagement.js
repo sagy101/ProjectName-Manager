@@ -8,29 +8,35 @@ const { debugLog } = require('../common/utils/debugUtils');
 const CONFIG_SIDEBAR_ABOUT_PATH = path.join(__dirname, '..', 'project-config', 'config', 'configurationSidebarAbout.json');
 const CONFIG_SIDEBAR_SECTIONS_PATH = path.join(__dirname, '..', 'project-config', 'config', 'configurationSidebarSections.json');
 
-// Function to load display settings
-async function loadDisplaySettings() {
+// Function to load application settings
+async function loadAppSettings() {
   try {
     const sectionsConfig = JSON.parse(await fs.readFile(CONFIG_SIDEBAR_SECTIONS_PATH, 'utf-8'));
     
-    // Extract display settings from the loaded config
-    const displaySettings = {
-      openDevToolsByDefault: sectionsConfig?.displaySettings?.openDevToolsByDefault || false,
-      projectName: sectionsConfig?.displaySettings?.projectName || 'Project',
+    // Extract settings from the loaded config
+    const appSettings = {
+      openDevToolsByDefault: sectionsConfig?.settings?.openDevToolsByDefault ?? false,
+      projectName: sectionsConfig?.settings?.projectName || 'Project',
+      autoSetupTimeoutSeconds: sectionsConfig?.settings?.autoSetupTimeoutSeconds || 60,
+      sidebarDefaultExpanded: sectionsConfig?.settings?.sidebarDefaultExpanded ?? false,
+      terminalScrollback: sectionsConfig?.settings?.terminalScrollback || 1000,
+      maxFloatingTerminals: sectionsConfig?.settings?.maxFloatingTerminals || 10,
+      terminalFontSize: sectionsConfig?.settings?.terminalFontSize || 14,
+      configurationDefaultExpanded: sectionsConfig?.settings?.configurationDefaultExpanded ?? true,
     };
 
-    debugLog('Display settings loaded successfully');
+    debugLog('Application settings loaded successfully');
     return {
       success: true,
-      displaySettings,
+      appSettings,
       sections: sectionsConfig
     };
   } catch (error) {
-    console.error('Error loading display settings:', error);
+    console.error('Error loading application settings:', error);
     return {
       success: false,
       error: error.message,
-      displaySettings: {},
+      appSettings: {},
       sections: []
     };
   }
@@ -212,9 +218,9 @@ function validateConfiguration(config) {
     });
   }
 
-  // Check display settings
-  if (config.displaySettings && typeof config.displaySettings !== 'object') {
-    errors.push('displaySettings must be an object');
+  // Check settings
+  if (config.settings && typeof config.settings !== 'object') {
+    errors.push('settings must be an object');
   }
 
   return {
@@ -250,7 +256,7 @@ async function checkConfigurationFiles() {
 }
 
 module.exports = {
-  loadDisplaySettings,
+  loadAppSettings,
   getAboutConfig,
   exportConfiguration,
   importConfiguration,

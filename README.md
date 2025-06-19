@@ -100,7 +100,7 @@ npm start
 | File | Purpose |
 |------|---------|
 | `src/environment-verification/generalEnvironmentVerifications.json` | General environment tool verifications with header configuration |
-| `src/project-config/config/configurationSidebarSections.json` | UI structure, components, dropdown selectors, custom buttons, and display settings (like `projectName`) |
+| `src/project-config/config/configurationSidebarSections.json` | UI structure, components, dropdown selectors, custom buttons, and application settings (appearance, behavior, limits) |
 | `src/project-config/config/configurationSidebarAbout.json` | Section descriptions, verifications, and "About" info for floating terminal commands |
 | `src/project-config/config/configurationSidebarCommands.json` | Command generation logic for main sections and floating terminal custom buttons |
 
@@ -135,8 +135,9 @@ Define the main section, any sub-sections, and components like `customButton`.
 
 ```json
 {
-  "displaySettings": {
+  "settings": {
     "projectName": "YourProject"
+    // Additional settings available - see Configuration Guide for complete list
   },
   "sections": [
     {

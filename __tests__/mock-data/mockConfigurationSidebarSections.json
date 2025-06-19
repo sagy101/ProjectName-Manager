@@ -1,7 +1,13 @@
 {
-  "displaySettings": {
+  "settings": {
     "projectName": "MockProject",
-    "openDevToolsByDefault": false
+    "openDevToolsByDefault": false,
+    "autoSetupTimeoutSeconds": 30,
+    "sidebarDefaultExpanded": true,
+    "terminalScrollback": 500,
+    "maxFloatingTerminals": 5,
+    "terminalFontSize": 16,
+    "configurationDefaultExpanded": false
   },
   "sections": [
     {

@@ -3,7 +3,7 @@ import { Terminal as XTerm } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
 
-const TerminalComponent = ({ id, active, initialCommand, noRunMode, isReadOnly, isErrorTab, errorMessage, onProcessStarted, isAutoSetup }) => {
+const TerminalComponent = ({ id, active, initialCommand, noRunMode, isReadOnly, isErrorTab, errorMessage, onProcessStarted, isAutoSetup, scrollback = 1000, fontSize = 14 }) => {
   const terminalRef = useRef(null);
   const xtermRef = useRef(null);
   const fitAddonRef = useRef(null);
@@ -18,13 +18,14 @@ const TerminalComponent = ({ id, active, initialCommand, noRunMode, isReadOnly, 
     const term = new XTerm({
       cursorBlink: true,
       convertEol: true, 
-      scrollback: 5000,
+      scrollback: scrollback,
       theme: {
         background: '#1e1e1e',
         foreground: '#f0f0f0',
         cursor: '#f0f0f0'
       },
-      disableStdin: isReadOnly === true // Disable input if isReadOnly is true
+      disableStdin: isReadOnly === true, // Disable input if isReadOnly is true
+      fontSize: fontSize
     });
     const fitAddon = new FitAddon();
     
@@ -131,7 +132,7 @@ const TerminalComponent = ({ id, active, initialCommand, noRunMode, isReadOnly, 
         delete window.terminals[id];
       }
     };
-  }, [id, initialCommand, noRunMode, isReadOnly]); // Re-run if id, initialCommand, noRunMode, or isReadOnly changes
+  }, [id, initialCommand, noRunMode, isReadOnly, fontSize]); // Re-run if id, initialCommand, noRunMode, or isReadOnly changes
 
   // Effect for handling visibility and fitting the addon
   useEffect(() => {

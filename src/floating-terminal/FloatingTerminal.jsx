@@ -19,7 +19,8 @@ const FloatingTerminal = ({
   isAutoSetup = false, // New prop to identify auto setup terminals
   onShowNotification, // New prop for showing notifications
   onCommandComplete, // New prop for when command completes
-  noRunMode // New prop for no-run mode
+  noRunMode, // New prop for no-run mode
+  settings // New prop for settings including scrollback
 }) => {
   const terminalRef = useRef(null);
   const [position, setPosition] = useState(initialPosition || { x: 50, y: 50 });
@@ -278,6 +279,8 @@ const FloatingTerminal = ({
           initialCommand={command}
           noRunMode={noRunMode} // Pass down the noRunMode prop
           isAutoSetup={isAutoSetup} // Pass down auto setup flag for simulation
+          scrollback={settings?.terminalScrollback || 1000} // Pass down scrollback setting
+          fontSize={settings?.terminalFontSize || 14} // Pass down font size setting
         />
       </div>
     </div>

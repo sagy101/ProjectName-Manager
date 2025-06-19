@@ -83,6 +83,12 @@ export const useFixCommands = ({
       verification.fixCommand
     );
 
+    // If terminal was not created (e.g., limit reached), do not show the running fix notification
+    if (!terminalId) {
+      // openFloatingTerminal already showed a warning via showAppNotification
+      return;
+    }
+
     eventHandlers.showAppNotification(
       `Running fix command for: ${verification.title}`,
       'info',

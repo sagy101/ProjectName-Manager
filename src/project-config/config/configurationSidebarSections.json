@@ -1,7 +1,13 @@
 {
-  "displaySettings": {
+  "settings": {
     "projectName": "ISO",
-    "openDevToolsByDefault": false
+    "openDevToolsByDefault": false,
+    "autoSetupTimeoutSeconds": 90,
+    "sidebarDefaultExpanded": false,
+    "terminalScrollback": 1000,
+    "maxFloatingTerminals": 3,
+    "terminalFontSize": 14,
+    "configurationDefaultExpanded": true
   },
   "sections": [
     {

@@ -33,7 +33,7 @@ Auto Setup eliminates the manual process of running fix commands one by one. Ins
 - **Terminal Integration**: Seamless viewing of command output
 - **Error Recovery**: Individual command retry with detailed feedback
 - **Command Control**: Terminate running commands and continue from failures
-- **Timeout Management**: 60-second automatic timeouts with visual countdown
+- **Timeout Management**: Configurable automatic timeouts (default 60 seconds) with visual countdown
 
 ## Getting Started
 
@@ -76,7 +76,7 @@ Auto Setup eliminates the manual process of running fix commands one by one. Ins
    - Or fix the issue manually and continue
 
 6. **Monitor Command Timeouts**
-   - Commands automatically timeout after 60 seconds
+   - Commands automatically timeout after the configured timeout (default 60 seconds, configurable via `autoSetupTimeoutSeconds` in settings)
    - Running commands show a live countdown timer (⏱ 45s)
    - Timer turns yellow when ≤10 seconds remain with pulsing animation
    - Timed out commands can be retried individually
@@ -203,7 +203,7 @@ Auto Setup eliminates the manual process of running fix commands one by one. Ins
 - Use "Continue" button to proceed to next priority group
 
 #### Command Timeouts
-- Commands automatically timeout after 60 seconds
+- Commands automatically timeout after the configured timeout (default 60 seconds, configurable via `autoSetupTimeoutSeconds` in settings)
 - Timeout commands show red clock icon and "Timeout" status
 - Use "Terminate" button to manually stop long-running commands
 - Timed out commands can be retried individually
@@ -351,7 +351,7 @@ A: Fix commands should be non-interactive. Interactive commands may hang.
 A: Enable No Run Mode in the main app. Auto Setup will simulate command execution with 2-second delays, allowing you to test the complete workflow (priority execution, progress tracking, status updates) without any system changes.
 
 **Q: What happens if a command is taking too long?**
-A: Commands automatically timeout after 60 seconds. You can also manually terminate long-running commands using the "Terminate" button next to running commands.
+A: Commands automatically timeout after the configured timeout (default 60 seconds, configurable via `autoSetupTimeoutSeconds` in settings). You can also manually terminate long-running commands using the "Terminate" button next to running commands.
 
 **Q: Can I continue Auto Setup if some commands in a priority group fail?**
 A: Yes! When a priority group fails, a "Continue" button appears allowing you to proceed to the next priority group without fixing the failures.

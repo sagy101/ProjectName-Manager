@@ -6,7 +6,7 @@ const config = isMock
   ? require('../mock-data/mockConfigurationSidebarSections.json')
   : require('../../src/project-config/config/configurationSidebarSections.json');
 
-const { sections, displaySettings } = config;
+const { sections, settings } = config;
 
 test.describe('Terminal Command Validation', () => {
   let electronApp;
@@ -53,7 +53,7 @@ test.describe('Terminal Command Validation', () => {
     
     await window.waitForTimeout(getTimeout(1000));
 
-    const runButton = window.locator('button').filter({ hasText: new RegExp(`RUN.*${displaySettings.projectName}`, 'i') });
+    const runButton = window.locator('button').filter({ hasText: new RegExp(`RUN.*${settings.projectName}`, 'i') });
     await runButton.click();
 
     // Verify that the correct tab appears
@@ -86,7 +86,7 @@ test.describe('Terminal Command Validation', () => {
     const containerButton = await sectionLocator.locator('.deployment-toggle-btn').filter({ hasText: /container/i });
     if (await containerButton.isVisible()) await containerButton.click();
 
-    const runButton = window.locator('button').filter({ hasText: new RegExp(`RUN.*${displaySettings.projectName}`, 'i') });
+    const runButton = window.locator('button').filter({ hasText: new RegExp(`RUN.*${settings.projectName}`, 'i') });
     await runButton.click();
     
     // The tab name may include deployment type, so we find it by the section title
@@ -132,7 +132,7 @@ test.describe('Terminal Command Validation', () => {
       await window.click(runOptionSelector);
     }
 
-    const runButton = window.locator('button').filter({ hasText: new RegExp(`RUN.*${displaySettings.projectName}`, 'i') });
+    const runButton = window.locator('button').filter({ hasText: new RegExp(`RUN.*${settings.projectName}`, 'i') });
     
     const initialTabCount = await window.locator('.tab').count();
     await runButton.click();
@@ -144,7 +144,7 @@ test.describe('Terminal Command Validation', () => {
     const terminalTabs = await window.locator('.tab');
     expect(await terminalTabs.count()).toBeGreaterThan(0);
 
-    const stopButton = await window.locator('button').filter({ hasText: /STOP|KILL/i }).or(window.locator('button').filter({ hasText: new RegExp(`STOP.*${displaySettings.projectName}`, 'i') }));
+    const stopButton = await window.locator('button').filter({ hasText: /STOP|KILL/i }).or(window.locator('button').filter({ hasText: new RegExp(`STOP.*${settings.projectName}`, 'i') }));
     await expect(stopButton).toBeVisible({ timeout: getTimeout(5000) });
     await stopButton.click();
 

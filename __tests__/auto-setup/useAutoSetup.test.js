@@ -33,7 +33,7 @@ describe('useAutoSetup Hook', () => {
       onVerificationRerun: mockOnVerificationRerun,
       showAppNotification: mockShowAppNotification,
     };
-    return renderHook((props) => useAutoSetup({ ...defaultProps, ...props }));
+    return renderHook((props) => useAutoSetup({ ...defaultProps, ...initialProps, ...props }));
   };
 
   test('should initialize with default values', () => {
@@ -106,28 +106,44 @@ describe('useAutoSetup Hook', () => {
     expect(result.current.commandStatuses.cmd1).toBe(COMMAND_EXECUTION_STATUS.STOPPED);
   });
 
-  test('should handle command timeout', () => {
+  test('should handle command timeout', async () => {
     jest.useFakeTimers();
     const mockGroups = [{ priority: 1, commands: [{ id: 'cmd1', title: 'Command 1', fixCommand: 'fix cmd1' }] }];
     autoSetupUtils.collectFixCommands.mockReturnValue(mockGroups);
+    mockOnOpenFloatingTerminal.mockReturnValue('terminal-123');
     
-    const { result, rerender } = getHook();
+    const { result, rerender } = getHook({
+      settings: { autoSetupTimeoutSeconds: 30 } // Use 30 seconds for testing
+    });
+    
+    // Open auto setup first
     act(() => {
       result.current.openAutoSetup();
     });
+    
+    // Wait for the status to be IDLE
+    await act(async () => {
+      // Allow any pending effects to run
+      await Promise.resolve();
+    });
     rerender();
 
+    // Start auto setup
     act(() => {
       result.current.startAutoSetup();
     });
 
+    // Verify command is running
+    expect(result.current.commandStatuses.cmd1).toBe(COMMAND_EXECUTION_STATUS.RUNNING);
+
+    // Run all timers and check if timeout fired
     act(() => {
-      jest.advanceTimersByTime(61000);
+      jest.runAllTimers();
     });
 
     expect(result.current.commandStatuses.cmd1).toBe(COMMAND_EXECUTION_STATUS.TIMEOUT);
     expect(mockShowAppNotification).toHaveBeenCalledWith(
-      'Command "Command 1" timed out after 60 seconds.',
+      'Command "Command 1" timed out after 30 seconds.',
       'warning'
     );
     jest.useRealTimers();

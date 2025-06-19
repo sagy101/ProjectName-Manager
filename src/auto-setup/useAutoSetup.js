@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { AUTO_SETUP_STATUS, COMMAND_EXECUTION_STATUS, SECTION_STATUS, AUTO_SETUP_TERMINAL_CONFIG } from './constants/autoSetupConstants';
 import { collectFixCommands, calculateGroupStatus, generateAutoSetupTerminalId, canGroupStart } from './utils/autoSetupUtils';
+import appConfig from '../project-config/config/configurationSidebarSections.json';
 
 const log = (...args) => console.log('[AutoSetup]', ...args);
 
@@ -15,8 +16,13 @@ export const useAutoSetup = ({
   onOpenFloatingTerminal,
   onCommandComplete,
   onVerificationRerun,
-  showAppNotification
+  showAppNotification,
+  settings // Add settings parameter
 }) => {
+  // Get timeout from settings, fallback to default 60 seconds
+  const timeoutSeconds = settings?.autoSetupTimeoutSeconds || appConfig.settings?.autoSetupTimeoutSeconds || 60;
+  const timeoutMs = timeoutSeconds * 1000;
+
   // Core state
   const [isAutoSetupVisible, setIsAutoSetupVisible] = useState(false);
   const [autoSetupStatus, setAutoSetupStatus] = useState(AUTO_SETUP_STATUS.IDLE);
@@ -158,7 +164,7 @@ export const useAutoSetup = ({
       [command.id]: COMMAND_EXECUTION_STATUS.RUNNING
     }));
 
-    // Set up 60-second timeout
+    // Set up configurable timeout
     const timeoutId = setTimeout(() => {
       // Command timed out
       setCommandStatuses(prev => ({
@@ -189,10 +195,10 @@ export const useAutoSetup = ({
       });
 
       showAppNotification?.(
-        `Command "${command.title}" timed out after 60 seconds.`,
+        `Command "${command.title}" timed out after ${timeoutSeconds} seconds.`,
         'warning'
       );
-    }, 60000); // 60 seconds
+    }, timeoutMs);
 
     // Track timeout with countdown
     setCommandTimeouts(prev => {
@@ -200,7 +206,7 @@ export const useAutoSetup = ({
       next.set(command.id, {
         timeoutId,
         startTime: Date.now(),
-        duration: 60000
+        duration: timeoutMs
       });
       return next;
     });
@@ -229,7 +235,7 @@ export const useAutoSetup = ({
         return next;
       });
     }
-  }, [onOpenFloatingTerminal, handleTerminalComplete, showAppNotification]);
+  }, [onOpenFloatingTerminal, handleTerminalComplete, showAppNotification, timeoutSeconds, timeoutMs]);
 
   // Start auto setup
   const startAutoSetup = useCallback(() => {

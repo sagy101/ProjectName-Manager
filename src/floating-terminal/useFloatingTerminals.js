@@ -20,7 +20,9 @@ export const useFloatingTerminals = ({
   infoPanelState,
   setInfoPanelState,
   configState,
-  noRunMode
+  noRunMode,
+  settings,
+  showAppNotification
 }) => {
   // Define showFloatingTerminal first
   const showFloatingTerminal = useCallback((terminalId) => {
@@ -103,6 +105,26 @@ export const useFloatingTerminals = ({
       return existingTerminal.id; // Return existing terminal ID
       }
 
+    // Check maximum floating terminals limit
+    const maxTerminals = settings?.maxFloatingTerminals || 10;
+    if (floatingTerminals.length >= maxTerminals) {
+      const warningMsg = `Maximum number of floating terminals reached (${maxTerminals}). Close some terminals to create new ones.`;
+      console.warn(`Cannot create more floating terminals. ${warningMsg}`);
+
+      // Prefer React-level notification if callback provided
+      if (typeof showAppNotification === 'function') {
+        showAppNotification(warningMsg, 'warning');
+      } else if (window.electron?.showNotification) {
+        // Fallback to electron notification for older code paths
+        window.electron.showNotification({
+          message: warningMsg,
+          type: 'warning'
+        });
+      }
+
+      return null; // Cannot create new terminal
+    }
+
     // Generate terminal ID for new terminal
     const newTerminalId = `ft-${Date.now()}-${commandId}`;
 
@@ -146,7 +168,7 @@ export const useFloatingTerminals = ({
       setActiveFloatingTerminalId(newTerminalId);
     
     return newTerminalId; // Return the terminal ID
-  }, [floatingTerminals, nextZIndex, positionOffset, isFloatingSidebarExpanded, setFloatingTerminals, setActiveFloatingTerminalId, setNextZIndex]); // Added floatingTerminals dependency
+  }, [floatingTerminals, nextZIndex, positionOffset, isFloatingSidebarExpanded, setFloatingTerminals, setActiveFloatingTerminalId, setNextZIndex, showAppNotification]); // Added floatingTerminals dependency
 
   const closeFloatingTerminal = useCallback((terminalId) => {
     setFloatingTerminals(prevTerminals =>

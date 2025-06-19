@@ -6,7 +6,7 @@ const config = isMock
   ? require('../mock-data/mockConfigurationSidebarSections.json')
   : require('../../src/project-config/config/configurationSidebarSections.json');
 
-const { sections, displaySettings } = config;
+const { sections, settings } = config;
 
 // Helper function to find a section by its ID from the config
 const getSectionById = (id) => sections.find(s => s.id === id);

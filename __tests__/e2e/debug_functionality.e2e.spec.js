@@ -6,7 +6,7 @@ const config = isMock
   ? require('../mock-data/mockConfigurationSidebarSections.json')
   : require('../../src/project-config/config/configurationSidebarSections.json');
 
-const { sections, displaySettings } = config;
+const { sections, settings } = config;
 
 test.describe('Debug Menu Functionality', () => {
   let electronApp;

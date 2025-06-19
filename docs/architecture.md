@@ -132,7 +132,7 @@ The main process has been refactored into a modular architecture for better main
 #### `configurationManagement.js` - Configuration Management
 - **Purpose**: Application configuration loading, import/export
 - **Responsibilities**: File I/O, JSON parsing, dialog handling, settings management
-- **Key Functions**: `loadDisplaySettings()`, `importConfiguration()`, `exportConfiguration()`, `getAboutConfig()`
+- **Key Functions**: `loadAppSettings()`, `importConfiguration()`, `exportConfiguration()`, `getAboutConfig()`
 
 #### `windowManagement.js` - Window Management
 - **Purpose**: Electron window creation and management

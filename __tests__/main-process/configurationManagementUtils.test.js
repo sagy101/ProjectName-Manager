@@ -11,7 +11,7 @@ describe('configurationManagement utilities', () => {
   test('validateConfiguration detects errors', () => {
     const result = validateConfiguration({
       sections: [{ title: 'No id' }],
-      displaySettings: 'bad'
+      settings: 'bad'
     });
     expect(result.isValid).toBe(false);
     expect(result.errors.length).toBeGreaterThan(0);
@@ -20,7 +20,7 @@ describe('configurationManagement utilities', () => {
   test('validateConfiguration passes with minimal valid config', () => {
     const result = validateConfiguration({
       sections: [{ id: 'one', title: 'One' }],
-      displaySettings: {}
+      settings: {}
     });
     expect(result.isValid).toBe(true);
   });
