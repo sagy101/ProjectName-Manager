@@ -390,5 +390,12 @@
         "base": "ML Engine (Scikit-learn)"
       }
     }
+  },
+  {
+    "id": "runStorybook",
+    "command": {
+      "base": "cd ./weblifemirror && nvm use ${nodeVersion} && npm run storybook",
+      "tabTitle": "Storybook"
+    }
   }
 ] 
