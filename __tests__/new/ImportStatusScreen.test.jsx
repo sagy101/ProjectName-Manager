@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import ImportStatusScreen from '../../src/screens/ImportStatusScreen.jsx';
+import ImportStatusScreen from '../../src/import-status-screen/ImportStatusScreen.jsx';
 
 /** @jest-environment jsdom */
 

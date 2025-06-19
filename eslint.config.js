@@ -57,7 +57,7 @@ export default [
       },
       "import/resolver": {
         node: {
-          extensions: [".js", ".jsx", ".json"]
+          extensions: [".js", ".jsx", ".json", ".css"]
         }
       }
     }

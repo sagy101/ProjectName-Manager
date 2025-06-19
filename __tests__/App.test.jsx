@@ -180,9 +180,9 @@ jest.mock('../src/environment-verification/EnvironmentVerification', () => {
   return (props) => mockReact.createElement('div', { 'data-testid': 'environment-verification' }, 'EnvironmentVerification');
 });
 
-jest.mock('../src/screens/LoadingScreen', () => {
+jest.mock('../src/loading-screen/LoadingScreen', () => {
   const mockReact = require('react');
-  return (props) => mockReact.createElement('div', { 'data-testid': 'loading-screen' }, `Loading: ${props.statusMessage}`);
+  return (props) => props.progress < 100 ? mockReact.createElement('div', { 'data-testid': 'loading-screen' }, 'LoadingScreen') : null;
 });
 
 jest.mock('../src/common/components/Notification', () => {
@@ -205,7 +205,7 @@ jest.mock('../src/tab-info/components/TabInfoPanel', () => {
   return (props) => mockReact.createElement('div', { 'data-testid': 'tab-info-panel' }, 'TabInfoPanel');
 });
 
-jest.mock('../src/screens/ImportStatusScreen', () => {
+jest.mock('../src/import-status-screen/ImportStatusScreen', () => {
   const mockReact = require('react');
   return (props) => props.isVisible ? mockReact.createElement('div', { 'data-testid': 'import-status-screen' }, 'ImportStatusScreen') : null;
 });

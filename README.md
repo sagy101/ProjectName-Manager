@@ -92,17 +92,17 @@ npm start
 
 ## ⚙️ Configuration
 
-{ProjectName} Manager uses a modular JSON-based configuration system. All configurations are stored in the `src/` directory:
+{ProjectName} Manager uses a modular JSON-based configuration system. All configurations are stored in feature-specific directories within `src/`:
 
 <details>
 <summary><strong>Configuration Files Overview</strong></summary>
 
 | File | Purpose |
 |------|---------|
-| `generalEnvironmentVerifications.json` | General environment tool verifications with header configuration |
-| `configurationSidebarSections.json` | UI structure, components, dropdown selectors, custom buttons, and display settings (like `projectName`) |
-| `configurationSidebarAbout.json` | Section descriptions, verifications, and "About" info for floating terminal commands |
-| `configurationSidebarCommands.json` | Command generation logic for main sections and floating terminal custom buttons |
+| `src/environment-verification/generalEnvironmentVerifications.json` | General environment tool verifications with header configuration |
+| `src/project-config/config/configurationSidebarSections.json` | UI structure, components, dropdown selectors, custom buttons, and display settings (like `projectName`) |
+| `src/project-config/config/configurationSidebarAbout.json` | Section descriptions, verifications, and "About" info for floating terminal commands |
+| `src/project-config/config/configurationSidebarCommands.json` | Command generation logic for main sections and floating terminal custom buttons |
 
 </details>
 
@@ -444,17 +444,24 @@ When any debug options are active, the gear icon will show an orange border.
 
 ### Project Structure
 
+The project follows a feature-based modular architecture to keep related code organized and maintainable.
+
 ```
 {ProjectName}-manager/
 ├── src/
-│   ├── components/          # React components
-│   ├── constants/           # Shared constants
-│   ├── styles/              # CSS styles
-│   ├── *.json              # Configuration files
-│   └── renderer.jsx         # Main renderer entry
-├── main.js                  # Electron main process
-├── electron-preload.js      # Preload script
-└── docs/                    # Documentation
+│   ├── main-process/          # Electron main process modules
+│   ├── common/                # Shared components, hooks, styles, etc.
+│   ├── project-config/        # Project configuration UI and logic
+│   ├── environment-verification/ # Environment verification UI and logic
+│   ├── terminal/              # Main terminal components and hooks
+│   ├── auto-setup/            # Auto-setup feature components
+│   ├── loading-screen/        # Loading screen feature
+│   ├── ... (other feature folders like health-report, tab-info) ...
+│   ├── App.jsx                # Root React component
+│   └── renderer.jsx           # Main renderer entry point
+├── main.js                    # Electron main process entry point
+├── electron-preload.js        # Preload script
+└── docs/                      # Documentation
 ```
 
 ### Building
