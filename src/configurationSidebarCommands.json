@@ -1,20 +1,20 @@
 [
   {
-    "sectionId": "testAnalyticsLogCommand",
+    "id": "testAnalyticsLogCommand",
     "command": {
       "base": "echo 'Floating terminal for Test Analytics Logs'",
       "tabTitle": "Test Analytics Logs"
     }
   },
   {
-    "sectionId": "mlEngineLogCommand",
+    "id": "mlEngineLogCommand",
     "command": {
       "base": "echo 'ML Engine logs'",
       "tabTitle": "ML Logs"
     }
   },
   {
-    "sectionId": "mirror",
+    "id": "mirror",
     "conditions": {
       "enabled": true,
       "attachState.mirror": false
@@ -34,7 +34,7 @@
     }
   },
   {
-    "sectionId": "mirror",
+    "id": "mirror",
     "conditions": {
       "enabled": true,
       "attachState.mirror": true,
@@ -55,7 +55,7 @@
     }
   },
   {
-    "sectionId": "mirror",
+    "id": "mirror",
     "conditions": {
       "enabled": true,
       "attachState.mirror": true,
@@ -76,7 +76,7 @@
     }
   },
   {
-    "sectionId": "frontend",
+    "id": "frontend",
     "conditions": {
       "mirrorConfig.enabled": true,
       "frontendConfig.enabled": true,
@@ -89,7 +89,7 @@
     }
   },
   {
-    "sectionId": "frontend",
+    "id": "frontend",
     "conditions": {
       "mirrorConfig.enabled": true,
       "frontendConfig.enabled": true,
@@ -102,7 +102,7 @@
     }
   },
   {
-    "sectionId": "gopm",
+    "id": "gopm",
     "conditions": {
       "enabled": true,
       "deploymentType": "process"
@@ -121,7 +121,7 @@
     }
   },
   {
-    "sectionId": "gopm",
+    "id": "gopm",
     "conditions": {
       "enabled": true,
       "deploymentType": "container"
@@ -134,7 +134,7 @@
     }
   },
   {
-    "sectionId": "url-intelligence-sub",
+    "id": "url-intelligence-sub",
     "conditions": {
       "enabled": true,
       "url-intelligenceConfig.enabled": true,
@@ -149,7 +149,7 @@
     }
   },
   {
-    "sectionId": "url-intelligence-sub",
+    "id": "url-intelligence-sub",
     "conditions": {
       "enabled": true,
       "url-intelligenceConfig.enabled": true,
@@ -164,7 +164,7 @@
     }
   },
   {
-    "sectionId": "url-intelligence-sub",
+    "id": "url-intelligence-sub",
     "conditions": {
       "enabled": true,
       "url-intelligenceConfig.enabled": true,
@@ -186,7 +186,7 @@
     }
   },
   {
-    "sectionId": "threat-intelligence-sub",
+    "id": "threat-intelligence-sub",
     "conditions": {
       "enabled": true,
       "url-intelligenceConfig.enabled": true,
@@ -201,7 +201,7 @@
     }
   },
   {
-    "sectionId": "activity-logger",
+    "id": "activity-logger",
     "conditions": {
       "enabled": true,
       "attachState.activity-logger": false
@@ -212,7 +212,7 @@
     }
   },
   {
-    "sectionId": "activity-logger",
+    "id": "activity-logger",
     "conditions": {
       "enabled": true,
       "attachState.activity-logger": true,
@@ -224,7 +224,7 @@
     }
   },
   {
-    "sectionId": "activity-logger",
+    "id": "activity-logger",
     "conditions": {
       "enabled": true,
       "attachState.activity-logger": true,
@@ -236,7 +236,7 @@
     }
   },
   {
-    "sectionId": "rule-engine",
+    "id": "rule-engine",
     "conditions": {
       "enabled": true,
       "deploymentType": "process"
@@ -256,7 +256,7 @@
     }
   },
   {
-    "sectionId": "rule-engine",
+    "id": "rule-engine",
     "conditions": {
       "enabled": true,
       "deploymentType": "container"
@@ -269,7 +269,7 @@
     }
   },
   {
-    "sectionId": "test-analytics",
+    "id": "test-analytics",
     "conditions": {
       "enabled": true,
       "mode": "development"
@@ -282,7 +282,7 @@
     }
   },
   {
-    "sectionId": "test-analytics",
+    "id": "test-analytics",
     "conditions": {
       "enabled": true,
       "mode": "staging"
@@ -295,7 +295,7 @@
     }
   },
   {
-    "sectionId": "test-analytics",
+    "id": "test-analytics",
     "conditions": {
       "enabled": true,
       "mode": "production"
@@ -308,7 +308,7 @@
     }
   },
   {
-    "sectionId": "test-analytics",
+    "id": "test-analytics",
     "conditions": {
       "enabled": true,
       "dataProcessorConfig.enabled": true,
@@ -322,7 +322,7 @@
     }
   },
   {
-    "sectionId": "test-analytics",
+    "id": "test-analytics",
     "conditions": {
       "enabled": true,
       "dataProcessorConfig.enabled": true,
@@ -336,7 +336,7 @@
     }
   },
   {
-    "sectionId": "test-analytics",
+    "id": "test-analytics",
     "conditions": {
       "enabled": true,
       "dataProcessorConfig.enabled": true,
@@ -350,7 +350,7 @@
     }
   },
   {
-    "sectionId": "test-analytics",
+    "id": "test-analytics",
     "conditions": {
       "enabled": true,
       "mlEngineConfig.enabled": true,
@@ -364,7 +364,7 @@
     }
   },
   {
-    "sectionId": "test-analytics",
+    "id": "test-analytics",
     "conditions": {
       "enabled": true,
       "mlEngineConfig.enabled": true,
@@ -378,7 +378,7 @@
     }
   },
   {
-    "sectionId": "test-analytics",
+    "id": "test-analytics",
     "conditions": {
       "enabled": true,
       "mlEngineConfig.enabled": true,

@@ -175,7 +175,7 @@ Add a `refreshConfig` object to any command definition in `configurationSidebarC
 
 ```json
 {
-  "sectionId": "alpha",
+  "id": "alpha",
   "conditions": {
     "enabled": true
   },

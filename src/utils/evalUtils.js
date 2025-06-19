@@ -106,7 +106,7 @@ function generateCommandList(config, globalDropdowns, {
   const generatedCommandSectionIds = new Set();
 
   configSidebarCommands.forEach((commandDef, index) => {
-    const { sectionId: cmdSectionId, conditions, command } = commandDef;
+    const { id: cmdSectionId, conditions, command } = commandDef;
     const commandDefinitionId = index;
 
     const isDisplayableSectionOrSubSection = configSidebarSectionsActual.some(s =>
@@ -280,7 +280,7 @@ function generateCommandList(config, globalDropdowns, {
     const sectionId = sectionDef.id;
     const sectionTitle = sectionDef.title;
     if (config[sectionId]?.enabled) {
-      const hasCommandConfig = configSidebarCommands.some(cmd => cmd.sectionId === sectionId);
+      const hasCommandConfig = configSidebarCommands.some(cmd => cmd.id === sectionId);
       if (hasCommandConfig) {
         if (!generatedCommandSectionIds.has(sectionId)) {
           commands.push({
@@ -324,7 +324,7 @@ function generateCommandList(config, globalDropdowns, {
         const parentSectionId = sectionDef.id;
         const subSectionConfigKey = `${subSectionId.replace(/-sub$/, '')}Config`;
         if (config[parentSectionId]?.[subSectionConfigKey]?.enabled) {
-          const subHasCommandConfig = configSidebarCommands.some(cmd => cmd.sectionId === subSectionId);
+          const subHasCommandConfig = configSidebarCommands.some(cmd => cmd.id === subSectionId);
           if (subHasCommandConfig && !generatedCommandSectionIds.has(subSectionId)) {
             commands.push({
               title: subSectionTitle,
