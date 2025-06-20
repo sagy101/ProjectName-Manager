@@ -9,6 +9,7 @@
   "scripts": {
     "start": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npx @electron/rebuild -f -w node-pty && electron .",
     "build": "webpack --mode development",
+    "rebuild": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npx @electron/rebuild -f -w node-pty",
     "watch": "webpack --mode development --watch",
     "lint": "eslint --ext .js,.jsx .",
     "test": "npm run test:jest && npm run test:e2e",

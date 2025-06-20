@@ -1,13 +1,19 @@
 # Terminal Features
 
-This document provides detailed information about {ProjectName} Manager's terminal features. This guide complements the [System Architecture](architecture.md#terminal-system-architecture) document, which provides a higher-level overview.
+> Comprehensive guide to {ProjectName} Manager's dual-terminal system
 
-## Terminal Types
+## Overview
 
-{ProjectName} Manager offers two primary types of terminals to cater to different needs:
+{ProjectName} Manager features a sophisticated terminal system that goes beyond basic command execution. With both main tabbed terminals and floating terminals, plus advanced features like process monitoring and container management, it provides a complete terminal experience tailored for complex development environments.
 
-1.  **Main Tabbed Terminals**: Used for running the primary commands associated with your {ProjectName} configuration sections. These are integrated into the main terminal area with a tabbed interface.
-2.  **Floating Terminals**: Independent, windowed terminals typically launched for specific auxiliary tasks, such as viewing logs or executing one-off commands defined by `customButton` components.
+### Terminal Types at a Glance
+
+| Terminal Type | Purpose | Key Features |
+|--------------|---------|--------------|
+| **Main Terminals** | Primary service execution | Tabbed interface, read-only by default, container management |
+| **Floating Terminals** | Auxiliary tasks & logs | Draggable windows, always writable, auto-minimize |
+
+For architectural details, see the [System Architecture](architecture-details.md#terminal-system-architecture) document.
 
 --- 
 
@@ -155,6 +161,40 @@ The Tab Information Panel shows detailed process information:
 - **State Caching**: Updates sent only when status actually changes
 - **Resource Management**: Automatic cleanup when processes complete
 - **Smart Filtering**: Avoids monitoring system utilities and shell commands
+
+### Advanced Process Monitoring Details
+
+The terminal system implements comprehensive process monitoring through multiple detection methods:
+
+#### Process Tree Discovery
+- **Method**: Uses `ps -ax -o pid,ppid,state,command,rss,pcpu` on Unix systems
+- **Capability**: Discovers all descendant processes of the shell
+- **Frequency**: Real-time monitoring every second
+- **Filtering**: Intelligently filters out shell utilities and monitoring commands
+
+#### Process State Detection
+The system interprets Unix process states to provide accurate status information:
+
+| State | Status | Description |
+|-------|--------|-------------|
+| `R`, `R+` | running | Process is running or runnable |
+| `S`, `S+` | sleeping | Interruptible sleep (waiting for events) |
+| `D` | waiting | Uninterruptible sleep (I/O operations) |
+| `T` | paused | Stopped by signal (Ctrl+Z) |
+| `Z` | finishing | Zombie process (terminated, not reaped) |
+| `I` | idle | Idle kernel thread |
+
+#### Control Character Detection
+The system monitors input streams for control characters:
+
+- **Ctrl+C (`\x03`)**: Interrupt signal - marks process as terminated by user
+- **Ctrl+D (`\x04`)**: EOF signal - marks process as terminated by EOF
+- **Ctrl+Z (`\x1a`)**: Suspend signal - detected via process state 'T'
+
+#### Exit Code Capture
+- **Method**: Injects `echo "EXIT_CODE:$?"` after natural process completion
+- **Purpose**: Distinguishes between successful completion and error conditions
+- **Pattern Matching**: Monitors output for `EXIT_CODE:(\d+)` pattern
 
 ### Container Status Indicators
 
@@ -370,6 +410,34 @@ Basic information about a floating terminal's purpose and command can be accesse
 
 --- 
 
+## App Control Sidebar & Debug Tools
+
+The **App Control Sidebar**, accessible from the right edge of the application, provides:
+- **Auto Setup**: One-click automated environment setup (wrench icon)
+- Management of active **Floating Terminals** (show, minimize, view "About" info, close)
+- **Health Report**: Real-time status overview of all running services
+- Access to **Debug Tools** via a gear icon at the bottom
+
+When any debug options are active, the gear icon will show an orange border.
+
+### Debug Tools Features (within App Control Sidebar)
+
+**Developer Utilities**
+- **Open Dev Tools**: Opens Chrome Developer Tools.
+- **Reload App**: Reloads the entire application.
+- **Export Environment**: Exports comprehensive environment verification data including command outputs and system information.
+- **Toggle All Verifications**: Toggles all visible verification statuses between valid/invalid for testing purposes.
+  - If any verifications are invalid, sets all to valid. Otherwise sets all to invalid.
+  - Only affects verifications from visible sections (respects test section visibility).
+
+**Visibility Options**
+- **Show/Hide Test Sections**: Toggle visibility of sections marked `testSection: true`.
+  - Hidden by default. Commands from hidden test sections are excluded when "Run {ProjectName}" is pressed.
+
+**Execution Modes**
+- **No Run Mode**: Commands are displayed but not executed in both main and floating terminals.
+- **Terminal Input Mode**: Toggle the main tabbed terminals between read-only (default) and writable. Disabled when a {ProjectName} configuration is running.
+
 ## Performance Considerations
 
 ### Large Output Handling
@@ -385,4 +453,29 @@ Basic information about a floating terminal's purpose and command can be accesse
 ### Refresh Optimization
 - Commands are killed cleanly before restart
 - Resources are properly cleaned up
-- Rapid refresh is throttled to prevent issues 
+- Rapid refresh is throttled to prevent issues
+
+## Troubleshooting
+
+### Main Terminals Not Accepting Input
+- Main terminals are read-only by default for safety
+- Enable input via Debug Tools: App Control Sidebar -> Gear Icon -> "Terminals Read-Only" button
+- This option is disabled when a {ProjectName} configuration is running
+
+### Test Sections Not Showing
+- Open debug panel (gear icon in App Control Sidebar)
+- Click "Show Test Sections" button to toggle visibility
+- Test sections are hidden by default to reduce clutter
+
+### Terminal Process Issues
+- If terminals show errors or don't display output, run `npm run rebuild`
+- Check shell configuration and PTY permissions
+- Review console logs for detailed error messages
+
+## Related Documentation
+
+- [Configuration Guide](configuration-guide.md) - Configuring terminal commands
+- [Command System](command-system.md) - How commands are generated
+- [Architecture Details](architecture-details.md#terminal-system-architecture) - Technical implementation
+- [Getting Started](getting-started.md) - Basic terminal usage
+- [Health Report](health-report.md) - Monitoring terminal status 

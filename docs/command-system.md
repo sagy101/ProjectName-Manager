@@ -1,18 +1,21 @@
 # Command System
 
-This document explains how {ProjectName} Manager's dynamic command generation system works and how to configure it. For a higher-level overview of where command generation fits into the overall system, see the [System Architecture](architecture.md#command-generation--execution) document.
+> Dynamic command generation and execution in {ProjectName} Manager
 
 ## Overview
 
-The command system generates terminal commands based on the current configuration state. Commands are defined in JSON configuration files and can be dynamically modified based on:
+The command system is the heart of {ProjectName} Manager, generating terminal commands dynamically based on your configuration state. This powerful system allows complete customization through JSON files without any code changes.
 
-- Section enable/disable states (for both top-level and sub-sections)
-- Deployment option selections
-- Path verification results
-- Sub-section configurations
-- Git branch information
+### Key Capabilities
 
-Both top-level sections and their sub-sections can have dedicated commands that open in separate terminal tabs.
+- **Dynamic Generation**: Commands adapt based on current configuration
+- **Conditional Logic**: Different commands for different deployment modes
+- **Variable Substitution**: Reference dropdown values and configuration state
+- **Container Management**: Automatic Docker container lifecycle
+- **Tab Management**: Each command runs in its own terminal tab
+- **Refresh Support**: Re-run commands with dynamic modifications
+
+For architectural context, see the [System Architecture](architecture-details.md#command-generation--execution) document.
 
 ## Command Configuration
 
@@ -574,4 +577,11 @@ Container status is available in the Tab Information Panel:
   }
 }
 ```
+
+## Related Documentation
+
+- [Configuration Guide](configuration-guide.md) - Overall configuration system
+- [Terminal Features](terminal-features.md) - How commands execute in terminals
+- [Architecture Details](architecture-details.md#command-generation--execution) - Technical implementation
+- [Getting Started](getting-started.md) - Basic command usage
 

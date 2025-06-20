@@ -1,15 +1,37 @@
 # Configuration Guide
 
-This guide provides detailed information about configuring {ProjectName} Manager through its JSON-based configuration system.
+> Complete guide to {ProjectName} Manager's JSON-based configuration system
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Configuration Files](#configuration-files)
+  - [1. General Environment Verifications](#1-general-environment-verifications)
+  - [2. Configuration Sidebar Sections](#2-configuration-sidebar-sections)
+  - [3. Configuration Sidebar About](#3-configuration-sidebar-about)
+  - [4. Configuration Sidebar Commands](#4-configuration-sidebar-commands)
+- [State Management](#state-management)
+- [Adding New Sections](#adding-new-sections)
+- [Custom Sidebar Buttons and Floating Terminals](#custom-sidebar-buttons-and-floating-terminals)
+- [Special Features](#special-features)
+- [Best Practices](#best-practices)
+- [Troubleshooting Configuration](#troubleshooting-configuration)
+- [Dropdown Selectors](#dropdown-selectors)
 
 ## Overview
 
-{ProjectName} Manager uses four main configuration files to define its behavior:
+{ProjectName} Manager uses a powerful JSON-based configuration system that allows complete customization without touching any code. This guide covers all aspects of configuration, from basic setup to advanced features.
 
-1. **`generalEnvironmentVerifications.json`** - General environment tool verifications
-2. **`configurationSidebarSections.json`** - UI structure, components, and display settings (like `projectName`)
-3. **`configurationSidebarAbout.json`** - Section descriptions, verifications, and "About" info for floating terminal commands
-4. **`configurationSidebarCommands.json`** - Command generation logic for main sections and custom button actions
+### Configuration Files
+
+The system uses four main configuration files:
+
+| File | Purpose |
+|------|---------|
+| **`src/environment-verification/generalEnvironmentVerifications.json`** | System-wide environment checks |
+| **`src/project-config/config/configurationSidebarSections.json`** | UI structure and components |
+| **`src/project-config/config/configurationSidebarAbout.json`** | Section descriptions and verifications |
+| **`src/project-config/config/configurationSidebarCommands.json`** | Command generation logic |
 
 ## Configuration Files
 
@@ -65,27 +87,9 @@ This file defines the verifications shown in the "General Environment" section a
 
 #### Auto-Fix Commands
 
-Verifications can include an optional `fixCommand` property that provides automatic remediation for failed checks:
+Verifications can include an optional `fixCommand` property that provides automatic remediation for failed checks. When a verification fails and has a `fixCommand`, an orange "Fix" button appears in the UI.
 
-```json
-{
-  "id": "nodeVersionCheck",
-  "title": "Node.js 16.x",
-  "checkType": "outputContains", 
-  "command": "node --version",
-  "expectedValue": "v16.",
-  "fixCommand": "nvm install 16 && nvm use 16"
-}
-```
-
-**Fix Command Features:**
-- Appears as orange "Fix" button next to invalid verifications
-- Runs in dedicated floating terminal with auto-close functionality
-- Automatically re-runs verification after command completes
-- Close button disabled for 20 seconds to prevent accidental closure
-- Provides success/failure notifications
-
-For detailed information about verification types and fix commands, see [Verification Types](verification-types.md).
+For detailed information about all verification types and fix command features, see [Verification Types](verification-types.md).
 
 ### 2. Configuration Sidebar Sections
 
@@ -148,7 +152,7 @@ Defines the UI structure and components for each section in the configuration si
 
 The `settings` object contains application-wide configuration options that control behavior, appearance, and limits across the entire application.
 
-- **`projectName`** (string, default: "Project"): The display name for the project shown in the UI title and various locations throughout the application.
+- **`projectName`** (string, default: "Project"): The display name shown in the UI title and throughout the application. This is customizable per installation - for example, the current configuration uses "ISO" as the project name for the Isolation project. You can change this to match your specific project name.
 
 - **`openDevToolsByDefault`** (boolean, default: false): Whether to automatically open Chrome Developer Tools when the application starts. Useful for debugging during development.
 
@@ -294,9 +298,29 @@ Marks a section as a test/development section. Test sections are hidden by defau
 
 You can add custom buttons to any section in the sidebar that, when clicked, will execute a predefined command in a new **floating terminal**. These floating terminals are independent windows that are draggable, resizable, have minimize/close controls, and are managed via the **App Control Sidebar** (located on the right edge of the application). If "No Run Mode" is active, the command will be displayed in the floating terminal but not executed.
 
-To define a custom button, add a `customButton` object to the `components` array of a section within `src/configurationSidebarSections.json`.
+Custom buttons can be defined in two ways:
 
-### `customButton` Object Properties:
+**Single Button**: Add a `customButton` object to the `components` of a section:
+```json
+"customButton": {
+  "id": "myButton",
+  "label": "View Logs", 
+  "commandId": "myLogCommand"
+}
+```
+
+**Multiple Buttons**: Add a `customButtons` array to the `components` of a section:
+```json
+"customButtons": [
+  {
+    "id": "button1",
+    "label": "Run Storybook",
+    "commandId": "runStorybook"
+  }
+]
+```
+
+### Custom Button Properties:
 
 -   `id` (string, required): A unique identifier for this button instance.
 -   `label` (string, required): The text that will be displayed on the button.
@@ -497,79 +521,208 @@ The application maintains state for each section:
 }
 ```
 
-## Dynamic Section Addition
+## Adding New Sections
 
-To add a new section:
+Adding a new section requires updating three JSON files. No code changes needed! Both top-level sections and their sub-sections can have their own command definitions in `configurationSidebarCommands.json` to open dedicated terminal tabs. Custom buttons can also be added to trigger floating terminals.
 
-1. **Add to `configurationSidebarSections.json`**:
-   Here you define the main section. If it has sub-sections, you define them here too. Sub-sections can have their own toggles, deployment options, and dropdown selectors.
-   ```json
-   {
-     "id": "sub-feature-id",
-     "title": "My Sub Feature",
-     "components": {
-       "toggle": true,
-       "deploymentOptions": ["sub-option1", "sub-option2"],
-       "dropdownSelectors": [
-         {
-           "id": "mySubDropdown",
-           "command": "echo \"Data1\nData2\"",
-           "placeholder": "Choose sub-data..."
-         }
-       ]
-     }
-   }
-   ```
+### Step-by-Step Guide
 
-2. **Add to `configurationSidebarAbout.json`**:
-   ```json
-   {
-     "id": "my-new-section",
-     "directoryPath": "my-new-section",
-     "description": "Description of my new section.",
-     "verifications": []
-   }
-   ```
-   
-   Or for sections without path verification:
-   ```json
-   {
-     "sectionId": "my-new-section",
-     "skipVerification": true,
-     "description": "Description of my new section."
-   }
-   ```
+#### 1. Add UI Structure (`configurationSidebarSections.json`)
 
-3. **Add to `configurationSidebarCommands.json`**:
-   Define command logic. The `id` here can be the ID of your new top-level section, or the ID of a sub-section if it needs its own command tab.
-   ```json
-   {
-     "id": "my-new-section",
-     "conditions": {
-       "enabled": true
-     },
-     "command": {
-       "base": "cd my-new-section && npm start",
-       "associatedContainers": ["my-container"],
-       "modifiers": [
-         {
-           "condition": "deploymentType === 'container'",
-           "append": " --container-mode"
-         }
-       ],
-       "tabTitle": "My New Section"
-     }
-   }
-   ```
+Define the main section, any sub-sections, and components like `customButton`.
 
-4. **Create the directory**:
-   ```bash
-   mkdir my-new-section-or-subsection-id
-   cd my-new-section-or-subsection-id
-   git init
-   ```
+```json
+{
+  "settings": {
+    "projectName": "YourProject"
+    // Additional settings available - see Configuration Guide for complete list
+  },
+  "sections": [
+    {
+      "id": "your-main-section",
+      "title": "Your Main Section",
+      "components": {
+        "toggle": true,
+        "infoButton": true,
+        "gitBranch": true,
+        "deploymentOptions": true,
+        "modeSelector": {
+          "options": ["run", "suspend"],
+          "labels": ["Run", "Suspend"],
+          "default": "suspend"
+        },
+        "attachToggle": {
+          "enabled": true,
+          "mutuallyExclusiveWith": ["other-section-id"]
+        },
+        "subSections": [
+          {
+            "id": "your-subsection-id",
+            "title": "My Sub-Section with Dropdown",
+            "components": {
+              "toggle": true,
+              "dropdownSelectors": [
+                {
+                  "id": "mySubDropdown",
+                  "command": "echo \"SubOption1\nSubOption2\"",
+                  "placeholder": "Select sub option..."
+                }
+              ]
+            }
+          }
+        ],
+        "logsButton": true,
+        "customButton": {
+          "id": "myCustomLogButton",
+          "label": "View Specific Logs",
+          "commandId": "myCustomLogCommand"
+        }
+      }
+    }
+  ]
+}
+```
+
+#### 2. Add Description and Verifications (`configurationSidebarAbout.json`)
+
+Provide "About" info for your `customButton`'s `commandId` if it opens a floating terminal.
+```json
+{
+  "sectionId": "your-main-section",
+  "directoryPath": "your-main-section",
+  "description": "Description of what this section does and its purpose.",
+  "verifications": [
+    {
+      "id": "yourSectionDirExists",
+      "title": "./your-main-section directory exists",
+      "checkType": "pathExists",
+      "pathValue": "./your-main-section",
+      "pathType": "directory"
+    }
+  ]
+},
+{
+  "sectionId": "myCustomLogCommand",
+  "description": "Displays specific logs for My Custom Log Button.",
+  "verifications": []
+}
+```
+
+#### 3. Add Command Logic (`configurationSidebarCommands.json`)
+
+Define commands for main sections and for `customButton` actions.
+
+```json
+[
+  {
+    "sectionId": "your-section",
+    "conditions": {
+      "enabled": true,
+      "deploymentType": "container"
+    },
+    "command": {
+      "base": "cd your-section && docker-compose up",
+      "prefix": "nvm use 16 && ",
+      "tabTitle": "Your Section (Container)"
+    }
+  },
+  {
+    "sectionId": "your-section", 
+    "conditions": {
+      "enabled": true,
+      "deploymentType": "process"
+    },
+    "command": {
+      "base": "cd your-section && npm start",
+      "prefix": "nvm use 16 && ",
+      "tabTitle": "Your Section (Process)"
+    }
+  },
+  {
+    "sectionId": "myCustomLogCommand",
+    "command": {
+      "base": "tail -f /var/log/specific.log",
+      "tabTitle": "Specific Logs"
+    }
+  }
+]
+```
+
+##### Full Example with All Features
+
+```json
+{
+  "sectionId": "your-main-section-or-subsection-id", // Can be a top-level sectionId or a subSectionId
+  "conditions": {
+    "enabled": true,
+    "deploymentType": "container"
+  },
+  "command": {
+    "base": "cd your-section && docker-compose up",
+    "associatedContainers": [
+      "container-name-1",
+      "container-name-2",
+      { "name": "conditional-container", "condition": "deploymentType === 'container'" }
+    ],
+    "postModifiers": " --verbose",
+    "prefix": "nvm use 16 && ",
+    "tabTitle": {
+      "base": "Your Main Section",
+      "conditionalAppends": [
+        {
+          "condition": "mode === 'development'",
+          "append": " (Dev)"
+        },
+        {
+          "condition": "mode === 'staging'",
+          "append": " (Staging)"
+        }
+      ]
+    },
+    "refreshConfig": {
+      "prependCommands": [
+        {
+          "command": "make build && ",
+          "condition": "needsRebuild === true"
+        }
+      ]
+    }
+  }
+}
+```
+
+**Note:** For sections with complex conditions or commands that differ significantly between modes (like `url-intelligence-sub`), use separate command objects instead of modifiers to avoid JavaScript evaluation errors.
+
+#### 4. Create Directory Structure
+
+```bash
+mkdir your-main-section
+cd your-main-section
+git init
+# Add your project files
+```
 
 The section will automatically appear in the UI with full functionality.
+
+### Available Components
+
+<details>
+<summary>Click to expand complete component reference</summary>
+
+| Component | Description | Options |
+|-----------|-------------|---------|
+| `toggle` | Main enable/disable toggle | `true/false` |
+| `infoButton` | Shows section description | `true/false` |
+| `gitBranch` | Git branch switcher | `true/false` |
+| `deploymentOptions` | Standardized container/process selector | `true` or `[{ value: "container", status?: "TBD" }, { value: "process" }]` |
+| `modeSelector` | Custom multi-option mode selector | `{ options: (string[] \| { value: string, status?: "TBD" }[]), labels?: string[], default: "" }` |
+| `attachToggle` | Attach debugger toggle | `{ enabled: true, mutuallyExclusiveWith: [] }` |
+| `dropdownSelectors` | Generic command-driven dropdowns with default value support | Array of dropdown configs |
+| `subSections` | Nested sub-sections | Array of sub-section configs |
+| `customButton` | Button to trigger actions, often opening a floating terminal (e.g., for logs) | `{ id: "", label: "", commandId: "" }` |
+| `testSection` | Mark as test/development section (hidden by default) | `true/false` |
+
+</details>
 
 ## Special Features
 
@@ -617,12 +770,17 @@ This will:
 
 ## Troubleshooting Configuration
 
+<details>
+<summary>Click to expand troubleshooting guide</summary>
+
 ### Common Issues
 
 1. **Section not appearing**: Check that the `id` matches across all three configuration files
 2. **Commands not generating**: Verify condition expressions and state property names
 3. **Verifications failing**: Test verification commands manually and check paths
 4. **UI components not working**: Ensure component definitions are valid JSON
+5. **Dropdown selectors not populating**: Test commands manually, check parsing configuration
+6. **Custom buttons not working**: Verify `commandId` matches between sections, commands, and about files
 
 ### Debugging Tips
 
@@ -630,12 +788,26 @@ This will:
 2. Use the application's debug panel to test verification states
 3. Verify JSON syntax with a JSON validator
 4. Test commands in a terminal before adding to configuration
+5. Use the "Export Environment Data" feature to debug verification outputs
+6. Check the App Control Sidebar for configuration import/export tools
+
+### Configuration Validation
+
+- All JSON files must be valid JSON (use `jsonlint` or similar tools)
+- Section IDs must be unique and match across configuration files
+- Command conditions must use valid JavaScript expressions
+- File paths in verification configs must be relative to project root
+
+</details>
 
 ## Dropdown Selectors
 
 Dropdown selectors provide a generic, JSON-configurable way to create dynamic dropdowns that execute commands and populate options. They can be used in both environment verification headers and configuration sections.
 
 ### Configuration Properties
+
+<details>
+<summary>Click to expand detailed configuration options</summary>
 
 ```json
 {
@@ -690,6 +862,8 @@ Dropdown selectors provide a generic, JSON-configurable way to create dynamic dr
    - Selects the first option by default
 3. If `value` prop is provided (controlled component):
    - Ignores `defaultValue` and uses the provided value
+
+</details>
 
 **Example with Default Value:**
 ```json
@@ -762,3 +936,11 @@ When an option is marked as "TBD":
 }
 ```
 Adds an attach debugger toggle. Can be mutually exclusive with other sections.
+
+## Related Documentation
+
+- [Getting Started](getting-started.md) - Initial configuration setup
+- [Command System](command-system.md) - Command generation from configuration
+- [Verification Types](verification-types.md) - Environment verification configuration
+- [Architecture Overview](architecture-overview.md) - How configuration drives the system
+- [Adding New Sections](#adding-new-sections) - Step-by-step guide for new sections

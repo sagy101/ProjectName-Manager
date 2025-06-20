@@ -1,6 +1,10 @@
 # AI Coding Experiment
 
-This project is my exploration of "vibe coding" mixed with solid engineering practices and some good old coding. I leverage several AI tools and language models to streamline development, each chosen for their specific strengths and use cases.
+> My exploration of "vibe coding" mixed with solid engineering practices
+
+## Overview
+
+This project represents my journey into AI-assisted development, blending "vibe coding" with traditional software engineering. I've experimented with various AI tools and language models, discovering how each complements different aspects of development.
 
 This document is also a vibe coding exercise, noting what works and what doesn't as the project evolves.
 
