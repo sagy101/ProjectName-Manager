@@ -1,5 +1,17 @@
 const { test, expect } = require('@playwright/test');
-const { launchElectron, waitForElement, getTimeout } = require('./test-helpers');
+const { 
+  launchElectron, 
+  waitForElement, 
+  getTimeout,
+  enableSection,
+  attachSection,
+  setDeploymentMode,
+  runConfiguration,
+  waitForTerminalTab,
+  stopConfiguration,
+  waitForStoppingOverlay,
+  closeStoppingOverlay 
+} = require('./test-helpers/index.js');
 
 const isMock = process.env.E2E_ENV === 'mock';
 const config = isMock
@@ -32,34 +44,24 @@ test.describe('Terminal Command Validation', () => {
         return;
     }
 
-    const sectionLocator = window.locator(`h2:has-text("${runnableSection.title}")`).locator('..').locator('..');
-    const toggle = await sectionLocator.locator('input[type="checkbox"]').first();
-    await toggle.click();
-    await window.waitForTimeout(getTimeout(500));
-
-    // Attach the section to make the mode selector visible
+    // Use helpers to configure the section
+    await enableSection(window, runnableSection.title);
+    
     if (runnableSection.components.attachToggle) {
-      const attachToggle = sectionLocator.locator('#attach-mirror');
-      await attachToggle.click();
-      await expect(attachToggle).toHaveClass(/attached/);
+      await attachSection(window, runnableSection.id);
     }
 
-    // Set mode to "run"
     if (runnableSection.components.modeSelector) {
-      const runOptionSelector = `[data-testid="mode-selector-btn-${runnableSection.id}-run"]`;
-      await window.waitForSelector(runOptionSelector);
-      await window.click(runOptionSelector);
+      await setDeploymentMode(window, runnableSection.id, 'run');
     }
     
     await window.waitForTimeout(getTimeout(1000));
 
-    const runButton = window.locator('button').filter({ hasText: new RegExp(`RUN.*${settings.projectName}`, 'i') });
-    await runButton.click();
+    // Use helper to run configuration
+    await runConfiguration(window);
 
-    // Verify that the correct tab appears
-    const terminalTabTitle = window.locator('.tab-title').filter({ hasText: /Mirror \+ MariaDB/ });
-    await expect(terminalTabTitle).toBeVisible({ timeout: getTimeout(15000) });
-    await terminalTabTitle.click();
+    // Use helper to wait for terminal tab
+    await waitForTerminalTab(window, 'Mirror');
 
     // In no-run mode, verify the command is displayed but not run
     // const expectedCommand = getMockCommand(runnableSection.id, configState[runnableSection.id]); // Removed undefined function
@@ -78,20 +80,23 @@ test.describe('Terminal Command Validation', () => {
         console.log("Skipping test: No section with deployment options found.");
         return;
     }
-    const sectionLocator = window.locator(`h2:has-text("${sectionWithContainers.title}")`).locator('..').locator('..');
-    const toggle = await sectionLocator.locator('input[type="checkbox"]').first();
-    if (!await toggle.isChecked()) await toggle.click();
+    // Use helpers to configure the section
+    await enableSection(window, sectionWithContainers.title);
     
-    await window.waitForTimeout(getTimeout(500));
-    const containerButton = await sectionLocator.locator('.deployment-toggle-btn').filter({ hasText: /container/i });
-    if (await containerButton.isVisible()) await containerButton.click();
+    // Try to set deployment mode to container if available (gracefully handle if not available)
+    if (sectionWithContainers.components && sectionWithContainers.components.deploymentOptions) {
+      try {
+        await setDeploymentMode(window, sectionWithContainers.id, 'container');
+      } catch (error) {
+        console.log(`Container mode not available for section ${sectionWithContainers.id}, continuing with default mode`);
+      }
+    }
 
-    const runButton = window.locator('button').filter({ hasText: new RegExp(`RUN.*${settings.projectName}`, 'i') });
-    await runButton.click();
+    // Use helper to run configuration
+    await runConfiguration(window);
     
-    // The tab name may include deployment type, so we find it by the section title
-    const terminalTabTitle2 = window.locator('.tab-title').filter({ hasText: /gopm/i });
-    await terminalTabTitle2.waitFor({ state: 'visible', timeout: getTimeout(5000) });
+    // Use helper to wait for terminal tab
+    await waitForTerminalTab(window, 'gopm');
 
     const terminalTabs = await window.locator('.tab');
     expect(await terminalTabs.count()).toBeGreaterThan(0);
@@ -114,39 +119,30 @@ test.describe('Terminal Command Validation', () => {
         console.log("Skipping test: No toggleable section found.");
         return;
     }
-    const sectionLocator = window.locator(`h2:has-text("${runnableSection.title}")`).locator('..').locator('..');
-    const toggle = await sectionLocator.locator('input[type="checkbox"]').first();
-    if (!await toggle.isChecked()) await toggle.click();
+    // Use helpers to configure the section
+    await enableSection(window, runnableSection.title);
 
-    // Attach the section to make the mode selector visible
     if (runnableSection.components.attachToggle) {
-      const attachToggle = sectionLocator.locator('#attach-mirror');
-      await attachToggle.click();
-      await expect(attachToggle).toHaveClass(/attached/);
+      await attachSection(window, runnableSection.id);
     }
 
-    // Set mode to "run"
     if (runnableSection.components.modeSelector) {
-      const runOptionSelector = `[data-testid="mode-selector-btn-${runnableSection.id}-run"]`;
-      await window.waitForSelector(runOptionSelector);
-      await window.click(runOptionSelector);
+      await setDeploymentMode(window, runnableSection.id, 'run');
     }
 
-    const runButton = window.locator('button').filter({ hasText: new RegExp(`RUN.*${settings.projectName}`, 'i') });
-    
     const initialTabCount = await window.locator('.tab').count();
-    await runButton.click();
     
-    // Wait for tab to appear before proceeding
-    const mirrorTab = window.locator('.tab').filter({ has: window.locator('.tab-title', { hasText: /Mirror \+ MariaDB/ }) });
-    await expect(mirrorTab).toBeVisible({ timeout: getTimeout(5000) });
+    // Use helper to run configuration
+    await runConfiguration(window);
+    
+    // Use helper to wait for terminal tab
+    await waitForTerminalTab(window, 'Mirror');
 
     const terminalTabs = await window.locator('.tab');
     expect(await terminalTabs.count()).toBeGreaterThan(0);
 
-    const stopButton = await window.locator('button').filter({ hasText: /STOP|KILL/i }).or(window.locator('button').filter({ hasText: new RegExp(`STOP.*${settings.projectName}`, 'i') }));
-    await expect(stopButton).toBeVisible({ timeout: getTimeout(5000) });
-    await stopButton.click();
+    // Use helper to stop configuration
+    await stopConfiguration(window);
 
     await window.waitForTimeout(getTimeout(3000));
     const remainingTabs = await window.locator('.tab .status-running').count();

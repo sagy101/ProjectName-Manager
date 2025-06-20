@@ -1,5 +1,16 @@
 import { test, expect } from '@playwright/test';
-import { getTimeout, launchElectron, ensureAllVerificationsValid, toggleAllVerifications, clickAutoSetupButton, clickStartAutoSetup, clickStartPriorityGroup, checkGroupCompleted, checkAllGroupsCompleted, expandDebugMenu, clickNoRunMode } from './test-helpers.js';
+import { 
+  getTimeout, 
+  launchElectron, 
+  ensureAllVerificationsValid, 
+  toggleAllVerifications, 
+  clickAutoSetupButton, 
+  clickStartAutoSetup, 
+  clickStartPriorityGroup, 
+  checkGroupCompleted, 
+  checkAllGroupsCompleted, 
+  enableNoRunMode 
+} from './test-helpers/index.js';
 
 test.describe('Auto Setup E2E Tests', () => {
   let electronApp;
@@ -34,11 +45,12 @@ test.describe('Auto Setup E2E Tests', () => {
 
   test('should run all priority groups successfully in No Run Mode', async () => {
     // 1. Ensure all verifications are valid, then toggle to make them invalid
-    await ensureAllVerificationsValid(window);
+    const allValid = await ensureAllVerificationsValid(window);
+    if(!allValid) throw new Error('Not all verifications are valid before toggling verifications!');
     await toggleAllVerifications(window);
     
     // 2. Enable No Run Mode and start auto setup
-    await clickNoRunMode(window);
+    await enableNoRunMode(window);
     await clickAutoSetupButton(window);
     await clickStartAutoSetup(window);
     

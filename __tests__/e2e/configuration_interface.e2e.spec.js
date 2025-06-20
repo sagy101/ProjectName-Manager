@@ -1,5 +1,15 @@
 const { test, expect } = require('@playwright/test');
-const { launchElectron, waitForElement, getTimeout } = require('./test-helpers');
+const { 
+  launchElectron, 
+  waitForElement, 
+  getTimeout,
+  // New consolidated helpers
+  findConfigSection,
+  enableSection,
+  disableSection,
+  isSectionEnabled,
+  toggleSection
+} = require('./test-helpers/index.js');
 
 const isMock = process.env.E2E_ENV === 'mock';
 const config = isMock
@@ -27,34 +37,41 @@ test.describe('Configuration Interface', () => {
   test('should display main configuration sections', async () => {
     for (const section of sections) {
       if (section.testSection && !isMock) continue;
-      await expect(window.locator(`h2:has-text("${section.title}")`)).toBeVisible();
+      // Use helper to find section instead of hardcoded selector
+      const sectionElement = await findConfigSection(window, section.title);
+      await expect(sectionElement).toBeVisible();
     }
   });
 
   test('should allow toggling configuration sections', async () => {
     const firstSection = sections[0];
-    const sectionLocator = await window.locator(`h2:has-text("${firstSection.title}")`).locator('..').locator('..');
-    const toggleCheckbox = await sectionLocator.locator('input[type="checkbox"]').first();
     
-    const initialChecked = await toggleCheckbox.isChecked();
-    await toggleCheckbox.click();
-    expect(await toggleCheckbox.isChecked()).toBe(!initialChecked);
+    // Get initial state using our helper
+    const initialState = await isSectionEnabled(window, firstSection.title);
+    
+    // Toggle the section using our helper
+    await toggleSection(window, firstSection.title, !initialState);
+    
+    // Verify the state changed
+    const newState = await isSectionEnabled(window, firstSection.title);
+    expect(newState).toBe(!initialState);
   });
 
   test('should allow enabling and disabling sections', async () => {
     const sectionWithToggle = sections.find(s => s.components.toggle);
     expect(sectionWithToggle, 'Test requires a section with a toggle').toBeDefined();
 
-    const sectionLocator = await window.locator(`h2:has-text("${sectionWithToggle.title}")`).locator('..').locator('..');
-    const toggleCheckbox = await sectionLocator.locator('input[type="checkbox"]').first();
+    // Use our helpers to disable and enable the section
+    await disableSection(window, sectionWithToggle.title);
     
-    if (await toggleCheckbox.isChecked()) {
-      await toggleCheckbox.click();
-    }
-    await expect(toggleCheckbox).not.toBeChecked();
+    // Verify the section is disabled
+    expect(await isSectionEnabled(window, sectionWithToggle.title)).toBe(false);
     
-    await toggleCheckbox.click();
-    await expect(toggleCheckbox).toBeChecked();
+    // Use our helper to enable the section
+    await enableSection(window, sectionWithToggle.title);
+    
+    // Verify the section is enabled
+    expect(await isSectionEnabled(window, sectionWithToggle.title)).toBe(true);
   });
 
   test('should display environment verification section', async () => {
@@ -77,18 +94,16 @@ test.describe('Configuration Interface', () => {
     const parentSection = sections.find(s => s.components.subSections && s.components.subSections.length > 0);
     expect(parentSection, 'Test requires a section with subsections').toBeDefined();
 
-    const sectionLocator = window.locator(`h2:has-text("${parentSection.title}")`).locator('..').locator('..');
-    const toggleCheckbox = sectionLocator.locator('input[type="checkbox"]').first();
+    // Use our helper to enable the parent section
+    await enableSection(window, parentSection.title);
 
-    // Ensure the section is enabled
-    if (!await toggleCheckbox.isChecked()) {
-      await toggleCheckbox.click();
-    }
-    await expect(toggleCheckbox).toBeChecked();
+    // Verify the section is enabled
+    expect(await isSectionEnabled(window, parentSection.title)).toBe(true);
 
     // Now, verify that the subsection is visible
     const subSection = parentSection.components.subSections[0];
-    const subSectionLocator = window.locator(`h4:has-text("${subSection.title}")`);
+    // Use a more flexible selector for subsections instead of hardcoded h4
+    const subSectionLocator = window.locator(`text="${subSection.title}"`);
     await expect(subSectionLocator).toBeVisible({ timeout: getTimeout(10000) });
   });
 }); 

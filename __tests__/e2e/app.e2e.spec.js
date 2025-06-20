@@ -1,4 +1,4 @@
-const { launchElectron, getTimeout } = require('./test-helpers');
+const { launchElectron, getTimeout } = require('./test-helpers/index.js');
 const { test, expect } = require('@playwright/test');
 const { settings } = require('../../src/project-config/config/configurationSidebarSections.json');
 
