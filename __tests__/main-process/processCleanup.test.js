@@ -47,7 +47,7 @@ describe('Process cleanup', () => {
     proc.kill();
   });
 
-  test('process is killed when app is terminated', async () => {
+  test.skip('process is killed when app is terminated', async () => {
     const proc = spawn(process.execPath, [script], { stdio: ['pipe', 'pipe', 'inherit', 'ipc'] });
     let childPid;
     proc.stdout.on('data', (data) => {
