@@ -5,7 +5,9 @@ This project contains **{ProjectName} Manager**, a cross-platform Electron appli
 ## Environment configuration
 
 - Requires **Node.js 22.16.0**. Use `nvm use` in the project root to activate the correct version.
+- Managed project commands may require Node.js 15 or 16. The app handles switching with `nvm` automatically.
 - Install dependencies with `npm install` after cloning.
+- Rebuild native modules with `npm run rebuild` after installing dependencies.
 - Native modules rebuild automatically when running `npm start`. If they fail,
   run `npx @electron/rebuild -f -w node-pty`.
 - Start the application using `npm start`.
@@ -26,6 +28,9 @@ Testing practices follow `docs/testing-guide.md`:
 - Jest tests only: `npm run test:jest` (use `:prod` or `:mock` for different data sets).
 - End-to-end tests: `HEADLESS=true npm run test:e2e` (or `npm run test:e2e:report`).
   - Run `scripts/setup-mock-e2e-env.sh` beforehand to create the mocked toolchain used in CI (the GitHub workflow runs this script as well).
+  - Ensure `openDevToolsByDefault` is `false` in `src/configurationSidebarSections.json` or tests may fail.
+  - Set `CI=true DEBUG_LOGS=true` to capture main process logs during E2E runs.
+  - `scripts/run-all-tests.sh` runs Jest and Playwright in one step.
 - If Electron can't open an X display, install Xvfb and run: `xvfb-run -a bash -c 'HEADLESS=true npm run test:e2e'`.
 - For tests that require the DOM, add `/** @jest-environment jsdom */` at the top of the file.
 - Mock configuration data lives under `__tests__/mock-data`.
