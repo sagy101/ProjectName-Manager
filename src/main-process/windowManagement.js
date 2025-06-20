@@ -37,6 +37,10 @@ function createWindow() {
   // Create the browser window
   mainWindow = new BrowserWindow(windowOptions);
 
+  // Increase max listeners to prevent memory leak warnings
+  // This is safe because we properly track and clean up listeners in electron-preload.js
+  mainWindow.webContents.setMaxListeners(25);
+
   // Load the app - corrected path to load from root directory
   mainWindow.loadFile(path.join(__dirname, '../../index.html'));
 

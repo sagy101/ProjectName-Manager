@@ -92,9 +92,43 @@ describe('refreshGitBranches', () => {
       { sectionId: 'a', directoryPath: 'pathA' },
       { sectionId: 'b' }
     ]);
-    fs.promises.readFile.mockResolvedValue(config);
+    const sectionsConfig = JSON.stringify({ sections: [{ id: 'a', testSection: false }] });
+    fs.promises.readFile.mockImplementation((path) => {
+      if (path.includes('configurationSidebarAbout.json')) {
+        return Promise.resolve(config);
+      } else if (path.includes('configurationSidebarSections.json')) {
+        return Promise.resolve(sectionsConfig);
+      }
+      return Promise.reject(new Error('File not found'));
+    });
     child_process.exec.mockImplementation((cmd, opts, cb) => cb(null, 'main', ''));
     const result = await refreshGitBranches();
     expect(result).toEqual({ a: { gitBranch: 'main' } });
+  });
+
+  test('skips test sections to avoid Git errors', async () => {
+    const config = JSON.stringify([
+      { sectionId: 'regular-section', directoryPath: 'pathA' },
+      { sectionId: 'test-analytics', directoryPath: 'test-analytics' }
+    ]);
+    const sectionsConfig = JSON.stringify({ 
+      sections: [
+        { id: 'regular-section', testSection: false },
+        { id: 'test-analytics', testSection: true }
+      ] 
+    });
+    fs.promises.readFile.mockImplementation((path) => {
+      if (path.includes('configurationSidebarAbout.json')) {
+        return Promise.resolve(config);
+      } else if (path.includes('configurationSidebarSections.json')) {
+        return Promise.resolve(sectionsConfig);
+      }
+      return Promise.reject(new Error('File not found'));
+    });
+    child_process.exec.mockImplementation((cmd, opts, cb) => cb(null, 'main', ''));
+    const result = await refreshGitBranches();
+    // Should only have the regular section, test-analytics should be skipped
+    expect(result).toEqual({ regularSection: { gitBranch: 'main' } });
+    expect(child_process.exec).toHaveBeenCalledTimes(1); // Only called for regular section
   });
 });

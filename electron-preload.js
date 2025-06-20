@@ -8,6 +8,9 @@ const eventListeners = {
   'process-killed': [],
   'backend-progress': [],
   'dropdown-command-executed': [],
+  'single-verification-updated': [],
+  'verification-progress': [],
+  'environment-verification-complete': [],
   'pty-output': {} // Changed to an object to store listeners by terminalId
 };
 
@@ -53,21 +56,57 @@ contextBridge.exposeInMainWorld('electron', {
   rerunSingleVerification: (verificationId) => ipcRenderer.invoke('rerun-single-verification', verificationId),
   refreshGitStatuses: () => ipcRenderer.invoke('refresh-git-statuses'),
   onEnvironmentVerificationComplete: (callback) => {
-    ipcRenderer.on('environment-verification-complete', (event, data) => callback(data));
+    const wrapperFn = (event, data) => callback(data);
+    eventListeners['environment-verification-complete'].push({
+      callback: callback,
+      wrapper: wrapperFn
+    });
+    ipcRenderer.on('environment-verification-complete', wrapperFn);
+    
     return () => {
-      ipcRenderer.removeListener('environment-verification-complete', callback);
+      ipcRenderer.removeListener('environment-verification-complete', wrapperFn);
+      const index = eventListeners['environment-verification-complete'].findIndex(
+        listener => listener.wrapper === wrapperFn
+      );
+      if (index !== -1) {
+        eventListeners['environment-verification-complete'].splice(index, 1);
+      }
     };
   },
   onSingleVerificationUpdated: (callback) => {
-    ipcRenderer.on('single-verification-updated', (event, data) => callback(data));
+    const wrapperFn = (event, data) => callback(data);
+    eventListeners['single-verification-updated'].push({
+      callback: callback,
+      wrapper: wrapperFn
+    });
+    ipcRenderer.on('single-verification-updated', wrapperFn);
+    
     return () => {
-      ipcRenderer.removeListener('single-verification-updated', callback);
+      ipcRenderer.removeListener('single-verification-updated', wrapperFn);
+      const index = eventListeners['single-verification-updated'].findIndex(
+        listener => listener.wrapper === wrapperFn
+      );
+      if (index !== -1) {
+        eventListeners['single-verification-updated'].splice(index, 1);
+      }
     };
   },
   onVerificationProgress: (callback) => {
-    ipcRenderer.on('verification-progress', (event, data) => callback(data));
+    const wrapperFn = (event, data) => callback(data);
+    eventListeners['verification-progress'].push({
+      callback: callback,
+      wrapper: wrapperFn
+    });
+    ipcRenderer.on('verification-progress', wrapperFn);
+    
     return () => {
-      ipcRenderer.removeListener('verification-progress', callback);
+      ipcRenderer.removeListener('verification-progress', wrapperFn);
+      const index = eventListeners['verification-progress'].findIndex(
+        listener => listener.wrapper === wrapperFn
+      );
+      if (index !== -1) {
+        eventListeners['verification-progress'].splice(index, 1);
+      }
     };
   },
 
@@ -259,6 +298,12 @@ contextBridge.exposeInMainWorld('electron', {
       'process-started': eventListeners['process-started'].length,
       'process-ended': eventListeners['process-ended'].length,
       'process-killed': eventListeners['process-killed'].length,
+      'backend-progress': eventListeners['backend-progress'].length,
+      'dropdown-command-executed': eventListeners['dropdown-command-executed'].length,
+      'single-verification-updated': eventListeners['single-verification-updated'].length,
+      'verification-progress': eventListeners['verification-progress'].length,
+      'environment-verification-complete': eventListeners['environment-verification-complete'].length,
+      'pty-output-terminals': Object.keys(eventListeners['pty-output']).length,
       'hasDirectHandler': !!directOutputCallback
     };
   },

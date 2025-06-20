@@ -9,6 +9,7 @@ const projectRoot = path.resolve(__dirname, '../../..'); // Adjusted for new loc
 const gitBranchCache = {};
 
 const CONFIG_SIDEBAR_ABOUT_PATH = path.join(__dirname, '..', 'project-config', 'config', 'configurationSidebarAbout.json');
+const CONFIG_SIDEBAR_SECTIONS_PATH = path.join(__dirname, '..', 'project-config', 'config', 'configurationSidebarSections.json');
 
 const getGitBranch = async (relativePath) => {
   // Check cache first
@@ -121,6 +122,8 @@ async function refreshGitBranches() {
     clearGitBranchCache();
 
     let configSidebarAbout = [];
+    let configSidebarSections = [];
+    
     try {
         const configAboutFile = await fs.readFile(CONFIG_SIDEBAR_ABOUT_PATH, 'utf-8');
         configSidebarAbout = JSON.parse(configAboutFile);
@@ -129,9 +132,30 @@ async function refreshGitBranches() {
         return {};
     }
     
+    try {
+        const configSectionsFile = await fs.readFile(CONFIG_SIDEBAR_SECTIONS_PATH, 'utf-8');
+        const sectionsData = JSON.parse(configSectionsFile);
+        configSidebarSections = sectionsData.sections || [];
+    } catch (err) {
+        console.error('Error reading configurationSidebarSections.json for git refresh:', err);
+        return {};
+    }
+    
+    // Create a map of section IDs to their testSection status
+    const testSectionMap = {};
+    configSidebarSections.forEach(section => {
+        testSectionMap[section.id] = section.testSection === true;
+    });
+    
     const refreshedBranches = {};
     const branchPromises = configSidebarAbout.map(async (sectionAbout) => {
         if (sectionAbout.directoryPath) {
+            // Skip test sections to avoid Git errors for non-existent directories
+            if (testSectionMap[sectionAbout.sectionId]) {
+                debugLog(`Skipping git branch check for test section: ${sectionAbout.sectionId}`);
+                return;
+            }
+            
             const cacheKey = sectionAbout.sectionId.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
             const branch = await getGitBranch(sectionAbout.directoryPath);
             refreshedBranches[cacheKey] = { gitBranch: branch };
