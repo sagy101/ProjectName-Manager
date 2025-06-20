@@ -8,14 +8,14 @@ class MockBrowserWindow {
       openDevTools: jest.fn(),
       isLoading: jest.fn(() => false),
       getURL: jest.fn(() => 'file:///index.html'),
-      on: jest.fn(),
+      on: jest.fn((ev, fn) => { events[ev] = fn; }),
       setWindowOpenHandler: jest.fn(),
       setMaxListeners: jest.fn()
     };
     this.isDestroyed = jest.fn(() => false);
     this.loadFile = jest.fn();
     this.once = jest.fn((ev, fn) => { events[ev] = fn; });
-    this.on = jest.fn();
+    this.on = jest.fn((ev, fn) => { events[ev] = fn; });
     this.show = jest.fn();
     this.focus = jest.fn();
     this.reload = jest.fn();
@@ -204,5 +204,128 @@ describe('windowManagement', () => {
     expect(spy).toHaveBeenCalled();
     expect(res.success).toBe(false);
     spy.mockRestore();
+  });
+
+  test('getMainWindow returns created instance', () => {
+    const win = createWindow();
+    expect(wm.getMainWindow()).toBe(win);
+  });
+
+  test('openDevTools fails when window destroyed', () => {
+    const win = createWindow();
+    win.isDestroyed.mockReturnValue(true);
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const res = openDevTools();
+    expect(win.webContents.openDevTools).not.toHaveBeenCalled();
+    expect(res.success).toBe(false);
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  test('reloadApp fails when window destroyed', () => {
+    const win = createWindow();
+    win.isDestroyed.mockReturnValue(true);
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const res = reloadApp();
+    expect(res.success).toBe(false);
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  test('closeMainWindow fails when window destroyed', () => {
+    const win = createWindow();
+    win.isDestroyed.mockReturnValue(true);
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const res = closeMainWindow();
+    expect(res.success).toBe(false);
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  test('minimizeMainWindow fails when window destroyed', () => {
+    const win = createWindow();
+    win.isDestroyed.mockReturnValue(true);
+    const res = minimizeMainWindow();
+    expect(res.success).toBe(false);
+  });
+
+  test('maximizeMainWindow fails when window destroyed', () => {
+    const win = createWindow();
+    win.isDestroyed.mockReturnValue(true);
+    const res = maximizeMainWindow();
+    expect(res.success).toBe(false);
+  });
+
+  test('showMainWindow fails when window destroyed', () => {
+    const win = createWindow();
+    win.isDestroyed.mockReturnValue(true);
+    const res = showMainWindow();
+    expect(res.success).toBe(false);
+  });
+
+  test('hideMainWindow fails when window destroyed', () => {
+    const win = createWindow();
+    win.isDestroyed.mockReturnValue(true);
+    const res = hideMainWindow();
+    expect(res.success).toBe(false);
+  });
+
+  test('isWindowReady false when window destroyed', () => {
+    const win = createWindow();
+    win.isDestroyed.mockReturnValue(true);
+    expect(isWindowReady()).toBe(false);
+  });
+
+  test('ready-to-show shows window when not headless', () => {
+    process.env.HEADLESS = 'false';
+    const win = createWindow();
+    events['ready-to-show']();
+    expect(win.show).toHaveBeenCalled();
+    expect(win.focus).toHaveBeenCalled();
+  });
+
+  test('ready-to-show does not show in headless mode', () => {
+    process.env.HEADLESS = 'true';
+    const win = createWindow();
+    events['ready-to-show']();
+    expect(win.show).not.toHaveBeenCalled();
+  });
+
+  test('closed event nulls window', () => {
+    const win = createWindow();
+    events['closed']();
+    expect(wm.getMainWindow()).toBeNull();
+  });
+
+  test('will-navigate blocks cross origin', () => {
+    const win = createWindow();
+    const prevent = jest.fn();
+    events['will-navigate']({ preventDefault: prevent }, 'https://example.com');
+    expect(prevent).toHaveBeenCalled();
+  });
+
+  test('will-navigate allows same origin', () => {
+    const win = createWindow();
+    const prevent = jest.fn();
+    events['will-navigate']({ preventDefault: prevent }, 'file:///path');
+    expect(prevent).not.toHaveBeenCalled();
+  });
+
+  test('setWindowOpenHandler denies new window', () => {
+    const win = createWindow();
+    const handler = win.webContents.setWindowOpenHandler.mock.calls[0][0];
+    expect(handler({ url: 'https://foo.com' })).toEqual({ action: 'deny' });
+  });
+
+  test('various window events execute without error', () => {
+    const win = createWindow();
+    events.focus();
+    events.blur();
+    events.resize();
+    events.maximize();
+    events.unmaximize();
+    events.minimize();
+    events.restore();
+    expect(win.getSize).toHaveBeenCalled();
   });
 });
