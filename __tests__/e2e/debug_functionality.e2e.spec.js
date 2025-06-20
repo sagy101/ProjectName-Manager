@@ -1,5 +1,30 @@
 const { test, expect } = require('@playwright/test');
-const { launchElectron, waitForElement, ensureAllVerificationsValid, getTimeout } = require('./test-helpers');
+const { 
+  launchElectron, 
+  waitForElement, 
+  ensureAllVerificationsValid, 
+  getTimeout,
+  // New consolidated helpers
+  openDebugTools,
+  closeDebugTools,
+  enableNoRunMode,
+  disableNoRunMode,
+  toggleAllVerifications,
+  showTestSections,
+  hideTestSections,
+  setTerminalMode,
+  // Config helpers
+  findConfigSection,
+  enableSection,
+  attachSection,
+  setDeploymentMode,
+  // Terminal helpers
+  runConfiguration,
+  waitForTerminalTab,
+  clickTerminalTab,
+  // Verification helpers
+  expandVerificationSection
+} = require('./test-helpers/index.js');
 
 const isMock = process.env.E2E_ENV === 'mock';
 const config = isMock
@@ -27,20 +52,11 @@ test.describe('Debug Menu Functionality', () => {
   });
 
   test('should toggle no run mode and display commands without execution', async () => {
-    // Expand the sidebar first to access debug tools
-    const expandButton = await window.locator('[title="Expand Sidebar"]');
-    await expandButton.click();
-    
-    // Click the debug tools button in the App Control Sidebar
-    const debugButton = await window.locator('.debug-section-toggle-button');
-    await debugButton.click();
-    
-    // Wait for debug section to expand and show debug tools
-    await expect(window.locator('.debug-section-content')).toBeVisible();
+    // Use our helper to open debug tools (handles sidebar expansion too)
+    await openDebugTools(window);
 
-    const noRunModeButton = await window.locator('.debug-section-content button').filter({ hasText: 'No Run Mode' });
-    await noRunModeButton.click();
-    await expect(noRunModeButton).toHaveClass(/active/);
+    // Use our helper to enable No Run Mode
+    await enableNoRunMode(window);
     
     const runnableSection = sections.find(s => s.components.toggle && s.id === 'mirror');
     if (!runnableSection) {
@@ -48,40 +64,30 @@ test.describe('Debug Menu Functionality', () => {
         return;
     }
 
-    const sectionLocator = window.locator(`h2:has-text("${runnableSection.title}")`).locator('..').locator('..');
-    const toggle = await sectionLocator.locator('input[type="checkbox"]').first();
-    await toggle.click();
+    // Use our helper to enable the section
+    await enableSection(window, runnableSection.title);
     await window.waitForTimeout(getTimeout(500));
     
-    // Attach the section to make the mode selector visible
+    // Use our helper to attach the section
     if (runnableSection.components.attachToggle) {
-      const attachToggle = sectionLocator.locator('#attach-mirror');
-      await attachToggle.click();
-      await expect(attachToggle).toHaveClass(/attached/);
+      await attachSection(window, runnableSection.id);
     }
 
-    // Set mode to "run"
+    // Use our helper to set deployment mode
     if (runnableSection.components.modeSelector) {
-      const runOptionSelector = `[data-testid="mode-selector-btn-${runnableSection.id}-run"]`;
-      await window.waitForSelector(runOptionSelector);
-      await window.click(runOptionSelector);
+      await setDeploymentMode(window, runnableSection.id, 'run');
     }
     
     await window.waitForTimeout(getTimeout(2000));
-    const runButton = window.locator('#run-configuration-button');
-    await runButton.click();
     
-    // Wait for the tab to appear and the process to be running
-    const terminalTabTitle = window.locator('.tab-title', { hasText: /^Mirror \+ MariaDB/i });
-    await expect(terminalTabTitle).toBeVisible({ timeout: getTimeout(5000) });
-
+    // Use our helper to run configuration
+    await runConfiguration(window, { waitForTabs: true });
     
-    const terminalTabs = await window.locator('.tab');
-    await expect(terminalTabs.first()).toBeVisible({ timeout: getTimeout(5000) });
+    // Wait for the terminal tab using our helper with more flexible pattern
+    const terminalTab = await waitForTerminalTab(window, 'Mirror', { timeout: getTimeout(5000) });
     
-    const sectionTabTitle = await window.locator('.tab-title').filter({ hasText: /Mirror \+ MariaDB/i });
-    await expect(sectionTabTitle).toBeVisible();
-    await sectionTabTitle.click();
+    // Use our helper to click the terminal tab
+    await clickTerminalTab(window, 'Mirror');
     
     // In "no-run" mode, the terminal should show a specific indicator.
     const terminal = window.locator('.terminal-instance-wrapper.active');
@@ -89,6 +95,7 @@ test.describe('Debug Menu Functionality', () => {
     await expect(noRunIndicator).toBeVisible({ timeout: getTimeout(5000) });
 
     // Also verify the tab title includes a debug indicator
+    const sectionTabTitle = window.locator('.tab-title').filter({ hasText: /Mirror/i });
     await expect(sectionTabTitle).toHaveText(/Debug Run/);
   });
 
@@ -99,41 +106,36 @@ test.describe('Debug Menu Functionality', () => {
         return;
     }
     
-    const expandButton = await window.locator('[title="Expand Sidebar"]');
-    await expandButton.click();
-    
-    const debugButton = await window.locator('.debug-section-toggle-button');
-    await debugButton.click();
-    
-    await expect(window.locator('.debug-section-content')).toBeVisible();
-    
-    const showTestSectionsButton = await window.locator('.debug-section-content button').filter({ hasText: /Show Tests/i });
-    await expect(showTestSectionsButton).toBeVisible();
+    // Use our helper to open debug tools
+    await openDebugTools(window);
     
     // Test sections should be hidden initially
-    await expect(window.locator(`h2:has-text("${testSection.title}")`)).not.toBeVisible();
+    const testSectionElement = await findConfigSection(window, testSection.title);
+    await expect(testSectionElement).not.toBeVisible();
 
-    await showTestSectionsButton.click();
-    
-    await expect(window.locator('.debug-section-content button').filter({ hasText: /Hide Tests/i })).toBeVisible();
+    // Use our helper to show test sections
+    await showTestSections(window);
 
     // Test section should now be visible
-    await expect(window.locator(`h2:has-text("${testSection.title}")`)).toBeVisible();
+    await expect(testSectionElement).toBeVisible();
   });
 
   test('should toggle terminal read-only/writable mode', async () => {
-    const expandButton = await window.locator('[title="Expand Sidebar"]');
-    await expandButton.click();
-    const debugButton = await window.locator('.debug-section-toggle-button');
-    await debugButton.click();
-    
-    await expect(window.locator('.debug-section-content')).toBeVisible();
+    // Use our helper to open debug tools
+    await openDebugTools(window);
     
     const terminalModeButton = await window.locator('.debug-section-content button').filter({ hasText: /Terminals Read-Only|Terminals Writable/i });
     await expect(terminalModeButton).toBeVisible();
     
     const initialText = await terminalModeButton.textContent();
-    await terminalModeButton.click();
+    
+    // Use our helper to set terminal mode (this will toggle it)
+    if (initialText.includes('Read-Only')) {
+      await setTerminalMode(window, 'writable');
+    } else {
+      await setTerminalMode(window, 'readonly');
+    }
+    
     const newText = await terminalModeButton.textContent();
     expect(newText).not.toBe(initialText);
   });
@@ -145,44 +147,31 @@ test.describe('Debug Menu Functionality', () => {
         return;
     }
 
-    const sectionLocator = window.locator(`h2:has-text("${runnableSection.title}")`).locator('..').locator('..');
-    const toggle = await sectionLocator.locator('input[type="checkbox"]').first();
-    await toggle.click();
+    // Use our helpers to configure and run a section
+    await enableSection(window, runnableSection.title);
     await window.waitForTimeout(getTimeout(500));
     
-    // Attach the section to make the mode selector visible
     if (runnableSection.components.attachToggle) {
-      const attachToggle = sectionLocator.locator('#attach-mirror');
-      await attachToggle.click();
-      await expect(attachToggle).toHaveClass(/attached/);
+      await attachSection(window, runnableSection.id);
     }
 
-    // Set mode to "run"
     if (runnableSection.components.modeSelector) {
-      const runOptionSelector = `[data-testid="mode-selector-btn-${runnableSection.id}-run"]`;
-      await window.waitForSelector(runOptionSelector);
-      await window.click(runOptionSelector);
+      await setDeploymentMode(window, runnableSection.id, 'run');
     }
 
     await window.waitForTimeout(getTimeout(2000));
-    const runButton = window.locator('#run-configuration-button');
     
     const initialTabCount = await window.locator('.tab').count();
-    await runButton.click();
+    await runConfiguration(window, { waitForTabs: true });
   
     // Wait for the tab to appear and the process to be running
-    const tab = window.locator('.tab', { hasText: /^Mirror \+ MariaDB/i });
+    const tab = window.locator('.tab', { hasText: /Mirror/i });
     await expect(tab).toBeVisible({ timeout: getTimeout(5000) });
     const tabStatus = tab.locator('.tab-status');
     await expect(tabStatus).toHaveClass(/status-running/, { timeout: getTimeout(5000) });
     
-    const expandButton = await window.locator('[title="Expand Sidebar"]');
-    await expandButton.click();
-    const debugButton = await window.locator('.debug-section-toggle-button');
-
-    await debugButton.click();
-    
-    await expect(window.locator('.debug-section-content')).toBeVisible();
+    // Use our helper to open debug tools
+    await openDebugTools(window);
     
     const noRunModeButton = await window.locator('.debug-section-content button').filter({ hasText: /No Run Mode/i });
     const testSectionsButton = await window.locator('.debug-section-content button').filter({ hasText: /Show Tests|Hide Tests/i });
@@ -194,39 +183,33 @@ test.describe('Debug Menu Functionality', () => {
   });
 
   test('should show active options indicator when debug modes are enabled', async () => {
-    const expandButton = await window.locator('[title="Expand Sidebar"]');
-    await expandButton.click();
-    const debugButton = await window.locator('.debug-section-toggle-button');
-        
-    await debugButton.click();
+    // Use our helper to open debug tools
+    await openDebugTools(window);
     
-    await expect(window.locator('.debug-section-content')).toBeVisible();
+    const debugButton = window.locator('.debug-section-toggle-button');
     
-    const noRunModeButton = await window.locator('.debug-section-content button').filter({ hasText: /No Run Mode/i });
-    await noRunModeButton.click();
+    // Use our helper to enable No Run Mode
+    await enableNoRunMode(window);
     
     await expect(debugButton).toHaveClass(/has-active-options/);
     
-    await debugButton.click(); // Close  
+    // Use our helper to close debug tools
+    await closeDebugTools(window);
     const collapsedTooltip = await debugButton.getAttribute('title');
     expect(collapsedTooltip).toContain('(Active Options)');
     
-    await debugButton.click(); // Reopen
-    await noRunModeButton.click(); // Disable
+    // Use our helper to open debug tools and disable No Run Mode
+    await openDebugTools(window);
+    await disableNoRunMode(window);
     
-    await debugButton.click(); // Close
+    // Use our helper to close debug tools
+    await closeDebugTools(window);
     await expect(debugButton).not.toHaveClass(/has-active-options/);
   });
 
   test('should toggle all verification statuses for testing fix button functionality', async () => {
-    // Expand the sidebar and open debug tools
-    const expandButton = await window.locator('[title="Expand Sidebar"]');
-    await expandButton.click();
-    
-    const debugButton = await window.locator('.debug-section-toggle-button');
-    await debugButton.click();
-    
-    await expect(window.locator('.debug-section-content')).toBeVisible();
+    // Use our helper to open debug tools
+    await openDebugTools(window);
     
     // First, wait for the environment verification section to be visible
     const envVerificationHeader = window.locator('.verification-header', { hasText: 'General Environment' });
@@ -238,15 +221,11 @@ test.describe('Debug Menu Functionality', () => {
       return header && !header.classList.contains('waiting');
     }, { timeout: getTimeout(15000) });
     
-    // Look for the toggle verification button
-    const toggleVerificationsButton = await window.locator('.debug-section-content button').filter({ hasText: /Toggle Verifications/i });
-    await expect(toggleVerificationsButton).toBeVisible();
-    
     // Get initial state after verification completes
     const initialHeaderClasses = await envVerificationHeader.getAttribute('class');
     
-    // Click to toggle all verifications
-    await toggleVerificationsButton.click();
+    // Use our helper to toggle all verifications
+    await toggleAllVerifications(window);
     
     // Wait a moment for the status changes to take effect
     await window.waitForTimeout(getTimeout(1000));
@@ -254,43 +233,28 @@ test.describe('Debug Menu Functionality', () => {
     // Check if the header reflects the status change (should have a different color/class)
     const toggledHeaderClasses = await envVerificationHeader.getAttribute('class');
     
-    // Click toggle again to switch statuses back
-    await toggleVerificationsButton.click();
+    // Use our helper to toggle verifications again
+    await toggleAllVerifications(window);
     await window.waitForTimeout(getTimeout(1000));
     
     // The classes should be different after toggling
     expect(initialHeaderClasses).not.toBe(toggledHeaderClasses);
     
-    // Check that fix buttons appear when verifications are invalid
-    // Expand the environment verification section to see individual verifications
-    const toggleIcon = envVerificationHeader.locator('.toggle-icon');
-    const isCollapsed = await toggleIcon.evaluate(node => node.textContent.includes('▶'));
-    if (isCollapsed) {
-      await toggleIcon.click();
-      await window.waitForTimeout(getTimeout(500));
-    }
-
+    // Use our helper to expand the environment verification section
+    await expandVerificationSection(window, 'General Environment');
   });
 
   test('should access developer tools functions', async () => {
-    const expandButton = await window.locator('[title="Expand Sidebar"]');
-    await expandButton.click();
-    const debugButton = await window.locator('.debug-section-toggle-button');
-    await debugButton.click();
-    
-    await expect(window.locator('.debug-section-content')).toBeVisible();
+    // Use our helper to open debug tools
+    await openDebugTools(window);
     
     await expect(window.locator('.debug-section-content button').filter({ hasText: /DevTools/i })).toBeVisible();
     await expect(window.locator('.debug-section-content button').filter({ hasText: /Reload/i })).toBeVisible();
   });
 
   test('should handle import/export configuration', async () => {
-    const expandButton = await window.locator('[title="Expand Sidebar"]');
-    await expandButton.click();
-    const debugButton = await window.locator('.debug-section-toggle-button');
-    await debugButton.click();
-    
-    await expect(window.locator('.debug-section-content')).toBeVisible();
+    // Use our helper to open debug tools
+    await openDebugTools(window);
     
     // Be more specific to avoid matching "Export Environment" button
     const exportConfigButton = await window.locator('.debug-section-content button').filter({ hasText: 'Export Config' });

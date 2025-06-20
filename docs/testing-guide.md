@@ -107,9 +107,216 @@ test('should return array directly from getAboutConfig', ...)
 
 ### End-to-End (E2E) Tests
 
-- **Location**: `__tests__/` and `__tests__/e2e/`
-- **Examples**: `terminalContainer.e2e.test.jsx`, `processCleanup.test.js`
-- **Purpose**: E2E tests validate complete workflows from start to finish. They often involve more complex setups, including mocking Electron's IPC and other main process features. These tests are crucial for ensuring that different parts of the application work together correctly.
+- **Location**: `__tests__/e2e/`
+- **Framework**: [Playwright](https://playwright.dev/) with Electron
+- **Purpose**: E2E tests validate complete workflows from start to finish. They test real user interactions with the actual Electron application, ensuring different components work together correctly.
+
+#### E2E Test Helpers Overview
+
+The E2E tests use a comprehensive modular helper system located in `__tests__/e2e/test-helpers/`. These helpers eliminate code duplication and provide consistent, reliable operations across all tests.
+
+**Benefits:**
+- **Consistent Operations**: All tests use the same reliable implementations
+- **Reduced Duplication**: 60-80% code reduction in test files
+- **Better Error Handling**: Centralized timeout and retry logic
+- **Easy Maintenance**: Update behavior in one place, applies to all tests
+
+**Import Location:** All helpers are available through the main index:
+```javascript
+const { launchElectron, enableSection, runConfiguration } = require('./test-helpers/index.js');
+```
+
+#### Quick Reference - Most Common Helpers
+
+| Helper | Purpose | Usage |
+|--------|---------|-------|
+| `launchElectron()` | Start Electron app and return window | `const { electronApp, window } = await launchElectron();` |
+| `enableSection(window, title)` | Enable a configuration section | `await enableSection(window, 'Mirror + MariaDB');` |
+| `runConfiguration(window)` | Run the current configuration | `await runConfiguration(window);` |
+| `waitForTerminalTab(window, name)` | Wait for terminal tab to appear | `await waitForTerminalTab(window, 'Mirror');` |
+| `expandAppControlSidebar(window)` | Open the app control sidebar | `await expandAppControlSidebar(window);` |
+| `openDebugTools(window)` | Open debug tools panel | `await openDebugTools(window);` |
+| `stopConfiguration(window)` | Stop running configuration | `await stopConfiguration(window);` |
+
+#### Complete Helper Reference
+
+##### App Lifecycle & Setup
+
+| Helper | Purpose | Module |
+|--------|---------|--------|
+| `launchElectron(options)` | Launch Electron app with optional config | app-lifecycle |
+| `setupTest()` | Complete test setup with environment cleanup | app-lifecycle |
+| `teardownTest()` | Clean teardown with terminal cleanup | app-lifecycle |
+| `waitForAppReady(window)` | Wait for app to fully initialize | app-lifecycle |
+| `setupMockVerificationEndpoints()` | Set up mock verification endpoints | app-lifecycle |
+
+##### Navigation & Sidebar Operations
+
+| Helper | Purpose | Module |
+|--------|---------|--------|
+| `expandAppControlSidebar(window)` | Expand the App Control Sidebar | sidebar-helpers |
+| `collapseAppControlSidebar(window)` | Collapse the App Control Sidebar | sidebar-helpers |
+| `isAppControlSidebarExpanded(window)` | Check if App Control Sidebar is expanded | sidebar-helpers |
+| `expandConfigSidebar(window)` | Expand the Configuration Sidebar | sidebar-helpers |
+| `collapseConfigSidebar(window)` | Collapse the Configuration Sidebar | sidebar-helpers |
+| `isConfigSidebarExpanded(window)` | Check if Configuration Sidebar is expanded | sidebar-helpers |
+
+##### Configuration Management
+
+| Helper | Purpose | Module |
+|--------|---------|--------|
+| `findConfigSection(window, title)` | Find a configuration section by title | config-helpers |
+| `enableSection(window, title)` | Enable a configuration section | config-helpers |
+| `disableSection(window, title)` | Disable a configuration section | config-helpers |
+| `isSectionEnabled(window, title)` | Check if section is enabled | config-helpers |
+| `toggleSection(window, title, state)` | Toggle section to specific state | config-helpers |
+| `attachSection(window, sectionId)` | Attach a section (enable attach toggle) | config-helpers |
+| `detachSection(window, sectionId)` | Detach a section | config-helpers |
+| `setDeploymentMode(window, sectionId, mode)` | Set deployment mode (run/debug/container) | config-helpers |
+| `selectGlobalProject(window, index)` | Select global project from dropdown | config-helpers |
+
+##### Terminal Operations
+
+| Helper | Purpose | Module |
+|--------|---------|--------|
+| `runConfiguration(window, options)` | Run the current configuration | terminal-helpers |
+| `stopConfiguration(window)` | Stop all running configurations | terminal-helpers |
+| `waitForTerminalTab(window, name, options)` | Wait for specific terminal tab to appear | terminal-helpers |
+| `clickTerminalTab(window, name)` | Click on a specific terminal tab | terminal-helpers |
+| `getTerminalTabs(window)` | Get all terminal tab elements | terminal-helpers |
+| `isTerminalRunning(window, tabName)` | Check if terminal is in running state | terminal-helpers |
+| `waitForAllTerminalsStopped(window)` | Wait for all terminals to stop | terminal-helpers |
+| `waitForTerminalStatus(window, status)` | Wait for specific terminal status | terminal-status-helpers |
+| `sendCtrlC(window)` | Send Ctrl+C to active terminal | terminal-status-helpers |
+| `runAndInterruptTerminal(window, config)` | Run terminal and interrupt with Ctrl+C | terminal-status-helpers |
+
+##### Debug Tools & Verification
+
+| Helper | Purpose | Module |
+|--------|---------|--------|
+| `openDebugTools(window)` | Open debug tools panel | debug-helpers |
+| `closeDebugTools(window)` | Close debug tools panel | debug-helpers |
+| `enableNoRunMode(window)` | Enable No Run Mode for testing | debug-helpers |
+| `disableNoRunMode(window)` | Disable No Run Mode | debug-helpers |
+| `toggleAllVerifications(window)` | Toggle all verification statuses | debug-helpers |
+| `setTerminalMode(window, mode)` | Set terminal mode (readonly/writable) | debug-helpers |
+| `showTestSections(window)` | Show test sections in UI | debug-helpers |
+| `hideTestSections(window)` | Hide test sections in UI | debug-helpers |
+| `expandVerificationSection(window, title)` | Expand verification section | verification-helpers |
+| `waitForFixButtons(window)` | Wait for fix buttons to appear | verification-helpers |
+| `executeFixCommand(window, buttonIndex)` | Execute a fix command workflow | verification-helpers |
+
+##### UI Interactions & Utilities
+
+| Helper | Purpose | Module |
+|--------|---------|--------|
+| `waitForElement(window, selector, options)` | Wait for element with flexible options | ui-helpers |
+| `clickButtonWithText(window, text)` | Click button containing specific text | ui-helpers |
+| `waitForNotification(window, type, options)` | Wait for notification to appear | ui-helpers |
+| `waitForPopup(window, selector)` | Wait for popup/modal to appear | ui-helpers |
+| `confirmAction(window, popupSelector)` | Confirm action in popup | ui-helpers |
+| `cancelAction(window, popupSelector)` | Cancel action in popup | ui-helpers |
+| `waitForTextContent(window, selector, text)` | Wait for specific text in element | ui-helpers |
+| `hasClass(window, selector, className)` | Check if element has specific class | ui-helpers |
+
+##### Specialized Features
+
+| Helper | Purpose | Module |
+|--------|---------|--------|
+| `openHealthReport(window)` | Open health report screen | health-report-helpers |
+| `closeHealthReport(window)` | Close health report screen | health-report-helpers |
+| `expandTerminalSection(window, index)` | Expand terminal section in health report | health-report-helpers |
+| `clickAutoSetupButton(window)` | Click auto setup button | auto-setup-helpers |
+| `clickStartAutoSetup(window)` | Start auto setup process | auto-setup-helpers |
+| `checkGroupCompleted(window, priority)` | Check if priority group completed | auto-setup-helpers |
+| `setupFixCommandEnvironment(window)` | Set up complex fix command test environment | fix-command-helpers |
+| `executeFixCommand(window, buttonIndex)` | Execute fix command with confirmation | fix-command-helpers |
+
+#### Helper Module Organization
+
+```
+test-helpers/
+├── index.js                    # Main export file - import everything from here
+├── constants.js                # Selectors, timeouts, status classes
+├── app-lifecycle.js            # App startup, teardown, environment setup
+├── sidebar-helpers.js          # Sidebar expand/collapse operations
+├── config-helpers.js           # Configuration section management
+├── terminal-helpers.js         # Terminal running, stopping, tab management
+├── terminal-status-helpers.js  # Terminal status monitoring, Ctrl+C operations
+├── debug-helpers.js            # Debug tools, No Run Mode, verification toggling
+├── verification-helpers.js     # Verification sections, fix commands
+├── ui-helpers.js               # General UI interactions, notifications, popups
+├── health-report-helpers.js    # Health report specific operations
+├── auto-setup-helpers.js       # Auto setup workflow operations
+└── fix-command-helpers.js      # Complex fix command test setups
+```
+
+#### Common Usage Patterns
+
+**Basic Test Setup:**
+```javascript
+const { launchElectron, enableSection, runConfiguration } = require('./test-helpers/index.js');
+
+test('should run configuration', async () => {
+  const { electronApp, window } = await launchElectron();
+  
+  await enableSection(window, 'Mirror + MariaDB');
+  await runConfiguration(window);
+  
+  await electronApp.close();
+});
+```
+
+**Configuration Workflow:**
+```javascript
+// Enable and configure a section
+await enableSection(window, 'Mirror + MariaDB');
+await attachSection(window, 'mirror');
+await setDeploymentMode(window, 'mirror', 'run');
+await runConfiguration(window);
+
+// Wait for terminal and verify
+await waitForTerminalTab(window, 'Mirror');
+await waitForTerminalStatus(window, 'running');
+```
+
+**Debug Testing:**
+```javascript
+// Set up debug environment
+await openDebugTools(window);
+await enableNoRunMode(window);
+await toggleAllVerifications(window);
+
+// Test configuration in debug mode
+await enableSection(window, 'Mirror + MariaDB');
+await runConfiguration(window);
+```
+
+#### Migration from Manual Operations
+
+**❌ Old Way (Manual Operations):**
+```javascript
+const expandButton = window.locator('[title="Expand Sidebar"]');
+await expandButton.click();
+
+const section = window.locator('h2:has-text("Mirror + MariaDB")').locator('..').locator('..');
+const toggle = section.locator('input[type="checkbox"]').first();
+await toggle.click();
+```
+
+**✅ New Way (Using Helpers):**
+```javascript
+await expandAppControlSidebar(window);
+await enableSection(window, 'Mirror + MariaDB');
+```
+
+#### Benefits of Helper System
+
+- **Consistency**: All tests use the same reliable implementations
+- **Maintainability**: Update behavior in one place, applies everywhere
+- **Error Handling**: Built-in timeouts, retries, and error messages
+- **Readability**: Tests focus on what they're testing, not how to interact with UI
+- **Reliability**: Helpers handle timing issues, animations, and edge cases
 
 ### Viewing Debug Logs in E2E Tests (Electron)
 

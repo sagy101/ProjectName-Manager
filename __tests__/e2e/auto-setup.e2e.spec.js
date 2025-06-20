@@ -1,5 +1,16 @@
 import { test, expect } from '@playwright/test';
-import { getTimeout, launchElectron, ensureAllVerificationsValid, toggleAllVerifications, clickAutoSetupButton, clickStartAutoSetup, clickStartPriorityGroup, checkGroupCompleted, checkAllGroupsCompleted, expandDebugMenu, clickNoRunMode } from './test-helpers.js';
+import { 
+  getTimeout, 
+  launchElectron, 
+  ensureAllVerificationsValid, 
+  toggleAllVerifications, 
+  clickAutoSetupButton, 
+  clickStartAutoSetup, 
+  clickStartPriorityGroup, 
+  checkGroupCompleted, 
+  checkAllGroupsCompleted, 
+  enableNoRunMode 
+} from './test-helpers/index.js';
 
 test.describe('Auto Setup E2E Tests', () => {
   let electronApp;
@@ -38,7 +49,7 @@ test.describe('Auto Setup E2E Tests', () => {
     await toggleAllVerifications(window);
     
     // 2. Enable No Run Mode and start auto setup
-    await clickNoRunMode(window);
+    await enableNoRunMode(window);
     await clickAutoSetupButton(window);
     await clickStartAutoSetup(window);
     

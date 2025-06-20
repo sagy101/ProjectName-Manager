@@ -1,5 +1,11 @@
 const { test, expect } = require('@playwright/test');
-const { launchElectron } = require('./test-helpers');
+const { 
+  launchElectron,
+  expandAppControlSidebar,
+  collapseAppControlSidebar,
+  isAppControlSidebarExpanded,
+  openDebugTools
+} = require('./test-helpers/index.js');
 const { sections } = require('../../src/project-config/config/configurationSidebarSections.json');
 
 test.describe('Sidebar Navigation', () => {
@@ -18,9 +24,9 @@ test.describe('Sidebar Navigation', () => {
   });
 
   test('should show collapsed sidebar by default', async () => {
-    // Check that sidebar is initially collapsed
-    const sidebar = await window.locator('.app-control-sidebar');
-    await expect(sidebar).toHaveClass(/collapsed/);
+    // Check that sidebar is initially collapsed using our helper
+    const isExpanded = await isAppControlSidebarExpanded(window);
+    expect(isExpanded).toBe(false);
     
     // Verify expand button is visible
     const expandButton = await window.locator('[title="Expand Sidebar"]');
@@ -28,13 +34,12 @@ test.describe('Sidebar Navigation', () => {
   });
 
   test('should expand sidebar when expand button is clicked', async () => {
-    // Click the expand button
-    const expandButton = await window.locator('[title="Expand Sidebar"]');
-    await expandButton.click();
+    // Use our helper to expand the sidebar
+    await expandAppControlSidebar(window);
     
-    // Wait for sidebar to expand
-    const sidebar = await window.locator('.app-control-sidebar');
-    await expect(sidebar).not.toHaveClass(/collapsed/);
+    // Verify sidebar is expanded using our helper
+    const isExpanded = await isAppControlSidebarExpanded(window);
+    expect(isExpanded).toBe(true);
     
     // Verify collapse button is now visible
     const collapseButton = await window.locator('[title="Collapse Sidebar"]');
@@ -42,13 +47,8 @@ test.describe('Sidebar Navigation', () => {
   });
 
   test('should show main navigation sections when expanded', async () => {
-    // Expand the sidebar first
-    const expandButton = await window.locator('[title="Expand Sidebar"]');
-    await expandButton.click();
-    
-    // Wait for sidebar to be expanded
-    const sidebar = await window.locator('.app-control-sidebar');
-    await expect(sidebar).not.toHaveClass(/collapsed/);
+    // Use our helper to expand the sidebar
+    await expandAppControlSidebar(window);
     
     // Check for actual sections that exist in the sidebar
     await expect(window.locator('text=Active Terminals')).toBeVisible();
@@ -60,30 +60,24 @@ test.describe('Sidebar Navigation', () => {
   });
 
   test('should collapse sidebar when collapse button is clicked', async () => {
-    // First expand the sidebar
-    const expandButton = await window.locator('[title="Expand Sidebar"]');
-    await expandButton.click();
+    // First expand the sidebar using our helper
+    await expandAppControlSidebar(window);
     
-    // Wait for expansion
-    const sidebar = await window.locator('.app-control-sidebar');
-    await expect(sidebar).not.toHaveClass(/collapsed/);
+    // Verify it's expanded
+    let isExpanded = await isAppControlSidebarExpanded(window);
+    expect(isExpanded).toBe(true);
     
-    // Now collapse it
-    const collapseButton = await window.locator('[title="Collapse Sidebar"]');
-    await collapseButton.click();
+    // Now collapse it using our helper
+    await collapseAppControlSidebar(window);
     
-    // Verify it's collapsed again
-    await expect(sidebar).toHaveClass(/collapsed/);
+    // Verify it's collapsed
+    isExpanded = await isAppControlSidebarExpanded(window);
+    expect(isExpanded).toBe(false);
   });
 
   test('should show debug tools when debug button is clicked', async () => {
-    // Expand the sidebar first
-    const expandButton = await window.locator('[title="Expand Sidebar"]');
-    await expandButton.click();
-    
-    // Click the debug tools button in the App Control Sidebar
-    const debugButton = await window.locator('.debug-section-toggle-button');
-    await debugButton.click();
+    // Use our helper to open debug tools (which also expands sidebar)
+    await openDebugTools(window);
     
     // Check that debug section content is now visible
     await expect(window.locator('.debug-section-content')).toBeVisible();

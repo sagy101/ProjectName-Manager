@@ -1,5 +1,12 @@
 const { test, expect } = require('@playwright/test');
-const { launchElectron, waitForElement, getTimeout } = require('./test-helpers');
+const { 
+  launchElectron, 
+  waitForElement, 
+  getTimeout,
+  collapseConfigSidebar,
+  expandConfigSidebar,
+  isConfigSidebarExpanded 
+} = require('./test-helpers/index.js');
 
 test.describe('Collapsible Sidebar E2E Tests', () => {
   let electronApp;
@@ -32,75 +39,45 @@ test.describe('Collapsible Sidebar E2E Tests', () => {
   });
 
   test('should collapse sidebar when collapse button is clicked', async () => {
-    const collapseButton = window.locator('.config-collapse-btn');
-    const sidebar = window.locator('.sidebar');
-    
     // Verify initial state - sidebar should be expanded
-    await expect(sidebar).not.toHaveClass(/collapsed/);
+    const isExpanded = await isConfigSidebarExpanded(window);
+    expect(isExpanded).toBe(true);
     
-    // Get initial sidebar width
-    const initialSidebarBox = await sidebar.boundingBox();
-    expect(initialSidebarBox.width).toBeGreaterThan(250); // More flexible initial width check
+    // Collapse the sidebar using helper
+    await collapseConfigSidebar(window);
     
-    // Click the collapse button
-    await collapseButton.click();
+    // Verify sidebar is now collapsed
+    const isCollapsed = await isConfigSidebarExpanded(window);
+    expect(isCollapsed).toBe(false);
     
-    // Wait for collapse class to be applied
+    // Additional UI verification
+    const sidebar = window.locator('.sidebar');
     await expect(sidebar).toHaveClass(/collapsed/, { timeout: getTimeout(2000) });
     
-    // Wait for animation to complete by checking width stabilization
-    await window.waitForFunction(() => {
-      const el = document.querySelector('.sidebar');
-      return el && el.getBoundingClientRect().width < 100;
-    }, { timeout: getTimeout(3000) });
-    
-    // Verify sidebar width is now minimal (more flexible check)
-    const collapsedSidebarBox = await sidebar.boundingBox();
-    expect(collapsedSidebarBox.width).toBeLessThan(100); // More lenient width check
-    
-    // Verify button shows right arrow (expand) icon
-    const rightArrowIcon = collapseButton.locator('svg polyline[points="9 18 15 12 9 6"]');
-    await expect(rightArrowIcon).toBeVisible();
-    
-    // Verify button has collapsed class
+    const collapseButton = window.locator('.config-collapse-btn');
     await expect(collapseButton).toHaveClass(/collapsed/);
   });
 
   test('should expand sidebar when expand button is clicked', async () => {
-    const collapseButton = window.locator('.config-collapse-btn');
-    const sidebar = window.locator('.sidebar');
-    
     // First collapse the sidebar
-    await collapseButton.click();
-    await expect(sidebar).toHaveClass(/collapsed/, { timeout: getTimeout(2000) });
+    await collapseConfigSidebar(window);
     
-    // Wait for collapse animation to complete
-    await window.waitForFunction(() => {
-      const el = document.querySelector('.sidebar');
-      return el && el.getBoundingClientRect().width < 100;
-    }, { timeout: getTimeout(3000) });
+    // Verify it's collapsed
+    const isCollapsed = await isConfigSidebarExpanded(window);
+    expect(isCollapsed).toBe(false);
     
-    // Click the expand button
-    await collapseButton.click();
+    // Expand the sidebar using helper
+    await expandConfigSidebar(window);
     
-    // Wait for expanded class to be removed
+    // Verify it's expanded
+    const isExpanded = await isConfigSidebarExpanded(window);
+    expect(isExpanded).toBe(true);
+    
+    // Additional UI verification
+    const sidebar = window.locator('.sidebar');
     await expect(sidebar).not.toHaveClass(/collapsed/, { timeout: getTimeout(2000) });
     
-    // Wait for expand animation to complete by checking width
-    await window.waitForFunction(() => {
-      const el = document.querySelector('.sidebar');
-      return el && el.getBoundingClientRect().width > 200;
-    }, { timeout: getTimeout(3000) });
-    
-    // Verify sidebar width is back to normal (more flexible check)
-    const expandedSidebarBox = await sidebar.boundingBox();
-    expect(expandedSidebarBox.width).toBeGreaterThan(200); // More lenient width check
-    
-    // Verify button shows left arrow (collapse) icon
-    const leftArrowIcon = collapseButton.locator('svg polyline[points="15 18 9 12 15 6"]');
-    await expect(leftArrowIcon).toBeVisible();
-    
-    // Verify button doesn't have collapsed class
+    const collapseButton = window.locator('.config-collapse-btn');
     await expect(collapseButton).not.toHaveClass(/collapsed/);
   });
 

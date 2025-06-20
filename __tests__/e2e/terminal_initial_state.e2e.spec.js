@@ -1,4 +1,4 @@
-const { launchElectron, getTimeout } = require('./test-helpers');
+const { launchElectron, getTimeout } = require('./test-helpers/index.js');
 const { test, expect } = require('@playwright/test');
 
 test('Terminal container shows placeholder on startup', async () => {

@@ -1,5 +1,11 @@
 const { test, expect } = require('@playwright/test');
-const { launchElectron } = require('./test-helpers');
+const { 
+  launchElectron, 
+  expandAppControlSidebar, 
+  openDebugTools, 
+  showTestSections,
+  waitForNotification 
+} = require('./test-helpers/index.js');
 
 test.describe('TBD Mode Functionality', () => {
   let electronApp;
@@ -18,14 +24,9 @@ test.describe('TBD Mode Functionality', () => {
 
   test('should show TBD status and prevent switching', async () => {
     // Enable test sections to see the test-analytics section
-    const expandButton = await window.locator('[title="Expand Sidebar"]');
-    await expandButton.click();
-    
-    const debugButton = await window.locator('[title*="Debug Tools"]');
-    await debugButton.click();
-    
-    const showTestSectionsButton = await window.locator('button').filter({ hasText: /Show Tests/i });
-    await showTestSectionsButton.click();
+    await expandAppControlSidebar(window);
+    await openDebugTools(window);
+    await showTestSections(window);
 
     // Find the test-analytics section and enable it
     const testAnalyticsSection = window.locator('#section-test-analytics');
@@ -49,7 +50,7 @@ test.describe('TBD Mode Functionality', () => {
     const newMode = await testAnalyticsSection.locator('.deployment-toggle-btn.active').textContent();
     expect(newMode.trim()).toBe('Development');
 
-    // Verify the notification appeared
+    // Verify the notification appeared  
     const notification = window.locator('.notification-info');
     await expect(notification).toBeVisible();
     await expect(notification).toContainText('This feature is not yet implemented.');

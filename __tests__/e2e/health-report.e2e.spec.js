@@ -1,5 +1,25 @@
 const { test, expect } = require('@playwright/test');
-const { launchElectron, getTimeout } = require('./test-helpers');
+const { 
+  launchElectron, 
+  getTimeout,
+  expandAppControlSidebar,
+  openHealthReport,
+  closeHealthReport,
+  clickHealthReportButton,
+  expandTerminalSection,
+  clickFocusTabButton,
+  clickShowCommandButton,
+  clickRefreshButton,
+  clickRefreshAllButton,
+  closeCommandPopup,
+  verifyHealthReportStatus,
+  runConfiguration,
+  enableSection,
+  attachSection,
+  setDeploymentMode,
+  openDebugTools,
+  enableNoRunMode
+} = require('./test-helpers/index.js');
 
 test.describe('Health Report Feature', () => {
   let electronApp;
@@ -22,8 +42,7 @@ test.describe('Health Report Feature', () => {
   test.describe('Health Report Button', () => {
     test('should display health report button in App Control Sidebar', async () => {
       // Expand the sidebar to see the health report button
-      const expandButton = await window.locator('[title="Expand Sidebar"]');
-      await expandButton.click();
+      await expandAppControlSidebar(window);
       
       // Health report button should be visible
       const healthReportButton = window.locator('[data-testid="health-report-button"]');
@@ -34,22 +53,13 @@ test.describe('Health Report Feature', () => {
     });
 
     test('should show green status by default when no terminals are running', async () => {
-      const expandButton = await window.locator('[title="Expand Sidebar"]');
-      await expandButton.click();
-      
-      const healthReportButton = window.locator('[data-testid="health-report-button"]');
-      await expect(healthReportButton).toHaveClass(/health-report-button--green/);
+      await verifyHealthReportStatus(window, 'green');
     });
 
     test('should open health report when clicked', async () => {
-      const expandButton = await window.locator('[title="Expand Sidebar"]');
-      await expandButton.click();
-      
-      const healthReportButton = window.locator('[data-testid="health-report-button"]');
-      await healthReportButton.click();
+      await openHealthReport(window);
       
       // Health report screen should be visible
-      await expect(window.locator('.health-report-container')).toBeVisible();
       await expect(window.locator('h2').filter({ hasText: /Health Report/ })).toBeVisible();
     });
   });
@@ -57,11 +67,7 @@ test.describe('Health Report Feature', () => {
   test.describe('Health Report Screen', () => {
     test('should display project name in header', async () => {
       // Open health report
-      const expandButton = await window.locator('[title="Expand Sidebar"]');
-      await expandButton.click();
-      
-      const healthReportButton = window.locator('[data-testid="health-report-button"]');
-      await healthReportButton.click();
+      await openHealthReport(window);
       
       // Should show project name in header
       await expect(window.locator('h2').filter({ hasText: /Health Report/ })).toBeVisible();
@@ -69,11 +75,7 @@ test.describe('Health Report Feature', () => {
 
     test('should show "No terminal tabs found" when no terminals are running', async () => {
       // Open health report
-      const expandButton = await window.locator('[title="Expand Sidebar"]');
-      await expandButton.click();
-      
-      const healthReportButton = window.locator('[data-testid="health-report-button"]');
-      await healthReportButton.click();
+      await openHealthReport(window);
       
       // Should show no terminals message
       await expect(window.locator('text=No terminal tabs found.')).toBeVisible();
@@ -81,11 +83,7 @@ test.describe('Health Report Feature', () => {
 
     test('should display "All Systems Healthy" status when no terminals', async () => {
       // Open health report
-      const expandButton = await window.locator('[title="Expand Sidebar"]');
-      await expandButton.click();
-      
-      const healthReportButton = window.locator('[data-testid="health-report-button"]');
-      await healthReportButton.click();
+      await openHealthReport(window);
       
       // Should show healthy status
       await expect(window.locator('text=✓ All Systems Healthy')).toBeVisible();
@@ -93,11 +91,7 @@ test.describe('Health Report Feature', () => {
 
     test('should show summary statistics', async () => {
       // Open health report
-      const expandButton = await window.locator('[title="Expand Sidebar"]');
-      await expandButton.click();
-      
-      const healthReportButton = window.locator('[data-testid="health-report-button"]');
-      await healthReportButton.click();
+      await openHealthReport(window);
       
       // Should show summary stats
       await expect(window.locator('text=Total: 0')).toBeVisible();
@@ -107,15 +101,10 @@ test.describe('Health Report Feature', () => {
 
     test('should close health report when close button is clicked', async () => {
       // Open health report
-      const expandButton = await window.locator('[title="Expand Sidebar"]');
-      await expandButton.click();
-      
-      const healthReportButton = window.locator('[data-testid="health-report-button"]');
-      await healthReportButton.click();
+      await openHealthReport(window);
       
       // Close health report
-      const closeButton = window.locator('.health-report-container .close-button');
-      await closeButton.click();
+      await closeHealthReport(window);
       
       // Health report should be closed
       await expect(window.locator('.health-report-container')).not.toBeVisible();
@@ -126,34 +115,16 @@ test.describe('Health Report Feature', () => {
   test.describe('Health Report with Running Terminals', () => {
     test('should display terminal information when terminals are running', async () => {
       // First, start a terminal by enabling a section and running it
-      const mirrorSection = window.locator('h2:has-text("Mirror + MariaDB")').locator('..').locator('..');
-      const toggle = mirrorSection.locator('input[type="checkbox"]').first();
-      await toggle.click();
-      await window.waitForTimeout(getTimeout(500));
-      
-      // Attach the section
-      const attachToggle = mirrorSection.locator('#attach-mirror');
-      await attachToggle.click();
-      await expect(attachToggle).toHaveClass(/attached/);
-      
-      // Set mode to "run"
-      const runOptionSelector = `[data-testid="mode-selector-btn-mirror-run"]`;
-      await window.waitForSelector(runOptionSelector);
-      await window.click(runOptionSelector);
-      
-      // Run the configuration
-      const runButton = window.locator('#run-configuration-button');
-      await runButton.click();
+      await enableSection(window, 'Mirror + MariaDB');
+      await attachSection(window, 'mirror');
+      await setDeploymentMode(window, 'mirror', 'run');
+      await runConfiguration(window);
       
       // Wait for terminal to appear
       await expect(window.locator('.tab').first()).toBeVisible({ timeout: getTimeout(10000) });
       
       // Open health report
-      const expandButton = await window.locator('[title="Expand Sidebar"]');
-      await expandButton.click();
-      
-      const healthReportButton = window.locator('[data-testid="health-report-button"]');
-      await healthReportButton.click();
+      await openHealthReport(window);
       
       // Should show terminal information
       await expect(window.locator('.terminal-health-section')).toBeVisible();
@@ -163,21 +134,11 @@ test.describe('Health Report Feature', () => {
     });
 
     test('should show different health status based on terminal status', async () => {
-      // Start a terminal
-      const mirrorSection = window.locator('h2:has-text("Mirror + MariaDB")').locator('..').locator('..');
-      const toggle = mirrorSection.locator('input[type="checkbox"]').first();
-      await toggle.click();
-      await window.waitForTimeout(500);
-      
-      const attachToggle = mirrorSection.locator('#attach-mirror');
-      await attachToggle.click();
-      
-      const runOptionSelector = `[data-testid="mode-selector-btn-mirror-run"]`;
-      await window.waitForSelector(runOptionSelector);
-      await window.click(runOptionSelector);
-      
-      const runButton = window.locator('#run-configuration-button');
-      await runButton.click();
+      // Start a terminal using helpers
+      await enableSection(window, 'Mirror + MariaDB');
+      await attachSection(window, 'mirror');
+      await setDeploymentMode(window, 'mirror', 'run');
+      await runConfiguration(window);
       
       // Wait for terminal to be running
       const tab = window.locator('.tab').first();
@@ -188,8 +149,7 @@ test.describe('Health Report Feature', () => {
       await expect(tabStatus).toHaveClass(/status-running/, { timeout: 10000 });
       
       // Open health report
-      const expandButton = await window.locator('[title="Expand Sidebar"]');
-      await expandButton.click();
+      await expandAppControlSidebar(window);
       
       const healthReportButton = window.locator('[data-testid="health-report-button"]');
       
@@ -203,30 +163,16 @@ test.describe('Health Report Feature', () => {
     });
 
     test('should expand and collapse terminal sections', async () => {
-      // Start a terminal first
-      const mirrorSection = window.locator('h2:has-text("Mirror + MariaDB")').locator('..').locator('..');
-      const toggle = mirrorSection.locator('input[type="checkbox"]').first();
-      await toggle.click();
-      await window.waitForTimeout(500);
-      
-      const attachToggle = mirrorSection.locator('#attach-mirror');
-      await attachToggle.click();
-      
-      const runOptionSelector = `[data-testid="mode-selector-btn-mirror-run"]`;
-      await window.waitForSelector(runOptionSelector);
-      await window.click(runOptionSelector);
-      
-      const runButton = window.locator('#run-configuration-button');
-      await runButton.click();
+      // Start a terminal using helpers
+      await enableSection(window, 'Mirror + MariaDB');
+      await attachSection(window, 'mirror');
+      await setDeploymentMode(window, 'mirror', 'run');
+      await runConfiguration(window);
       
       await expect(window.locator('.tab').first()).toBeVisible({ timeout: 10000 });
       
       // Open health report
-      const expandButton = await window.locator('[title="Expand Sidebar"]');
-      await expandButton.click();
-      
-      const healthReportButton = window.locator('[data-testid="health-report-button"]');
-      await healthReportButton.click();
+      await openHealthReport(window);
       
       // Find terminal section header
       const terminalSection = window.locator('.terminal-section-header').first();
@@ -246,30 +192,16 @@ test.describe('Health Report Feature', () => {
     });
 
     test('should show terminal action buttons when expanded', async () => {
-      // Start a terminal first
-      const mirrorSection = window.locator('h2:has-text("Mirror + MariaDB")').locator('..').locator('..');
-      const toggle = mirrorSection.locator('input[type="checkbox"]').first();
-      await toggle.click();
-      await window.waitForTimeout(500);
-      
-      const attachToggle = mirrorSection.locator('#attach-mirror');
-      await attachToggle.click();
-      
-      const runOptionSelector = `[data-testid="mode-selector-btn-mirror-run"]`;
-      await window.waitForSelector(runOptionSelector);
-      await window.click(runOptionSelector);
-      
-      const runButton = window.locator('#run-configuration-button');
-      await runButton.click();
+      // Start a terminal using helpers
+      await enableSection(window, 'Mirror + MariaDB');
+      await attachSection(window, 'mirror');
+      await setDeploymentMode(window, 'mirror', 'run');
+      await runConfiguration(window);
       
       await expect(window.locator('.tab').first()).toBeVisible({ timeout: 10000 });
       
       // Open health report
-      const expandButton = await window.locator('[title="Expand Sidebar"]');
-      await expandButton.click();
-      
-      const healthReportButton = window.locator('[data-testid="health-report-button"]');
-      await healthReportButton.click();
+      await openHealthReport(window);
       
       // Expand terminal section
       const terminalSection = window.locator('.terminal-section-header').first();
@@ -282,31 +214,17 @@ test.describe('Health Report Feature', () => {
     });
 
     test('should focus terminal tab when focus button is clicked', async () => {
-      // Start a terminal first
-      const mirrorSection = window.locator('h2:has-text("Mirror + MariaDB")').locator('..').locator('..');
-      const toggle = mirrorSection.locator('input[type="checkbox"]').first();
-      await toggle.click();
-      await window.waitForTimeout(500);
-      
-      const attachToggle = mirrorSection.locator('#attach-mirror');
-      await attachToggle.click();
-      
-      const runOptionSelector = `[data-testid="mode-selector-btn-mirror-run"]`;
-      await window.waitForSelector(runOptionSelector);
-      await window.click(runOptionSelector);
-      
-      const runButton = window.locator('#run-configuration-button');
-      await runButton.click();
+      // Start a terminal using helpers
+      await enableSection(window, 'Mirror + MariaDB');
+      await attachSection(window, 'mirror');
+      await setDeploymentMode(window, 'mirror', 'run');
+      await runConfiguration(window);
       
       const tab = window.locator('.tab').first();
       await expect(tab).toBeVisible({ timeout: 10000 });
       
       // Open health report
-      const expandButton = await window.locator('[title="Expand Sidebar"]');
-      await expandButton.click();
-      
-      const healthReportButton = window.locator('[data-testid="health-report-button"]');
-      await healthReportButton.click();
+      await openHealthReport(window);
       
       // Expand terminal section and click focus button
       const terminalSection = window.locator('.terminal-section-header').first();
@@ -323,30 +241,16 @@ test.describe('Health Report Feature', () => {
     });
 
     test('should show command popup when show command button is clicked', async () => {
-      // Start a terminal first
-      const mirrorSection = window.locator('h2:has-text("Mirror + MariaDB")').locator('..').locator('..');
-      const toggle = mirrorSection.locator('input[type="checkbox"]').first();
-      await toggle.click();
-      await window.waitForTimeout(500);
-      
-      const attachToggle = mirrorSection.locator('#attach-mirror');
-      await attachToggle.click();
-      
-      const runOptionSelector = `[data-testid="mode-selector-btn-mirror-run"]`;
-      await window.waitForSelector(runOptionSelector);
-      await window.click(runOptionSelector);
-      
-      const runButton = window.locator('#run-configuration-button');
-      await runButton.click();
+      // Start a terminal using helpers
+      await enableSection(window, 'Mirror + MariaDB');
+      await attachSection(window, 'mirror');
+      await setDeploymentMode(window, 'mirror', 'run');
+      await runConfiguration(window);
       
       await expect(window.locator('.tab').first()).toBeVisible({ timeout: 10000 });
       
       // Open health report
-      const expandButton = await window.locator('[title="Expand Sidebar"]');
-      await expandButton.click();
-      
-      const healthReportButton = window.locator('[data-testid="health-report-button"]');
-      await healthReportButton.click();
+      await openHealthReport(window);
       
       // Expand terminal section and click show command button
       const terminalSection = window.locator('.terminal-section-header').first();
@@ -361,30 +265,16 @@ test.describe('Health Report Feature', () => {
     });
 
     test('should close command popup when close button is clicked', async () => {
-      // Start a terminal first
-      const mirrorSection = window.locator('h2:has-text("Mirror + MariaDB")').locator('..').locator('..');
-      const toggle = mirrorSection.locator('input[type="checkbox"]').first();
-      await toggle.click();
-      await window.waitForTimeout(500);
-      
-      const attachToggle = mirrorSection.locator('#attach-mirror');
-      await attachToggle.click();
-      
-      const runOptionSelector = `[data-testid="mode-selector-btn-mirror-run"]`;
-      await window.waitForSelector(runOptionSelector);
-      await window.click(runOptionSelector);
-      
-      const runButton = window.locator('#run-configuration-button');
-      await runButton.click();
+      // Start a terminal using helpers
+      await enableSection(window, 'Mirror + MariaDB');
+      await attachSection(window, 'mirror');
+      await setDeploymentMode(window, 'mirror', 'run');
+      await runConfiguration(window);
       
       await expect(window.locator('.tab').first()).toBeVisible({ timeout: 10000 });
       
       // Open health report and show command popup
-      const expandButton = await window.locator('[title="Expand Sidebar"]');
-      await expandButton.click();
-      
-      const healthReportButton = window.locator('[data-testid="health-report-button"]');
-      await healthReportButton.click();
+      await openHealthReport(window);
       
       const terminalSection = window.locator('.terminal-section-header').first();
       await terminalSection.click();
@@ -404,11 +294,7 @@ test.describe('Health Report Feature', () => {
   test.describe('Health Report Refresh Functionality', () => {
     test('should refresh container statuses when refresh all button is clicked', async () => {
       // Open health report
-      const expandButton = await window.locator('[title="Expand Sidebar"]');
-      await expandButton.click();
-      
-      const healthReportButton = window.locator('[data-testid="health-report-button"]');
-      await healthReportButton.click();
+      await openHealthReport(window);
       
       // Click refresh all button
       const refreshAllButton = window.locator('text=Refresh All');
@@ -420,11 +306,7 @@ test.describe('Health Report Feature', () => {
 
     test('should show updated timestamp after refresh', async () => {
       // Open health report
-      const expandButton = await window.locator('[title="Expand Sidebar"]');
-      await expandButton.click();
-      
-      const healthReportButton = window.locator('[data-testid="health-report-button"]');
-      await healthReportButton.click();
+      await openHealthReport(window);
       
       // Get initial timestamp
       const initialTimestamp = await window.locator('.last-updated').textContent();
@@ -443,36 +325,15 @@ test.describe('Health Report Feature', () => {
 
   test.describe('Health Report in No Run Mode', () => {
     test('should disable refresh buttons in no run mode', async () => {
-      // Enable no run mode
-      const expandButton = await window.locator('[title="Expand Sidebar"]');
-      await expandButton.click();
+      // Enable no run mode using helpers
+      await openDebugTools(window);
+      await enableNoRunMode(window);
       
-      const debugButton = window.locator('.debug-section-toggle-button');
-      await debugButton.click();
-      
-      await expect(window.locator('.debug-section-content')).toBeVisible();
-      
-      const noRunModeButton = window.locator('.debug-section-content button').filter({ hasText: 'No Run Mode' });
-      await noRunModeButton.click();
-      
-      // Close debug section
-      await debugButton.click();
-      
-      // Start a terminal
-      const mirrorSection = window.locator('h2:has-text("Mirror + MariaDB")').locator('..').locator('..');
-      const toggle = mirrorSection.locator('input[type="checkbox"]').first();
-      await toggle.click();
-      await window.waitForTimeout(500);
-      
-      const attachToggle = mirrorSection.locator('#attach-mirror');
-      await attachToggle.click();
-      
-      const runOptionSelector = `[data-testid="mode-selector-btn-mirror-run"]`;
-      await window.waitForSelector(runOptionSelector);
-      await window.click(runOptionSelector);
-      
-      const runButton = window.locator('#run-configuration-button');
-      await runButton.click();
+      // Start a terminal using helpers
+      await enableSection(window, 'Mirror + MariaDB');
+      await attachSection(window, 'mirror');
+      await setDeploymentMode(window, 'mirror', 'run');
+      await runConfiguration(window);
       
       await expect(window.locator('.tab').first()).toBeVisible({ timeout: 10000 });
       

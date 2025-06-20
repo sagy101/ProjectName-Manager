@@ -18,7 +18,6 @@ function isProcessRunning(pid) {
 
 describe('Process cleanup', () => {
   const script = path.join(__dirname, '..', '..', 'test-utils', 'ptyApp.js');
-
   test('process is killed when terminal tab is closed', async () => {
     const proc = spawn(process.execPath, [script], { stdio: ['pipe', 'pipe', 'inherit', 'ipc'] });
     let childPid;
