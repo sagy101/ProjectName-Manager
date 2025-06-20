@@ -5,7 +5,7 @@
     "autoSetupTimeoutSeconds": 90,
     "sidebarDefaultExpanded": false,
     "terminalScrollback": 1000,
-    "maxFloatingTerminals": 3,
+    "maxFloatingTerminals": 8,
     "terminalFontSize": 14,
     "configurationDefaultExpanded": true
   },
