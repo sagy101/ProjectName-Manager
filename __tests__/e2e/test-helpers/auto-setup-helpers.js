@@ -54,10 +54,9 @@ async function clickStartPriorityGroup(page, priority) {
   try {
     console.log(`Starting priority group ${priority}...`);
     
-    // Look for priority group start button
-    const priorityButton = page.locator(`button`).filter({ 
-      hasText: new RegExp(`priority\\s*${priority}|group\\s*${priority}`, 'i') 
-    }).filter({ hasText: /start|run/i }).first();
+    // Based on actual HTML structure, the button has title="Start Priority X"
+    // and class="start-priority-button"
+    const priorityButton = page.locator(`.start-priority-button[title="Start Priority ${priority}"]`);
     
     await expect(priorityButton).toBeVisible({ timeout: getTimeout(5000) });
     await priorityButton.click();
@@ -78,35 +77,54 @@ async function checkGroupCompleted(page, priority) {
   try {
     console.log(`Checking if priority group ${priority} completed...`);
     
-    // Look for completion indicators - could be checkmarks, "completed" text, success status, etc.
-    const completionSelectors = [
-      `.priority-${priority} .completed`,
-      `.priority-${priority} .success`,
-      `.priority-${priority} .status-completed`,
-      `.group-${priority} .completed`,
-      `.group-${priority} .success`,
-      `[data-priority="${priority}"] .completed`,
-      `[data-priority="${priority}"] .success`
+    // Based on actual HTML structure, look for completion status
+    // The HTML shows: <span class="group-status-label status-waiting">Waiting</span>
+    // and <span class="group-progress">0/2 completed</span>
+    
+    // Find the priority group container that contains "Priority X"
+    const priorityGroupContainer = page.locator('.priority-group-header').filter({
+      hasText: `Priority ${priority}`
+    });
+    
+    // Check for completed status in multiple ways
+    const completionChecks = [
+      // Check if status label shows "Complete" or "Success"
+      priorityGroupContainer.locator('.group-status-label').filter({ hasText: /complete|success|done/i }),
+      
+      // Check if progress shows all items completed (like "2/2 completed")
+      priorityGroupContainer.locator('.group-progress').filter({ hasText: /(\d+)\/\1\s+completed/i }),
+      
+      // Check for success icon or completed class
+      priorityGroupContainer.locator('.group-status-icon.success, .group-status-icon.completed'),
+      
+      // Check if status is not "waiting" or "running"
+      priorityGroupContainer.locator('.group-status-label').filter({ hasText: /^(?!.*(waiting|running|in progress)).*$/i })
     ];
     
     let completed = false;
-    for (const selector of completionSelectors) {
+    for (const check of completionChecks) {
       try {
-        const element = page.locator(selector);
-        if (await element.count() > 0 && await element.first().isVisible()) {
+        if (await check.count() > 0 && await check.first().isVisible()) {
           completed = true;
           break;
         }
       } catch {
-        // Continue to next selector
+        // Continue to next check
       }
     }
     
-    // Alternative: look for success text or icons
+    // Additional check: wait for a reasonable time for completion status to appear
     if (!completed) {
-      const successIndicators = page.locator(`text=/priority\\s*${priority}.*complete|group\\s*${priority}.*complete|priority\\s*${priority}.*success/i`);
-      if (await successIndicators.count() > 0) {
+      try {
+        await priorityGroupContainer.locator('.group-status-label').filter({ 
+          hasText: /complete|success|done/i 
+        }).waitFor({ timeout: getTimeout(10000) });
         completed = true;
+      } catch {
+        // Final fallback: check if waiting/running status is gone
+        const isStillWaiting = await priorityGroupContainer.locator('.group-status-label.status-waiting').count() > 0;
+        const isStillRunning = await priorityGroupContainer.locator('.group-status-label').filter({ hasText: /running|in progress/i }).count() > 0;
+        completed = !isStillWaiting && !isStillRunning;
       }
     }
     

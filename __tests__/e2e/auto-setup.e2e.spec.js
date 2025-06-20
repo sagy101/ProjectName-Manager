@@ -45,7 +45,8 @@ test.describe('Auto Setup E2E Tests', () => {
 
   test('should run all priority groups successfully in No Run Mode', async () => {
     // 1. Ensure all verifications are valid, then toggle to make them invalid
-    await ensureAllVerificationsValid(window);
+    const allValid = await ensureAllVerificationsValid(window);
+    if(!allValid) throw new Error('Not all verifications are valid before toggling verifications!');
     await toggleAllVerifications(window);
     
     // 2. Enable No Run Mode and start auto setup

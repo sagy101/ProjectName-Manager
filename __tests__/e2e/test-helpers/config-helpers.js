@@ -31,6 +31,50 @@ async function findConfigSection(window, sectionTitle, options = {}) {
 }
 
 /**
+ * Finds a configuration section by title regardless of visibility state
+ * @param {any} window - The Playwright window object
+ * @param {string} sectionTitle - The title of the section to find
+ * @param {Object} options - Configuration options
+ * @param {number} options.timeout - Timeout for finding the section
+ * @param {string} options.state - State to wait for ('visible', 'attached', 'hidden')
+ * @returns {Promise<any>} The section locator
+ */
+async function findConfigSectionAnyState(window, sectionTitle, options = {}) {
+  const { timeout = TIMEOUTS.MEDIUM, state = 'attached' } = options;
+  
+  try {
+    // Find the section by its title without requiring visibility
+    const sectionTitleLocator = window.locator(`h2:has-text("${sectionTitle}")`);
+    await sectionTitleLocator.waitFor({ state, timeout });
+    
+    // Navigate to the parent config section
+    const sectionLocator = sectionTitleLocator.locator('..').locator('..');
+    
+    return sectionLocator;
+  } catch (error) {
+    throw new Error(`Failed to find config section "${sectionTitle}" in state "${state}": ${error.message}`);
+  }
+}
+
+/**
+ * Checks if a configuration section exists in the DOM regardless of visibility
+ * @param {any} window - The Playwright window object
+ * @param {string} sectionTitle - The title of the section to check
+ * @param {Object} options - Configuration options
+ * @returns {Promise<boolean>} True if section exists in DOM
+ */
+async function sectionExistsInDOM(window, sectionTitle, options = {}) {
+  try {
+    const sectionTitleLocator = window.locator(`h2:has-text("${sectionTitle}")`);
+    const count = await sectionTitleLocator.count();
+    return count > 0;
+  } catch (error) {
+    console.warn(`Error checking if section "${sectionTitle}" exists:`, error.message);
+    return false;
+  }
+}
+
+/**
  * Gets the checkbox toggle for a configuration section
  * @param {any} sectionLocator - The section locator
  * @param {Object} options - Configuration options
@@ -476,4 +520,8 @@ module.exports = {
   
   // Utility functions
   getSectionToggle,
+  
+  // New helper functions
+  findConfigSectionAnyState,
+  sectionExistsInDOM,
 }; 

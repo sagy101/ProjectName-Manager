@@ -11,7 +11,8 @@ const {
   runConfiguration,
   stopConfiguration,
   waitForTerminalTab,
-  isSectionEnabled
+  isSectionEnabled,
+  findConfigSection
 } = require('./test-helpers/index.js');
 
 const isMock = process.env.E2E_ENV === 'mock';
