@@ -373,7 +373,7 @@ describe('Main Process Tests', () => {
       const fs = require('fs').promises;
       
       fs.readFile.mockResolvedValue(JSON.stringify({
-        displaySettings: { projectName: 'Test Project' },
+        settings: { projectName: 'Test Project' },
         sections: []
       }));
 

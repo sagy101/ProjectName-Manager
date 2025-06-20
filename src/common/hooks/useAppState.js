@@ -2,11 +2,11 @@ import { useState, useRef } from 'react';
 import { STATUS } from '../../environment-verification/constants/verificationConstants';
 import appConfig from '../../project-config/config/configurationSidebarSections.json';
 
-const { displaySettings, sections: configSidebarSections } = appConfig;
+const { settings, sections: configSidebarSections } = appConfig;
 
 export const useAppState = () => {
   // Project Name state
-  const [projectName, setProjectName] = useState(displaySettings?.projectName || 'App');
+  const [projectName, setProjectName] = useState(settings?.projectName || 'App');
 
   // Loading state
   const [isLoading, setIsLoading] = useState(true);
@@ -50,7 +50,7 @@ export const useAppState = () => {
   });
 
   // State for FloatingTerminalSidebar expansion
-  const [isFloatingSidebarExpanded, setIsFloatingSidebarExpanded] = useState(false);
+  const [isFloatingSidebarExpanded, setIsFloatingSidebarExpanded] = useState(settings?.sidebarDefaultExpanded || false);
 
   // State for import status screen
   const [showImportStatusScreen, setShowImportStatusScreen] = useState(false);
@@ -70,7 +70,7 @@ export const useAppState = () => {
   const [discoveredVersions, setDiscoveredVersions] = useState({});
 
   // State for ProjectConfiguration collapse
-  const [isConfigCollapsed, setIsConfigCollapsed] = useState(false);
+  const [isConfigCollapsed, setIsConfigCollapsed] = useState(!settings?.configurationDefaultExpanded);
 
   // State for Health Report
   const [isHealthReportVisible, setIsHealthReportVisible] = useState(false);
@@ -135,6 +135,7 @@ export const useAppState = () => {
     globalDropdownValues,
     terminalRef,
     projectConfigRef,
+    settings,
     
     // State setters
     setProjectName,

@@ -10,7 +10,7 @@ import { useTerminals } from '../useTerminals';
 import { useTabManagement } from '../../tab-info/hooks/useTabManagement';
 import { useIpcListeners } from '../../common/hooks/useIpcListeners';
 
-const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectName, isReadOnly }, ref) => {
+const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectName, isReadOnly, settings }, ref) => {
   const tabsContainerRef = useRef(null);
   
   const {
@@ -205,6 +205,8 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
               isErrorTab={terminal.status === 'error' && terminal.errorType === 'config'}
               errorMessage={terminal.errorMessage}
               onProcessStarted={handleProcessStarted}
+              scrollback={settings?.terminalScrollback || 1000}
+              fontSize={settings?.terminalFontSize || 14}
             />
           ))
         )}

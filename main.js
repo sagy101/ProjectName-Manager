@@ -36,7 +36,7 @@ let mainWindow; // This will be managed by windowManagement module
 const projectRoot = path.resolve(app.getAppPath(), '..'); // Define projectRoot globally for helpers
 
 // Function to create the main window (corrected version)
-function createWindow(displaySettings = {}) {
+function createWindow(appSettings = {}) {
   // Check if running in test/headless mode
   const isTestMode = process.env.HEADLESS === 'true';
   
@@ -68,7 +68,7 @@ function createWindow(displaySettings = {}) {
   mainWindow.loadFile('index.html');
   
   // Open DevTools for debugging based on config (but not in test mode)
-  if (!isTestMode && displaySettings.openDevToolsByDefault) {
+  if (!isTestMode && appSettings.openDevToolsByDefault) {
     mainWindow.webContents.openDevTools();
   }
   
@@ -79,12 +79,12 @@ function createWindow(displaySettings = {}) {
   return mainWindow;
 }
 
-async function loadDisplaySettings() {
+async function loadAppSettings() {
   try {
-    const result = await configurationManagement.loadDisplaySettings();
-    return result.success ? result.displaySettings : {};
+    const result = await configurationManagement.loadAppSettings();
+    return result.success ? result.appSettings : {};
   } catch (error) {
-    console.error('Error loading display settings:', error);
+    console.error('Error loading application settings:', error);
     return {}; // Return empty object on error
   }
 }
@@ -218,13 +218,13 @@ ipcMain.on('process-exited', (event, data) => {
 
 app.whenReady().then(async () => { // eslint-disable-line promise/always-return
   console.log('=== APPLICATION STARTUP ===');
-  console.log('1. Loading display settings...');
-  const displaySettings = await loadDisplaySettings();
+  console.log('1. Loading application settings...');
+  const appSettings = await loadAppSettings();
 
   console.log('2. Starting environment verification...');
   
   // Create the main window
-  mainWindow = createWindow(displaySettings);
+  mainWindow = createWindow(appSettings);
   
   // Perform environment verification first
   try {
@@ -253,8 +253,8 @@ app.on('window-all-closed', () => {
 app.on('activate', async () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     try {
-      const displaySettings = await loadDisplaySettings();
-      const window = createWindow(displaySettings);
+      const appSettings = await loadAppSettings();
+      const window = createWindow(appSettings);
       if (!window) {
         console.error('Failed to create window on activate');
         return false;

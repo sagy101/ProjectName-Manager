@@ -6,7 +6,7 @@ const config = isMock
   ? require('../mock-data/mockConfigurationSidebarSections.json')
   : require('../../src/project-config/config/configurationSidebarSections.json');
 
-const { sections, displaySettings } = config;
+const { sections, settings } = config;
 
 test.describe('Configuration Interface', () => {
   let electronApp;
@@ -63,7 +63,7 @@ test.describe('Configuration Interface', () => {
   });
 
   test('should show RUN button in correct initial state', async () => {
-    const runButton = await window.locator('button').filter({ hasText: new RegExp(`RUN.*${displaySettings.projectName}`, 'i') });
+    const runButton = await window.locator('button').filter({ hasText: new RegExp(`RUN.*${settings.projectName}`, 'i') });
     await expect(runButton).toBeVisible();
     await expect(runButton).toBeDisabled();
   });

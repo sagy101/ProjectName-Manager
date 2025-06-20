@@ -90,7 +90,9 @@ const App = () => {
     infoPanelState: appState.infoPanelState,
     setInfoPanelState: appState.setInfoPanelState,
     configState: appState.configState,
-    noRunMode: appState.noRunMode
+    noRunMode: appState.noRunMode,
+    settings: appState.settings,
+    showAppNotification: showAppNotificationCallback
   });
 
   // Initialize configuration management
@@ -131,7 +133,8 @@ const App = () => {
         window.electron.rerunSingleVerification(verificationId);
       }
     },
-    showAppNotification: eventHandlers.showAppNotification
+    showAppNotification: eventHandlers.showAppNotification,
+    settings: appState.settings
   });
 
   // Get live terminal data
@@ -253,6 +256,7 @@ const App = () => {
               configState={appState.configState} 
               projectName={appState.projectName} 
               isReadOnly={!appState.isMainTerminalWritable} // Pass inverse for isReadOnly prop
+              settings={appState.settings}
             />
           </div>
         </div> {/* End of app-content-wrapper */}
@@ -370,6 +374,7 @@ const App = () => {
         }}
           isReadOnly={false}
           noRunMode={appState.noRunMode}
+          settings={appState.settings}
         />
       ))}
       {/* Render TabInfoPanel for Floating Terminals */}

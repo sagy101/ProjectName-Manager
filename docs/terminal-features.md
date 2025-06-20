@@ -24,6 +24,7 @@ These are the primary terminals for executing and monitoring your {ProjectName} 
 -   **Tab Information Panel**: Detailed insights into each tab's process.
 -   **Conditional Command Refresh**: Ability to re-run commands with dynamic modifications.
 -   **Tab Overflow Management**: Handles numerous tabs gracefully with a dropdown for overflowed tabs.
+-   **Configurable Appearance**: Font size and scrollback buffer size are configurable via application settings.
 
 ### Tab Information Panel
 
@@ -355,6 +356,8 @@ Floating terminals provide a flexible way to run and view specific commands or l
 -   **Window Controls**: Include a title bar with Minimize and Close buttons.
 -   **Always Writable**: Input is enabled by default, allowing interaction if the command expects it (unless in "No Run Mode").
 -   **"No Run Mode" Aware**: If "No Run Mode" is active in the application's debug settings, the floating terminal will display the command that would have run but will not execute it.
+-   **Configurable Limits**: Maximum number of concurrent floating terminals is configurable (default 10, set via `maxFloatingTerminals` setting). Attempting to exceed this limit shows a warning notification.
+-   **Configurable Appearance**: Font size and scrollback buffer size match the main terminal settings.
 -   **Management**: Listed and managed via the **App Control Sidebar** (right edge of the application). From the sidebar, you can:
     -   Show/focus a terminal.
     -   Minimize/restore a terminal.
@@ -372,7 +375,7 @@ Basic information about a floating terminal's purpose and command can be accesse
 ### Large Output Handling
 - Terminal buffers are limited to prevent memory issues
 - Old output is automatically trimmed
-- Scrollback is preserved within limits
+- Scrollback is preserved within configurable limits (default 1000 lines, configurable via `terminalScrollback` setting)
 
 ### Multiple Tabs
 - Each tab runs in its own PTY process

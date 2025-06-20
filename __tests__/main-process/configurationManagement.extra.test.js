@@ -14,7 +14,7 @@ jest.mock('../../configIO', () => ({
 }));
 
 const {
-  loadDisplaySettings,
+  loadAppSettings,
   getAboutConfig,
   exportConfiguration,
   importConfiguration,
@@ -27,12 +27,14 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
-test('loadDisplaySettings parses json', async () => {
-  const data = { displaySettings: { openDevToolsByDefault: true, projectName: 'X' } };
+test('loadAppSettings parses json', async () => {
+  const data = { settings: { openDevToolsByDefault: true, projectName: 'X', autoSetupTimeoutSeconds: 45, configurationDefaultExpanded: false } };
   fs.readFile.mockResolvedValue(JSON.stringify(data));
-  const res = await loadDisplaySettings();
+  const res = await loadAppSettings();
   expect(res.success).toBe(true);
-  expect(res.displaySettings.projectName).toBe('X');
+  expect(res.appSettings.projectName).toBe('X');
+  expect(res.appSettings.autoSetupTimeoutSeconds).toBe(45);
+  expect(res.appSettings.configurationDefaultExpanded).toBe(false);
 });
 
 test('getAboutConfig returns parsed file', async () => {

@@ -95,8 +95,15 @@ Defines the UI structure and components for each section in the configuration si
 
 ```json
 {
-  "displaySettings": {
-    "projectName": "MyProject"
+  "settings": {
+    "projectName": "MyProject",
+    "openDevToolsByDefault": false,
+    "autoSetupTimeoutSeconds": 90,
+    "sidebarDefaultExpanded": false,
+    "terminalScrollback": 1000,
+    "maxFloatingTerminals": 10,
+    "terminalFontSize": 14,
+    "configurationDefaultExpanded": true
   },
   "sections": [
     {
@@ -136,6 +143,26 @@ Defines the UI structure and components for each section in the configuration si
   ]
 }
 ```
+
+**Application Settings**:
+
+The `settings` object contains application-wide configuration options that control behavior, appearance, and limits across the entire application.
+
+- **`projectName`** (string, default: "Project"): The display name for the project shown in the UI title and various locations throughout the application.
+
+- **`openDevToolsByDefault`** (boolean, default: false): Whether to automatically open Chrome Developer Tools when the application starts. Useful for debugging during development.
+
+- **`autoSetupTimeoutSeconds`** (number, default: 60): The timeout in seconds for Auto Setup commands. Commands that run longer than this will be automatically terminated. Configurable to accommodate different command complexity and system performance.
+
+- **`sidebarDefaultExpanded`** (boolean, default: false): Whether the App Control Sidebar (floating terminal management sidebar) should be expanded by default when the application starts. When false, the sidebar starts collapsed.
+
+- **`terminalScrollback`** (number, default: 1000): The number of lines to keep in terminal scrollback buffer. Higher values allow scrolling back through more command output history but use more memory.
+
+- **`maxFloatingTerminals`** (number, default: 10): The maximum number of floating terminals that can be open simultaneously. When this limit is reached, attempting to open additional floating terminals will show a warning notification.
+
+- **`terminalFontSize`** (number, default: 14): The font size in pixels for terminal text. Affects both main terminal tabs and floating terminals.
+
+- **`configurationDefaultExpanded`** (boolean, default: true): Whether the ProjectConfiguration sidebar (main configuration panel) should be expanded by default when the application starts. When false, the configuration panel starts collapsed and can be expanded using the arrow button.
 
 **Top-Level Section Properties**:
 - `id` (string): A unique identifier for the section. Used to link commands and "About" info.

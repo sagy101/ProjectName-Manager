@@ -70,7 +70,7 @@ jest.mock('../../src/main-process/containerManagement', () => ({
 }));
 
 jest.mock('../../src/main-process/configurationManagement', () => ({
-  loadDisplaySettings: jest.fn().mockResolvedValue({ success: true, displaySettings: {} }),
+  loadAppSettings: jest.fn().mockResolvedValue({ success: true, appSettings: {} }),
   getAboutConfig: jest.fn(),
   exportConfiguration: jest.fn(),
   importConfiguration: jest.fn()
@@ -93,13 +93,13 @@ describe('Main Process Startup Bug Fixes', () => {
     expect(typeof BrowserWindow).toBe('function');
   });
 
-  test('should load display settings correctly', async () => {
-    // This test verifies that display settings loading works correctly
+  test('should load application settings correctly', async () => {
+    // This test verifies that application settings loading works correctly
     const configurationManagement = require('../../src/main-process/configurationManagement');
     
-    const result = await configurationManagement.loadDisplaySettings();
+    const result = await configurationManagement.loadAppSettings();
     expect(result.success).toBe(true);
-    expect(result.displaySettings).toBeDefined();
+    expect(result.appSettings).toBeDefined();
   });
 
   test('should return correct data structure from import configuration', async () => {
@@ -149,7 +149,7 @@ describe('Main Process Startup Bug Fixes', () => {
     
     // Re-mock for other tests
     jest.doMock('../../src/main-process/configurationManagement', () => ({
-      loadDisplaySettings: jest.fn().mockResolvedValue({ success: true, displaySettings: {} }),
+      loadAppSettings: jest.fn().mockResolvedValue({ success: true, appSettings: {} }),
       getAboutConfig: jest.fn(),
       exportConfiguration: jest.fn(),
       importConfiguration: jest.fn()
@@ -174,7 +174,7 @@ describe('Main Process Startup Bug Fixes', () => {
     
     // Re-mock for other tests
     jest.doMock('../../src/main-process/configurationManagement', () => ({
-      loadDisplaySettings: jest.fn().mockResolvedValue({ success: true, displaySettings: {} }),
+      loadAppSettings: jest.fn().mockResolvedValue({ success: true, appSettings: {} }),
       getAboutConfig: jest.fn(),
       exportConfiguration: jest.fn(),
       importConfiguration: jest.fn()
@@ -267,7 +267,7 @@ describe('Main Process Startup Bug Fixes', () => {
       
       // Re-mock the module for other tests
       jest.doMock('../../src/main-process/configurationManagement', () => ({
-        loadDisplaySettings: jest.fn().mockResolvedValue({ success: true, displaySettings: {} }),
+        loadAppSettings: jest.fn().mockResolvedValue({ success: true, appSettings: {} }),
         getAboutConfig: jest.fn(),
         exportConfiguration: jest.fn(),
         importConfiguration: jest.fn()

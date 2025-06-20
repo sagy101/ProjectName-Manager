@@ -353,3 +353,4 @@ describe('Refresh Button', () => {
     expect(getByPlaceholderText('Search...')).toBeInTheDocument();
   });
 });
+
