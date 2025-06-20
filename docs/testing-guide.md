@@ -150,6 +150,51 @@ This ensures the Electron window is not shown during tests. You can also add `HE
 
 **Important**: E2E tests require `openDevToolsByDefault` to be set to `false` in `src/configurationSidebarSections.json`. Having dev tools open during automated testing can interfere with test execution and cause failures.
 
+## Dynamic Mock Environment
+
+The testing infrastructure includes a sophisticated dynamic mock generation system for E2E testing:
+
+### Mock Environment Setup
+
+- **Script**: `scripts/setup-mock-e2e-env.sh`
+- **Helper**: `scripts/extract-mock-commands.js`
+- **Purpose**: Creates a comprehensive mock environment that mirrors the production environment for E2E tests
+
+### Dynamic Mock Generation
+
+The mock environment automatically generates command mocks based on verification requirements found in:
+- `src/environment-verification/generalEnvironmentVerifications.json`
+- `src/project-config/config/configurationSidebarAbout.json`
+
+**Benefits:**
+- **Automatic**: New verifications in JSON files automatically get mocked
+- **Consistent**: Mock outputs match exactly what verification logic expects
+- **Maintainable**: No need to manually update mock scripts when adding new tools
+- **Comprehensive**: Covers all commands used in verification and fix workflows
+
+**Generated Mocks Include:**
+- `gcloud`, `kubectl`, `kubectx` (Cloud tools)
+- `docker` (Container runtime)
+- `go`, `java`, `node`/`nvm` (Programming languages)
+- `brew`, `rdctl` (Package managers)
+- `chromium` (Browser)
+
+### Mock Environment Features
+
+The setup script creates:
+- **Project directories**: Sibling directories for all related projects
+- **Executable files**: Mock `gradlew` files with correct permissions
+- **Command mocks**: Dynamic executable scripts in `./mock_bin/`
+- **Environment setup**: `GOPATH`, PATH configuration, GitHub Actions compatibility
+
+### Testing the Mock Environment
+
+Comprehensive test suite at `__tests__/scripts/setup-mock-e2e-env.test.js`:
+- Tests directory and file creation
+- Validates all mock command behaviors
+- Ensures environment variables are set correctly
+- Verifies output matches expected verification results
+
 ## Key Scripts
 
 - `npm test`: Runs the main test suite (all Jest and E2E tests).
@@ -163,6 +208,7 @@ This ensures the Electron window is not shown during tests. You can also add `HE
 - `npm run test:jest:coverage:text`: Generates a text coverage summary.
 - `npm run test:jest:coverage:html`: Generates an HTML coverage report.
 - `scripts/run-all-tests.sh`: Convenience script that runs Jest and Playwright tests.
+- `scripts/setup-mock-e2e-env.sh`: Sets up the dynamic mock environment for E2E testing.
 
 ## Troubleshooting
 

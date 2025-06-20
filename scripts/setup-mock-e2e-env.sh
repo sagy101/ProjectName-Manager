@@ -2,6 +2,7 @@
 
 # Setup a comprehensive mock environment for running E2E tests locally.
 # This mirrors the environment created in the GitHub Actions workflow.
+# Now with dynamic mock generation based on JSON configuration files.
 
 set -e
 
@@ -46,31 +47,32 @@ fi
 GOPM_HOME="${GOPM_HOME:-$repo_root/gopm}"
 mkdir -p "$HOME/go/bin" "$GOPM_HOME"
 
-# Helper to create simple mock executables
-create_mock() {
-    local file=$1
-    shift
-    printf '#!/bin/bash\n%s\n' "$*" > "./mock_bin/$file"
-    chmod +x "./mock_bin/$file"
-}
+# Generate dynamic mocks from JSON configuration
+echo "Generating dynamic mocks from JSON configuration..."
+node "$script_dir/extract-mock-commands.js" "$repo_root" | while IFS= read -r line; do
+    if [[ "$line" =~ ^MOCK_COMMAND:(.*)$ ]]; then
+        # Start of a new mock command
+        current_command="${BASH_REMATCH[1]}"
+        mock_script=""
+    elif [[ "$line" == "MOCK_COMMAND_END" ]]; then
+        # End of mock command - write the script
+        if [ -n "$current_command" ] && [ -n "$mock_script" ]; then
+            echo "$mock_script" > "./mock_bin/$current_command"
+            chmod +x "./mock_bin/$current_command"
+        fi
+        current_command=""
+        mock_script=""
+    elif [[ "$line" != "# Commands extracted from JSON files:" ]]; then
+        # Accumulate script content
+        if [ -n "$mock_script" ]; then
+            mock_script="$mock_script$line"$'\n'
+        else
+            mock_script="$line"$'\n'
+        fi
+    fi
+done
 
-create_mock gcloud 'echo "Google Cloud SDK 450.0.0"'
-create_mock kubectl 'echo "Client Version: v1.28.4"'
-create_mock kubectx 'echo "mock-context"'
-create_mock docker 'if [[ "$1" == "info" && "$2" == "--format" ]]; then
-  echo "24.0.7"
-elif [[ "$1" == "ps" ]]; then
-  echo "CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS   NAMES"
-else
-  echo "Docker version 24.0.7, build afdd53b"
-fi'
-create_mock go 'echo "go version go1.21.4 linux/amd64"'
-create_mock java 'echo "openjdk version \"17.0.8\" 2023-07-18" >&2'
-create_mock brew 'echo "Homebrew 4.1.20"'
-create_mock rdctl 'echo "rdctl version 1.10.1"'
-create_mock chromium 'echo "Chromium 125.0.6422.141"'
-
-# nvm wrapper - use real nvm if available
+# Create special nvm wrapper - use real nvm if available, otherwise use mock
 cat > ./mock_bin/nvm <<'NVMEOF'
 #!/bin/bash
 if [ -s "$HOME/.nvm/nvm.sh" ]; then
@@ -90,4 +92,5 @@ fi
 NVMEOF
 chmod +x ./mock_bin/nvm
 
-echo "Mock environment setup complete.\nAdd $(pwd)/mock_bin to your PATH before running E2E tests."
+echo "Mock environment setup complete."
+echo "Add $(pwd)/mock_bin to your PATH before running E2E tests."

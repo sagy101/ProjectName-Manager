@@ -52,6 +52,7 @@ const DropdownSelector = ({
   const [options, setOptions] = useState([]);
   const [selectedValue, setSelectedValue] = useState(value || '');
   const [loading, setLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -86,7 +87,7 @@ const DropdownSelector = ({
   }, []);
 
   // Fetch options from backend
-  const fetchOptions = async () => {
+  const fetchOptions = async (forceRefresh = false) => {
     if (dependsOn && !dependencyValue) {
       setOptions([]);
       // Do not reset selectedValue if it's controlled
@@ -97,7 +98,11 @@ const DropdownSelector = ({
       return;
     }
 
-    setLoading(true);
+    if (forceRefresh) {
+      setIsRefreshing(true);
+    } else {
+      setLoading(true);
+    }
     setError(null);
 
     try {
@@ -111,14 +116,18 @@ const DropdownSelector = ({
           id,
           command,
           args,
-          parseResponse
+          parseResponse,
+          forceRefresh // Pass the forceRefresh flag to bypass cache
         });
 
         if (result.error) {
           setError(result.error);
-          setOptions([]);
-          if (value === null) {
-            setSelectedValue('');
+          // Don't clear existing options on refresh error to maintain UX
+          if (!forceRefresh) {
+            setOptions([]);
+            if (value === null) {
+              setSelectedValue('');
+            }
           }
         } else {
           const newOptions = result.options || [];
@@ -151,14 +160,33 @@ const DropdownSelector = ({
         }
       } else {
         setError('Backend API not available');
-        setOptions([]);
+        if (!forceRefresh) {
+          setOptions([]);
+        }
       }
     } catch (err) {
       setError(err.toString());
-      setOptions([]);
+      if (!forceRefresh) {
+        setOptions([]);
+      }
     } finally {
-      setLoading(false);
+      if (forceRefresh) {
+        setIsRefreshing(false);
+      } else {
+        setLoading(false);
+      }
     }
+  };
+
+  // Handle refresh button click
+  const handleRefresh = () => {
+    if (isRefreshing || loading) return;
+    
+    // Clear search term to show all refreshed options
+    setSearchTerm('');
+    
+    // Fetch fresh options
+    fetchOptions(true);
   };
 
   // Fetch options when component mounts or dependency changes
@@ -239,14 +267,25 @@ const DropdownSelector = ({
       
       {isOpen && !isDisabledForClick && (
         <div className="dropdown-menu">
-          <input 
-            type="text"
-            className="dropdown-search"
-            placeholder="Search..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onClick={(e) => e.stopPropagation()} // Prevent dropdown from closing
-          />
+          <div className="dropdown-search-container">
+            <button 
+              className={`dropdown-refresh-button${isRefreshing ? ' loading' : ''}`}
+              onClick={handleRefresh}
+              disabled={isRefreshing || loading}
+              title="Refresh options"
+              aria-label="Refresh dropdown options"
+            >
+              <span className={`refresh-icon${isRefreshing ? ' spinning' : ''}`}>↻</span>
+            </button>
+            <input 
+              type="text"
+              className="dropdown-search"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onClick={(e) => e.stopPropagation()} // Prevent dropdown from closing
+            />
+          </div>
           <div className="dropdown-item-list"> {/* Wrapper for scrollable items */}
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option, index) => (

@@ -206,6 +206,8 @@ const ProjectConfiguration = forwardRef(({ projectName, globalDropdownValues, te
             onBranchChangeError={onBranchChangeError}
             showAppNotification={showAppNotification}
             onFixCommand={onFixCommand}
+            discoveredVersions={discoveredVersions}
+            configSidebarSections={configSidebarSectionsActual}
           />
         ))}
       </div>

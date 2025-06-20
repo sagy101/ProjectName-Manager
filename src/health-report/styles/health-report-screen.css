@@ -164,7 +164,7 @@
   transform: translateY(0);
 }
 
-.refresh-icon {
+.refresh-all-button .refresh-icon {
   animation: spin 2s linear infinite;
 }
 

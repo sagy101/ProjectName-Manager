@@ -10,6 +10,7 @@ import VerificationIndicator from '../environment-verification/VerificationIndic
 import GitBranchSwitcher from './GitBranchSwitcher';
 import configSidebarAbout from './config/configurationSidebarAbout.json';
 import './styles/config-section.css';
+import { substituteCommandVariables } from '../common/utils/evalUtils';
 
 const ConfigSection = ({ 
   section, 
@@ -35,7 +36,9 @@ const ConfigSection = ({
   configSidebarCommands,
   onBranchChangeError,
   showAppNotification,
-  onFixCommand
+  onFixCommand,
+  discoveredVersions,
+  configSidebarSections
 }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const verificationPopoverRef = useRef(null);
@@ -315,9 +318,10 @@ const ConfigSection = ({
             <div className="custom-buttons-container">
               {buttonsToRender.map(button => {
                 const commandDef = configSidebarCommands.find(c => c.id === button.commandId);
-                const commandToRun = commandDef ? (commandDef.command.base || commandDef.command) : `echo "Command not found: ${button.commandId}"`;
+                const rawCommand = commandDef ? (commandDef.command.base || commandDef.command) : `echo "Command not found: ${button.commandId}"`;
+                const commandToRun = substituteCommandVariables(rawCommand, discoveredVersions, globalDropdownValues, configState, section.id, configSidebarSections);
                 
-                const isDisabled = isLocked || !config.enabled || (button.id === 'viewLogs' && isLogsDisabled());
+                const isDisabled = !config.enabled || (button.id === 'viewLogs' && isLogsDisabled());
 
                 return (
                   <button
@@ -397,7 +401,8 @@ const ConfigSection = ({
                           <div className="custom-buttons-container">
                             {subSection.components.customButtons.map(button => {
                               const commandDef = configSidebarCommands.find(c => c.id === button.commandId);
-                              const commandToRun = commandDef ? (commandDef.command.base || commandDef.command) : `echo "Command not found: ${button.commandId}"`;
+                              const rawCommand = commandDef ? (commandDef.command.base || commandDef.command) : `echo "Command not found: ${button.commandId}"`;
+                              const commandToRun = substituteCommandVariables(rawCommand, discoveredVersions, globalDropdownValues, configState, subSection.id, configSidebarSections);
                               const isDisabled = isLocked || !config.enabled || !subSectionConfig.enabled;
                               return (
                                 <button
@@ -422,7 +427,8 @@ const ConfigSection = ({
                             {(() => {
                               const button = subSection.components.customButton;
                               const commandDef = configSidebarCommands.find(c => c.id === button.commandId);
-                              const commandToRun = commandDef ? (commandDef.command.base || commandDef.command) : `echo "Command not found: ${button.commandId}"`;
+                              const rawCommand = commandDef ? (commandDef.command.base || commandDef.command) : `echo "Command not found: ${button.commandId}"`;
+                              const commandToRun = substituteCommandVariables(rawCommand, discoveredVersions, globalDropdownValues, configState, subSection.id, configSidebarSections);
                               const isDisabled = isLocked || !config.enabled || !subSectionConfig.enabled;
                               return (
                                 <button

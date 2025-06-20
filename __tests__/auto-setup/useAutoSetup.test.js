@@ -143,7 +143,7 @@ describe('useAutoSetup Hook', () => {
 
     expect(result.current.commandStatuses.cmd1).toBe(COMMAND_EXECUTION_STATUS.TIMEOUT);
     expect(mockShowAppNotification).toHaveBeenCalledWith(
-      'Command "Command 1" timed out after 30 seconds.',
+      'Command "Command 1" timed out after 60 seconds.',
       'warning'
     );
     jest.useRealTimers();
