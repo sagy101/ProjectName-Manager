@@ -65,6 +65,10 @@ function createWindow(appSettings = {}) {
 
   mainWindow = new BrowserWindow(windowOptions);
 
+  // Increase max listeners to prevent memory leak warnings
+  // This is safe because we properly track and clean up listeners in electron-preload.js
+  mainWindow.webContents.setMaxListeners(25);
+
   mainWindow.loadFile('index.html');
   
   // Open DevTools for debugging based on config (but not in test mode)

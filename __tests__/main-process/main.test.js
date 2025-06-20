@@ -28,7 +28,8 @@ const mockBrowserWindowInstance = {
     openDevTools: jest.fn(),
     isDevToolsOpened: jest.fn(() => false),
     on: jest.fn(),
-    setWindowOpenHandler: jest.fn()
+    setWindowOpenHandler: jest.fn(),
+    setMaxListeners: jest.fn()
   },
   isDestroyed: jest.fn(() => false)
 };

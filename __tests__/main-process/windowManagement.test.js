@@ -9,7 +9,8 @@ class MockBrowserWindow {
       isLoading: jest.fn(() => false),
       getURL: jest.fn(() => 'file:///index.html'),
       on: jest.fn(),
-      setWindowOpenHandler: jest.fn()
+      setWindowOpenHandler: jest.fn(),
+      setMaxListeners: jest.fn()
     };
     this.isDestroyed = jest.fn(() => false);
     this.loadFile = jest.fn();
