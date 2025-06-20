@@ -1,0 +1,17 @@
+{
+  "sections": [
+    {
+      "id": "validation-section",
+      "title": "Validation Section",
+      "components": {
+        "toggle": true,
+        "mainToggle": {
+          "validationRequired": {
+            "condition": "gcloudProject && !projectSelectorFallbacks.includes(gcloudProject)",
+            "errorMessage": "Select a project first"
+          }
+        }
+      }
+    }
+  ]
+}
