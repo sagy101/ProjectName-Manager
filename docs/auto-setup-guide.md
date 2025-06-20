@@ -1,16 +1,19 @@
 # Auto Setup Guide
 
-The Auto Setup feature provides automated environment configuration by running all necessary fix commands in the correct priority order.
+> One-click automated environment configuration with intelligent fix command execution
 
 ## Overview
 
-Auto Setup eliminates the manual process of running fix commands one by one. Instead, it:
-- Automatically detects which verifications are failing
-- Organizes fix commands by priority
-- Executes them in the optimal order
-- Provides real-time progress tracking with smart UI behavior
-- Handles failures gracefully with retry options
-- Offers safe testing via No Run Mode simulation
+Auto Setup transforms the tedious process of environment configuration into a single-click operation. This powerful feature intelligently manages all your fix commands, ensuring your development environment is properly configured in minutes instead of hours.
+
+### What Auto Setup Does
+
+- **Detects Issues**: Automatically finds all failing verifications
+- **Organizes Solutions**: Groups fix commands by priority
+- **Executes Intelligently**: Runs commands in optimal order
+- **Tracks Progress**: Real-time status updates with visual feedback
+- **Handles Failures**: Graceful error recovery with retry options
+- **Safe Testing**: No Run Mode for risk-free workflow testing
 
 ## Key Features
 
@@ -359,4 +362,10 @@ A: Yes! When a priority group fails, a "Continue" button appears allowing you to
 **Q: How do I know how much time is left before a command times out?**
 A: Running commands show a live countdown timer (⏱ 45s) that updates every second. The timer turns yellow and pulses when 10 seconds or less remain.
 
-For more information, see the main [README.md](../README.md) and [verification types documentation](verification-types.md). 
+## Related Documentation
+
+- [Verification Types](verification-types.md) - Understanding fix commands and priorities
+- [Configuration Guide](configuration-guide.md) - Setting up fix commands
+- [Getting Started](getting-started.md) - First-time setup with Auto Setup
+- [Terminal Features](terminal-features.md) - Understanding terminal behavior
+- [Documentation Index](index.md) - Complete documentation overview 

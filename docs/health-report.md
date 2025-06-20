@@ -1,13 +1,24 @@
 # Health Report Guide
 
-The Health Report is a centralized dashboard that provides a real-time, at-a-glance overview of the health of all services and their dependencies. It is accessible via the status indicator button in the App Control Sidebar.
+> Real-time monitoring dashboard for all services and dependencies
+
+## Overview
+
+The Health Report provides a centralized view of your entire {ProjectName} Manager environment. Access it via the status indicator button in the App Control Sidebar for instant visibility into service health.
 
 ## Key Features
 
-- **Unified View**: Consolidates the status of all main terminal processes and their associated Docker containers into a single, easy-to-read interface.
-- **Real-Time Updates**: Automatically refreshes every few seconds to provide a live snapshot of your environment's health.
-- **Combined Health Status**: Displays a holistic, combined health status for each service, calculated from the state of both the main process and its container dependencies.
-- **Interactive Controls**: Allows you to quickly jump to a service's terminal tab, view its command, or re-run its process.
+### Monitoring Capabilities
+- **Unified Dashboard**: All services and containers in one view
+- **Real-Time Updates**: Automatic refresh every few seconds
+- **Combined Health Status**: Intelligent status calculation from multiple sources
+- **Dependency Tracking**: See relationships between services and containers
+
+### Interactive Controls
+- **Focus Tab**: Jump directly to any service's terminal
+- **Show Command**: View the exact command being executed
+- **Refresh Service**: Re-run commands with one click
+- **Status Details**: Expand sections for detailed information
 
 ## Status Calculation Logic
 
@@ -39,4 +50,11 @@ The combined status is calculated based on the following hierarchy of importance
 6.  **Stopped**: The status is `stopped` if:
     - The terminal's status is `stopped` or `done`, and no containers are actively running.
 
-This logic ensures that the header status provides a clear and accurate summary of each service's health, while the detailed view inside each section shows the specific status of the main process and its containers. 
+This logic ensures that the header status provides a clear and accurate summary of each service's health, while the detailed view inside each section shows the specific status of the main process and its containers.
+
+## Related Documentation
+
+- [Terminal Features](terminal-features.md) - Understanding terminal status indicators
+- [Configuration Guide](configuration-guide.md) - Configuring services to monitor
+- [Getting Started](getting-started.md) - Initial setup and monitoring
+- [Architecture Overview](architecture-overview.md) - System monitoring architecture 

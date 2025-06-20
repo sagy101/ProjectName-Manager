@@ -1,14 +1,19 @@
 # Verification Types Reference
 
-This document provides a comprehensive reference for all verification types supported by {ProjectName} Manager's environment verification system, including the auto-fix command feature. For a higher-level overview of the verification system, see the [System Architecture](architecture.md#environment-verification-system) document.
+> Comprehensive reference for all verification types in {ProjectName} Manager's environment verification system
 
 ## Overview
 
-Verifications are checks that validate the presence and configuration of tools, paths, environment variables, and other dependencies required for your development environment. Each verification has a `checkType` that determines how the validation is performed.
+This document provides a complete reference for all verification types supported by {ProjectName} Manager. Verifications are checks that validate the presence and configuration of tools, paths, environment variables, and other dependencies required for your development environment.
 
-**New Feature**: Verifications can now include `fixCommand` properties that provide one-click automatic fixes for failed verifications.
+### Key Features
 
-Verifications can be organized in categories within the `generalEnvironmentVerifications.json` file, which now also supports header configuration with dropdown selectors for dynamic environment selection.
+- **Multiple Check Types**: Command success, output validation, path existence, environment variables
+- **Auto-Fix Commands**: One-click remediation for failed verifications
+- **Category Organization**: Group related verifications together
+- **Dynamic Environment Selection**: Header dropdowns for environment configuration
+
+For a higher-level overview of the verification system, see the [System Architecture](architecture-details.md#environment-verification-system) document.
 
 ## Verification Structure
 
@@ -654,3 +659,10 @@ Verifications can include an optional `fixCommand` property that provides automa
 3. **Platform Aware**: Consider using platform-specific commands when needed
 4. **Error Handling**: Commands should handle common error cases gracefully
 5. **Side Effects**: Be mindful of commands that modify global system state
+
+## Related Documentation
+
+- [Configuration Guide](configuration-guide.md) - How to configure verifications
+- [Auto Setup Guide](auto-setup-guide.md) - Using fix commands with Auto Setup
+- [Getting Started](getting-started.md) - First-time setup and verification
+- [Architecture Details](architecture-details.md#environment-verification-system) - Technical implementation

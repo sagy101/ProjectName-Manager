@@ -1,11 +1,12 @@
-# System Architecture
+# System Architecture - Detailed Documentation
 
-This document provides a comprehensive overview of the {ProjectName} Manager's architecture, covering how components interact, data flows, and the overall system design.
+This document provides comprehensive technical details of {ProjectName} Manager's architecture. For a high-level overview, see the [Architecture Overview](architecture-overview.md).
 
 ## Table of Contents
 
-- [Overview](#overview)
+- [Implementation Details](#implementation-details)
 - [Architecture Diagram](#architecture-diagram)
+- [Main Process Modular Architecture](#main-process-modular-architecture)
 - [Communication Flow](#communication-flow)
 - [Environment Verification System](#environment-verification-system)
 - [Auto Setup System](#auto-setup-system)
@@ -14,19 +15,14 @@ This document provides a comprehensive overview of the {ProjectName} Manager's a
 - [Configuration System](#configuration-system)
 - [Caching & Performance](#caching--performance)
 - [Safety & Debug Features](#safety--debug-features)
+- [Data Flow Summary](#data-flow-summary)
+- [Development Environment](#development-environment)
+- [Performance Characteristics](#performance-characteristics)
 - [Related Documentation](#related-documentation)
 
-## Overview
+## Implementation Details
 
-{ProjectName} Manager is an Electron-based desktop application that provides comprehensive environment management with integrated terminal support, environment verification, and dynamic configuration management. The application follows a modular, JSON-driven architecture that allows for extensive customization without code changes.
-
-### Key Architectural Principles
-
-- **Configuration-Driven**: All functionality defined through JSON configuration files
-- **Process Isolation**: Electron's main/renderer process separation for security and stability
-- **Real-time Communication**: IPC-based communication with live data streaming
-- **Intelligent Caching**: Multi-layered caching for performance optimization
-- **Safety First**: Read-only defaults with explicit overrides for safety
+This document dives into the technical implementation of {ProjectName} Manager's architecture. The system is built on Electron with a React frontend and Node.js backend, following modular design principles throughout.
 
 ## Architecture Diagram
 
@@ -56,13 +52,13 @@ graph TB
             J --> HR[HealthReportScreen]
             J --> AS[AutoSetupScreen]
             
-            subgraph "Custom Hooks"
-                Q[useAppState<br/>State Management]
-                R[useAppEffects<br/>Side Effects]
-                S[useAppEventHandlers<br/>Event Handling]
-                T[useFloatingTerminals<br/>Terminal Management]
-                U[useConfigurationManagement<br/>Configuration]
-                V[useAutoSetup<br/>Auto Setup Management]
+            subgraph "Custom Hooks (Distributed)"
+                Q[useAppState<br/>common/hooks/]
+                R[useAppEffects<br/>common/hooks/]
+                S[useAppEventHandlers<br/>common/hooks/]
+                T[useFloatingTerminals<br/>floating-terminal/]
+                U[useConfigurationManagement<br/>project-config/hooks/]
+                V[useAutoSetup<br/>auto-setup/]
             end
             
             J -.->|Uses| Q
@@ -94,6 +90,9 @@ graph TB
 The main process has been refactored into a modular architecture for better maintainability, testing, and separation of concerns. Each module, located in `src/main-process/`, handles a specific domain of functionality:
 
 ### Core Modules
+
+<details>
+<summary>Click to expand detailed module descriptions</summary>
 
 #### `main.js` - Orchestration Layer
 - **Purpose**: Application lifecycle management and IPC handler registration
@@ -138,6 +137,8 @@ The main process has been refactored into a modular architecture for better main
 - **Purpose**: Electron window creation and management
 - **Responsibilities**: Window options, DevTools handling, display settings integration
 - **Key Functions**: `createWindow()`, window lifecycle management
+
+</details>
 
 ### Benefits of Modular Architecture
 
@@ -192,15 +193,17 @@ graph TB
 
 #### Custom Hooks Architecture
 
-| Hook | Purpose | Key Responsibilities |
-|------|---------|---------------------|
-| `useAppState` | State Management | All useState hooks, refs, initialization functions |
-| `useAppEffects` | Side Effects | useEffect hooks, event listeners, loading process, git refresh |
-| `useAppEventHandlers` | Event Handling | User interactions, callbacks, notifications, toggle functions |
-| `useFloatingTerminals` | Terminal Management | Floating terminal lifecycle, positioning, info panels |
-| `useConfigurationManagement` | Configuration | Import/export, git operations, status screens |
-| `useFixCommands` | Fix Commands | Fix command execution, verification updates, toggle verifications |
-| `useAutoSetup` | Auto Setup | Priority-based command execution, progress tracking, smart terminal management |
+| Hook | Purpose | Key Responsibilities | Location |
+|------|---------|---------------------|-----------|
+| `useAppState` | State Management | All useState hooks, refs, initialization functions | `src/common/hooks/` |
+| `useAppEffects` | Side Effects | useEffect hooks, event listeners, loading process, git refresh | `src/common/hooks/` |
+| `useAppEventHandlers` | Event Handling | User interactions, callbacks, notifications, toggle functions | `src/common/hooks/` |
+| `useFloatingTerminals` | Terminal Management | Floating terminal lifecycle, positioning, info panels | `src/floating-terminal/` |
+| `useConfigurationManagement` | Configuration | Import/export, git operations, status screens | `src/project-config/hooks/` |
+| `useFixCommands` | Fix Commands | Fix command execution, verification updates, toggle verifications | `src/project-config/hooks/` |
+| `useAutoSetup` | Auto Setup | Priority-based command execution, progress tracking, smart terminal management | `src/auto-setup/` |
+
+> **Note**: These hooks are feature-specific and located within their respective module directories, reflecting the modular architecture. The App component imports and orchestrates them, but each hook is maintained within its related feature domain.
 
 #### Benefits of the Modular Architecture
 
@@ -212,6 +215,10 @@ graph TB
 - **Performance**: Better dependency management and reduced re-renders
 
 #### File Structure
+
+<details>
+<summary>Click to expand complete file structure</summary>
+
 ```
 src/
 ├── App.jsx
@@ -252,6 +259,8 @@ src/
 ├── renderer.jsx              # Renderer process entry point
 └── styles.css                # Top-level CSS imports
 ```
+
+</details>
 
 This separation of concerns makes the UI code easier to test, debug, and maintain.
 
@@ -623,6 +632,9 @@ The terminal system implements comprehensive process monitoring through multiple
 #### Process State Detection
 The system interprets Unix process states to provide accurate status information:
 
+<details>
+<summary>Click to expand process state reference</summary>
+
 | State | Status | Description |
 |-------|--------|-------------|
 | `R`, `R+` | running | Process is running or runnable |
@@ -631,6 +643,8 @@ The system interprets Unix process states to provide accurate status information
 | `T` | paused | Stopped by signal (Ctrl+Z) |
 | `Z` | finishing | Zombie process (terminated, not reaped) |
 | `I` | idle | Idle kernel thread |
+
+</details>
 
 #### Control Character Detection
 The system monitors input streams for control characters:
@@ -863,6 +877,9 @@ sequenceDiagram
 
 ### Cache Types
 
+<details>
+<summary>Click to expand cache implementation details</summary>
+
 1. **Environment Verification Cache**: Stores verification results by section
 2. **Dropdown Options Cache**: Command-based caching with dependency tracking
 3. **Git Branch Cache**: Repository branch information per project
@@ -874,6 +891,8 @@ sequenceDiagram
 - **Dependency-based Invalidation**: Smart cache clearing based on relationships
 - **Manual Refresh**: User-triggered cache clearing
 - **Startup Preloading**: Critical data cached during application initialization
+
+</details>
 
 ## Safety & Debug Features
 
@@ -981,4 +1000,14 @@ This setup was instrumental in identifying and fixing pathing issues after the m
 
 ---
 
-This architecture enables {ProjectName} Manager to provide a powerful, flexible, and safe environment management experience while maintaining high performance and extensibility. 
+This architecture enables {ProjectName} Manager to provide a powerful, flexible, and safe environment management experience while maintaining high performance and extensibility.
+
+## Related Documentation
+
+- [Architecture Overview](architecture-overview.md) - High-level system overview
+- [Configuration Guide](configuration-guide.md) - Detailed configuration options  
+- [Terminal Features](terminal-features.md) - Terminal system capabilities
+- [Command System](command-system.md) - Command generation and execution
+- [Verification Types](verification-types.md) - Environment verification reference
+- [Auto Setup Guide](auto-setup-guide.md) - Automated environment setup
+- [Testing Guide](testing-guide.md) - Test infrastructure and practices 
