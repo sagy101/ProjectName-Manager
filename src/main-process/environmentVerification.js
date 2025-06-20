@@ -22,6 +22,7 @@ const projectRoot = path.resolve(__dirname, '../../..'); // Adjusted for new loc
 // Path to the verifications configuration file
 const VERIFICATIONS_CONFIG_PATH = path.join(__dirname, '..', 'environment-verification', 'generalEnvironmentVerifications.json');
 const CONFIG_SIDEBAR_ABOUT_PATH = path.join(__dirname, '..', 'project-config', 'config', 'configurationSidebarAbout.json');
+const CONFIG_SIDEBAR_SECTIONS_PATH = path.join(__dirname, '..', 'project-config', 'config', 'configurationSidebarSections.json');
 
 const execCommand = async (commandString) => {
   debugLog(`Executing command: ${commandString}`);
@@ -134,14 +135,31 @@ async function verifyEnvironment(mainWindow = null) {
 
   // Load configuration sidebar verifications
   let configSidebarAbout = [];
+  let configSidebarSections = [];
+  
   try {
     const configAboutFile = await fs.readFile(CONFIG_SIDEBAR_ABOUT_PATH, 'utf-8');
     const parsed = JSON.parse(configAboutFile);
     configSidebarAbout = Array.isArray(parsed) ? parsed : [];
   } catch (err) {
-    console.error('Error reading or parsing configurationSidebarAbout.json:', err);
+    console.error('Error reading configurationSidebarAbout.json:', err);
     configSidebarAbout = []; // Ensure it's always an array
   }
+  
+  try {
+    const configSectionsFile = await fs.readFile(CONFIG_SIDEBAR_SECTIONS_PATH, 'utf-8');
+    const sectionsData = JSON.parse(configSectionsFile);
+    configSidebarSections = sectionsData.sections || [];
+  } catch (err) {
+    console.error('Error reading configurationSidebarSections.json:', err);
+    // Continue without test section filtering if this fails
+  }
+  
+  // Create a map of section IDs to their testSection status
+  const testSectionMap = {};
+  configSidebarSections.forEach(section => {
+    testSectionMap[section.id] = section.testSection === true;
+  });
 
   // Initialize progress tracking at function scope
   let completedCount = 0;
@@ -436,8 +454,16 @@ async function verifyEnvironment(mainWindow = null) {
     });
     
     // Get git branch using directoryPath from JSON (can run in parallel with verifications)
-    const gitBranchPromise = directoryPath ? getGitBranch(directoryPath) : Promise.resolve('N/A');
-    const gitBranch = await gitBranchPromise;
+    // Skip test sections to avoid Git errors for non-existent directories
+    let gitBranch = 'N/A';
+    if (directoryPath) {
+      if (testSectionMap[sectionId]) {
+        debugLog(`Skipping git branch check for test section: ${sectionId}`);
+        gitBranch = 'N/A';
+      } else {
+        gitBranch = await getGitBranch(directoryPath);
+      }
+    }
     
     // Store all verification results, not just the first one
     environmentCaches[cacheKey] = {
