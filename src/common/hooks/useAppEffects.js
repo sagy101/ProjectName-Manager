@@ -10,6 +10,7 @@ export const useAppEffects = ({
   setDiscoveredVersions,
   setLoadingStatus,
   setLoadingProgress,
+  setLoadingTimeoutRemaining,
   setIsLoading,
   setAppNotification,
   terminalRef,
@@ -131,45 +132,59 @@ export const useAppEffects = ({
     };
   }, []); // Setup listener once
 
-  // Handle loading process with real progress tracking
+  // Handle loading process with event-driven progress tracking
   useEffect(() => {
     if (isLoading && window.electron) {
-      let verificationComplete = false;
-      let projectsLoaded = false;
-      let progress = 0;
-      
-      const updateProgress = () => {
-        // Base progress on actual completion
-        if (!verificationComplete) {
-          progress = Math.min(progress + 2, 40); // Cap at 40% until verification done
-          setLoadingStatus('Verifying environment tools and dependencies...');
-        } else if (!projectsLoaded) {
-          progress = Math.min(progress + 3, 85); // Cap at 85% until projects loaded
-          setLoadingStatus('Loading cloud projects and contexts...');
-        } else {
-          progress = Math.min(progress + 5, 100);
-          setLoadingStatus('Finalizing setup...');
-        }
-        
-        setLoadingProgress(Math.round(progress));
-        
-        if (progress >= 100) {
-          setTimeout(() => setIsLoading(false), 300);
-        } else {
-          setTimeout(updateProgress, 100);
-        }
+      let timeoutId;
+      let countdownInterval;
+      let currentProgress = 0;
+
+      const removeProgressListener = window.electron.onVerificationProgress(({ percentage }) => {
+        const pct = typeof percentage === 'number' && !Number.isNaN(percentage) ? percentage : 70;
+        currentProgress = Math.max(currentProgress, pct);
+        setLoadingStatus(`Verifying environment... ${Math.round(pct)}%`);
+        setLoadingProgress(Math.round(currentProgress));
+        if (currentProgress >= 100) finishLoading();
+      });
+
+      const removeDropdownListener = window.electron.onDropdownCached(({ cached, total }) => {
+        const pct = total === 0 ? 100 : 70 + (cached / total) * 30;
+        currentProgress = Math.max(currentProgress, pct);
+        setLoadingStatus('Caching dropdowns...');
+        setLoadingProgress(Math.round(currentProgress));
+        if (currentProgress >= 100) finishLoading();
+      });
+
+      const finishLoading = () => {
+        clearTimeout(timeoutId);
+        clearInterval(countdownInterval);
+        if (removeProgressListener) removeProgressListener();
+        if (removeDropdownListener) removeDropdownListener();
+        setLoadingTimeoutRemaining(0);
+        setIsLoading(false);
       };
-      
-      // Start progress updates
-      updateProgress();
-      
-      // Fetch initial verification data and precache dropdowns
+
+      // Setup timeout countdown
+      setLoadingTimeoutRemaining(20);
+      const start = Date.now();
+      countdownInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - start) / 1000);
+        const remaining = Math.max(0, 20 - elapsed);
+        setLoadingTimeoutRemaining(remaining);
+      }, 1000);
+      timeoutId = setTimeout(() => {
+        finishLoading();
+        if (showAppNotification) {
+          showAppNotification('Initialization timed out', 'error', 6000);
+        }
+      }, 20000);
+
       const fetchInitialData = async () => {
         try {
           debugLog('App: Fetching initial environment verification data...');
           const initialResults = await window.electron.getEnvironmentVerification();
           debugLog('App: Received initial environment verification data:', initialResults);
-          
+
           if (initialResults) {
             if (initialResults.general) {
               setGeneralVerificationConfig(initialResults.general.config || []);
@@ -190,25 +205,27 @@ export const useAppEffects = ({
           }
         } catch (error) {
           console.error('App: Error fetching initial environment verification data:', error);
-        } finally {
-          verificationComplete = true;
         }
-        
-        // Now, precache the global dropdowns
+
         try {
           debugLog('App: Pre-caching global dropdowns...');
           await window.electron.precacheGlobalDropdowns();
           debugLog('App: Global dropdowns pre-cached successfully.');
         } catch (error) {
           console.error('App: Error pre-caching global dropdowns:', error);
-        } finally {
-          projectsLoaded = true;
         }
       };
-            
+
       fetchInitialData();
+
+      return () => {
+        clearTimeout(timeoutId);
+        clearInterval(countdownInterval);
+        if (removeProgressListener) removeProgressListener();
+        if (removeDropdownListener) removeDropdownListener();
+      };
     }
-  }, [isLoading, setLoadingStatus, setLoadingProgress, setIsLoading, setVerificationStatuses, setGeneralVerificationConfig, setGeneralHeaderConfig]);
+  }, [isLoading, setLoadingStatus, setLoadingProgress, setIsLoading, setVerificationStatuses, setGeneralVerificationConfig, setGeneralHeaderConfig, showAppNotification, setLoadingTimeoutRemaining]);
 
   // Update document title with projectName
   useEffect(() => {

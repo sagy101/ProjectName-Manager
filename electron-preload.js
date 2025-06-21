@@ -10,6 +10,7 @@ const eventListeners = {
   'dropdown-command-executed': [],
   'single-verification-updated': [],
   'verification-progress': [],
+  'dropdown-cached': [],
   'environment-verification-complete': [],
   'pty-output': {} // Changed to an object to store listeners by terminalId
 };
@@ -106,6 +107,24 @@ contextBridge.exposeInMainWorld('electron', {
       );
       if (index !== -1) {
         eventListeners['verification-progress'].splice(index, 1);
+      }
+    };
+  },
+  onDropdownCached: (callback) => {
+    const wrapperFn = (event, data) => callback(data);
+    eventListeners['dropdown-cached'].push({
+      callback: callback,
+      wrapper: wrapperFn
+    });
+    ipcRenderer.on('dropdown-cached', wrapperFn);
+
+    return () => {
+      ipcRenderer.removeListener('dropdown-cached', wrapperFn);
+      const index = eventListeners['dropdown-cached'].findIndex(
+        listener => listener.wrapper === wrapperFn
+      );
+      if (index !== -1) {
+        eventListeners['dropdown-cached'].splice(index, 1);
       }
     };
   },

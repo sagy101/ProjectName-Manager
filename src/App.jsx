@@ -54,6 +54,7 @@ const App = () => {
     setDiscoveredVersions: appState.setDiscoveredVersions,
     setLoadingStatus: appState.setLoadingStatus,
     setLoadingProgress: appState.setLoadingProgress,
+    setLoadingTimeoutRemaining: appState.setLoadingTimeoutRemaining,
     setIsLoading: appState.setIsLoading,
     setAppNotification: appState.setAppNotification,
     terminalRef: appState.terminalRef,
@@ -181,10 +182,11 @@ const App = () => {
   // Show loading screen while loading
   if (appState.isLoading) {
     return (
-      <LoadingScreen 
-        progress={appState.loadingProgress} 
-        statusMessage={appState.loadingStatus} 
+      <LoadingScreen
+        progress={appState.loadingProgress}
+        statusMessage={appState.loadingStatus}
         projectName={appState.projectName}
+        timeoutRemaining={appState.loadingTimeoutRemaining}
       />
     );
   }

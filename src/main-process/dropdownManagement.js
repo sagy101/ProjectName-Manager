@@ -98,7 +98,7 @@ async function getDropdownOptions(config) {
   }
 }
 
-async function precacheGlobalDropdowns() {
+async function precacheGlobalDropdowns(mainWindow = null) {
     debugLog('Starting global dropdown pre-caching...');
     try {
         const configPath = path.join(__dirname, '..', 'environment-verification', 'generalEnvironmentVerifications.json');
@@ -109,17 +109,31 @@ async function precacheGlobalDropdowns() {
 
         if (globalDropdowns.length === 0) {
             debugLog('No global dropdowns found to pre-cache.');
+            if (mainWindow) {
+                mainWindow.webContents.send('dropdown-cached', {
+                    cached: 0,
+                    total: 0
+                });
+            }
             return { success: true, precached: 0 };
         }
 
-        const precachePromises = globalDropdowns.map(dropdownConfig => {
+        let cachedCount = 0;
+        const precachePromises = globalDropdowns.map(async dropdownConfig => {
             debugLog(`Pre-caching a global dropdown: ${dropdownConfig.id}`);
-            return getDropdownOptions({
+            await getDropdownOptions({
                 id: dropdownConfig.id,
                 command: dropdownConfig.command,
                 parseResponse: dropdownConfig.parseResponse,
-                args: {} 
+                args: {}
             });
+            cachedCount++;
+            if (mainWindow) {
+                mainWindow.webContents.send('dropdown-cached', {
+                    cached: cachedCount,
+                    total: globalDropdowns.length
+                });
+            }
         });
 
         await Promise.all(precachePromises);
@@ -327,7 +341,9 @@ function setupDropdownIpcHandlers(ipcMain) {
   });
 
   ipcMain.handle('precache-global-dropdowns', async () => {
-    return await precacheGlobalDropdowns();
+    const { BrowserWindow } = require('electron');
+    const mainWindow = BrowserWindow.getAllWindows()[0];
+    return await precacheGlobalDropdowns(mainWindow);
   });
 }
 

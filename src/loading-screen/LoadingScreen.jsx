@@ -1,7 +1,7 @@
 import React from 'react';
 import './styles/loading-screen.css';
 
-const LoadingScreen = ({ progress, statusMessage, projectName }) => {
+const LoadingScreen = ({ progress, statusMessage, projectName, timeoutRemaining }) => {
   const normalizedProgress = Math.min(Math.max(progress, 0), 100);
   
   // Better fallback for project name with smooth updates
@@ -53,6 +53,9 @@ const LoadingScreen = ({ progress, statusMessage, projectName }) => {
             <div key={index} className="particle"></div>
           ))}
         </div>
+        {typeof timeoutRemaining === 'number' && timeoutRemaining > 0 && (
+          <div className="timeout-counter">Timeout: {timeoutRemaining}s</div>
+        )}
       </div>
     </div>
   );
