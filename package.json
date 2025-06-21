@@ -7,9 +7,8 @@
     "node": "22.16.0"
   },
   "scripts": {
-    "start": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npx @electron/rebuild -f -w node-pty && electron .",
-    "start:prod": "NODE_ENV=production npm run start",
-    "prod": "npm run build && npm run start:prod",
+    "start:dev": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npx @electron/rebuild -f -w node-pty && electron .",
+    "start": "NODE_ENV=production npm run start",
     "rebuild": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npx @electron/rebuild -f -w node-pty",
     "build": "NODE_ENV=production webpack --mode production",
     "build:dev": "webpack --mode development",
