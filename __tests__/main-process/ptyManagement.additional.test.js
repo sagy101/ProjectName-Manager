@@ -42,7 +42,10 @@ test('warns when spawning on existing terminal', () => {
   console.warn = jest.fn();
   spawnPTY('echo a', 'dup');
   spawnPTY('echo b', 'dup');
-  expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('already has an active process.'));
+  expect(console.warn).toHaveBeenCalledWith(
+    expect.stringMatching(/^\[.+\]\[PTY\]\[WARN\]$/),
+    expect.stringContaining('already has an active process.')
+  );
   killAllPTYProcesses();
   jest.useRealTimers();
 });
@@ -79,7 +82,11 @@ test('module loads without node-pty', () => {
   const modNoPty = require('../../src/main-process/ptyManagement');
   const win = { webContents: { send: jest.fn() } };
   modNoPty.spawnPTY('cmd', 'np', 80, 24, null, win);
-  expect(console.warn).toHaveBeenCalledWith('node-pty module failed to load:', 'load fail');
+  expect(console.warn).toHaveBeenCalledWith(
+    expect.stringMatching(/^\[.+\]\[PTY\]\[WARN\]$/),
+    'node-pty module failed to load:', 
+    'load fail'
+  );
   expect(win.webContents.send).toHaveBeenCalledWith(
     'pty-output',
     expect.objectContaining({ output: expect.stringContaining('node-pty not available') })
