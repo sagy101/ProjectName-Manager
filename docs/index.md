@@ -14,6 +14,7 @@ Welcome to the {ProjectName} Manager documentation. This index provides quick ac
 - **[Command System](command-system.md)** - How commands are generated and executed
 - **[Verification Types](verification-types.md)** - Reference for all environment verification check types
 - **[Health Report](health-report.md)** - Real-time service monitoring and status calculation
+- **[Export & Import Tools](config-export-import.md)** - Save and restore your settings
 
 ### Technical Documentation
 - **[Architecture Overview](architecture-overview.md)** - High-level system design and components

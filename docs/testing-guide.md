@@ -432,18 +432,7 @@ Comprehensive test suite at `__tests__/scripts/setup-mock-e2e-env.test.js`:
 
 ## Troubleshooting
 
-### Common Issues
-
-- **`node-pty` compilation errors**: Run `npx @electron/rebuild -f -w node-pty` or restart with `npm start`
-- **`document is not defined`**: Add `/** @jest-environment jsdom */` to the test file
-- **`toBeInTheDocument is not a function`**: Check `jest.setup.js` configuration
-- **E2E tests failing**: Ensure `openDevToolsByDefault` is `false` in configuration
-
-### Platform-Specific Issues
-
-- **macOS**: May need Xcode Command Line Tools for native modules
-- **Linux**: Ensure required development packages are installed
-- **CI/CD**: Use headless mode for E2E tests
+Rebuild `node-pty` if tests fail to start and use headless mode for E2E runs in CI. For DOM-related errors add `/** @jest-environment jsdom */` to the test file.
 
 ## Related Documentation
 

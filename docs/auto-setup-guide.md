@@ -284,30 +284,6 @@ DEBUG_LOGS=true npm start
 - Look for dependency or permission issues
 - **No Run Mode**: Terminals show simulation with 2-second delays and success indicators
 
-## Troubleshooting
-
-### Auto Setup Button Disabled
-- **Cause 1**: Project is currently running
-- **Solution**: Stop the project first
-- **Cause 2**: No Run Mode is enabled  
-- **Solution**: Disable No Run Mode to run commands for real, or keep enabled for safe workflow testing
-
-### No Commands Found
-- **Cause**: All verifications are passing
-- **Solution**: This is good! No fixes needed
-
-### Commands Not Grouped Correctly
-- **Cause**: Missing or incorrect `fixPriority` values
-- **Solution**: Update JSON configuration files
-
-### Commands Fail Repeatedly
-- **Cause**: Dependencies not installed in correct order
-- **Solution**: Review and adjust priority assignments
-
-### Terminals Don't Appear
-- **Cause**: Commands complete too quickly
-- **Solution**: Normal behavior for fast commands
-
 ## Best Practices
 
 ### Configuration
@@ -330,37 +306,6 @@ DEBUG_LOGS=true npm start
 - Test Auto Setup on clean systems
 - Document any manual steps required
 
-## FAQ
-
-**Q: Can I cancel Auto Setup once it's started?**
-A: Yes, click the "Stop" button to cancel execution. Running commands will be terminated.
-
-**Q: What happens if I close the Auto Setup screen while it's running?**
-A: You'll get a confirmation prompt. The setup will stop if you confirm.
-
-**Q: Can I run Auto Setup multiple times?**
-A: Yes, it will only run commands for currently failing verifications.
-
-**Q: Do I need to configure priorities for all fix commands?**
-A: No, commands without priorities default to 999 (lowest priority).
-
-**Q: Can commands in different priorities run at the same time?**
-A: No, priority groups run sequentially. Only commands within the same priority run in parallel.
-
-**Q: What if a command needs user input?**
-A: Fix commands should be non-interactive. Interactive commands may hang.
-
-**Q: How can I safely test Auto Setup without affecting my system?**
-A: Enable No Run Mode in the main app. Auto Setup will simulate command execution with 2-second delays, allowing you to test the complete workflow (priority execution, progress tracking, status updates) without any system changes.
-
-**Q: What happens if a command is taking too long?**
-A: Commands automatically timeout after the configured timeout (default 60 seconds, configurable via `autoSetupTimeoutSeconds` in settings). You can also manually terminate long-running commands using the "Terminate" button next to running commands.
-
-**Q: Can I continue Auto Setup if some commands in a priority group fail?**
-A: Yes! When a priority group fails, a "Continue" button appears allowing you to proceed to the next priority group without fixing the failures.
-
-**Q: How do I know how much time is left before a command times out?**
-A: Running commands show a live countdown timer (⏱ 45s) that updates every second. The timer turns yellow and pulses when 10 seconds or less remain.
 
 ## Related Documentation
 

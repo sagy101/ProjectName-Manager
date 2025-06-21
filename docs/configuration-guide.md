@@ -15,7 +15,6 @@
 - [Custom Sidebar Buttons and Floating Terminals](#custom-sidebar-buttons-and-floating-terminals)
 - [Special Features](#special-features)
 - [Best Practices](#best-practices)
-- [Troubleshooting Configuration](#troubleshooting-configuration)
 - [Dropdown Selectors](#dropdown-selectors)
 
 ## Overview
@@ -767,38 +766,6 @@ This will:
 - Use deployment options when multiple modes are available
 - Group related functionality in sub-sections
 - Provide helpful button labels and variants
-
-## Troubleshooting Configuration
-
-<details>
-<summary>Click to expand troubleshooting guide</summary>
-
-### Common Issues
-
-1. **Section not appearing**: Check that the `id` matches across all three configuration files
-2. **Commands not generating**: Verify condition expressions and state property names
-3. **Verifications failing**: Test verification commands manually and check paths
-4. **UI components not working**: Ensure component definitions are valid JSON
-5. **Dropdown selectors not populating**: Test commands manually, check parsing configuration
-6. **Custom buttons not working**: Verify `commandId` matches between sections, commands, and about files
-
-### Debugging Tips
-
-1. Check browser console for JavaScript errors
-2. Use the application's debug panel to test verification states
-3. Verify JSON syntax with a JSON validator
-4. Test commands in a terminal before adding to configuration
-5. Use the "Export Environment Data" feature to debug verification outputs
-6. Check the App Control Sidebar for configuration import/export tools
-
-### Configuration Validation
-
-- All JSON files must be valid JSON (use `jsonlint` or similar tools)
-- Section IDs must be unique and match across configuration files
-- Command conditions must use valid JavaScript expressions
-- File paths in verification configs must be relative to project root
-
-</details>
 
 ## Dropdown Selectors
 
