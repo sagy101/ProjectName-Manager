@@ -65,6 +65,7 @@ For complete documentation, see the **[Documentation Index](docs/index.md)**.
 - [Getting Started & Installation](docs/getting-started.md) - Detailed setup instructions
 - [Configuration Guide](docs/configuration-guide.md) - JSON configuration system  
 - [Auto Setup Guide](docs/auto-setup-guide.md) - Automated environment setup
+- [Export & Import Tools](docs/config-export-import.md) - Save and restore settings
 - [Architecture Overview](docs/architecture-overview.md) - System design and components
 
 ## ⚙️ Configuration Overview
@@ -129,58 +130,9 @@ ProjectName-Manager/
 └── main.js                    # Entry point
 ```
 
-## 💾 Configuration Export/Import
+## 💾 Export & Import Tools
 
-The application supports exporting and importing your complete configuration:
-
-### Export Configuration
-1. Click **Export Config** in the App Control Sidebar
-2. Choose save location
-3. Configuration includes all settings and git branches
-
-### Import Configuration  
-1. Click **Import Config** in the App Control Sidebar
-2. Select previously exported file
-3. Application restores all settings and attempts git branch switches
-
-### Export Environment Data
-1. Click **Export Environment** in the App Control Sidebar
-2. Generates comprehensive JSON with:
-   - Platform information
-   - Verification results and command outputs
-   - Tool versions and system state
-
-## ❤️‍🩹 Health Report
-
-The Health Report provides real-time monitoring of all running services:
-
-- **Centralized Dashboard**: View all services and container statuses
-- **Combined Health Status**: Holistic view accounting for both processes and containers
-- **Interactive Controls**: Jump to tabs, view commands, refresh services
-- **Real-Time Updates**: Automatic refresh every few seconds
-
-Access via the status indicator button in the App Control Sidebar. See [Health Report Guide](docs/health-report.md) for details.
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-**Terminal Not Working**
-- Run `npm run rebuild` to rebuild node-pty
-- Check shell configuration
-- Verify PTY permissions
-
-**Verification Failures**  
-- Ensure required tools are in PATH
-- Check JSON syntax in configuration files
-- Review console logs for errors
-
-**Debug Mode**
-```bash
-DEBUG_LOGS=true npm start
-```
-
-See troubleshooting sections in individual guides for specific issues.
+Detailed steps for exporting configuration and verification data have moved to [Export & Import Tools](docs/config-export-import.md).
 
 ## 📄 License
 

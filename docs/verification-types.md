@@ -419,42 +419,6 @@ The verification system handles various error conditions:
 ]
 ```
 
-## Troubleshooting
-
-### Common Issues
-
-1. **Command not found**: Ensure the tool is installed and in PATH
-2. **Permission denied**: Check file/directory permissions
-3. **Unexpected output**: Verify the expected value matches actual output
-4. **Environment variables**: Ensure variables are set in the correct scope
-
-### Debugging Tips
-
-1. Test commands manually in a terminal
-2. Check both stdout and stderr output
-3. Verify environment variable values with `echo $VARIABLE_NAME`
-4. Use the application's debug panel to test verification states
-5. Check console logs for detailed error messages
-
-### Platform Considerations
-
-- **Windows**: Use appropriate commands (e.g., `where` instead of `which`)
-- **macOS**: Consider Homebrew installation paths
-- **Linux**: Account for different distributions and package managers
-- **Shells**: Test with different shells (bash, zsh, fish)
-
-`outputContains` checks are powerful for validating versions or specific configurations.
-
-```json
-{
-  "id": "gcloudVersionCheck",
-  "title": "gcloud CLI Installed",
-  "checkType": "outputContains",
-  "command": "gcloud --version",
-  "expectedValue": "Google Cloud SDK",
-  "outputStream": "stdout"
-}
-```
 
 #### Dynamic Version Checking with Arrays
 

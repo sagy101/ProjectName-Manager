@@ -455,23 +455,6 @@ When any debug options are active, the gear icon will show an orange border.
 - Resources are properly cleaned up
 - Rapid refresh is throttled to prevent issues
 
-## Troubleshooting
-
-### Main Terminals Not Accepting Input
-- Main terminals are read-only by default for safety
-- Enable input via Debug Tools: App Control Sidebar -> Gear Icon -> "Terminals Read-Only" button
-- This option is disabled when a {ProjectName} configuration is running
-
-### Test Sections Not Showing
-- Open debug panel (gear icon in App Control Sidebar)
-- Click "Show Test Sections" button to toggle visibility
-- Test sections are hidden by default to reduce clutter
-
-### Terminal Process Issues
-- If terminals show errors or don't display output, run `npm run rebuild`
-- Check shell configuration and PTY permissions
-- Review console logs for detailed error messages
-
 ## Related Documentation
 
 - [Configuration Guide](configuration-guide.md) - Configuring terminal commands
