@@ -400,7 +400,9 @@ describe('HealthReportScreen', () => {
       render(<HealthReportScreen {...defaultProps} terminals={mockTerminals} />);
       
       await waitFor(() => {
+        // Expect the new logging format: [timestamp][HEALTH][ERROR]
         expect(consoleSpy).toHaveBeenCalledWith(
+          expect.stringMatching(/\[.*\]\[HEALTH\]\[ERROR\]/),
           expect.stringContaining('Error fetching container status'),
           expect.any(Error)
         );

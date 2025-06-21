@@ -124,7 +124,7 @@
 .summary-status {
   font-size: 1.1em;
   font-weight: 500;
-  padding: 8px 0;
+  padding: 8px 15px;
 }
 
 .summary-status--idle {

@@ -11,6 +11,9 @@ import GitBranchSwitcher from './GitBranchSwitcher';
 import configSidebarAbout from './config/configurationSidebarAbout.json';
 import './styles/config-section.css';
 import { substituteCommandVariables } from '../common/utils/evalUtils';
+import { loggers } from '../common/utils/debugUtils.js';
+
+const logger = loggers.export;
 
 const ConfigSection = ({ 
   section, 
@@ -60,7 +63,7 @@ const ConfigSection = ({
     }
     const { configKey, hasValue } = visibleWhenRule;
     if (!configKey || hasValue === undefined) {
-      console.warn('Invalid visibleWhen rule:', visibleWhenRule);
+      logger.warn('Invalid visibleWhen rule:', visibleWhenRule);
       return true; // Invalid rule, default to visible
     }
 
@@ -72,7 +75,6 @@ const ConfigSection = ({
       actualValue = baseConfig[configKey];
     }
     
-    // debugLog(`Visibility check: key=${configKey}, expected=${hasValue}, actual=${actualValue}, visible=${actualValue === hasValue}`);
     return actualValue === hasValue;
   };
 
@@ -183,7 +185,6 @@ const ConfigSection = ({
 
   return (
     <div className={`config-section ${borderClass} ${!config.enabled ? 'collapsed' : ''}`} id={`section-${section.id}`}>
-      {debugLog(`Rendering section: ${section.id}`, { config, isAttached })}
       <div className="section-header compact">
         <div className="section-header-left">
           <button

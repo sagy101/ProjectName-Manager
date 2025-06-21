@@ -2,17 +2,16 @@ const { app, ipcMain, dialog, BrowserWindow } = require('electron');
 const path = require('path');
 const { exec } = require('child_process');
 const { generateCommandList } = require('./src/common/utils/evalUtils');
-const { debugLog } = require('./src/common/utils/debugUtils');
+const { loggers } = require('./src/common/utils/debugUtils.js');
 
-// Make debugLog available globally for any modules that might expect it
-global.debugLog = debugLog;
+const log = loggers.app;
 
 // Handle uncaught exceptions gracefully during tests
 if (process.env.NODE_ENV === 'test') {
   process.on('uncaughtException', (error) => {
-    console.error('Uncaught Exception in test mode:', error.message);
+    log.error('Uncaught Exception in test mode:', error.message);
     if (error.message.includes('node-pty') || error.message.includes('pty.node')) {
-      console.log('Continuing test execution despite node-pty error...');
+      log.info('Continuing test execution despite node-pty error...');
       return; // Don't crash, just log and continue
     }
     throw error; // Re-throw other errors
@@ -60,7 +59,7 @@ function createWindow(appSettings = {}) {
     windowOptions.maximizable = false;
     windowOptions.closable = true;
     windowOptions.focusable = false;
-    console.log('Creating invisible window for test mode');
+    log.info('Creating invisible window for test mode');
   }
 
   mainWindow = new BrowserWindow(windowOptions);
@@ -88,7 +87,7 @@ async function loadAppSettings() {
     const result = await configurationManagement.loadAppSettings();
     return result.success ? result.appSettings : {};
   } catch (error) {
-    console.error('Error loading application settings:', error);
+    log.error('Error loading application settings:', error);
     return {}; // Return empty object on error
   }
 }
@@ -144,7 +143,7 @@ ipcMain.handle('get-container-status', async (event, containerName) => {
 
 // Development tools
 ipcMain.on('open-dev-tools', (event) => {
-  console.log('Opening DevTools by user request');
+  log.info('Opening DevTools by user request');
   if (mainWindow) {
     mainWindow.webContents.openDevTools();
   }
@@ -156,7 +155,7 @@ ipcMain.handle('is-dev-tools-open', () => {
 });
 
 ipcMain.on('reload-app', (event) => {
-  console.log('Reloading app by user request');
+  log.info('Reloading app by user request');
   
   // Request renderer to send all associated containers before reload
   if (mainWindow) {
@@ -221,11 +220,11 @@ ipcMain.on('process-exited', (event, data) => {
 // ==================== APP LIFECYCLE ====================
 
 app.whenReady().then(async () => { // eslint-disable-line promise/always-return
-  console.log('=== APPLICATION STARTUP ===');
-  console.log('1. Loading application settings...');
+  log.info('=== APPLICATION STARTUP ===');
+  log.info('1. Loading application settings...');
   const appSettings = await loadAppSettings();
 
-  console.log('2. Starting environment verification...');
+  log.info('2. Starting environment verification...');
   
   // Create the main window
   mainWindow = createWindow(appSettings);
@@ -237,14 +236,14 @@ app.whenReady().then(async () => { // eslint-disable-line promise/always-return
       mainWindow.webContents.send('environment-verification-complete', allVerificationResults);
     }
   } catch (error) {
-    console.error('Error during initial environment verification:', error);
+    log.error('Error during initial environment verification:', error);
     return false;
   }
 
   // Initial dropdown data will be fetched on demand from frontend
   return true;
 }).catch(error => {
-  console.error('Error during app initialization:', error);
+  log.error('Error during app initialization:', error);
   return false;
 });
 
@@ -260,11 +259,11 @@ app.on('activate', async () => {
       const appSettings = await loadAppSettings();
       const window = createWindow(appSettings);
       if (!window) {
-        console.error('Failed to create window on activate');
+        log.error('Failed to create window on activate');
         return false;
       }
     } catch (error) {
-      console.error('Error creating window on activate:', error);
+      log.error('Error creating window on activate:', error);
       return false;
     }
     return true;
@@ -276,14 +275,14 @@ app.on('will-quit', async (event) => {
   // Prevent default quit to allow cleanup
   event.preventDefault();
   
-  console.log('Application is about to quit. Cleaning up...');
+  log.info('Application is about to quit. Cleaning up...');
   
   // Kill all active PTY processes
   ptyManagement.killAllPTYProcesses();
   
   // Request renderer to stop all containers
   if (mainWindow && !mainWindow.isDestroyed()) {
-    console.log('Requesting renderer to stop all containers...');
+    log.info('Requesting renderer to stop all containers...');
     mainWindow.webContents.send('stop-all-containers-before-quit');
     
     // Wait a bit for containers to stop
@@ -296,14 +295,14 @@ app.on('will-quit', async (event) => {
 });
 
 process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
+  log.error('Uncaught Exception:', error);
   if (process.env.NODE_ENV !== 'test') {
     app.quit();
   }
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  log.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
-console.log('Main process initialized with modular architecture'); 
+log.info('Main process initialized with modular architecture'); 

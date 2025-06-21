@@ -74,6 +74,6 @@ describe('Command generation end-to-end', () => {
       discoveredVersions: mockDiscoveredVersions
     });
     const frontendCmd = result.find(c => c.sectionId === 'frontend');
-    expect(frontendCmd.command).toBe('nvm use 15.5.1 && cd ./weblifemirror && webpack --watch');
+    expect(frontendCmd.command).toBe('nvm use 15.5.1 && cd ./weblifemirror && npx webpack --watch');
   });
 });

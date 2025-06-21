@@ -1,22 +1,22 @@
 const { exec } = require('child_process');
-const { debugLog } = require('../common/utils/debugUtils');
+const util = require('util');
+const execAsync = util.promisify(exec);
+const { loggers } = require('../common/utils/debugUtils.js');
+
+const log = loggers.container;
 
 // Function to stop Docker containers
 async function stopContainers(containerNames, mainWindow = null) {
-  if (!containerNames || !Array.isArray(containerNames) || containerNames.length === 0) {
-    return { 
-      success: false, 
-      error: 'No container names provided',
-      results: []
-    };
-  }
+  log.debug('Attempting to stop containers:', containerNames);
 
-  debugLog('Attempting to stop containers:', containerNames);
+  if (!containerNames || containerNames.length === 0) {
+    return { success: false, error: 'No containers specified to stop', results: [] };
+  }
 
   const stopPromises = containerNames.map(containerName => {
     return stopSingleContainer(containerName, mainWindow)
       .catch(error => {
-        console.error(`Error stopping container ${containerName}:`, error);
+        log.error(`Error stopping container ${containerName}:`, error);
         // Ensure that even a rejected promise provides a consistent result shape
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('container-terminated', {
@@ -54,11 +54,11 @@ async function stopSingleContainer(containerName, mainWindow = null) {
   
   return new Promise((resolve) => {
     const command = `docker stop "${containerName}"`;
-    debugLog(`Executing: ${command}`);
+    log.debug(`Executing: ${command}`);
 
     exec(command, { timeout: 30000 }, (error, stdout, stderr) => {
       if (error) {
-        console.error(`Failed to stop container ${containerName}: ${stderr || error.message}`);
+        log.error(`Failed to stop container ${containerName}:`, error);
         // Emit container terminated event with error
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('container-terminated', { 
@@ -74,7 +74,7 @@ async function stopSingleContainer(containerName, mainWindow = null) {
           stderr: stderr.trim()
         });
       } else {
-        debugLog(`Successfully stopped container ${containerName}`);
+        log.debug(`Successfully stopped container ${containerName}`);
         // Emit container terminated event with success
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('container-terminated', { 
@@ -100,16 +100,16 @@ async function getContainerStatus(containerName) {
 
   return new Promise((resolve) => {
     const command = `docker inspect --format='{{.State.Status}}' "${containerName}"`;
-    debugLog(`Checking container status: ${command}`);
+    log.debug(`Checking container status: ${command}`);
 
     exec(command, { timeout: 5000 }, (error, stdout, stderr) => {
       if (error) {
-        console.warn(`Failed to get status for container ${containerName}: ${stderr || error.message}`);
+        log.warn(`Failed to get status for container ${containerName}:`, stderr || error.message);
         // Container might not exist or other error - return 'unknown' like original
         resolve('unknown');
       } else {
         const status = stdout.trim();
-        debugLog(`Container ${containerName} status: ${status}`);
+        log.debug(`Container ${containerName} status: ${status}`);
         resolve(status || 'unknown');
       }
     });
@@ -132,11 +132,11 @@ async function listContainers(options = {}) {
   }
 
   return new Promise((resolve) => {
-    debugLog(`Listing containers: ${command}`);
+    log.debug(`Listing containers: ${command}`);
 
     exec(command, { timeout: 10000 }, (error, stdout, stderr) => {
       if (error) {
-        console.error(`Failed to list containers: ${stderr || error.message}`);
+        log.error(`Failed to list containers:`, stderr || error.message);
         resolve({
           success: false,
           error: stderr || error.message,
@@ -151,7 +151,7 @@ async function listContainers(options = {}) {
               .filter(line => line.trim())
               .map(line => JSON.parse(line));
           } catch (parseError) {
-            console.error('Error parsing container JSON:', parseError);
+            log.error('Error parsing container JSON:', parseError);
             resolve({
               success: false,
               error: 'Failed to parse container information',
@@ -188,7 +188,7 @@ async function removeContainers(containerNames, options = {}) {
   }
 
   const { force = false, volumes = false } = options;
-  debugLog('Attempting to remove containers:', containerNames);
+  log.debug('Attempting to remove containers:', containerNames);
   const results = [];
 
   for (const containerName of containerNames) {
@@ -196,7 +196,7 @@ async function removeContainers(containerNames, options = {}) {
       const result = await removeSingleContainer(containerName, { force, volumes });
       results.push({ containerName, ...result });
     } catch (error) {
-      console.error(`Error removing container ${containerName}:`, error);
+      log.error(`Error removing container ${containerName}:`, error);
       results.push({ 
         containerName, 
         success: false, 
@@ -229,11 +229,11 @@ async function removeSingleContainer(containerName, options = {}) {
   command += ` "${containerName}"`;
 
   return new Promise((resolve) => {
-    debugLog(`Executing: ${command}`);
+    log.debug(`Executing: ${command}`);
 
     exec(command, { timeout: 30000 }, (error, stdout, stderr) => {
       if (error) {
-        console.error(`Failed to remove container ${containerName}: ${stderr || error.message}`);
+        log.error(`Failed to remove container ${containerName}:`, error);
         resolve({
           success: false,
           error: stderr || error.message,
@@ -241,7 +241,7 @@ async function removeSingleContainer(containerName, options = {}) {
           stderr: stderr.trim()
         });
       } else {
-        debugLog(`Successfully removed container ${containerName}`);
+        log.debug(`Successfully removed container ${containerName}`);
         resolve({
           success: true,
           stdout: stdout.trim(),
@@ -257,10 +257,10 @@ async function isDockerAvailable() {
   return new Promise((resolve) => {
     exec('docker --version', { timeout: 5000 }, (error, stdout, stderr) => {
       if (error) {
-        console.warn('Docker not available:', error.message);
+        log.warn('Docker not available:', error.message);
         resolve(false);
       } else {
-        debugLog('Docker version:', stdout.trim());
+        log.debug('Docker version:', stdout.trim());
         resolve(true);
       }
     });

@@ -218,7 +218,7 @@ describe('additional environmentVerification functions', () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     const result = await execCommand('nvm use 18');
     expect(result).toEqual({ success: true, stdout: 'ok', stderr: '' });
-    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('nvm.sh not found'));
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('[VERIFICATION][WARN]'), expect.stringContaining('nvm.sh not found'));
     warnSpy.mockRestore();
   });
 

@@ -1,5 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import './styles/import-status-screen.css';
+import { loggers } from '../common/utils/debugUtils.js';
+
+const logger = loggers.app;
 
 const ImportStatusScreen = ({ isVisible, projectName, onClose, gitBranches, onImportComplete }) => {
   const [importStatus, setImportStatus] = useState({
@@ -8,6 +11,7 @@ const ImportStatusScreen = ({ isVisible, projectName, onClose, gitBranches, onIm
   });
   const [isComplete, setIsComplete] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [importMessage, setImportMessage] = useState('');
 
   useEffect(() => {
     if (!isVisible) {
@@ -67,13 +71,13 @@ const ImportStatusScreen = ({ isVisible, projectName, onClose, gitBranches, onIm
   const startImport = useCallback(async () => {
     // Prevent multiple simultaneous imports
     if (isImporting) {
-      debugLog('Import already in progress, skipping...');
+      logger.debug('Import already in progress, skipping...');
       return;
     }
 
     try {
       setIsImporting(true);
-      debugLog('Starting import process...');
+      logger.debug('Starting import process...');
       
       // Start config import
       updateConfigStatus('importing', 'Importing configuration...');
@@ -93,7 +97,8 @@ const ImportStatusScreen = ({ isVisible, projectName, onClose, gitBranches, onIm
         setIsComplete(true);
       }
     } catch (error) {
-      console.error('Import failed:', error);
+      logger.error('Import failed:', error);
+      setImportMessage(`Import failed: ${error.message}`);
       updateConfigStatus('error', 'Import failed');
       setIsComplete(true);
     } finally {

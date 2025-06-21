@@ -22,10 +22,13 @@ import { useAppEffects } from './common/hooks/useAppEffects';
 import { useFixCommands } from './project-config/hooks/useFixCommands';
 import { useAutoSetup } from './auto-setup/useAutoSetup';
 import useHealthReport from './health-report/useHealthReport';
+import { loggers } from './common/utils/debugUtils.js';
 
 // Constants for sidebar dimensions
 const SIDEBAR_EXPANDED_WIDTH = 280; // From app-control-sidebar.css
 const SIDEBAR_COLLAPSED_WIDTH = 50; // From app-control-sidebar.css
+
+const log = loggers.app;
 
 const App = () => {
   // Initialize all state using custom hook
@@ -34,7 +37,7 @@ const App = () => {
 
   // Create a callback for showAppNotification that will be available to useAppEffects
   const showAppNotificationCallback = React.useCallback((message, type = 'info', autoCloseTime = 3000) => {
-    debugLog('App: showAppNotification called with:', { message, type, autoCloseTime });
+    log.debug('App: showAppNotification called with:', { message, type, autoCloseTime });
     setAppNotification({
       isVisible: true,
       message,
@@ -177,7 +180,7 @@ const App = () => {
 
   // Log appNotification state changes
   React.useEffect(() => {
-    debugLog('App: appNotification state updated:', appState.appNotification);
+    log.debug('App: appNotification state updated:', appState.appNotification);
   }, [appState.appNotification]);
 
   // Show loading screen while loading
@@ -370,9 +373,9 @@ const App = () => {
           isAutoSetup={terminal.isAutoSetup || false}
           onShowNotification={eventHandlers.showAppNotification}
           onCommandComplete={(terminalId, status, exitCode) => {
-          console.log('🟣 APP_LEVEL: onCommandComplete called with:', terminalId, status, exitCode);
-          const handler = terminal.onCommandComplete || fixCommands.handleFixCommandComplete;
-          console.log('🟣 APP_LEVEL: Using handler:', handler.name || 'anonymous');
+                  log.debug('onCommandComplete called with:', { terminalId, status, exitCode });
+        const handler = terminal.onCommandComplete || fixCommands.handleFixCommandComplete;
+        log.debug('Using handler:', handler.name || 'anonymous');
           handler(terminalId, status, exitCode);
         }}
           isReadOnly={false}
@@ -402,7 +405,7 @@ const App = () => {
               terminal={terminalDataWithLiveStatus}
               position={appState.infoPanelState.position}
               onClose={floatingTerminalHandlers.closeFloatingTerminalInfoPanel}
-              onRefresh={() => debugLog('Refresh clicked for floating term info - no-op')}
+              onRefresh={() => log.debug('Refresh clicked for floating term info - no-op')}
               configState={appState.configState}
               noRunMode={appState.noRunMode}
               detailsPopupOpen={appState.infoPanelState.detailsOpen}

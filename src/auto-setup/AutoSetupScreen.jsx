@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { AUTO_SETUP_STATUS, COMMAND_EXECUTION_STATUS, SECTION_STATUS } from './constants/autoSetupConstants';
 import { calculateGroupStatus } from './utils/autoSetupUtils';
+import { loggers } from '../common/utils/debugUtils.js';
 import './auto-setup-screen.css';
+
+
+const logger = loggers.autoSetup;
 
 const AutoSetupScreen = ({
   isVisible,
@@ -50,18 +54,13 @@ const AutoSetupScreen = ({
         // Auto-expand logic:
         // - Running groups should always be expanded
         // - If no groups are running, expand the first waiting group
-        // - Collapse completed/failed groups unless manually expanded
+        // - Collapse completed/failed groups when they finish
         if (groupStatus === SECTION_STATUS.RUNNING) {
           newExpandedState[group.priority] = true;
           hasRunningGroup = true;
         } else if (groupStatus === SECTION_STATUS.SUCCESS || groupStatus === SECTION_STATUS.FAILED) {
-          // Collapse finished groups unless user manually expanded them
-          if (expandedGroups[group.priority] === undefined) {
-            newExpandedState[group.priority] = false;
-          } else {
-            // Keep user's manual preference for finished groups
-            newExpandedState[group.priority] = expandedGroups[group.priority];
-          }
+          // Always collapse finished groups
+          newExpandedState[group.priority] = false;
         } else if (groupStatus === SECTION_STATUS.WAITING) {
           // If no running group and this is the first waiting group, expand it
           if (!hasRunningGroup && index === 0) {
@@ -203,25 +202,25 @@ const AutoSetupScreen = ({
     }
   };
 
-  const handleViewTerminal = (command) => {
+  const handleViewTerminal = useCallback((command) => {
     // Find the floating terminal for this command
     const floatingTerminal = floatingTerminals.find(
       terminal => terminal.commandId === command.id
     );
     
-    console.log('🟢 VIEW_TERMINAL: handleViewTerminal called for command:', command.id);
-    console.log('🟢 VIEW_TERMINAL: All floating terminals:', floatingTerminals.map(t => ({ id: t.id, commandId: t.commandId })));
-    console.log('🟢 VIEW_TERMINAL: Found floating terminal:', floatingTerminal);
+    logger.debug('🟢 VIEW_TERMINAL: handleViewTerminal called for command:', command.id);
+    logger.debug('🟢 VIEW_TERMINAL: All floating terminals:', floatingTerminals.map(t => ({ id: t.id, commandId: t.commandId })));
+    logger.debug('🟢 VIEW_TERMINAL: Found floating terminal:', floatingTerminal);
     
     if (floatingTerminal && onViewTerminal) {
-      console.log('🟢 VIEW_TERMINAL: Calling onViewTerminal with ID:', floatingTerminal.id);
-      onViewTerminal(floatingTerminal.id); // terminalId
+      logger.debug('🟢 VIEW_TERMINAL: Calling onViewTerminal with ID:', floatingTerminal.id);
+      onViewTerminal(floatingTerminal.id);
     } else {
-      console.log('🟢 VIEW_TERMINAL: No terminal found or onViewTerminal not available');
-      console.log('🟢 VIEW_TERMINAL: floatingTerminal exists:', !!floatingTerminal);
-      console.log('🟢 VIEW_TERMINAL: onViewTerminal exists:', !!onViewTerminal);
+      logger.debug('🟢 VIEW_TERMINAL: No terminal found or onViewTerminal not available');
+      logger.debug('🟢 VIEW_TERMINAL: floatingTerminal exists:', !!floatingTerminal);
+      logger.debug('🟢 VIEW_TERMINAL: onViewTerminal exists:', !!onViewTerminal);
     }
-  };
+  }, [floatingTerminals, onViewTerminal]);
 
   const getOverallStatus = () => {
     switch (autoSetupStatus) {
@@ -447,14 +446,19 @@ const AutoSetupScreen = ({
                                 terminal => terminal.commandId === command.id
                               );
 
+                              // Find the specific floating terminal for this command for debug logging
+                              const commandFloatingTerminal = floatingTerminals.find(
+                                terminal => terminal.commandId === command.id
+                              );
+
                               // Debug logging for button visibility
                               if (command.id === 'homebrewInstalled') { // Adjust this to your command ID
-                                console.log('🟢 BUTTON_LOGIC:', command.id, {
-                                  commandStatus,
-                                  hasActiveTerminal,
-                                  hasViewableTerminal,
-                                  floatingTerminalsForCommand: floatingTerminals.filter(t => t.commandId === command.id),
-                                  allFloatingTerminals: floatingTerminals.map(t => ({ id: t.id, commandId: t.commandId }))
+                                logger.debug('🟢 BUTTON_LOGIC:', command.id, {
+                                  status: commandStatus,
+                                  hasFloatingTerminal: !!commandFloatingTerminal,
+                                  isAutoSetup: commandFloatingTerminal?.isAutoSetup,
+                                  canView: commandStatus === 'running' && commandFloatingTerminal && onViewTerminal,
+                                  canTerminate: commandStatus === 'running' && commandFloatingTerminal?.isAutoSetup
                                 });
                               }
 
@@ -507,7 +511,7 @@ const AutoSetupScreen = ({
                                       <button 
                                         className="action-button terminate-button"
                                         onClick={() => {
-                                          console.log('🔴 BUTTON_CLICK: Terminate button clicked for command:', command.id);
+                                          logger.debug('🔴 BUTTON_CLICK: Terminate button clicked for command:', command.id);
                                           onTerminateCommand(command);
                                         }}
                                         title="Terminate this command"

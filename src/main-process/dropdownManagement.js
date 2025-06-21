@@ -2,13 +2,9 @@ const { exec } = require('child_process');
 const { resolveEnvVars } = require('./mainUtils');
 const fs = require('fs').promises;
 const path = require('path');
+const { loggers } = require('../common/utils/debugUtils.js');
 
-// Simple debug logger that matches the global one from main.js
-const debugLog = (...args) => {
-  if (process.env.DEBUG_LOGS === 'true') {
-    console.log(...args);
-  }
-};
+const log = loggers.app;
 
 // Generic dropdown cache
 let dropdownCache = {}; // Keyed by dropdown ID and args
@@ -46,23 +42,23 @@ async function getDropdownOptions(config) {
 
   // Check cache first (unless force refresh is requested)
   if (!forceRefresh && dropdownCache[cacheKey]) {
-    debugLog(`Returning cached options for dropdown ${id}`);
+    log.debug(`Returning cached options for dropdown ${id}`);
     return dropdownCache[cacheKey];
   }
 
   if (forceRefresh) {
-    debugLog(`Force refresh requested for dropdown ${id}, bypassing cache`);
+    log.debug(`Force refresh requested for dropdown ${id}, bypassing cache`);
   }
 
   // Mark as loading
   dropdownLoadingState[cacheKey] = true;
-  debugLog(`Fetching dropdown options for ${id} with command: ${resolvedCommand}`);
+  log.debug(`Fetching dropdown options for ${id} with command: ${resolvedCommand}`);
 
   try {
     const result = await new Promise((resolve) => {
       exec(resolvedCommand, { timeout: 15000, maxBuffer: 1024 * 1024 }, (error, stdout, stderr) => {
         if (error) {
-          console.error(`Dropdown command failed for ${id}: ${stderr || error.message}`);
+          log.error(`Dropdown command failed for ${id}:`, stderr || error.message);
           resolve({ success: false, stdout: '', stderr: stderr || error.message });
         } else {
           resolve({ success: true, stdout: stdout.trim(), stderr: stderr.trim() });
@@ -85,11 +81,11 @@ async function getDropdownOptions(config) {
     
     const resultData = { options };
     dropdownCache[cacheKey] = resultData;
-    debugLog(`Cached ${options.length} options for dropdown ${id}`);
+    log.debug(`Cached ${options.length} options for dropdown ${id}`);
     return resultData;
 
   } catch (error) {
-    console.error(`Error in getDropdownOptions for ${id}:`, error);
+    log.error(`Error in getDropdownOptions for ${id}:`, error);
     const errorResult = { options: [], error: error.message };
     dropdownCache[cacheKey] = errorResult;
     return errorResult;
@@ -99,7 +95,7 @@ async function getDropdownOptions(config) {
 }
 
 async function precacheGlobalDropdowns(mainWindow = null) {
-    debugLog('Starting global dropdown pre-caching...');
+    log.debug('Starting global dropdown pre-caching...');
     try {
         const configPath = path.join(__dirname, '..', 'environment-verification', 'generalEnvironmentVerifications.json');
         const configData = await fs.readFile(configPath, 'utf-8');
@@ -108,7 +104,7 @@ async function precacheGlobalDropdowns(mainWindow = null) {
         const globalDropdowns = config?.header?.dropdownSelectors || [];
 
         if (globalDropdowns.length === 0) {
-            debugLog('No global dropdowns found to pre-cache.');
+            log.debug('No global dropdowns found to pre-cache.');
             if (mainWindow) {
                 mainWindow.webContents.send('dropdown-cached', {
                     cached: 0,
@@ -137,11 +133,11 @@ async function precacheGlobalDropdowns(mainWindow = null) {
         });
 
         await Promise.all(precachePromises);
-        debugLog(`Global dropdown pre-caching complete. Cached ${globalDropdowns.length} dropdowns.`);
+        log.debug(`Global dropdown pre-caching complete. Cached ${globalDropdowns.length} dropdowns.`);
         return { success: true, precached: globalDropdowns.length };
 
     } catch (error) {
-        console.error('Failed to pre-cache global dropdowns:', error);
+        log.error('Failed to pre-cache global dropdowns:', error);
         return { success: false, error: error.message };
     }
 }
@@ -153,7 +149,7 @@ async function executeDropdownChangeCommand(dropdownId, value, globalDropdownVal
     const dropdownConfig = await getDropdownConfig(dropdownId);
     
     if (!dropdownConfig || !dropdownConfig.commandOnChange) {
-      debugLog(`No commandOnChange defined for dropdown ${dropdownId}`);
+      log.debug(`No commandOnChange defined for dropdown ${dropdownId}`);
       return { success: true, message: 'No command configured' };
     }
 
@@ -176,13 +172,13 @@ async function executeDropdownChangeCommand(dropdownId, value, globalDropdownVal
     // Resolve environment variables
     const resolvedCommand = resolveEnvVars(processedCommand);
     
-    debugLog(`Executing commandOnChange for ${dropdownId}: ${resolvedCommand}`);
+    log.debug(`Executing commandOnChange for ${dropdownId}: ${resolvedCommand}`);
 
     // Execute the command
     const result = await new Promise((resolve) => {
       exec(resolvedCommand, { timeout: 30000, maxBuffer: 1024 * 1024 }, (error, stdout, stderr) => {
         if (error) {
-          console.error(`CommandOnChange failed for ${dropdownId}: ${stderr || error.message}`);
+          log.error(`CommandOnChange failed for ${dropdownId}:`, stderr || error.message);
           resolve({ 
             success: false, 
             error: stderr || error.message,
@@ -200,11 +196,11 @@ async function executeDropdownChangeCommand(dropdownId, value, globalDropdownVal
       });
     });
 
-    debugLog(`CommandOnChange result for ${dropdownId}:`, result);
+    log.debug(`CommandOnChange result for ${dropdownId}:`, result);
     return result;
 
   } catch (error) {
-    console.error(`Error executing commandOnChange for ${dropdownId}:`, error);
+    log.error(`Error executing commandOnChange for ${dropdownId}:`, error);
     return { 
       success: false, 
       error: error.message,
@@ -243,14 +239,14 @@ async function getDropdownConfig(dropdownId) {
 
     return null;
   } catch (error) {
-    console.error(`Error loading dropdown config for ${dropdownId}:`, error);
+    log.error(`Error loading dropdown config for ${dropdownId}:`, error);
     return null;
   }
 }
 
 // Function to handle dropdown value changes
 function handleDropdownValueChange(dropdownId, value) {
-  debugLog(`Dropdown ${dropdownId} value changed to: ${value}`);
+  log.debug(`Dropdown ${dropdownId} value changed to: ${value}`);
   
   // Clear related caches if needed
   // This is a simple implementation - you might want more sophisticated cache invalidation
@@ -260,7 +256,7 @@ function handleDropdownValueChange(dropdownId, value) {
   });
   
   if (keysToRemove.length > 0) {
-    debugLog(`Cleared ${keysToRemove.length} cache entries for dropdown ${dropdownId}`);
+    log.debug(`Cleared ${keysToRemove.length} cache entries for dropdown ${dropdownId}`);
   }
 }
 
@@ -273,12 +269,12 @@ function clearDropdownCache(dropdownId = null) {
       delete dropdownCache[key];
       delete dropdownLoadingState[key];
     });
-    debugLog(`Cleared cache for dropdown ${dropdownId}`);
+    log.debug(`Cleared cache for dropdown ${dropdownId}`);
   } else {
     // Clear all cache
     dropdownCache = {};
     dropdownLoadingState = {};
-    debugLog('Cleared all dropdown cache');
+    log.debug('Cleared all dropdown cache');
   }
 }
 
@@ -296,7 +292,7 @@ function getDropdownCacheStats() {
 function setupDropdownIpcHandlers(ipcMain) {
   // Dropdown value changes
   ipcMain.on('dropdown-value-changed', async (event, { dropdownId, value, globalDropdownValues }) => {
-    console.log(`Dropdown value changed: ${dropdownId} = ${value}`);
+    log.info(`Dropdown value changed: ${dropdownId} = ${value}`);
     
     // Handle cache management
     handleDropdownValueChange(dropdownId, value);
@@ -319,7 +315,7 @@ function setupDropdownIpcHandlers(ipcMain) {
         });
       }
     } catch (error) {
-      console.error(`Error executing commandOnChange for ${dropdownId}:`, error);
+      log.error(`Error executing commandOnChange for ${dropdownId}:`, error);
       const mainWindow = require('electron').BrowserWindow.getAllWindows()[0];
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('dropdown-command-executed', {

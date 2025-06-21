@@ -9,6 +9,9 @@ import configSidebarCommands from '../../project-config/config/configurationSide
 import { useTerminals } from '../useTerminals';
 import { useTabManagement } from '../../tab-info/hooks/useTabManagement';
 import { useIpcListeners } from '../../common/hooks/useIpcListeners';
+import { loggers } from '../../common/utils/debugUtils.js';
+
+const log = loggers.terminal;
 
 const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectName, isReadOnly, settings }, ref) => {
   const tabsContainerRef = useRef(null);
@@ -37,7 +40,7 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
 
   // Log terminal state changes for debugging
   useEffect(() => {
-    debugLog('TerminalContainer state updated:', terminals);
+    log.debug('TerminalContainer state updated:', terminals);
   }, [terminals]);
 
   const [tabInfoPanel, setTabInfoPanel] = useState(null);
@@ -73,7 +76,8 @@ const TerminalContainer = React.forwardRef(({ noRunMode, configState, projectNam
     window.runInTerminal = (command, newTab = true) => {
       let terminalId = activeTerminalId;
       if (newTab) {
-        terminalId = Date.now();
+        // Generate unique ID using timestamp + random number to prevent duplicates in tests
+        terminalId = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
         setTerminals(prev => [
           ...prev,
           { id: terminalId, title: `Run ${new Date().toLocaleTimeString()}`, status: 'idle' }

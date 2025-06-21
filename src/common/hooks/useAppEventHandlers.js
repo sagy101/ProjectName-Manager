@@ -1,4 +1,7 @@
 import { useCallback } from 'react';
+import { loggers } from '../utils/debugUtils.js';
+
+const log = loggers.app;
 
 export const useAppEventHandlers = ({
   setVerificationStatuses,
@@ -15,7 +18,7 @@ export const useAppEventHandlers = ({
   setGlobalDropdownValues
 }) => {
   const handleVerificationStatusChange = (sectionKey, status) => {
-    debugLog(`Debug: Attempting to update ${sectionKey} to ${status}. This may need adjustment.`);
+    log.debug(`Attempting to update ${sectionKey} to ${status}. This may need adjustment.`);
     setVerificationStatuses(prev => {
       const newStatuses = { ...prev };
       // This part needs to be careful if general is now {statuses, config}
@@ -44,13 +47,13 @@ export const useAppEventHandlers = ({
 
   // Callback for ProjectConfiguration to update App's isRunning state
   const handleProjectRunStateChange = useCallback((isRunning) => {
-    debugLog('App: Project running state changed to:', isRunning);
+    log.debug('Project running state changed to:', isRunning);
     setAppIsProjectRunning(isRunning);
   }, [setAppIsProjectRunning]);
 
   // Function to show an app-level notification
-  const showAppNotification = useCallback((message, type = 'info', autoCloseTime = 3000) => {
-    debugLog('App: showAppNotification called with:', { message, type, autoCloseTime });
+  const handleShowAppNotification = useCallback((message, type = 'info', autoCloseTime = null) => {
+    log.debug('showAppNotification called with:', { message, type, autoCloseTime });
     setAppNotification({
       isVisible: true,
       message,
@@ -65,8 +68,8 @@ export const useAppEventHandlers = ({
   }, [setAppNotification]);
 
   // Function to reset verification statuses and config to waiting/empty
-  const handleInitiateRefresh = useCallback(() => {
-    debugLog('App: Initiating refresh, setting statuses to waiting and config to empty.');
+  const handleRefresh = useCallback(() => {
+    log.debug('Initiating refresh, setting statuses to waiting and config to empty.');
     const resetStatuses = initializeVerificationStatuses();
     setVerificationStatuses(resetStatuses);
     setGeneralVerificationConfig([]); // Clear the config so child component shows loading/empty
@@ -84,7 +87,7 @@ export const useAppEventHandlers = ({
 
   // Callback to handle dropdown value changes from any global selector
   const handleGlobalDropdownChange = useCallback((dropdownId, value) => {
-    debugLog(`App: Global dropdown '${dropdownId}' changed to:`, value);
+    log.debug(`Global dropdown '${dropdownId}' changed to:`, value);
     
     // Update the state first to get the updated values
     setGlobalDropdownValues(prev => {
@@ -105,9 +108,9 @@ export const useAppEventHandlers = ({
     handleToggleNoRunMode,
     handleConfigStateChange,
     handleProjectRunStateChange,
-    showAppNotification,
+    handleShowAppNotification,
     hideAppNotification,
-    handleInitiateRefresh,
+    handleRefresh,
     toggleMainTerminalWritable,
     toggleConfigCollapse,
     handleGlobalDropdownChange,

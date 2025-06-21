@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './styles/app-control-sidebar.css'; // Renamed CSS
 import HealthReportButton from '../health-report/HealthReportButton';
+import { loggers } from '../common/utils/debugUtils.js';
 // Import XMarkIcon as CloseIcon for clarity, or use XMarkIcon directly if no conflict
 import { Bars3Icon, XMarkIcon, EyeIcon, EyeSlashIcon, InformationCircleIcon, XMarkIcon as CloseIcon, Cog6ToothIcon, ArrowPathIcon, ComputerDesktopIcon, TrashIcon, ArrowDownTrayIcon, ArrowUpTrayIcon, WrenchScrewdriverIcon } from '@heroicons/react/24/outline';
+
+const log = loggers.export;
 
 const AppControlSidebar = ({
   floatingTerminals,
@@ -64,7 +67,7 @@ const AppControlSidebar = ({
 
   const openDevTools = () => {
     if (window.electron) window.electron.openDevTools();
-    else console.warn('Electron API not available for openDevTools');
+    else log.warn('Electron API not available for openDevTools');
   };
 
   const reloadApp = () => {
@@ -96,7 +99,7 @@ const AppControlSidebar = ({
           showAppNotification('Environment data exported successfully', 'info');
         }
       } catch (error) {
-        console.error('Error exporting environment data:', error);
+        log.error('Error exporting environment data:', error);
         if (showAppNotification) {
           showAppNotification('Failed to export environment data', 'error');
         }
