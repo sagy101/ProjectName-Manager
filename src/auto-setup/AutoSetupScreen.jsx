@@ -54,18 +54,13 @@ const AutoSetupScreen = ({
         // Auto-expand logic:
         // - Running groups should always be expanded
         // - If no groups are running, expand the first waiting group
-        // - Collapse completed/failed groups unless manually expanded
+        // - Collapse completed/failed groups when they finish
         if (groupStatus === SECTION_STATUS.RUNNING) {
           newExpandedState[group.priority] = true;
           hasRunningGroup = true;
         } else if (groupStatus === SECTION_STATUS.SUCCESS || groupStatus === SECTION_STATUS.FAILED) {
-          // Collapse finished groups unless user manually expanded them
-          if (expandedGroups[group.priority] === undefined) {
-            newExpandedState[group.priority] = false;
-          } else {
-            // Keep user's manual preference for finished groups
-            newExpandedState[group.priority] = expandedGroups[group.priority];
-          }
+          // Always collapse finished groups
+          newExpandedState[group.priority] = false;
         } else if (groupStatus === SECTION_STATUS.WAITING) {
           // If no running group and this is the first waiting group, expand it
           if (!hasRunningGroup && index === 0) {
