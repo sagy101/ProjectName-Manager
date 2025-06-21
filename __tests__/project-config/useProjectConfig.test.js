@@ -102,4 +102,13 @@ describe('useProjectConfig', () => {
     });
     expect(result.current.configState['generic-section-1']['generic-subsection-1Config'].enabled).toBe(true);
   });
+
+  test('setInputFieldValue updates input value', async () => {
+    const { result } = renderHook(() => useProjectConfig({}, false, noop));
+    await waitFor(() => result.current.initialized);
+    act(() => {
+      result.current.setInputFieldValue('section-with-input', 'testField', 'abc');
+    });
+    expect(result.current.configState['section-with-input'].testField).toBe('abc');
+  });
 });

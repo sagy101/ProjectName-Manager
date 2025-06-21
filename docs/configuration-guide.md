@@ -16,6 +16,7 @@
 - [Special Features](#special-features)
 - [Best Practices](#best-practices)
 - [Dropdown Selectors](#dropdown-selectors)
+- [Input Fields](#input-fields)
 
 ## Overview
 
@@ -286,6 +287,20 @@ Adds collapsible sub-sections with their own components, including toggles, depl
 ]
 ```
 Adds generic dropdown selectors that execute commands and populate options dynamically. See [Dropdown Selectors](#dropdown-selectors) for detailed configuration.
+
+#### Input Fields
+```json
+"inputField": {
+  "id": "debugPort",
+  "label": "Debug Port",
+  "placeholder": "9229",
+  "visibleWhen": {
+    "configKey": "attachState.my-section",
+    "hasValue": true
+  }
+}
+```
+Adds a text input for arbitrary values. Use `visibleWhen` to conditionally display it, typically when a section's attach toggle is enabled. The value becomes available for command substitution via `${debugPort}`.
 
 #### Test Section Flag
 ```json
@@ -717,6 +732,7 @@ The section will automatically appear in the UI with full functionality.
 | `modeSelector` | Custom multi-option mode selector | `{ options: (string[] \| { value: string, status?: "TBD" }[]), labels?: string[], default: "" }` |
 | `attachToggle` | Attach debugger toggle | `{ enabled: true, mutuallyExclusiveWith: [] }` |
 | `dropdownSelectors` | Generic command-driven dropdowns with default value support | Array of dropdown configs |
+| `inputField` | Simple text input for commands | `{ id: "", label?: "", placeholder?: "", visibleWhen?: { configKey, hasValue } }` |
 | `subSections` | Nested sub-sections | Array of sub-section configs |
 | `customButton` | Button to trigger actions, often opening a floating terminal (e.g., for logs) | `{ id: "", label: "", commandId: "" }` |
 | `testSection` | Mark as test/development section (hidden by default) | `true/false` |
