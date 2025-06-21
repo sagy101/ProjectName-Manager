@@ -30,10 +30,12 @@ describe('LoadingScreen', () => {
 
   test('renders progress bar width and title', () => {
     const { container, getByText } = render(
-      <LoadingScreen progress={30} projectName="TestProj" />
+      <LoadingScreen progress={30} projectName="TestProj" timeoutRemaining={15} />
     );
     const bar = container.querySelector('.progress-bar');
     expect(bar.style.width).toBe('30%');
     expect(getByText('TestProj Manager')).toBeInTheDocument();
+    expect(getByText('⏱ Timeout in:')).toBeInTheDocument();
+    expect(getByText('15s')).toBeInTheDocument();
   });
 });

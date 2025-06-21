@@ -3,6 +3,7 @@
     "projectName": "ISO",
     "openDevToolsByDefault": true,
     "autoSetupTimeoutSeconds": 90,
+    "loadingScreenTimeoutSeconds": 20,
     "sidebarDefaultExpanded": false,
     "terminalScrollback": 1000,
     "maxFloatingTerminals": 8,

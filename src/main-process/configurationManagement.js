@@ -20,6 +20,7 @@ async function loadAppSettings() {
       openDevToolsByDefault: sectionsConfig?.settings?.openDevToolsByDefault ?? false,
       projectName: sectionsConfig?.settings?.projectName || 'Project',
       autoSetupTimeoutSeconds: sectionsConfig?.settings?.autoSetupTimeoutSeconds || 60,
+      loadingScreenTimeoutSeconds: sectionsConfig?.settings?.loadingScreenTimeoutSeconds || 15,
       sidebarDefaultExpanded: sectionsConfig?.settings?.sidebarDefaultExpanded ?? false,
       terminalScrollback: sectionsConfig?.settings?.terminalScrollback || 1000,
       maxFloatingTerminals: sectionsConfig?.settings?.maxFloatingTerminals || 10,

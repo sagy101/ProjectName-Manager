@@ -3,6 +3,7 @@
     "projectName": "MockProject",
     "openDevToolsByDefault": false,
     "autoSetupTimeoutSeconds": 30,
+    "loadingScreenTimeoutSeconds": 25,
     "sidebarDefaultExpanded": true,
     "terminalScrollback": 500,
     "maxFloatingTerminals": 5,

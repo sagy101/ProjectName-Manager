@@ -177,9 +177,20 @@ async function verifyEnvironment(mainWindow = null) {
     // Extract header and categories from new structure
     const { header = {}, categories = [] } = parsedVerificationsConfig;
 
-    // Calculate total verifications including sidebar sections
-    totalVerifications = categories.reduce((sum, item) => 
-      sum + (item.category.verifications?.length || 0), 0) + configSidebarAbout.length;
+    // Calculate total verifications including sidebar section verifications
+    const generalCount = categories.reduce((sum, item) =>
+      sum + (item.category.verifications?.length || 0), 0);
+    const sectionCount = configSidebarAbout.reduce((sum, section) =>
+      sum + ((section.verifications || []).length), 0);
+    totalVerifications = generalCount + sectionCount;
+
+    if (totalVerifications === 0 && mainWindow) {
+      mainWindow.webContents.send('verification-progress', {
+        completed: 0,
+        total: 0,
+        percentage: 70
+      });
+    }
 
     // Process all verifications in parallel
     const verificationPromises = [];
@@ -320,10 +331,13 @@ async function verifyEnvironment(mainWindow = null) {
           // Update progress
           completedCount++;
           if (mainWindow) {
-            mainWindow.webContents.send('verification-progress', { 
-              completed: completedCount, 
+            const percentage = totalVerifications === 0
+              ? 70
+              : Math.round((completedCount / totalVerifications) * 70);
+            mainWindow.webContents.send('verification-progress', {
+              completed: completedCount,
               total: totalVerifications,
-              percentage: Math.round((completedCount / totalVerifications) * 100)
+              percentage
             });
           }
           
@@ -448,6 +462,19 @@ async function verifyEnvironment(mainWindow = null) {
         result = 'invalid';
       }
       
+      // Update progress for each verification within sections
+      completedCount++;
+      if (mainWindow) {
+        const percentage = totalVerifications === 0
+          ? 70
+          : Math.round((completedCount / totalVerifications) * 70);
+        mainWindow.webContents.send('verification-progress', {
+          completed: completedCount,
+          total: totalVerifications,
+          percentage
+        });
+      }
+
       return { id, result };
     });
     
@@ -477,15 +504,6 @@ async function verifyEnvironment(mainWindow = null) {
     
     logger.debug(`${sectionId} Environment Cache:`, environmentCaches[cacheKey]);
     
-    // Update progress for section completion
-    completedCount++;
-    if (mainWindow) {
-      mainWindow.webContents.send('verification-progress', { 
-        completed: completedCount, 
-        total: totalVerifications,
-        percentage: Math.round((completedCount / totalVerifications) * 100)
-      });
-    }
   });
   
   // Wait for all sections to complete
@@ -496,9 +514,17 @@ async function verifyEnvironment(mainWindow = null) {
   isVerifyingEnvironment = false;
   logger.debug('Environment verification completed.');
   
-  // Send completion event to frontend
+  // Send final verification progress (70%) and completion event to frontend
   if (mainWindow) {
-    mainWindow.webContents.send('environment-setup-complete', { ...environmentCaches, discoveredVersions });
+    // Send final verification progress
+    mainWindow.webContents.send('verification-progress', {
+      completed: totalVerifications,
+      total: totalVerifications,
+      percentage: 70
+    });
+    
+    // Send completion event
+    mainWindow.webContents.send('environment-verification-complete', { ...environmentCaches, discoveredVersions });
   }
   
   return { ...environmentCaches, discoveredVersions };

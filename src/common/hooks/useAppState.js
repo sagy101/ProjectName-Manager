@@ -12,6 +12,9 @@ export const useAppState = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingStatus, setLoadingStatus] = useState('');
+  const [loadingTimeoutRemaining, setLoadingTimeoutRemaining] = useState(
+    settings?.loadingScreenTimeoutSeconds || 15
+  );
   
   // State for general verification configuration from verifications.json
   const [generalVerificationConfig, setGeneralVerificationConfig] = useState([]);
@@ -108,6 +111,7 @@ export const useAppState = () => {
     isLoading,
     loadingProgress,
     loadingStatus,
+    loadingTimeoutRemaining,
     generalVerificationConfig,
     generalHeaderConfig,
     showTestSections,
@@ -142,6 +146,7 @@ export const useAppState = () => {
     setIsLoading,
     setLoadingProgress,
     setLoadingStatus,
+    setLoadingTimeoutRemaining,
     setGeneralVerificationConfig,
     setGeneralHeaderConfig,
     setShowTestSections,
