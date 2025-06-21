@@ -102,6 +102,7 @@ Defines the UI structure and components for each section in the configuration si
     "projectName": "MyProject",
     "openDevToolsByDefault": false,
     "autoSetupTimeoutSeconds": 90,
+
     "sidebarDefaultExpanded": false,
     "terminalScrollback": 1000,
     "maxFloatingTerminals": 10,
@@ -156,6 +157,8 @@ The `settings` object contains application-wide configuration options that contr
 - **`openDevToolsByDefault`** (boolean, default: false): Whether to automatically open Chrome Developer Tools when the application starts. Useful for debugging during development.
 
 - **`autoSetupTimeoutSeconds`** (number, default: 60): The timeout in seconds for Auto Setup commands. Commands that run longer than this will be automatically terminated. Configurable to accommodate different command complexity and system performance.
+
+- **`loadingScreenTimeoutSeconds`** (number, default: 15): Maximum time to show the loading screen before timing out. If not specified, 15 seconds are used.
 
 - **`sidebarDefaultExpanded`** (boolean, default: false): Whether the App Control Sidebar (floating terminal management sidebar) should be expanded by default when the application starts. When false, the sidebar starts collapsed.
 

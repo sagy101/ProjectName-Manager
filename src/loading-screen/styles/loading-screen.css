@@ -235,4 +235,13 @@
     transform: translate(var(--tx, 100px), var(--ty, 100px)) rotate(360deg) scale(0);
     opacity: 0;
   }
-} 
+}
+
+.timeout-counter {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  font-size: 0.75rem;
+  color: #fff;
+  opacity: 0.7;
+}

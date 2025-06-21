@@ -28,12 +28,21 @@ beforeEach(() => {
 });
 
 test('loadAppSettings parses json', async () => {
-  const data = { settings: { openDevToolsByDefault: true, projectName: 'X', autoSetupTimeoutSeconds: 45, configurationDefaultExpanded: false } };
+  const data = {
+    settings: {
+      openDevToolsByDefault: true,
+      projectName: 'X',
+      autoSetupTimeoutSeconds: 45,
+      loadingScreenTimeoutSeconds: 30,
+      configurationDefaultExpanded: false
+    }
+  };
   fs.readFile.mockResolvedValue(JSON.stringify(data));
   const res = await loadAppSettings();
   expect(res.success).toBe(true);
   expect(res.appSettings.projectName).toBe('X');
   expect(res.appSettings.autoSetupTimeoutSeconds).toBe(45);
+  expect(res.appSettings.loadingScreenTimeoutSeconds).toBe(30);
   expect(res.appSettings.configurationDefaultExpanded).toBe(false);
 });
 
