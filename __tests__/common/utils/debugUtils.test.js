@@ -1,21 +1,126 @@
-const { debugLog } = require('../../../src/common/utils/debugUtils');
+const { logger, loggers, createLogger, LOG_LEVELS } = require('../../../src/common/utils/debugUtils.js');
 
 beforeEach(() => {
   jest.restoreAllMocks();
 });
 
-test('debugLog logs when DEBUG_LOGS=true', () => {
-  process.env.DEBUG_LOGS = 'true';
-  const spy = jest.spyOn(console, 'log').mockImplementation(() => {});
-  debugLog('a', 1);
-  expect(spy).toHaveBeenCalledWith('[DEBUG]', 'a', 1);
-  spy.mockRestore();
-});
+describe('Enhanced Logging System', () => {
+  test('logger.debug logs with formatted message in development', () => {
+    const originalEnv = process.env.NODE_ENV;
+    const originalDebugLogs = process.env.DEBUG_LOGS;
+    
+    process.env.NODE_ENV = 'development';
+    delete process.env.DEBUG_LOGS; // Use environment default
+    
+    const spy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    logger.debug('test message', 123);
+    
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringMatching(/\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\]\[DEBUG\]/),
+      'test message',
+      123
+    );
+    
+    spy.mockRestore();
+    process.env.NODE_ENV = originalEnv;
+    if (originalDebugLogs !== undefined) {
+      process.env.DEBUG_LOGS = originalDebugLogs;
+    }
+  });
 
-test('debugLog does not log when DEBUG_LOGS!=true', () => {
-  process.env.DEBUG_LOGS = 'false';
-  const spy = jest.spyOn(console, 'log').mockImplementation(() => {});
-  debugLog('b');
-  expect(spy).not.toHaveBeenCalled();
-  spy.mockRestore();
+  test('logger.error always logs regardless of environment', () => {
+    const originalEnv = process.env.NODE_ENV;
+    const originalDebugLogs = process.env.DEBUG_LOGS;
+    
+    process.env.NODE_ENV = 'production';
+    delete process.env.DEBUG_LOGS; // Use environment default
+    
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    logger.error('error message');
+    
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringMatching(/\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\]\[ERROR\]/),
+      'error message'
+    );
+    
+    spy.mockRestore();
+    process.env.NODE_ENV = originalEnv;
+    if (originalDebugLogs !== undefined) {
+      process.env.DEBUG_LOGS = originalDebugLogs;
+    }
+  });
+
+  test('logger.debug does not log in production', () => {
+    const originalEnv = process.env.NODE_ENV;
+    const originalDebugLogs = process.env.DEBUG_LOGS;
+    
+    process.env.NODE_ENV = 'production';
+    delete process.env.DEBUG_LOGS; // Use environment default (no DEBUG_LOGS override)
+    
+    const spy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    logger.debug('debug message');
+    
+    expect(spy).not.toHaveBeenCalled();
+    
+    spy.mockRestore();
+    process.env.NODE_ENV = originalEnv;
+    if (originalDebugLogs !== undefined) {
+      process.env.DEBUG_LOGS = originalDebugLogs;
+    }
+  });
+
+  test('DEBUG_LOGS=true overrides production environment', () => {
+    const originalEnv = process.env.NODE_ENV;
+    const originalDebugLogs = process.env.DEBUG_LOGS;
+    
+    process.env.NODE_ENV = 'production';
+    process.env.DEBUG_LOGS = 'true'; // Force debug logs
+    
+    const spy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    logger.debug('debug message with override');
+    
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringMatching(/\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\]\[DEBUG\]/),
+      'debug message with override'
+    );
+    
+    spy.mockRestore();
+    process.env.NODE_ENV = originalEnv;
+    if (originalDebugLogs !== undefined) {
+      process.env.DEBUG_LOGS = originalDebugLogs;
+    } else {
+      delete process.env.DEBUG_LOGS;
+    }
+  });
+
+  test('createLogger adds custom prefix', () => {
+    const customLogger = createLogger('CUSTOM');
+    const spy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    
+    customLogger.info('test message');
+    
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringMatching(/\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\]\[CUSTOM\]\[INFO\]/),
+      'test message'
+    );
+    
+    spy.mockRestore();
+  });
+
+  test('loggers object provides pre-configured loggers', () => {
+    expect(loggers.app).toBeDefined();
+    expect(loggers.terminal).toBeDefined();
+    expect(loggers.git).toBeDefined();
+    expect(typeof loggers.app.debug).toBe('function');
+    expect(typeof loggers.app.info).toBe('function');
+    expect(typeof loggers.app.warn).toBe('function');
+    expect(typeof loggers.app.error).toBe('function');
+  });
+
+  test('LOG_LEVELS are properly defined', () => {
+    expect(LOG_LEVELS.ERROR).toBe(0);
+    expect(LOG_LEVELS.WARN).toBe(1);
+    expect(LOG_LEVELS.INFO).toBe(2);
+    expect(LOG_LEVELS.DEBUG).toBe(3);
+  });
 });

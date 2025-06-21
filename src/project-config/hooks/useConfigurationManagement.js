@@ -1,4 +1,7 @@
 import { useCallback } from 'react';
+import { loggers } from '../../common/utils/debugUtils.js';
+
+const logger = loggers.export;
 
 export const useConfigurationManagement = ({
   projectConfigRef,
@@ -37,9 +40,9 @@ export const useConfigurationManagement = ({
           }
         }
         
-        debugLog('Exporting git branches:', gitBranches);
+        logger.debug('Exporting git branches:', gitBranches);
       } catch (error) {
-        console.warn('Error collecting git branches for export:', error);
+        logger.warn('Error collecting git branches for export:', error);
       }
       
       try {
@@ -55,7 +58,7 @@ export const useConfigurationManagement = ({
           showAppNotification(`Export failed: ${result.error}`, 'error');
         }
       } catch (err) {
-        console.error('Export config error', err);
+        logger.error('Export config error', err);
         showAppNotification('Export failed', 'error');
       }
     }
@@ -74,7 +77,7 @@ export const useConfigurationManagement = ({
           showAppNotification(`Import failed: ${result.error}`, 'error');
         }
       } catch (err) {
-        console.error('Import config error', err);
+        logger.error('Import config error', err);
         showAppNotification('Import failed', 'error');
       }
     }
@@ -84,13 +87,13 @@ export const useConfigurationManagement = ({
   const performImport = useCallback(async (updateGitBranchStatus, updateConfigStatus) => {
     // Prevent multiple simultaneous imports
     if (isPerformingImport) {
-      debugLog('Import already in progress, skipping...');
+      logger.debug('Import already in progress, skipping...');
       return;
     }
 
     try {
       setIsPerformingImport(true);
-      debugLog('Starting import process...');
+      logger.debug('Starting import process...');
       
       // Use the stored import result instead of calling importConfig again
       const result = importResult;
@@ -117,7 +120,7 @@ export const useConfigurationManagement = ({
 
       // Handle git branch switching if branches were exported
       if (result.gitBranches && Object.keys(result.gitBranches).length > 0) {
-        debugLog('Switching to exported git branches:', result.gitBranches);
+        logger.debug('Switching to exported git branches:', result.gitBranches);
         
         // Get directory paths for sections from the about config
         const sectionDirectoryMap = {};
@@ -129,7 +132,7 @@ export const useConfigurationManagement = ({
             }
           });
         } catch (error) {
-          console.warn('Error getting about config for git branch switching:', error);
+          logger.warn('Error getting about config for git branch switching:', error);
         }
         
         // Process each branch switch
@@ -174,23 +177,23 @@ export const useConfigurationManagement = ({
         }
         
         // Trigger refresh and wait for it to complete
-        debugLog('Import: Triggering environment refresh...');
+        logger.debug('Import: Triggering environment refresh...');
         if (window.electron?.refreshEnvironmentVerification) {
           try {
             await window.electron.refreshEnvironmentVerification();
-            debugLog('Import: Environment refresh completed');
+            logger.debug('Import: Environment refresh completed');
           } catch (error) {
-            console.warn('Import: Environment refresh failed:', error);
+            logger.warn('Import: Environment refresh failed:', error);
           }
         }
         
         // Wait for UI to update and then verify
-        debugLog('Import: Waiting for UI to update...');
+        logger.debug('Import: Waiting for UI to update...');
         await new Promise(resolve => setTimeout(resolve, 1500));
         
         // Verify branches after a delay to allow React state to update
         setTimeout(() => {
-          debugLog('Import: Verifying branch switches after delay...');
+          logger.debug('Import: Verifying branch switches after delay...');
           for (const [sectionId, switchResult] of Object.entries(branchSwitchResults)) {
             if (switchResult.skipped || !switchResult.success) {
               continue;
@@ -199,13 +202,13 @@ export const useConfigurationManagement = ({
             // Just mark as success since the git command succeeded
             // The UI will update when it's ready
             updateGitBranchStatus(sectionId, 'success', `Switched to ${switchResult.targetBranch}`);
-            debugLog(`Import: Marked ${sectionId} as switched to ${switchResult.targetBranch}`);
+            logger.debug(`Import: Marked ${sectionId} as switched to ${switchResult.targetBranch}`);
           }
         }, 100);
       }
       
     } catch (error) {
-      console.error('Import process failed:', error);
+      logger.error('Import process failed:', error);
       updateConfigStatus('error', error.message || 'Import failed');
     } finally {
       setIsPerformingImport(false);

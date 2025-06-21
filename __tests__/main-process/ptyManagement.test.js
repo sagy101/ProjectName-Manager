@@ -186,7 +186,7 @@ test('write and resize warn with no process', () => {
   console.warn = jest.fn();
   writeToPTY('none', 'data');
   resizePTY('none', 10, 10);
-  expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('No active PTY'));
+          expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('[PTY][WARN]'), expect.stringContaining('No active PTY'));
 });
 
 test('onData handles quick check and exit code events', () => {

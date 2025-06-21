@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
+import { loggers } from '../../common/utils/debugUtils.js';
 import '../styles/tab-info-panel.css';
+
+const logger = loggers.container;
 
 const TabInfoPanel = ({ 
   terminal, 
@@ -65,7 +68,7 @@ const TabInfoPanel = ({
             try {
               statuses[containerName] = await window.electron.getContainerStatus(containerName);
             } catch (error) {
-              console.error(`TabInfoPanel: Error fetching status for container ${containerName}:`, error);
+              logger.error(`TabInfoPanel: Error fetching status for container ${containerName}:`, error);
               statuses[containerName] = 'error';
             }
           } else {

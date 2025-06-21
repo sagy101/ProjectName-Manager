@@ -1,4 +1,7 @@
 import { useEffect, useCallback } from 'react';
+import { loggers } from '../utils/debugUtils.js';
+
+const log = loggers.app;
 
 export const useAppEffects = ({
   projectName,
@@ -16,11 +19,11 @@ export const useAppEffects = ({
   showAppNotification
 }) => {
   const triggerGitRefresh = useCallback(async () => {
-    debugLog('App: Triggering targeted git status refresh...');
+    log.debug('Triggering targeted git status refresh...');
     if (window.electron && window.electron.refreshGitStatuses) {
       try {
         const newGitStatuses = await window.electron.refreshGitStatuses();
-        debugLog('App: Received new git statuses:', newGitStatuses);
+        log.debug('Received new git statuses:', newGitStatuses);
         setVerificationStatuses(prev => {
           const newStatuses = { ...prev };
           for (const sectionKey in newGitStatuses) {
@@ -34,10 +37,11 @@ export const useAppEffects = ({
           return newStatuses;
         });
       } catch (error) {
-        console.error('App: Error during targeted git refresh:', error);
+        log.error('Error during targeted git refresh:', error);
+        showAppNotification?.('Failed to refresh Git statuses', 'error');
       }
     }
-  }, [setVerificationStatuses]);
+  }, [setVerificationStatuses, showAppNotification]);
 
   // Set up process-related event listeners
   useEffect(() => {
@@ -45,7 +49,7 @@ export const useAppEffects = ({
     
     // Listener for ongoing updates (e.g., after manual refresh)
     const removeVerificationListener = window.electron.onEnvironmentVerificationComplete((results) => {
-      debugLog('App: Received environment-verification-complete event:', results);
+      log.debug('Received environment-verification-complete event:', results);
       if (results) {
         // Update general statuses
         if (results.general) {
@@ -84,7 +88,7 @@ export const useAppEffects = ({
     
     // Handle container cleanup before quit
     const removeQuitListener = window.electron.onStopAllContainersBeforeQuit(async () => {
-      debugLog('App: Received stop-all-containers-before-quit event');
+      log.debug('Received stop-all-containers-before-quit event');
       if (terminalRef.current && terminalRef.current.stopAllContainers) {
         await terminalRef.current.stopAllContainers();
       }
@@ -92,7 +96,7 @@ export const useAppEffects = ({
     
     // Handle container cleanup before reload
     const removeReloadListener = window.electron.onStopAllContainersBeforeReload(async () => {
-      debugLog('App: Received stop-all-containers-before-reload event');
+      log.debug('Received stop-all-containers-before-reload event');
       if (terminalRef.current && terminalRef.current.stopAllContainers) {
         await terminalRef.current.stopAllContainers();
       }
@@ -100,7 +104,7 @@ export const useAppEffects = ({
     
     // Handle dropdown command execution results
     const removeDropdownCommandListener = window.electron.onDropdownCommandExecuted((data) => {
-      debugLog('App: Received dropdown-command-executed event:', data);
+      log.debug('Received dropdown-command-executed event:', data);
       const { dropdownId, value, result } = data;
       
       if (result.success) {
@@ -166,9 +170,9 @@ export const useAppEffects = ({
       // Fetch initial verification data and precache dropdowns
       const fetchInitialData = async () => {
         try {
-          debugLog('App: Fetching initial environment verification data...');
+          log.debug('Fetching initial environment verification data...');
           const initialResults = await window.electron.getEnvironmentVerification();
-          debugLog('App: Received initial environment verification data:', initialResults);
+          log.debug('Received initial environment verification data:', initialResults);
           
           if (initialResults) {
             if (initialResults.general) {
@@ -189,18 +193,18 @@ export const useAppEffects = ({
             });
           }
         } catch (error) {
-          console.error('App: Error fetching initial environment verification data:', error);
+          log.error('Error fetching initial environment verification data:', error);
         } finally {
           verificationComplete = true;
         }
         
         // Now, precache the global dropdowns
         try {
-          debugLog('App: Pre-caching global dropdowns...');
+          log.debug('Pre-caching global dropdowns...');
           await window.electron.precacheGlobalDropdowns();
-          debugLog('App: Global dropdowns pre-cached successfully.');
+          log.debug('Global dropdowns pre-cached successfully.');
         } catch (error) {
-          console.error('App: Error pre-caching global dropdowns:', error);
+          log.error('Error pre-caching global dropdowns:', error);
         } finally {
           projectsLoaded = true;
         }

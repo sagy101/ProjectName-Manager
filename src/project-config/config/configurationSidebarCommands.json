@@ -83,7 +83,7 @@
       "frontendConfig.mode": "dev"
     },
     "command": {
-      "base": "cd ./weblifemirror && webpack --watch",
+      "base": "cd ./weblifemirror && npx webpack --watch",
       "prefix": "nvm use ${nodeVersion} && ",
       "tabTitle": "Frontend (Dev Mode)"
     }
@@ -96,7 +96,7 @@
       "frontendConfig.mode": "normal"
     },
     "command": {
-      "base": "cd ./weblifemirror && webpack --bail",
+      "base": "cd ./weblifemirror && npx webpack --bail",
       "prefix": "nvm use ${nodeVersion} && ",
       "tabTitle": "Frontend"
     }

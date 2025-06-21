@@ -1,7 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import TerminalComponent from '../terminal/components/Terminal';
 import { InformationCircleIcon } from '@heroicons/react/24/outline';
 import './floating-terminal.css'; // We will create this CSS file next
+import { loggers } from '../common/utils/debugUtils.js';
+
+// Use the dedicated floating terminal logger
+const log = loggers.floating;
 
 const FloatingTerminal = ({
   id,
@@ -30,6 +34,54 @@ const FloatingTerminal = ({
   const [terminalStatus, setTerminalStatus] = useState('idle');
   const [wasVisible, setWasVisible] = useState(isVisible);
   const dragOffset = useRef({ x: 0, y: 0 });
+  const [status, setStatus] = useState('idle');
+  const [exitCode, setExitCode] = useState(0);
+
+  // Define the callback outside of useEffect
+  const handleCommandFinished = useCallback((terminalId, status, exitCode) => {
+    log.debug('handleCommandFinished called for terminalId:', terminalId, 'status:', status, 'exitCode:', exitCode);
+    log.debug('My ID:', id, 'isAutoSetup:', isAutoSetup, 'isMinimized:', isMinimized);
+    
+    if (terminalId === id) {
+      log.debug('This event is for me! Setting status to:', status);
+      setStatus(status);
+      setExitCode(exitCode);
+      
+      // Handle auto-close logic for auto-setup and fix commands
+      if ((isAutoSetup || isFixCommand)) {
+        // Auto-close logic for successful commands
+        const shouldAutoClose = status !== 'running';
+        
+        log.debug('Auto-close check:', {
+          shouldAutoClose,
+          status,
+          exitCode,
+          isAutoSetup,
+          isFixCommand,
+          isMinimized
+        });
+        
+        if (shouldAutoClose) {
+          log.debug('Will auto-close in 2 seconds');
+          setTimeout(() => {
+            log.debug('Auto-closing now');
+            onClose(id);
+          }, 2000);
+        } else {
+          log.debug('Will NOT auto-close');
+        }
+      }
+      
+      if (onCommandComplete) {
+        log.debug('Calling onCommandComplete with:', id, status, exitCode);
+        onCommandComplete(id, status, exitCode);
+      } else {
+        log.debug('NOT calling onCommandComplete');
+      }
+    } else {
+      log.debug('Event not for me (terminalId:', terminalId, 'vs my id:', id, ')');
+    }
+  }, [id, isAutoSetup, isMinimized, onClose, onCommandComplete]);
 
   // Effect to update position if initialPosition prop changes externally (e.g., centering on re-open)
   // However, this might conflict with user dragging. Typically, initialPosition is for the first render.
@@ -78,52 +130,6 @@ const FloatingTerminal = ({
 
   // Effect to listen for terminal status changes and auto-close
   useEffect(() => {
-    const handleCommandFinished = ({ terminalId, status, exitCode }) => {
-      console.log('🔵 FLOATING_TERMINAL: handleCommandFinished called for terminalId:', terminalId, 'status:', status, 'exitCode:', exitCode);
-      console.log('🔵 FLOATING_TERMINAL: My ID:', id, 'isAutoSetup:', isAutoSetup, 'isMinimized:', isMinimized);
-      
-      if (terminalId === id) {
-        console.log('🔵 FLOATING_TERMINAL: This event is for me! Setting status to:', status);
-        setTerminalStatus(status);
-        
-        // Auto-close conditions:
-        // 1. If it's a fix command and command finished (done/error/stopped)
-        // 2. If it's an auto setup command and command finished (done/error/stopped)
-        // 3. If terminal is minimized and command finished
-        const shouldAutoClose = (isFixCommand || isAutoSetup || isMinimized) && 
-                               ['done', 'error', 'stopped'].includes(status);
-        
-        console.log('🔵 FLOATING_TERMINAL: Auto-close check:', {
-          isFixCommand,
-          isAutoSetup,
-          isMinimized,
-          status,
-          shouldAutoClose
-        });
-        
-        if (shouldAutoClose) {
-          console.log('🔵 FLOATING_TERMINAL: Will auto-close in 2 seconds');
-          // Small delay to let user see the final status
-          setTimeout(() => {
-            console.log('🔵 FLOATING_TERMINAL: Auto-closing now');
-            onClose(id);
-          }, 2000);
-        } else {
-          console.log('🔵 FLOATING_TERMINAL: Will NOT auto-close');
-        }
-        
-        // Notify parent component that command completed (for verification re-run)
-        if (onCommandComplete && ['done', 'error', 'stopped'].includes(status)) {
-          console.log('🔵 FLOATING_TERMINAL: Calling onCommandComplete with:', id, status, exitCode);
-          onCommandComplete(id, status, exitCode);
-        } else {
-          console.log('🔵 FLOATING_TERMINAL: NOT calling onCommandComplete');
-        }
-      } else {
-        console.log('🔵 FLOATING_TERMINAL: Event not for me (terminalId:', terminalId, 'vs my id:', id, ')');
-      }
-    };
-
     const handleCommandStarted = ({ terminalId }) => {
       if (terminalId === id) {
         setTerminalStatus('running');
@@ -134,14 +140,25 @@ const FloatingTerminal = ({
     const handleSimulationEvent = (event) => {
       const { terminalId, status, exitCode } = event.detail;
       if (terminalId === id) {
-        handleCommandFinished({ terminalId, status, exitCode });
+        handleCommandFinished(terminalId, status, exitCode);
+      }
+    };
+
+    // Wrapper to handle both object and separate parameter formats
+    const commandFinishedWrapper = (data) => {
+      if (typeof data === 'object' && data.terminalId) {
+        // Object format from tests: { terminalId, status, exitCode }
+        handleCommandFinished(data.terminalId, data.status, data.exitCode);
+      } else {
+        // Separate parameters format: (terminalId, status, exitCode)
+        handleCommandFinished(...arguments);
       }
     };
 
     // Listen for real command events (when electron is available)
     let removeCommandFinished, removeCommandStarted;
     if (window.electron) {
-      removeCommandFinished = window.electron.onCommandFinished?.(handleCommandFinished);
+      removeCommandFinished = window.electron.onCommandFinished?.(commandFinishedWrapper);
       removeCommandStarted = window.electron.onCommandStarted?.(handleCommandStarted);
     }
 

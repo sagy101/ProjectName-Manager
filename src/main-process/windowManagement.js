@@ -1,12 +1,14 @@
-const { BrowserWindow } = require('electron');
+const { BrowserWindow, shell } = require('electron');
 const path = require('path');
-const { debugLog } = require('../common/utils/debugUtils');
+const { loggers } = require('../common/utils/debugUtils.js');
+
+const logger = loggers.app;
 
 let mainWindow = null;
 
 // Function to create the main application window
-function createWindow() {
-  debugLog('Creating main window...');
+function createMainWindow(appSettings = {}) {
+  logger.debug('Creating main window...');
   
   // Check if running in test/headless mode
   const isTestMode = process.env.HEADLESS === 'true';
@@ -31,7 +33,7 @@ function createWindow() {
     windowOptions.maximizable = false;
     windowOptions.closable = true;
     windowOptions.focusable = false;
-    debugLog('Creating invisible window for test mode');
+    logger.debug('Creating invisible window for test mode');
   }
 
   // Create the browser window
@@ -46,7 +48,7 @@ function createWindow() {
 
   // Show window when ready to prevent visual flash
   mainWindow.once('ready-to-show', () => {
-    debugLog('Main window ready to show');
+    logger.debug('Main window ready to show');
     if (!isTestMode) {
       mainWindow.show();
       
@@ -59,41 +61,41 @@ function createWindow() {
 
   // Handle window closed
   mainWindow.on('closed', () => {
-    debugLog('Main window closed');
+    logger.debug('Main window closed');
     mainWindow = null;
   });
 
   // Handle window focus events
   mainWindow.on('focus', () => {
-    debugLog('Main window focused');
+    logger.debug('Main window focused');
   });
 
   mainWindow.on('blur', () => {
-    debugLog('Main window blurred');
+    logger.debug('Main window blurred');
   });
 
   // Handle window resize events
   mainWindow.on('resize', () => {
     const [width, height] = mainWindow.getSize();
-    debugLog(`Main window resized to ${width}x${height}`);
+    logger.debug(`Main window resized to ${width}x${height}`);
   });
 
   // Handle window maximize/unmaximize events
   mainWindow.on('maximize', () => {
-    debugLog('Main window maximized');
+    logger.debug('Main window maximized');
   });
 
   mainWindow.on('unmaximize', () => {
-    debugLog('Main window unmaximized');
+    logger.debug('Main window unmaximized');
   });
 
   // Handle window minimize/restore events
   mainWindow.on('minimize', () => {
-    debugLog('Main window minimized');
+    logger.debug('Main window minimized');
   });
 
   mainWindow.on('restore', () => {
-    debugLog('Main window restored');
+    logger.debug('Main window restored');
   });
 
   // Prevent navigation away from the app
@@ -103,18 +105,18 @@ function createWindow() {
     // Only allow navigation to the same origin or file protocol
     if (parsedUrl.origin !== new URL(mainWindow.webContents.getURL()).origin && 
         !navigationUrl.startsWith('file://')) {
-      console.warn('Navigation blocked:', navigationUrl);
+      logger.warn('Navigation blocked:', navigationUrl);
       event.preventDefault();
     }
   });
 
   // Handle new window creation
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    debugLog('Preventing new window creation for:', url);
+    logger.debug('Preventing new window creation for:', url);
     return { action: 'deny' };
   });
 
-  debugLog('Main window created successfully');
+  logger.debug('Main window created successfully');
   return mainWindow;
 }
 
@@ -126,11 +128,11 @@ function getMainWindow() {
 // Function to open developer tools
 function openDevTools() {
   if (mainWindow && !mainWindow.isDestroyed()) {
-    debugLog('Opening developer tools');
+    logger.debug('Opening developer tools');
     mainWindow.webContents.openDevTools();
     return { success: true };
   } else {
-    console.warn('Cannot open dev tools: main window not available');
+    logger.warn('Cannot open dev tools: main window not available');
     return { success: false, error: 'Main window not available' };
   }
 }
@@ -138,11 +140,11 @@ function openDevTools() {
 // Function to reload the application
 function reloadApp() {
   if (mainWindow && !mainWindow.isDestroyed()) {
-    debugLog('Reloading application');
+    logger.debug('Reloading application');
     mainWindow.reload();
     return { success: true };
   } else {
-    console.warn('Cannot reload app: main window not available');
+    logger.warn('Cannot reload app: main window not available');
     return { success: false, error: 'Main window not available' };
   }
 }
@@ -150,11 +152,11 @@ function reloadApp() {
 // Function to close the main window
 function closeMainWindow() {
   if (mainWindow && !mainWindow.isDestroyed()) {
-    debugLog('Closing main window');
+    logger.debug('Closing main window');
     mainWindow.close();
     return { success: true };
   } else {
-    console.warn('Cannot close window: main window not available');
+    logger.warn('Cannot close window: main window not available');
     return { success: false, error: 'Main window not available' };
   }
 }
@@ -162,7 +164,7 @@ function closeMainWindow() {
 // Function to minimize the main window
 function minimizeMainWindow() {
   if (mainWindow && !mainWindow.isDestroyed()) {
-    debugLog('Minimizing main window');
+    logger.debug('Minimizing main window');
     mainWindow.minimize();
     return { success: true };
   } else {
@@ -174,10 +176,10 @@ function minimizeMainWindow() {
 function maximizeMainWindow() {
   if (mainWindow && !mainWindow.isDestroyed()) {
     if (mainWindow.isMaximized()) {
-      debugLog('Unmaximizing main window');
+      logger.debug('Unmaximizing main window');
       mainWindow.unmaximize();
     } else {
-      debugLog('Maximizing main window');
+      logger.debug('Maximizing main window');
       mainWindow.maximize();
     }
     return { success: true, isMaximized: mainWindow.isMaximized() };
@@ -189,7 +191,7 @@ function maximizeMainWindow() {
 // Function to show the main window
 function showMainWindow() {
   if (mainWindow && !mainWindow.isDestroyed()) {
-    debugLog('Showing main window');
+    logger.debug('Showing main window');
     mainWindow.show();
     mainWindow.focus();
     return { success: true };
@@ -201,7 +203,7 @@ function showMainWindow() {
 // Function to hide the main window
 function hideMainWindow() {
   if (mainWindow && !mainWindow.isDestroyed()) {
-    debugLog('Hiding main window');
+    logger.debug('Hiding main window');
     mainWindow.hide();
     return { success: true };
   } else {
@@ -255,10 +257,10 @@ function setWindowState(state) {
       mainWindow.minimize();
     }
     
-    debugLog('Window state updated successfully');
+    logger.debug('Window state updated successfully');
     return { success: true };
   } catch (error) {
-    console.error('Error setting window state:', error);
+    logger.error('Error setting window state:', error);
     return { success: false, error: error.message };
   }
 }
@@ -278,16 +280,21 @@ function isWindowReady() {
   return mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents.isLoading() === false;
 }
 
+function createWindow(appSettings = {}) {
+  return createMainWindow(appSettings);
+}
+
 module.exports = {
+  createMainWindow,
   createWindow,
-  getMainWindow,
   openDevTools,
   reloadApp,
-  closeMainWindow,
   minimizeMainWindow,
   maximizeMainWindow,
   showMainWindow,
   hideMainWindow,
+  closeMainWindow,
+  getMainWindow,
   getWindowState,
   setWindowState,
   sendToRenderer,

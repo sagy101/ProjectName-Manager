@@ -8,9 +8,11 @@
   },
   "scripts": {
     "start": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npx @electron/rebuild -f -w node-pty && electron .",
+    "start:prod": "NODE_ENV=production npm run start",
+    "prod": "npm run build && npm run start:prod",
     "rebuild": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npx @electron/rebuild -f -w node-pty",
-    "build": "webpack --mode development",
-    "rebuild": "unset PREFIX && source ~/.nvm/nvm.sh && nvm use && npx @electron/rebuild -f -w node-pty",
+    "build": "NODE_ENV=production webpack --mode production",
+    "build:dev": "webpack --mode development",
     "watch": "webpack --mode development --watch",
     "lint": "eslint --ext .js,.jsx .",
     "test": "npm run test:jest && npm run test:e2e",

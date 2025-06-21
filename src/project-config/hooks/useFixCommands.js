@@ -1,19 +1,25 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { STATUS } from '../../environment-verification/constants/verificationConstants';
 import configurationSidebarAbout from '../config/configurationSidebarAbout.json';
 import configurationSidebarSections from '../config/configurationSidebarSections.json';
+import { loggers } from '../../common/utils/debugUtils.js';
+
+const log = loggers.verification;
+const logger = loggers.app;
 
 export const useFixCommands = ({
   appState,
   eventHandlers,
   floatingTerminalHandlers
 }) => {
+  const [fixCommandStatuses, setFixCommandStatuses] = useState({});
+
   // Listen for single verification updates from backend
   useEffect(() => {
     if (!window.electron) return;
 
     const removeSingleVerificationListener = window.electron.onSingleVerificationUpdated?.((data) => {
-      debugLog('FixCommands: Single verification updated:', data);
+      log.debug('Single verification updated:', data);
       
       const { verificationId, result, source, cacheKey } = data;
       
@@ -75,7 +81,14 @@ export const useFixCommands = ({
   // Execute the pending fix command after confirmation
   const executePendingFixCommand = useCallback(() => {
     const verification = appState.pendingFixVerification;
-    if (!verification || !verification.fixCommand) return;
+    if (!verification || !verification.fixCommand) {
+      // Clear pending verification even if there's no valid verification
+      appState.setPendingFixVerification(null);
+      return;
+    }
+
+    // Always clear the pending verification first to close the dialog
+    appState.setPendingFixVerification(null);
 
     const terminalId = floatingTerminalHandlers.openFixCommandTerminal(
       verification.id,
@@ -95,13 +108,11 @@ export const useFixCommands = ({
       2000
     );
     
-    debugLog('Fix command started:', {
+    log.debug('Fix command started:', {
       verification: verification.id,
       command: verification.fixCommand,
       terminalId
     });
-
-    appState.setPendingFixVerification(null);
   }, [appState.pendingFixVerification, floatingTerminalHandlers, eventHandlers, appState.setPendingFixVerification]);
 
   // Handle fix command completion and trigger verification re-run
@@ -113,7 +124,7 @@ export const useFixCommands = ({
     // Extract verification ID from terminal command ID (set when creating fix terminal)
     const verificationId = terminal.commandId;
     
-    debugLog('Fix command completed:', {
+    log.debug('Fix command completed:', {
       terminalId,
       verificationId,
       status,
@@ -139,14 +150,13 @@ export const useFixCommands = ({
     try {
       if (window.electron?.rerunSingleVerification) {
         await window.electron.rerunSingleVerification(verificationId);
-        debugLog('Verification re-run triggered for:', verificationId);
+        log.debug('Verification re-run triggered for:', verificationId);
       } else {
-        console.warn('Single verification re-run not available, triggering full refresh');
-        // Fallback to full refresh if single verification not implemented yet
-        eventHandlers.handleInitiateRefresh();
+        logger.warn('Single verification re-run not available, triggering full refresh');
+        await refreshEnvironmentData();
       }
     } catch (error) {
-      console.error('Error triggering verification re-run:', error);
+      logger.error('Error triggering verification re-run:', error);
       eventHandlers.showAppNotification(
         `Error re-checking verification: ${error.message}`,
         'error'
@@ -156,7 +166,7 @@ export const useFixCommands = ({
 
   // Handle toggling all verification statuses for testing
   const handleToggleAllVerifications = useCallback(() => {
-    debugLog('Toggling all verification statuses for testing');
+    log.debug('Toggling all verification statuses for testing');
     
     // Get the current general verification statuses (stored directly in general, not general.statuses)
     const currentGeneralStatuses = appState.verificationStatuses?.general || {};

@@ -1,3 +1,7 @@
+const { loggers } = require('./debugUtils.js');
+
+const logger = loggers.app;
+
 function evaluateCondition(conditionStr, currentConfig, currentSectionId, attachState = {}, globalDropdownValues = {}) {
   const context = {};
 
@@ -48,7 +52,7 @@ function evaluateCondition(conditionStr, currentConfig, currentSectionId, attach
     const conditionFunction = new Function(...Object.keys(context), `return !!(${safeConditionStr});`);
     return conditionFunction(...Object.values(context));
   } catch (e) {
-    console.error(`Error evaluating condition "${conditionStr}":`, e);
+    logger.error(`Error evaluating condition "${conditionStr}":`, e);
     return false;
   }
 }
@@ -332,4 +336,9 @@ function substituteCommandVariables(command, discoveredVersions = {}, globalDrop
   });
 }
 
-module.exports = { evaluateCondition, generateCommandList, substituteCommandVariables };
+module.exports = { 
+  evaluateCondition, 
+  evaluateCommandCondition: evaluateCondition, // Alias for backward compatibility
+  generateCommandList, 
+  substituteCommandVariables 
+};

@@ -1,5 +1,8 @@
 import { useCallback, useEffect } from 'react';
 import configSidebarAbout from '../project-config/config/configurationSidebarAbout.json';
+import { loggers } from '../common/utils/debugUtils.js';
+
+const logger = loggers.terminal;
 
 // Constants for terminal and sidebar dimensions
 const FLOATING_TERMINAL_AVG_WIDTH = 500; // Approximate width
@@ -26,13 +29,13 @@ export const useFloatingTerminals = ({
 }) => {
   // Define showFloatingTerminal first
   const showFloatingTerminal = useCallback((terminalId) => {
-    console.log('showFloatingTerminal called with terminalId:', terminalId);
+    logger.debug('showFloatingTerminal called with terminalId:', terminalId);
+    
+    const terminal = floatingTerminals.find(t => t.id === terminalId);
+    logger.debug('showFloatingTerminal found terminal:', terminal);
+    logger.debug('showFloatingTerminal isAutoSetup:', terminal?.isAutoSetup);
     
     setFloatingTerminals(prevTerminals => {
-      const terminal = prevTerminals.find(t => t.id === terminalId);
-      console.log('showFloatingTerminal found terminal:', terminal);
-      console.log('showFloatingTerminal isAutoSetup:', terminal?.isAutoSetup);
-      
       return prevTerminals.map(t =>
         t.id === terminalId
           ? { 
@@ -109,7 +112,7 @@ export const useFloatingTerminals = ({
     const maxTerminals = settings?.maxFloatingTerminals || 10;
     if (floatingTerminals.length >= maxTerminals) {
       const warningMsg = `Maximum number of floating terminals reached (${maxTerminals}). Close some terminals to create new ones.`;
-      console.warn(`Cannot create more floating terminals. ${warningMsg}`);
+      logger.warn(`Cannot create more floating terminals. ${warningMsg}`);
 
       // Prefer React-level notification if callback provided
       if (typeof showAppNotification === 'function') {
@@ -201,31 +204,31 @@ export const useFloatingTerminals = ({
 
   // Manages showing the TabInfoPanel for floating terminals
   const showFloatingTerminalInfoPanel = useCallback((terminalId) => {
-    const terminal = floatingTerminals.find(t => t.id === terminalId);
-    if (!terminal) {
-      console.warn(`showFloatingTerminalInfoPanel: Terminal not found for ID: ${terminalId}`);
+    const existingTerminal = floatingTerminals.find(t => t.id === terminalId);
+    if (!existingTerminal) {
+      logger.warn(`showFloatingTerminalInfoPanel: Terminal not found for ID: ${terminalId}`);
       return;
     }
 
-    const aboutConfig = configSidebarAbout.find(info => info.sectionId === terminal.commandId);
+    const aboutConfig = configSidebarAbout.find(info => info.sectionId === existingTerminal.commandId);
     const description = aboutConfig?.description || "No specific description available.";
     // const verifications = aboutConfig?.verifications || []; // Not directly used by TabInfoPanel yet
 
-    let commandWithDetails = terminal.command;
+    let commandWithDetails = existingTerminal.command;
     if (description) {
-      commandWithDetails = `About: ${description}\n\nCommand:\n${terminal.command}`;
+      commandWithDetails = `About: ${description}\n\nCommand:\n${existingTerminal.command}`;
     }
 
     const terminalDataForPanel = {
-      id: terminal.id,
-      title: terminal.title,
+      id: existingTerminal.id,
+      title: existingTerminal.title,
       command: commandWithDetails,
-      originalCommand: terminal.command,
-      status: terminal.status || 'idle', // Use actual terminal status
-      exitStatus: terminal.exitStatus || null,
-      sectionId: terminal.commandId,
-      startTime: terminal.startTime || parseInt(terminal.id.split('-')[1], 10) || Date.now(),
-      associatedContainers: terminal.associatedContainers || [],
+      originalCommand: existingTerminal.command,
+      status: existingTerminal.status || 'idle', // Use actual terminal status
+      exitStatus: existingTerminal.exitStatus || null,
+      sectionId: existingTerminal.commandId,
+      startTime: existingTerminal.startTime || parseInt(existingTerminal.id.split('-')[1], 10) || Date.now(),
+      associatedContainers: existingTerminal.associatedContainers || [],
     };
 
     const panelX = window.innerWidth - SIDEBAR_EXPANDED_WIDTH - 420;
