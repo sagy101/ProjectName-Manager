@@ -116,7 +116,7 @@ async function precacheGlobalDropdowns(mainWindow = null) {
 
         let cachedCount = 0;
         const precachePromises = globalDropdowns.map(async dropdownConfig => {
-            debugLog(`Pre-caching a global dropdown: ${dropdownConfig.id}`);
+            log.debug(`Pre-caching a global dropdown: ${dropdownConfig.id}`);
             await getDropdownOptions({
                 id: dropdownConfig.id,
                 command: dropdownConfig.command,
