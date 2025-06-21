@@ -48,9 +48,9 @@ const FloatingTerminal = ({
       setExitCode(exitCode);
       
       // Handle auto-close logic for auto-setup and fix commands
-      if ((isAutoSetup || isFixCommand) && !isMinimized) {
+      if ((isAutoSetup || isFixCommand)) {
         // Auto-close logic for successful commands
-        const shouldAutoClose = (status === 'success' || status === 'done') && exitCode === 0;
+        const shouldAutoClose = status !== 'running';
         
         log.debug('Auto-close check:', {
           shouldAutoClose,
