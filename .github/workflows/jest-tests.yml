@@ -182,27 +182,56 @@ jobs:
           comment-author: 'github-actions[bot]'
           body-includes: '<!-- GITHUB_ACTION_TEST_SUMMARY:${{ github.event.pull_request.head.sha }} -->'
       
+      - name: Prepare Comment Body
+        id: comment-body
+        run: |
+          if [ -z "${{ steps.fc.outputs.comment-id }}" ]; then
+            cat >> $GITHUB_OUTPUT << 'EOF'
+          body<<BODY_DELIMITER
+          <!-- GITHUB_ACTION_TEST_SUMMARY:${{ github.event.pull_request.head.sha }} -->
+          
+          ## 🔎 Test Summary
+          
+          ---
+          ### Jest Mock Coverage
+          - ✅ Passed: ${{ steps.parse-results.outputs.mock-passed }}
+          - ❌ Failed: ${{ steps.parse-results.outputs.mock-failed }}
+          - ⏭️ Skipped: ${{ steps.parse-results.outputs.mock-skipped }}
+          - 📈 Coverage: ${{ steps.parse-results.outputs.mock-coverage }}%
+          
+          ---
+          ### Jest Prod Coverage
+          - ✅ Passed: ${{ steps.parse-results.outputs.prod-passed }}
+          - ❌ Failed: ${{ steps.parse-results.outputs.prod-failed }}
+          - ⏭️ Skipped: ${{ steps.parse-results.outputs.prod-skipped }}
+          - 📈 Coverage: ${{ steps.parse-results.outputs.prod-coverage }}%
+          BODY_DELIMITER
+          EOF
+          else
+            cat >> $GITHUB_OUTPUT << 'EOF'
+          body<<BODY_DELIMITER
+          
+          ---
+          ### Jest Mock Coverage
+          - ✅ Passed: ${{ steps.parse-results.outputs.mock-passed }}
+          - ❌ Failed: ${{ steps.parse-results.outputs.mock-failed }}
+          - ⏭️ Skipped: ${{ steps.parse-results.outputs.mock-skipped }}
+          - 📈 Coverage: ${{ steps.parse-results.outputs.mock-coverage }}%
+          
+          ---
+          ### Jest Prod Coverage
+          - ✅ Passed: ${{ steps.parse-results.outputs.prod-passed }}
+          - ❌ Failed: ${{ steps.parse-results.outputs.prod-failed }}
+          - ⏭️ Skipped: ${{ steps.parse-results.outputs.prod-skipped }}
+          - 📈 Coverage: ${{ steps.parse-results.outputs.prod-coverage }}%
+          BODY_DELIMITER
+          EOF
+          fi
+      
       - name: Create or update comment
         uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
-          edit-mode: replace  # Replace entire comment to ensure consistency
-          body: |
-            <!-- GITHUB_ACTION_TEST_SUMMARY:${{ github.event.pull_request.head.sha }} -->
-            
-            ## 🔎 Test Summary
-            
-            ---
-            ### Jest Mock Coverage
-            - ✅ Passed: ${{ steps.parse-results.outputs.mock-passed }}
-            - ❌ Failed: ${{ steps.parse-results.outputs.mock-failed }}
-            - ⏭️ Skipped: ${{ steps.parse-results.outputs.mock-skipped }}
-            - 📈 Coverage: ${{ steps.parse-results.outputs.mock-coverage }}%
-            
-            ---
-            ### Jest Prod Coverage
-            - ✅ Passed: ${{ steps.parse-results.outputs.prod-passed }}
-            - ❌ Failed: ${{ steps.parse-results.outputs.prod-failed }}
-            - ⏭️ Skipped: ${{ steps.parse-results.outputs.prod-skipped }}
-            - 📈 Coverage: ${{ steps.parse-results.outputs.prod-coverage }}%
+          edit-mode: append
+          body: ${{ steps.comment-body.outputs.body }}
