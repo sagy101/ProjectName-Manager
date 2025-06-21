@@ -514,9 +514,17 @@ async function verifyEnvironment(mainWindow = null) {
   isVerifyingEnvironment = false;
   logger.debug('Environment verification completed.');
   
-  // Send completion event to frontend
+  // Send final verification progress (70%) and completion event to frontend
   if (mainWindow) {
-    mainWindow.webContents.send('environment-setup-complete', { ...environmentCaches, discoveredVersions });
+    // Send final verification progress
+    mainWindow.webContents.send('verification-progress', {
+      completed: totalVerifications,
+      total: totalVerifications,
+      percentage: 70
+    });
+    
+    // Send completion event
+    mainWindow.webContents.send('environment-verification-complete', { ...environmentCaches, discoveredVersions });
   }
   
   return { ...environmentCaches, discoveredVersions };

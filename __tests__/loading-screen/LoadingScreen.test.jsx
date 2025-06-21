@@ -35,6 +35,7 @@ describe('LoadingScreen', () => {
     const bar = container.querySelector('.progress-bar');
     expect(bar.style.width).toBe('30%');
     expect(getByText('TestProj Manager')).toBeInTheDocument();
-    expect(getByText('Timeout: 15s')).toBeInTheDocument();
+    expect(getByText('⏱ Timeout in:')).toBeInTheDocument();
+    expect(getByText('15s')).toBeInTheDocument();
   });
 });

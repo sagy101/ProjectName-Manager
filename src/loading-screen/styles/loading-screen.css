@@ -238,10 +238,30 @@
 }
 
 .timeout-counter {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  z-index: 10000;
+}
+
+.timeout-label {
   font-size: 0.75rem;
+  color: #ccc;
+  opacity: 0.9;
+}
+
+.timeout-value {
+  font-size: 0.8rem;
   color: #fff;
-  opacity: 0.7;
+  font-weight: 600;
+  min-width: 25px;
+  text-align: center;
 }

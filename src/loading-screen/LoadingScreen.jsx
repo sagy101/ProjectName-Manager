@@ -54,7 +54,10 @@ const LoadingScreen = ({ progress, statusMessage, projectName, timeoutRemaining 
           ))}
         </div>
         {typeof timeoutRemaining === 'number' && timeoutRemaining > 0 && (
-          <div className="timeout-counter">Timeout: {timeoutRemaining}s</div>
+          <div className="timeout-counter">
+            <span className="timeout-label">⏱ Timeout in:</span>
+            <span className="timeout-value">{timeoutRemaining}s</span>
+          </div>
         )}
       </div>
     </div>
