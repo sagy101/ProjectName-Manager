@@ -1,28 +1,20 @@
 # Testing Guide
 
-This guide provides an overview of the testing strategy, setup, and different types of tests used in the {ProjectName} Manager application.
+> Comprehensive testing infrastructure and strategies for {ProjectName} Manager
 
-## Table of Contents
-- [Setup and Configuration](#setup-and-configuration)
-  - [Jest Configuration](#jest-configuration)
-  - [Test Environment](#test-environment)
-- [Running Tests](#running-tests)
-- [Types of Tests](#types-of-tests)
-  - [Bug Prevention Tests](#bug-prevention-tests)
-  - [Unit Tests](#unit-tests)
-  - [Component Rendering Tests](#component-rendering-tests)
-  - [End-to-End (E2E) Tests](#end-to-end-e2e-tests)
-- [Key Scripts](#key-scripts)
-- [Troubleshooting](#troubleshooting)
+## Overview
 
+This guide covers the testing infrastructure, strategies, and practices used in {ProjectName} Manager. The test suite ensures reliability through unit tests, component tests, and end-to-end tests.
 
-### Testing Strategy
+## Testing Philosophy
 
-1. **Behavior-Driven Testing**: Tests verify what the code does, not how it does it
-2. **Bug Prevention**: Each test is designed to catch a specific type of bug that has caused real issues
-3. **Data Structure Compatibility**: Tests ensure frontend/backend data contracts remain stable
-4. **Minimal Mocking**: Only mock external dependencies, not internal module interactions
-5. **Fast and Reliable**: Tests should run quickly and consistently without flaky failures
+### Core Principles
+
+1. **Behavior-Driven**: Test what the code does, not how it does it
+2. **Bug Prevention**: Each test catches specific bugs that have caused real issues
+3. **Data Structure Compatibility**: Ensure frontend/backend contracts remain stable
+4. **Minimal Mocking**: Only mock external dependencies
+5. **Fast and Reliable**: Quick execution without flaky failures
 
 <details>
 <summary><strong>Enhanced Logging System</strong></summary>
@@ -476,7 +468,22 @@ Comprehensive test suite at `__tests__/scripts/setup-mock-e2e-env.test.js`:
 
 ## Troubleshooting
 
-- **`node-pty` compilation errors**: If you see errors related to `node-pty` or `NODE_MODULE_VERSION`, run `npx @electron/rebuild -f -w node-pty` or restart with `npm start` to rebuild automatically.
-- **`document is not defined`**: This error indicates that a test requiring a DOM is running in the `node` environment. Add `/** @jest-environment jsdom */` to the top of the test file.
-- **`toBeInTheDocument is not a function`**: This means the `@testing-library/jest-dom` matchers are not loaded. Ensure that `jest.setup.js` is correctly configured in `jest.config.js`.
-- **E2E tests failing**: Ensure `openDevToolsByDefault` is set to `false` in `src/configurationSidebarSections.json`. Dev tools being open can interfere with Playwright automation and cause test failures. 
+### Common Issues
+
+- **`node-pty` compilation errors**: Run `npx @electron/rebuild -f -w node-pty` or restart with `npm start`
+- **`document is not defined`**: Add `/** @jest-environment jsdom */` to the test file
+- **`toBeInTheDocument is not a function`**: Check `jest.setup.js` configuration
+- **E2E tests failing**: Ensure `openDevToolsByDefault` is `false` in configuration
+
+### Platform-Specific Issues
+
+- **macOS**: May need Xcode Command Line Tools for native modules
+- **Linux**: Ensure required development packages are installed
+- **CI/CD**: Use headless mode for E2E tests
+
+## Related Documentation
+
+- [Architecture Details](architecture-details.md) - Understanding the codebase structure
+- [Getting Started](getting-started.md) - Setting up the development environment
+- [Configuration Guide](configuration-guide.md) - Test configuration options
+- [Terminal Features](terminal-features.md) - Testing terminal functionality 

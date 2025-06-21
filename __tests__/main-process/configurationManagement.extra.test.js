@@ -84,3 +84,54 @@ test('saveConfiguration handles write error', async () => {
   const res = await saveConfiguration('/tmp/b.json', { b: 3 });
   expect(res.success).toBe(false);
 });
+
+test('loadAppSettings handles read errors', async () => {
+  fs.readFile.mockRejectedValue(new Error('oops'));
+  const res = await loadAppSettings();
+  expect(res.success).toBe(false);
+  expect(res.error).toBe('oops');
+});
+
+test('getAboutConfig handles read errors', async () => {
+  fs.readFile.mockRejectedValue(new Error('bad'));
+  const res = await getAboutConfig();
+  expect(res).toEqual([]);
+});
+
+test('exportConfiguration propagates export errors', async () => {
+  dialog.showSaveDialog.mockResolvedValue({ canceled: false, filePath: '/tmp/out.json' });
+  exportConfigToFile.mockResolvedValue({ success: false, error: 'boom' });
+  const res = await exportConfiguration({});
+  expect(res.success).toBe(false);
+  expect(res.error).toBe('boom');
+});
+
+test('importConfiguration propagates import errors', async () => {
+  dialog.showOpenDialog.mockResolvedValue({ canceled: false, filePaths: ['/tmp/in.json'] });
+  importConfigFromFile.mockResolvedValue({ success: false, error: 'fail' });
+  const res = await importConfiguration();
+  expect(res.success).toBe(false);
+  expect(res.error).toBe('fail');
+});
+
+const { getConfigurationPaths, checkConfigurationFiles } = require('../../src/main-process/configurationManagement');
+
+test('getConfigurationPaths returns expected filenames', () => {
+  const paths = getConfigurationPaths();
+  expect(paths.sidebarAbout).toMatch(/configurationSidebarAbout\.json$/);
+  expect(paths.sidebarSections).toMatch(/configurationSidebarSections\.json$/);
+});
+
+test('checkConfigurationFiles handles missing files', async () => {
+  const accessSpy = jest.spyOn(fs, 'access').mockImplementation(p => {
+    if (p.endsWith('configurationSidebarAbout.json')) {
+      return Promise.reject(new Error('missing'));
+    }
+    return Promise.resolve();
+  });
+
+  const res = await checkConfigurationFiles();
+  expect(res.sidebarAbout.exists).toBe(false);
+  expect(res.sidebarSections.exists).toBe(true);
+  accessSpy.mockRestore();
+});

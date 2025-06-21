@@ -87,4 +87,27 @@ describe('useTabManagement hook', () => {
     unmount();
     jest.useRealTimers();
   });
+
+  test('all tabs remain visible when container is wide enough', () => {
+    jest.useFakeTimers();
+    const container = document.createElement('div');
+    Object.defineProperty(container, 'clientWidth', { value: 300 });
+    const t1 = document.createElement('div');
+    t1.className = 'tab';
+    Object.defineProperty(t1, 'offsetWidth', { value: 50 });
+    const t2 = document.createElement('div');
+    t2.className = 'tab';
+    Object.defineProperty(t2, 'offsetWidth', { value: 50 });
+    container.appendChild(t1);
+    container.appendChild(t2);
+    const ref = { current: container };
+    const terms = [{ id: 1 }, { id: 2 }];
+    const { result, unmount } = renderHook(() => useTabManagement(ref, terms, 1));
+    act(() => { jest.runAllTimers(); });
+    expect(result.current.visibleTabs.map(t => t.id)).toEqual([1, 2]);
+    expect(result.current.overflowTabs).toEqual([]);
+    unmount();
+    jest.useRealTimers();
+  });
+
 });
