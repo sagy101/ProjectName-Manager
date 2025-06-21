@@ -32,6 +32,7 @@ const ProjectConfiguration = forwardRef(({ projectName, globalDropdownValues, te
     setMode,
     handleAttachToggle,
     setSectionDropdownValue,
+    setInputFieldValue,
   } = useProjectConfig(globalDropdownValues, showTestSections, setNotification);
 
   const visibleSections = configSidebarSectionsActual.filter(section => showTestSections || !section.testSection);
@@ -200,6 +201,13 @@ const ProjectConfiguration = forwardRef(({ projectName, globalDropdownValues, te
                   return;
                 }
                 toggleSubSectionEnabled(sectionId, subSectionId, enabled);
+            }}
+            setInputFieldValue={(sectionId, inputId, value) => {
+                if (isRunning) {
+                  setNotification({ message: 'Cannot change settings while the project is running.', type: 'error', isVisible: true });
+                  return;
+                }
+                setInputFieldValue(sectionId, inputId, value);
             }}
             openFloatingTerminal={openFloatingTerminal}
             configSidebarCommands={configSidebarCommands}

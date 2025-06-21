@@ -4,19 +4,24 @@
   padding: 4px 12px;
 }
 
-.input-field-label {
-  font-size: 0.8rem;
-  color: #ccc;
-  margin-bottom: 4px;
-}
-
 .input-field {
   background-color: #252525;
   border: 1px solid #404040;
   color: #e0e0e0;
   border-radius: 4px;
-  padding: 6px 8px;
+  padding: 8px 12px;
   font-size: 0.9rem;
+}
+
+.input-field::placeholder {
+  color: #888;
+  opacity: 1;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #0078d4;
+  box-shadow: 0 0 0 1px #0078d4;
 }
 
 .input-field:disabled {

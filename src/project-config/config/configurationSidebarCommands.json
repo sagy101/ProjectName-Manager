@@ -62,7 +62,7 @@
       "mode": "run"
     },
     "command": {
-      "base": "nvm use ${nodeVersion} && cd ./weblifemirror && ./gradlew bootRun -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005' --info -x runDockerComposeAuthService -x buildAgent -x runDockerComposeRuleEngine -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
+      "base": "nvm use ${nodeVersion} && cd ./weblifemirror && ./gradlew bootRun -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${debugPort}' --info -x runDockerComposeAuthService -x buildAgent -x runDockerComposeRuleEngine -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
       "associatedContainers": [
         "wiremock",
         "weblifemirror-db-replica-1",
@@ -231,7 +231,7 @@
       "mode": "run"
     },
     "command": {
-      "base": "nvm use ${nodeVersion} && cd ./activity-logger && ./gradlew bootRun -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005' -Dspring.profiles.active=dev -Dgcloud.project=${gcloudProject}",
+      "base": "nvm use ${nodeVersion} && cd ./activity-logger && ./gradlew bootRun -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${debugPort}' -Dspring.profiles.active=dev -Dgcloud.project=${gcloudProject}",
       "tabTitle": "Activity Logger (Debug Run)"
     }
   },

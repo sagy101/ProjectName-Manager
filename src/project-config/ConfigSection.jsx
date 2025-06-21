@@ -322,7 +322,6 @@ const ConfigSection = ({
                     value={config[field.id] || ''}
                     onChange={setInputFieldValue}
                     disabled={isLocked}
-                    label={field.label}
                     placeholder={field.placeholder}
                   />
                 ))}
@@ -409,7 +408,6 @@ const ConfigSection = ({
                                   value={subSectionConfig[field.id] || ''}
                                   onChange={setInputFieldValue}
                                   disabled={isLocked}
-                                  label={field.label}
                                   placeholder={field.placeholder}
                                 />
                               ))}

@@ -23,8 +23,8 @@
         "gitBranch": true,
         "inputField": {
           "id": "debugPort",
-          "label": "Debug Port",
-          "placeholder": "9229",
+          "placeholder": "Enter debug port",
+          "default": "5005",
           "visibleWhen": {
             "configKey": "attachState.mirror",
             "hasValue": true
@@ -156,8 +156,8 @@
         "gitBranch": true,
         "inputField": {
           "id": "debugPort",
-          "label": "Debug Port",
-          "placeholder": "9229",
+          "placeholder": "Enter debug port",
+          "default": "5005",
           "visibleWhen": {
             "configKey": "attachState.activity-logger",
             "hasValue": true
