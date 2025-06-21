@@ -5,6 +5,9 @@ import { STATUS } from './constants/verificationConstants';
 import VerificationIndicator from './VerificationIndicator';
 import './environment-verification.css';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
+import { loggers } from '../common/utils/debugUtils.js';
+
+const log = loggers.verification;
 
 // Section component for grouping related indicators
 const VerificationSection = ({ title, children }) => {
@@ -28,22 +31,22 @@ const EnvironmentVerification = ({
   onFixCommand  // New prop for fix command handler
 }) => {
   const [expanded, setExpanded] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Handle manual refresh of verification
-  const refreshVerification = async () => {
-    if (window.electron) {
-      try {
-        // First, call onInitiateRefresh to set UI to waiting
-        if (onInitiateRefresh) {
-          onInitiateRefresh();
-        }
-        // Then, trigger the backend refresh
-        const results = await window.electron.refreshEnvironmentVerification();
-        debugLog('Refreshed environment verification results:', results);
-        // App.jsx will handle updating the statuses via its event listener
-      } catch (error) {
-        console.error('Error refreshing environment verification:', error);
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      // Call the initiator immediately when refresh starts
+      if (onInitiateRefresh) {
+        onInitiateRefresh();
       }
+      const results = await window.electron.refreshEnvironmentVerification();
+      log.debug('Refreshed environment verification results:', results);
+    } catch (error) {
+      log.error('Error refreshing environment verification:', error);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -148,7 +151,7 @@ const EnvironmentVerification = ({
             className="refresh-button" 
             onClick={(e) => {
               e.stopPropagation();
-              refreshVerification();
+              handleRefresh();
             }}
             title="Refresh environment verification"
           >

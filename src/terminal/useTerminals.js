@@ -1,12 +1,15 @@
 import { useState, useCallback } from 'react';
 import { evaluateCommandCondition } from '../common/utils/evalUtils';
+import { loggers } from '../common/utils/debugUtils.js';
+
+const log = loggers.terminal;
 
 export const useTerminals = (configState, configSidebarCommands, noRunMode) => {
     const [terminals, setTerminals] = useState([]);
     const [activeTerminalId, setActiveTerminalId] = useState(null);
 
     const openTabs = useCallback((tabConfigs) => {
-        debugLog('useTerminals: openTabs called with', tabConfigs.length, 'tabs');
+        log.debug('openTabs called with', tabConfigs.length, 'tabs');
         setTerminals([]);
         let firstId = null;
         const newTerminals = tabConfigs.map((tab, idx) => {
@@ -14,7 +17,7 @@ export const useTerminals = (configState, configSidebarCommands, noRunMode) => {
             if (idx === 0) firstId = terminalId;
 
             if (tab.type === 'error') {
-                debugLog(`useTerminals: Creating error terminal ${terminalId}`);
+                log.debug(`Creating error terminal ${terminalId}`);
                 return {
                     id: terminalId,
                     title: tab.title || tab.section,
@@ -26,7 +29,7 @@ export const useTerminals = (configState, configSidebarCommands, noRunMode) => {
                 };
             } else {
                 const status = noRunMode ? 'idle' : 'pending_spawn';
-                debugLog(`useTerminals: Creating terminal ${terminalId} with status ${status}, command:`, tab.command);
+                log.debug(`Creating terminal ${terminalId} with status ${status}, command:`, tab.command);
                 return {
                     id: terminalId,
                     title: tab.title || tab.section,
@@ -42,8 +45,7 @@ export const useTerminals = (configState, configSidebarCommands, noRunMode) => {
                 };
             }
         });
-
-        debugLog('useTerminals: Setting terminals:', newTerminals);
+        log.debug('Setting terminals:', newTerminals);
         setTerminals(newTerminals);
         if (firstId) setActiveTerminalId(firstId);
     }, [noRunMode]);

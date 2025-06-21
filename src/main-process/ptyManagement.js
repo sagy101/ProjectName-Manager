@@ -1,15 +1,18 @@
 const os = require('os');
 const path = require('path');
 const { exec } = require('child_process');
+const { loggers } = require('../common/utils/debugUtils.js');
+
+const logger = loggers.pty;
 
 // Try to require node-pty, but handle gracefully if it fails
 let pty = null;
 try {
   pty = require('node-pty');
 } catch (error) {
-  console.warn('node-pty module failed to load:', error.message);
+  logger.warn('node-pty module failed to load:', error.message);
   if (process.env.NODE_ENV === 'test') {
-    debugLog('Continuing in test mode without node-pty...');
+    logger.debug('Continuing in test mode without node-pty...');
     // Create a mock pty object for tests
     pty = {
       spawn: () => {
@@ -36,7 +39,9 @@ function getChildProcesses(parentPid) {
 
     exec(command, (error, stdout, stderr) => {
       if (error) {
-        console.error(`[PTY MONITOR] Error executing process list command: ${stderr}`);
+        if (stderr) {
+          logger.error(`[PTY MONITOR] Error executing process list command: ${stderr}`);
+        }
         return reject(error);
       }
 
@@ -301,7 +306,7 @@ function startProcessMonitoring(terminalId, shellPid, mainWindow) {
         }
       }
     } catch (error) {
-      console.error(`[PTY MONITOR] Error monitoring processes for terminal ${terminalId}:`, error);
+      logger.error(`[PTY MONITOR] Error monitoring processes for terminal ${terminalId}:`, error);
     }
   }, 1000); // Check every second
 
@@ -312,7 +317,7 @@ function startProcessMonitoring(terminalId, shellPid, mainWindow) {
 // Function to spawn a PTY process (matching original main.js signature)
 function spawnPTY(command, terminalId, cols = 80, rows = 24, projectRoot, mainWindow) {
   if (activeProcesses[terminalId]) {
-    console.warn(`Terminal ${terminalId} already has an active process.`);
+    logger.warn(`Terminal ${terminalId} already has an active process.`);
     return;
   }
 
@@ -331,7 +336,7 @@ function spawnPTY(command, terminalId, cols = 80, rows = 24, projectRoot, mainWi
 
   // Check if pty is available
   if (!pty || typeof pty.spawn !== 'function') {
-    console.error(`node-pty not available for terminal ${terminalId}. Cannot spawn PTY process.`);
+    logger.error(`node-pty not available for terminal ${terminalId}. Cannot spawn PTY process.`);
     if (mainWindow) {
       mainWindow.webContents.send('pty-output', { 
         terminalId, 
@@ -349,7 +354,7 @@ function spawnPTY(command, terminalId, cols = 80, rows = 24, projectRoot, mainWi
   } else {
     shell = process.env.SHELL || '/bin/bash';
   }
-  debugLog(`Using shell: ${shell} with args: [${shellArgs.join(', ')}] for PTY on platform: ${os.platform()}`);
+  logger.debug(`Using shell: ${shell} with args: [${shellArgs.join(', ')}] for PTY on platform: ${os.platform()}`);
 
   let ptyProcess;
   try {
@@ -361,7 +366,7 @@ function spawnPTY(command, terminalId, cols = 80, rows = 24, projectRoot, mainWi
       env: { ...process.env, LANG: 'en_US.UTF-8' }
     });
   } catch (error) {
-    console.error(`Failed to spawn PTY for terminal ${terminalId}:`, error.message);
+    logger.error(`Failed to spawn PTY for terminal ${terminalId}:`, error.message);
     if (mainWindow) {
       mainWindow.webContents.send('pty-output', { 
         terminalId, 
@@ -372,7 +377,7 @@ function spawnPTY(command, terminalId, cols = 80, rows = 24, projectRoot, mainWi
   }
 
   activeProcesses[terminalId] = ptyProcess;
-  debugLog(`PTY spawned for terminal ${terminalId} with PID ${ptyProcess.pid}, executing: ${command}`);
+  logger.debug(`PTY spawned for terminal ${terminalId} with PID ${ptyProcess.pid}, executing: ${command}`);
 
   // Execute the command after a short delay to let the shell initialize
   setTimeout(() => {
@@ -463,7 +468,7 @@ function spawnPTY(command, terminalId, cols = 80, rows = 24, projectRoot, mainWi
         }
       }
     } catch (e) {
-      console.error(`Error sending pty-output for terminal ${terminalId}: ${e.message}`);
+      logger.error(`Error sending pty-output for terminal ${terminalId}: ${e.message}`);
     }
   });
 
@@ -492,7 +497,7 @@ function spawnPTY(command, terminalId, cols = 80, rows = 24, projectRoot, mainWi
         mainWindow.webContents.send('process-ended', payload);
       }
     } catch (e) {
-      console.error(`[PTY EXIT] Error sending pty exit info for terminal ${terminalId}: ${e.message}`);
+      logger.error(`[PTY EXIT] Error sending pty exit info for terminal ${terminalId}: ${e.message}`);
     }
   });
 }
@@ -520,7 +525,7 @@ function writeToPTY(terminalId, data) {
     
     ptyProcess.write(data);
   } else {
-    console.warn(`[PTY INPUT] No active PTY found for input on terminal ${terminalId}`);
+    logger.warn(`[PTY INPUT] No active PTY found for input on terminal ${terminalId}`);
   }
 }
 
@@ -531,7 +536,7 @@ function resizePTY(terminalId, cols, rows) {
     try {
       ptyProcess.resize(cols, rows);
     } catch (e) {
-      console.error(`Error resizing PTY for terminal ${terminalId}: ${e.message}`);
+      logger.error(`Error resizing PTY for terminal ${terminalId}: ${e.message}`);
     }
   }
 }
@@ -541,7 +546,7 @@ function killProcess(terminalId, mainWindow) {
   const ptyProcess = activeProcesses[terminalId];
 
   if (ptyProcess) {
-    debugLog(`Attempting to kill PTY process with PID ${ptyProcess.pid} for terminal ${terminalId}`);
+    logger.debug(`Attempting to kill PTY process with PID ${ptyProcess.pid} for terminal ${terminalId}`);
     
     // Emit terminating event
     if (mainWindow) {
@@ -551,24 +556,24 @@ function killProcess(terminalId, mainWindow) {
     try {
       if (os.platform() === 'win32') {
         ptyProcess.kill(); // Default behavior for Windows
-        debugLog(`ptyProcess.kill() called for Windows PID ${ptyProcess.pid} for terminal ${terminalId}`);
+        logger.debug(`ptyProcess.kill() called for Windows PID ${ptyProcess.pid} for terminal ${terminalId}`);
       } else {
         ptyProcess.kill('SIGKILL'); // Use SIGKILL for macOS/Linux
-        debugLog(`ptyProcess.kill('SIGKILL') called for PID ${ptyProcess.pid} for terminal ${terminalId}`);
+        logger.debug(`ptyProcess.kill('SIGKILL') called for PID ${ptyProcess.pid} for terminal ${terminalId}`);
       }
       // The onExit handler will handle cleanup and notification
     } catch (e) {
-      console.error(`Failed to kill PTY process ${ptyProcess.pid}: ${e.message}`);
+      logger.error(`Failed to kill PTY process ${ptyProcess.pid}: ${e.message}`);
       try {
         if (mainWindow) {
           mainWindow.webContents.send('pty-output', { terminalId, output: `\r\nError killing process: ${e.message}\r\n` });
         }
       } catch (sendError) {
-        console.error(`Error sending kill failure message: ${sendError.message}`);
+        logger.error(`Error sending kill failure message: ${sendError.message}`);
       }
     }
   } else {
-    debugLog(`No active PTY process found for terminal ${terminalId} to kill.`);
+    logger.debug(`No active PTY process found for terminal ${terminalId} to kill.`);
     // Still emit terminated event even if process not found
     if (mainWindow) {
       mainWindow.webContents.send('process-terminated', { terminalId });
@@ -608,17 +613,17 @@ function killAllPTYProcesses() {
     const ptyProcess = activeProcesses[terminalId];
     if (ptyProcess) {
       try {
-        debugLog(`Killing PTY for terminal ${terminalId} with PID ${ptyProcess.pid}`);
+        logger.debug(`Killing PTY for terminal ${terminalId} with PID ${ptyProcess.pid}`);
         ptyProcess.kill();
         delete activeProcesses[terminalId];
         killedCount++;
       } catch (e) {
-        console.error(`Error killing PTY for terminal ${terminalId} on app quit: ${e.message}`);
+        logger.error(`Error killing PTY for terminal ${terminalId} on app quit: ${e.message}`);
       }
     }
   }
 
-  debugLog(`Killed ${killedCount} PTY processes during cleanup`);
+  logger.debug(`Killed ${killedCount} PTY processes during cleanup`);
   return { killedCount, totalCount: terminalIds.length };
 }
 

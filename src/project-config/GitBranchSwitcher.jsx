@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { CodeBracketIcon, CheckIcon, XMarkIcon, ArrowPathIcon, MagnifyingGlassIcon, ChevronUpDownIcon } from '@heroicons/react/24/outline';
 import './styles/git-branch-switcher.css';
+import { loggers } from '../common/utils/debugUtils.js';
+
+const logger = loggers.git;
 
 const GitBranchSwitcher = ({ 
   projectPath,
@@ -22,7 +25,7 @@ const GitBranchSwitcher = ({
 
   // Debug: Log when currentBranch changes
   useEffect(() => {
-    debugLog(`GitBranchSwitcher [${projectPath}]: currentBranch changed to "${currentBranch}"`);
+    logger.debug(`GitBranchSwitcher [${projectPath}]: currentBranch changed to "${currentBranch}"`);
   }, [currentBranch, projectPath]);
 
   // Update newBranchName when currentBranch prop changes (e.g., after successful checkout)
@@ -57,7 +60,7 @@ const GitBranchSwitcher = ({
         setLocalBranches([]);
       }
     } catch (err) {
-      console.error('Error during git list branches IPC call:', err);
+      logger.error('Error during git list branches IPC call:', err);
       setError('IPC Error: ' + err.message);
       setLocalBranches([]);
     }
@@ -114,7 +117,7 @@ const GitBranchSwitcher = ({
         }
       }
     } catch (err) {
-      console.error('Error during git checkout IPC call:', err);
+      logger.error('Error during git checkout IPC call:', err);
       const errorMessage = 'IPC Error: ' + err.message;
       setError(errorMessage);
       if (onBranchChangeError) {

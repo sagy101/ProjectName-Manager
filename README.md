@@ -498,14 +498,21 @@ npm run rebuild
 - Verify JSON configuration syntax
 - Review console logs for detailed error messages
 
-### Enabling Debug Logs
-To view detailed logs for troubleshooting, you can start the application with the `DEBUG_LOGS` environment variable.
+### Logging System
+The application uses a centralized logging system that automatically adjusts based on environment:
+
+- **Production**: Only critical errors are logged
+- **Development**: All log levels are shown (errors, warnings, info, debug)  
+- **Override Control**: Use `DEBUG_LOGS` environment variable for explicit control
 
 **Example:**
 ```bash
-DEBUG_LOGS=true npm start
+DEBUG_LOGS=true npm start    # Force all logs (including debug)
+DEBUG_LOGS=false npm start   # Reduce to info level only
+npm start                    # Use environment defaults
 ```
-This will print more verbose logs to the developer console, which can be helpful for diagnosing issues with verifications, command execution, or other internal processes.
+
+All logs include timestamps, module prefixes, and appropriate log levels for easy filtering and debugging.
 
 ### Git Integration Issues
 - Ensure git is installed and configured

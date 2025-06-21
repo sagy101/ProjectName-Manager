@@ -24,6 +24,42 @@ This guide provides an overview of the testing strategy, setup, and different ty
 4. **Minimal Mocking**: Only mock external dependencies, not internal module interactions
 5. **Fast and Reliable**: Tests should run quickly and consistently without flaky failures
 
+<details>
+<summary><strong>Enhanced Logging System</strong></summary>
+
+The application uses a centralized logging system that provides:
+
+- **Structured Logging**: Timestamps, module prefixes, and log levels
+- **Environment-Aware**: Automatic log level adjustment based on NODE_ENV
+- **Override Control**: DEBUG_LOGS environment variable for explicit control
+- **Zero Overhead**: No performance impact in production builds
+- **Module Organization**: Pre-configured loggers for different components
+
+```js
+import { loggers } from '../common/utils/debugUtils.js';
+
+const log = loggers.app; // or .terminal, .git, .health, etc.
+
+log.error('Critical errors only');     // Always shown (ERROR level)
+log.warn('Important warnings');        // Shown when level >= WARN
+log.info('General information');       // Shown when level >= INFO  
+log.debug('Detailed debugging');       // Shown when level >= DEBUG
+```
+
+**Log Level Behavior:**
+- **Production**: Only ERROR level logs (unless DEBUG_LOGS=true)
+- **Development**: All levels (ERROR, WARN, INFO, DEBUG)
+- **DEBUG_LOGS=true**: Force DEBUG level (all logs)
+- **DEBUG_LOGS=false**: Force INFO level (no debug logs)
+
+**Available Loggers:** `app`, `terminal`, `floating`, `autoSetup`, `git`, `import`, `export`, `health`, `pty`, `container`, `verification`
+
+**Output Format:** `[2024-01-15T10:30:45.123Z][MODULE][LEVEL] Message`
+
+This replaces scattered `console.log`/`console.warn`/`console.error` statements with a professional, controllable system.
+
+</details>
+
 ### Test Categories
 
 - **Critical Bug Prevention**: Tests that catch data structure mismatches and compatibility issues

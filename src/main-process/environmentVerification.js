@@ -5,7 +5,9 @@ const fs = require('fs').promises;
 const fsSync = require('fs');
 const { resolveEnvVars, checkPathExists } = require('./mainUtils');
 const { getGitBranch, clearGitBranchCache } = require('./gitManagement');
-const { debugLog } = require('../common/utils/debugUtils');
+const { loggers } = require('../common/utils/debugUtils.js');
+
+const logger = loggers.verification;
 
 // Dynamic cache for environment verification
 let environmentCaches = {
@@ -24,12 +26,14 @@ const VERIFICATIONS_CONFIG_PATH = path.join(__dirname, '..', 'environment-verifi
 const CONFIG_SIDEBAR_ABOUT_PATH = path.join(__dirname, '..', 'project-config', 'config', 'configurationSidebarAbout.json');
 const CONFIG_SIDEBAR_SECTIONS_PATH = path.join(__dirname, '..', 'project-config', 'config', 'configurationSidebarSections.json');
 
-const execCommand = async (commandString) => {
-  debugLog(`Executing command: ${commandString}`);
+// Modified execCommand to use enhanced logging
+async function execCommand(commandString, options = {}) {
+  const { timeout = 15000, forceRefresh = false } = options;
+  logger.debug(`Executing command: ${commandString}`);
   return new Promise((resolve) => {
     // Set a reasonable timeout for commands
     const timeout = setTimeout(() => {
-      console.warn(`Command timed out after 15 seconds: ${commandString}`);
+      logger.warn(`Command timed out after 15 seconds: ${commandString}`);
       resolve({ success: false, stdout: '', stderr: 'Command timed out' });
     }, 15000);
     
@@ -47,20 +51,20 @@ const execCommand = async (commandString) => {
 
       if (nvmDir && fsSync.existsSync(path.join(nvmDir, 'nvm.sh'))) {
         nvmScriptPath = path.join(nvmDir, 'nvm.sh');
-        debugLog(`Found nvm.sh via NVM_DIR: ${nvmScriptPath}`);
+        logger.debug(`Found nvm.sh via NVM_DIR: ${nvmScriptPath}`);
       } else if (fsSync.existsSync(homeNvmPath)) {
         nvmScriptPath = homeNvmPath;
-        debugLog(`Found nvm.sh at default home location: ${nvmScriptPath}`);
+        logger.debug(`Found nvm.sh at default home location: ${nvmScriptPath}`);
       } else if (process.platform === 'darwin' && fsSync.existsSync(homebrewNvmPath)) {
         nvmScriptPath = homebrewNvmPath;
-        debugLog(`Found nvm.sh at Homebrew location: ${nvmScriptPath}`);
+        logger.debug(`Found nvm.sh at Homebrew location: ${nvmScriptPath}`);
       }
 
       if (nvmScriptPath) {
         finalCommand = `. "${nvmScriptPath}" && ${commandString}`; // Ensure path with spaces is quoted
-        debugLog(`Modified nvm command to: ${finalCommand}`);
+        logger.debug(`Modified nvm command to: ${finalCommand}`);
       } else {
-        console.warn('nvm.sh not found via NVM_DIR, ~/.nvm/nvm.sh, or Homebrew path. Running nvm command without explicit sourcing.');
+        logger.warn('nvm.sh not found via NVM_DIR, ~/.nvm/nvm.sh, or Homebrew path. Running nvm command without explicit sourcing.');
       }
     }
     
@@ -76,10 +80,10 @@ const execCommand = async (commandString) => {
       const sStdout = stdout.trim();
       const sStderr = stderr.trim();
       if (error) {
-        console.warn(`Command failed: ${commandString}. Stderr: "${sStderr}". Error:`, error.message);
+        logger.warn(`Command failed: ${commandString}. Stderr: "${sStderr}". Error:`, error.message);
         resolve({ success: false, stdout: sStdout, stderr: sStderr });
       } else {
-        debugLog(`Command succeeded: ${commandString}. Stdout: "${sStdout}"`);
+        logger.debug(`Command succeeded: ${commandString}. Stdout: "${sStdout}"`);
         resolve({ success: true, stdout: sStdout, stderr: sStderr });
       }
     });
@@ -120,14 +124,14 @@ async function verifyEnvironment(mainWindow = null) {
   }
 
   isVerifyingEnvironment = true;
-  debugLog('Starting full environment verification process...');
+  logger.debug('Starting full environment verification process...');
   
   // Log current working directory and project root for debugging
-  debugLog('[ENVIRONMENT VERIFICATION] Starting verification process:');
-  debugLog(`  - process.cwd(): ${process.cwd()}`);
-  debugLog(`  - __dirname: ${__dirname}`);
-  debugLog(`  - projectRoot: ${projectRoot}`);
-  debugLog(`  - projectRoot resolved: ${path.resolve(projectRoot)}`);
+  logger.debug('[ENVIRONMENT VERIFICATION] Starting verification process:');
+  logger.debug(`  - process.cwd(): ${process.cwd()}`);
+  logger.debug(`  - __dirname: ${__dirname}`);
+  logger.debug(`  - projectRoot: ${projectRoot}`);
+  logger.debug(`  - projectRoot resolved: ${path.resolve(projectRoot)}`);
 
   // For generalResults, we'll populate statuses directly. The config will be stored alongside.
   const generalResultsStatuses = {};
@@ -142,7 +146,7 @@ async function verifyEnvironment(mainWindow = null) {
     const parsed = JSON.parse(configAboutFile);
     configSidebarAbout = Array.isArray(parsed) ? parsed : [];
   } catch (err) {
-    console.error('Error reading configurationSidebarAbout.json:', err);
+    logger.error('Error reading configurationSidebarAbout.json:', err);
     configSidebarAbout = []; // Ensure it's always an array
   }
   
@@ -151,7 +155,7 @@ async function verifyEnvironment(mainWindow = null) {
     const sectionsData = JSON.parse(configSectionsFile);
     configSidebarSections = sectionsData.sections || [];
   } catch (err) {
-    console.error('Error reading configurationSidebarSections.json:', err);
+    logger.error('Error reading configurationSidebarSections.json:', err);
     // Continue without test section filtering if this fails
   }
   
@@ -213,7 +217,7 @@ async function verifyEnvironment(mainWindow = null) {
                     title
                   };
                 } else {
-                  console.warn(`Verification ID [${id}] is commandSuccess but no command provided.`);
+                  logger.warn(`Verification ID [${id}] is commandSuccess but no command provided.`);
                   result = 'invalid';
                 }
                 break;
@@ -272,7 +276,7 @@ async function verifyEnvironment(mainWindow = null) {
                     outputStream
                   };
                 } else {
-                  console.warn(`Verification ID [${id}] is outputContains but no command provided.`);
+                  logger.warn(`Verification ID [${id}] is outputContains but no command provided.`);
                   result = 'invalid';
                 }
                 break;
@@ -285,29 +289,29 @@ async function verifyEnvironment(mainWindow = null) {
               case 'pathExists':
                 try {
                   // Add detailed logging for path verification
-                  debugLog(`[GENERAL PATH VERIFICATION] ${id}:`);
-                  debugLog(`  - pathValue: ${pathValue}`);
-                  debugLog(`  - resolvedPathValue: ${resolvedPathValue}`);
-                  debugLog(`  - process.cwd(): ${process.cwd()}`);
-                  debugLog(`  - __dirname: ${__dirname}`);
+                  logger.debug(`[GENERAL PATH VERIFICATION] ${id}:`);
+                  logger.debug(`  - pathValue: ${pathValue}`);
+                  logger.debug(`  - resolvedPathValue: ${resolvedPathValue}`);
+                  logger.debug(`  - process.cwd(): ${process.cwd()}`);
+                  logger.debug(`  - __dirname: ${__dirname}`);
                   
                   const stats = await fs.stat(resolvedPathValue);
                   if (pathType === 'directory' && stats.isDirectory()) result = 'valid';
                   else if (pathType === 'file' && stats.isFile()) result = 'valid';
                   else if (!pathType && (stats.isFile() || stats.isDirectory())) result = 'valid';
                   else result = 'invalid';
-                  debugLog(`  - result: ${result}`);
+                  logger.debug(`  - result: ${result}`);
                 } catch (e) {
-                  debugLog(`  - error: ${e.message}`);
+                  logger.debug(`  - error: ${e.message}`);
                   result = 'invalid';
                 }
                 break;
               default:
-                console.warn(`Unknown checkType: ${checkType} for verification ID [${id}]`);
+                logger.warn(`Unknown checkType: ${checkType} for verification ID [${id}]`);
                 result = 'invalid';
             }
           } catch (execError) {
-            console.error(`Error executing verification for ${title} (ID: ${id}):`, execError);
+            logger.error(`Error executing verification for ${title} (ID: ${id}):`, execError);
             result = 'invalid';
           }
           
@@ -341,7 +345,7 @@ async function verifyEnvironment(mainWindow = null) {
     };
 
   } catch (err) {
-    console.error('Error reading or parsing generalEnvironmentVerifications.json:', err);
+    logger.error('Error reading or parsing generalEnvironmentVerifications.json:', err);
     environmentCaches.general = { 
       statuses: {},
       config: [],
@@ -361,7 +365,7 @@ async function verifyEnvironment(mainWindow = null) {
     // Handle sections that skip verification
     if (skipVerification) {
       environmentCaches[cacheKey] = { status: 'no_specific_checks' };
-      debugLog(`${sectionId} Environment Cache:`, environmentCaches[cacheKey]);
+      logger.debug(`${sectionId} Environment Cache:`, environmentCaches[cacheKey]);
       return;
     }
     
@@ -378,15 +382,15 @@ async function verifyEnvironment(mainWindow = null) {
               : resolveEnvVars(pathValue);
             
             // Add detailed logging for path verification
-            debugLog(`[PATH VERIFICATION] ${id}:`);
-            debugLog(`  - pathValue: ${pathValue}`);
-            debugLog(`  - projectRoot: ${projectRoot}`);
-            debugLog(`  - resolvedPath: ${resolvedPath}`);
-            debugLog(`  - process.cwd(): ${process.cwd()}`);
-            debugLog(`  - __dirname: ${__dirname}`);
+            logger.debug(`[PATH VERIFICATION] ${id}:`);
+            logger.debug(`  - pathValue: ${pathValue}`);
+            logger.debug(`  - projectRoot: ${projectRoot}`);
+            logger.debug(`  - resolvedPath: ${resolvedPath}`);
+            logger.debug(`  - process.cwd(): ${process.cwd()}`);
+            logger.debug(`  - __dirname: ${__dirname}`);
             
             const pathStatus = await checkPathExists(projectRoot, pathValue.slice(2), pathType);
-            debugLog(`  - result: ${pathStatus}`);
+            logger.debug(`  - result: ${pathStatus}`);
             result = pathStatus;
             break;
             
@@ -436,11 +440,11 @@ async function verifyEnvironment(mainWindow = null) {
             break;
             
           default:
-            console.warn(`Unknown checkType: ${checkType} for verification ID [${id}]`);
+            logger.warn(`Unknown checkType: ${checkType} for verification ID [${id}]`);
             result = 'invalid';
         }
       } catch (error) {
-        console.error(`Error checking verification ${id}:`, error);
+        logger.error(`Error checking verification ${id}:`, error);
         result = 'invalid';
       }
       
@@ -458,7 +462,7 @@ async function verifyEnvironment(mainWindow = null) {
     let gitBranch = 'N/A';
     if (directoryPath) {
       if (testSectionMap[sectionId]) {
-        debugLog(`Skipping git branch check for test section: ${sectionId}`);
+        logger.debug(`Skipping git branch check for test section: ${sectionId}`);
         gitBranch = 'N/A';
       } else {
         gitBranch = await getGitBranch(directoryPath);
@@ -471,7 +475,7 @@ async function verifyEnvironment(mainWindow = null) {
       gitBranch
     };
     
-    debugLog(`${sectionId} Environment Cache:`, environmentCaches[cacheKey]);
+    logger.debug(`${sectionId} Environment Cache:`, environmentCaches[cacheKey]);
     
     // Update progress for section completion
     completedCount++;
@@ -487,10 +491,10 @@ async function verifyEnvironment(mainWindow = null) {
   // Wait for all sections to complete
   await Promise.all(sectionPromises);
 
-  debugLog('Overall Environment Verification Completed. Composite Results:\n', JSON.stringify(environmentCaches, null, 2));
+  logger.debug('Overall Environment Verification Completed. Composite Results:\n', JSON.stringify(environmentCaches, null, 2));
 
   isVerifyingEnvironment = false;
-  debugLog('Environment verification completed.');
+  logger.debug('Environment verification completed.');
   
   // Send completion event to frontend
   if (mainWindow) {
@@ -502,7 +506,7 @@ async function verifyEnvironment(mainWindow = null) {
 
 // Function to refresh environment verification
 async function refreshEnvironmentVerification(mainWindow = null) {
-  debugLog('Forcefully refreshing all environment verification data...');
+  logger.debug('Forcefully refreshing all environment verification data...');
 
   // Reset verification state flag to ensure the process runs
   isVerifyingEnvironment = false;
@@ -520,7 +524,7 @@ async function refreshEnvironmentVerification(mainWindow = null) {
     mainWindow.webContents.send('environment-verification-complete', { ...newResults, discoveredVersions });
   }
 
-  debugLog('Environment verification refresh has fully completed.');
+  logger.debug('Environment verification refresh has fully completed.');
   return { ...newResults, discoveredVersions };
 }
 
@@ -551,7 +555,7 @@ function getEnvironmentExportData() {
 
 // Function to re-run a single verification by ID
 async function rerunSingleVerification(verificationId, mainWindow = null) {
-  debugLog(`Re-running single verification: ${verificationId}`);
+  logger.debug(`Re-running single verification: ${verificationId}`);
   
   let found = false;
   let updatedData = null;
@@ -762,11 +766,11 @@ async function rerunSingleVerification(verificationId, mainWindow = null) {
     }
     
     if (!found) {
-      console.warn(`Verification ${verificationId} not found in any configuration`);
+      logger.warn(`Verification ${verificationId} not found in any configuration`);
       return { success: false, error: 'Verification not found' };
     }
     
-    debugLog(`Single verification ${verificationId} completed with result: ${updatedData.result}`);
+    logger.debug(`Single verification ${verificationId} completed with result: ${updatedData.result}`);
     
     // Send updated result to frontend
     if (mainWindow) {
@@ -781,7 +785,7 @@ async function rerunSingleVerification(verificationId, mainWindow = null) {
     };
     
   } catch (error) {
-    console.error(`Error re-running verification ${verificationId}:`, error);
+    logger.error(`Error re-running verification ${verificationId}:`, error);
     return { success: false, error: error.message };
   }
 }

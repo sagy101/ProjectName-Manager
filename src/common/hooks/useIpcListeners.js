@@ -1,4 +1,7 @@
 import { useEffect, useRef } from 'react';
+import { loggers } from '../utils/debugUtils.js';
+
+const logger = loggers.app;
 
 export const useIpcListeners = (setTerminals) => {
     const cleanupFunctions = useRef([]);
@@ -15,7 +18,7 @@ export const useIpcListeners = (setTerminals) => {
                     if (stderr) window.terminals[terminalId].write(stderr, true);
                 }
             } catch (error) {
-                console.error('Error handling direct command output:', error);
+                logger.error('Error handling direct command output:', error);
             }
         };
 

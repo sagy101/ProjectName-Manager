@@ -47,7 +47,7 @@ test('openDevTools warns when electron missing', () => {
   const { getByText } = render(<AppControlSidebar {...props} />);
   fireEvent.click(getByText('Debug'));
   fireEvent.click(getByText('DevTools'));
-  expect(console.warn).toHaveBeenCalledWith('Electron API not available for openDevTools');
+      expect(console.warn).toHaveBeenCalledWith(expect.stringMatching(/\[.*\]\[EXPORT\]\[WARN\]/), 'Electron API not available for openDevTools');
 });
 
 test('reloadApp falls back when electron missing', () => {

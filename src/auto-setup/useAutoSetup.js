@@ -2,8 +2,10 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { AUTO_SETUP_STATUS, COMMAND_EXECUTION_STATUS, SECTION_STATUS, AUTO_SETUP_TERMINAL_CONFIG } from './constants/autoSetupConstants';
 import { collectFixCommands, calculateGroupStatus, generateAutoSetupTerminalId, canGroupStart } from './utils/autoSetupUtils';
 import appConfig from '../project-config/config/configurationSidebarSections.json';
+import { loggers } from '../common/utils/debugUtils.js';
 
-const log = (...args) => console.log('[AutoSetup]', ...args);
+// Use the dedicated auto-setup logger
+const log = loggers.autoSetup;
 
 /**
  * Hook for managing auto setup functionality
@@ -29,7 +31,7 @@ export const useAutoSetup = ({
   
   // Debug status changes
   useEffect(() => {
-    console.log('Auto Setup: Status changed to:', autoSetupStatus);
+    log.info('Status changed to:', autoSetupStatus);
   }, [autoSetupStatus]);
   const [commandGroups, setCommandGroups] = useState([]);
   const [commandStatuses, setCommandStatuses] = useState({});
@@ -38,9 +40,10 @@ export const useAutoSetup = ({
   
   // Debug activeTerminals changes and sync with ref
   useEffect(() => {
-    const timestamp = new Date().toISOString();
-    console.log(`🟠 ACTIVE_TERMINALS: [${timestamp}] activeTerminals changed, size:`, activeTerminals.size, 'keys:', Array.from(activeTerminals.keys()));
-    console.log('🟠 ACTIVE_TERMINALS: Full details:', Array.from(activeTerminals.entries()));
+    const timestamp = new Date().toLocaleTimeString();
+    log.debug(`[ACTIVE_TERMINALS] [${timestamp}] activeTerminals changed, size:`, activeTerminals.size, 'keys:', Array.from(activeTerminals.keys()));
+    log.debug('[ACTIVE_TERMINALS] Full details:', Array.from(activeTerminals.entries()));
+    // Sync state to ref
     activeTerminalsRef.current = activeTerminals;
   }, [activeTerminals]);
   
@@ -85,16 +88,16 @@ export const useAutoSetup = ({
 
   // Handle terminal completion
   const handleTerminalComplete = useCallback((terminalId, status, exitCode) => {
-    log('HANDLE_COMPLETE called:', { terminalId, status, exitCode });
+    log.info('HANDLE_COMPLETE called:', { terminalId, status, exitCode });
     const terminal = activeTerminalsRef.current.get(terminalId);
-    log('HANDLE_COMPLETE: terminal:', terminal);
+    log.info('HANDLE_COMPLETE: terminal:', terminal);
     if (!terminal || !terminal.commandId) {
-      log('HANDLE_COMPLETE: No terminal or commandId for terminalId:', terminalId);
+      log.info('HANDLE_COMPLETE: No terminal or commandId for terminalId:', terminalId);
       return;
     }
     const commandId = terminal.commandId;
     const newStatus = exitCode === 0 ? COMMAND_EXECUTION_STATUS.SUCCESS : (status === 'stopped' ? COMMAND_EXECUTION_STATUS.STOPPED : COMMAND_EXECUTION_STATUS.FAILED);
-    log('HANDLE_COMPLETE: Setting status for command:', commandId, 'to', newStatus);
+    log.info('HANDLE_COMPLETE: Setting status for command:', commandId, 'to', newStatus);
     setCommandStatuses(prev => ({ ...prev, [commandId]: newStatus }));
     setCommandTimeouts(prev => {
       const next = new Map(prev);
@@ -110,11 +113,11 @@ export const useAutoSetup = ({
       return next;
     });
     if (onVerificationRerun && newStatus === COMMAND_EXECUTION_STATUS.SUCCESS) {
-      log('HANDLE_COMPLETE: Re-running verification for:', commandId);
+      log.info('HANDLE_COMPLETE: Re-running verification for:', commandId);
       onVerificationRerun(commandId);
     }
     if (onCommandComplete) {
-      log('HANDLE_COMPLETE: Calling external completion handler for:', terminalId);
+      log.info('HANDLE_COMPLETE: Calling external completion handler for:', terminalId);
       onCommandComplete(terminalId, status, exitCode);
     }
   }, [onCommandComplete, onVerificationRerun]);
@@ -144,9 +147,9 @@ export const useAutoSetup = ({
         showAppNotification?.('Auto Setup completed successfully!', 'success');
       } else {
         const nextGroup = commandGroups[nextGroupIndex];
-        log(`EXECUTE_NEXT_GROUP: Moving to group ${nextGroup.priority}`);
+        log.info(`EXECUTE_NEXT_GROUP: Moving to group ${nextGroup.priority}`);
         nextGroup.commands.forEach(command => {
-          log(`EXECUTE_NEXT_GROUP: Executing command ${command.id}`);
+          log.info(`EXECUTE_NEXT_GROUP: Executing command ${command.id}`);
           executeCommand(command);
         });
       }
@@ -312,14 +315,14 @@ export const useAutoSetup = ({
 
   // Terminate a specific running command
   const terminateCommand = useCallback((command) => {
-    log('TERMINATE button clicked for command:', command.id, command.title);
+    log.info('TERMINATE button clicked for command:', command.id, command.title);
     const activeTerminal = Array.from(activeTerminalsRef.current.entries()).find(
       ([terminalId, terminal]) => terminal.commandId === command.id
     );
-    log('TERMINATE: activeTerminal:', activeTerminal);
+    log.info('TERMINATE: activeTerminal:', activeTerminal);
     if (activeTerminal) {
       const [terminalId, terminal] = activeTerminal;
-      log('TERMINATE: Killing process for terminalId:', terminalId);
+      log.info('TERMINATE: Killing process for terminalId:', terminalId);
       if (window.electron?.killProcess) {
         window.electron.killProcess({ terminalId });
       }
@@ -332,19 +335,19 @@ export const useAutoSetup = ({
         return next;
       });
       // Dispatch custom event for FloatingTerminal
-      log('TERMINATE: Dispatching autoSetupSimulation event for terminalId:', terminalId);
+      log.info('TERMINATE: Dispatching autoSetupSimulation event for terminalId:', terminalId);
       const completionEvent = new CustomEvent('autoSetupSimulation', {
         detail: { terminalId, status: 'stopped', exitCode: 1 }
       });
       window.dispatchEvent(completionEvent);
       // Internal completion
-      log('TERMINATE: Calling handleTerminalComplete for terminalId:', terminalId);
+      log.info('TERMINATE: Calling handleTerminalComplete for terminalId:', terminalId);
       handleTerminalComplete(terminalId, 'stopped', 1);
       setCommandStatuses(prev => ({ ...prev, [command.id]: COMMAND_EXECUTION_STATUS.STOPPED }));
       showAppNotification?.(`Command "${command.title}" terminated by user.`, 'info');
-      log('TERMINATE: Done for command:', command.id);
+      log.info('TERMINATE: Done for command:', command.id);
     } else {
-      log('TERMINATE: No active terminal found for command:', command.id);
+      log.info('TERMINATE: No active terminal found for command:', command.id);
     }
   }, [showAppNotification, handleTerminalComplete]);
 

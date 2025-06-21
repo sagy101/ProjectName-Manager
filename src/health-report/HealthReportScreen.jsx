@@ -1,6 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import './styles/health-report-screen.css';
+import { loggers } from '../common/utils/debugUtils.js';
+
+const log = loggers.health;
 
 const HealthReportScreen = ({ 
   isVisible, 
@@ -11,7 +14,7 @@ const HealthReportScreen = ({
   onRefreshTerminal,
   onFocusTerminal 
 }) => {
-  debugLog('HealthReportScreen: Component rendered or re-rendered.');
+  log.debug('HealthReportScreen: Component rendered or re-rendered.');
   const [containerHealth, setContainerHealth] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -48,7 +51,7 @@ const HealthReportScreen = ({
       return;
     }
     
-    debugLog('HealthReportScreen: fetching container statuses...');
+    log.debug('HealthReportScreen: fetching container statuses...');
     fetchContainerStatuses();
     setIsLoading(false);
     
@@ -58,7 +61,8 @@ const HealthReportScreen = ({
   }, [isVisible, terminalIds]);
 
 
-  const fetchContainerStatuses = async () => {
+  const fetchContainerStatuses = useCallback(async () => {
+    log.debug('HealthReportScreen: fetching container statuses...');
     const updates = {};
     
     for (const terminal of terminals) {
@@ -71,7 +75,7 @@ const HealthReportScreen = ({
                 ? await window.electron.getContainerStatus(containerName) 
                 : 'unknown';
             } catch (error) {
-              console.error(`Error fetching container status for ${containerName}:`, error);
+              log.error(`Error fetching container status for ${containerName}:`, error);
               containerStatuses[containerName] = 'error';
             }
           }
@@ -84,7 +88,7 @@ const HealthReportScreen = ({
       setContainerHealth(prev => ({ ...prev, ...updates }));
     }
     setLastUpdated(Date.now());
-  };
+  }, [terminals]);
 
   const getStatusIcon = (status) => {
     switch (status) {

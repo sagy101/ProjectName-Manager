@@ -1,7 +1,7 @@
 {
   "settings": {
     "projectName": "ISO",
-    "openDevToolsByDefault": false,
+    "openDevToolsByDefault": true,
     "autoSetupTimeoutSeconds": 90,
     "sidebarDefaultExpanded": false,
     "terminalScrollback": 1000,

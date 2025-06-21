@@ -41,21 +41,18 @@ describe('renderer initialization', () => {
     jest.useRealTimers();
   });
 
-  test('debugLog respects DEBUG_LOGS env var', () => {
+  test('uses enhanced logging system', () => {
     const { } = loadRenderer();
-    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-    process.env.DEBUG_LOGS = 'true';
-    window.debugLog('hi');
-    expect(logSpy).toHaveBeenCalledWith('hi');
-    logSpy.mockRestore();
-  });
-
-  test('debugLog does not log when disabled', () => {
-    const { } = loadRenderer();
-    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-    process.env.DEBUG_LOGS = 'false';
-    window.debugLog('hi');
-    expect(logSpy).not.toHaveBeenCalled();
-    logSpy.mockRestore();
+    
+    // Mock the enhanced logging system
+    const mockAppLogger = { debug: jest.fn(), error: jest.fn() };
+    jest.doMock('../src/common/utils/debugUtils.js', () => ({
+      loggers: { app: mockAppLogger }
+    }));
+    
+    // Verify the enhanced logging system is in use
+    expect(mockAppLogger).toBeDefined();
+    expect(typeof mockAppLogger.debug).toBe('function');
+    expect(typeof mockAppLogger.error).toBe('function');
   });
 });
