@@ -4,6 +4,7 @@ import AttachToggle from './AttachToggle';
 import DeploymentOptions from './DeploymentOptions';
 import DropdownSelector from '../common/components/DropdownSelector';
 import ModeSelector from './ModeSelector';
+import InputField from './InputField';
 import { InformationCircleIcon } from '@heroicons/react/24/outline';
 import { STATUS } from '../environment-verification/constants/verificationConstants';
 import VerificationIndicator from '../environment-verification/VerificationIndicator';
@@ -35,6 +36,7 @@ const ConfigSection = ({
   toggleSubSectionEnabled,
   setSubSectionDeploymentType,
   onDropdownChange,
+  setInputFieldValue,
   openFloatingTerminal,
   configSidebarCommands,
   onBranchChangeError,
@@ -54,6 +56,13 @@ const ConfigSection = ({
     buttonsToRender = section.components.customButtons;
   } else if (section.components.customButton) {
     buttonsToRender = [section.components.customButton];
+  }
+
+  let inputFieldsToRender = [];
+  if (section.components.inputFields) {
+    inputFieldsToRender = section.components.inputFields;
+  } else if (section.components.inputField) {
+    inputFieldsToRender = [section.components.inputField];
   }
 
   // Helper function to determine component visibility based on config state
@@ -301,6 +310,25 @@ const ConfigSection = ({
             />
           )}
 
+          {/* Input fields for main section */}
+          {inputFieldsToRender.length > 0 && (
+            <div className="input-fields-container">
+              {inputFieldsToRender
+                .filter(f => isComponentVisible(f.visibleWhen, { ...config, attachState }))
+                .map(field => (
+                  <InputField
+                    key={field.id}
+                    sectionId={section.id}
+                    inputId={field.id}
+                    value={config[field.id] || ''}
+                    onChange={setInputFieldValue}
+                    disabled={isLocked}
+                    placeholder={field.placeholder}
+                  />
+                ))}
+            </div>
+          )}
+
           {/* Mode selector for main section */}
           {section.components.modeSelector && (!section.components.attachToggle?.enabled || isAttached) && (
             <ModeSelector
@@ -348,6 +376,12 @@ const ConfigSection = ({
               {section.components.subSections.map(subSection => {
                 const subSectionConfigKey = `${subSection.id.replace(/-sub$/, '')}Config`;
                 const subSectionConfig = config[subSectionConfigKey] || {};
+                let subInputFields = [];
+                if (subSection.components?.inputFields) {
+                  subInputFields = subSection.components.inputFields;
+                } else if (subSection.components?.inputField) {
+                  subInputFields = [subSection.components.inputField];
+                }
                 return (
                   <div key={subSection.id} className="config-sub-section compact">
                     <div className="sub-section-header compact">
@@ -362,6 +396,25 @@ const ConfigSection = ({
                     </div>
                     {subSectionConfig.enabled && subSection.components && (
                       <div className="section-content compact">
+
+                        {subInputFields.length > 0 && (
+                          <div className="input-fields-container" style={{ padding: '0 0 8px 0' }}>
+                            {subInputFields
+                              .filter(f => isComponentVisible(f.visibleWhen, { ...subSectionConfig, attachState }))
+                              .map(field => (
+                                <InputField
+                                  key={field.id}
+                                  sectionId={subSection.id}
+                                  inputId={field.id}
+                                  value={subSectionConfig[field.id] || ''}
+                                  onChange={setInputFieldValue}
+                                  disabled={isLocked}
+                                  placeholder={field.placeholder}
+                                />
+                              ))}
+                          </div>
+                        )}
+
                         {subSection.components.modeSelector && (
                           <div className="mode-selector-wrapper">
                             <ModeSelector
@@ -397,6 +450,7 @@ const ConfigSection = ({
                               })}
                           </div>
                         )}
+
 
                         {subSection.components.customButtons && subSection.components.customButtons.length > 0 && (
                           <div className="custom-buttons-container">

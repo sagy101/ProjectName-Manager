@@ -32,6 +32,12 @@ export const useProjectConfig = (globalDropdownValues, showTestSections, setNoti
             initialConfig[section.id][`${dd.id}Selected`] = false;
           });
         }
+        if (section.components.inputFields || section.components.inputField) {
+          const fields = section.components.inputFields || [section.components.inputField];
+          fields.forEach(f => {
+            initialConfig[section.id][f.id] = f.default || '';
+          });
+        }
         if (section.components.subSections) {
           section.components.subSections.forEach(subSection => {
             const configKey = `${subSection.id.replace(/-sub$/, '')}Config`;
@@ -47,6 +53,12 @@ export const useProjectConfig = (globalDropdownValues, showTestSections, setNoti
               subSection.components.dropdownSelectors.forEach(dd => {
                 initialConfig[section.id][dd.id] = dd.placeholder || '';
                 initialConfig[section.id][`${dd.id}Selected`] = false;
+              });
+            }
+            if (subSection.components.inputFields || subSection.components.inputField) {
+              const fields = subSection.components.inputFields || [subSection.components.inputField];
+              fields.forEach(f => {
+                initialConfig[section.id][f.id] = f.default || '';
               });
             }
           });
@@ -249,6 +261,16 @@ export const useProjectConfig = (globalDropdownValues, showTestSections, setNoti
     });
   }, []);
 
+  const setInputFieldValue = useCallback((sectionId, inputId, value) => {
+    setConfigState(prevState => ({
+      ...prevState,
+      [sectionId]: {
+        ...prevState[sectionId],
+        [inputId]: value
+      }
+    }));
+  }, []);
+
   return {
     configState,
     attachState,
@@ -261,5 +283,6 @@ export const useProjectConfig = (globalDropdownValues, showTestSections, setNoti
     setMode,
     handleAttachToggle,
     setSectionDropdownValue,
+    setInputFieldValue,
   };
-}; 
+};

@@ -21,6 +21,15 @@
         },
         "infoButton": true,
         "gitBranch": true,
+        "inputField": {
+          "id": "debugPort",
+          "placeholder": "Enter debug port",
+          "default": "5005",
+          "visibleWhen": {
+            "configKey": "attachState.mirror",
+            "hasValue": true
+          }
+        },
         "modeSelector": {
           "options": ["run", "suspend"],
           "labels": ["Run", "Suspend"],
@@ -145,6 +154,15 @@
         },
         "infoButton": true,
         "gitBranch": true,
+        "inputField": {
+          "id": "debugPort",
+          "placeholder": "Enter debug port",
+          "default": "5005",
+          "visibleWhen": {
+            "configKey": "attachState.activity-logger",
+            "hasValue": true
+          }
+        },
         "mainToggle": {
           "validationRequired": {
                         "condition": "gcloudProject && !projectSelectorFallbacks.includes(gcloudProject)",

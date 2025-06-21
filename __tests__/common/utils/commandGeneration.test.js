@@ -44,6 +44,7 @@ describe('Command generation end-to-end', () => {
       mirror: {
         enabled: true,
         mode: 'run',
+        debugPort: '5005',
         frontendConfig: { enabled: false }
       }
     };

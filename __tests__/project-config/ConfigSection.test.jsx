@@ -72,6 +72,17 @@ jest.mock('../../src/common/components/DropdownSelector', () => (props) => {
     );
 });
 
+jest.mock('../../src/project-config/InputField', () => (props) => {
+    const { inputId, onChange, disabled } = props || {};
+    return (
+        <input
+            data-testid={`input-${inputId}`}
+            onChange={(e) => onChange && onChange(props.sectionId, inputId, e.target.value)}
+            disabled={disabled}
+        />
+    );
+});
+
 jest.mock('../../src/project-config/GitBranchSwitcher', () => (props) => {
     const { currentBranch, disabled } = props || {};
     return <div data-testid="git-branch-switcher" data-disabled={disabled}>Branch: {currentBranch}</div>;
@@ -95,6 +106,7 @@ describe('ConfigSection', () => {
             toggleEnabled: jest.fn(),
             toggleSubSectionEnabled: jest.fn(),
             setSubSectionDeploymentType: jest.fn(),
+            setInputFieldValue: jest.fn(),
             onAttachToggle: jest.fn(),
             isAttached: false,
             aboutConfig: aboutData,
@@ -357,5 +369,24 @@ describe('ConfigSection', () => {
         expect(baseProps.setMode).not.toHaveBeenCalled();
         // Check that a notification was shown
         expect(baseProps.showAppNotification).toHaveBeenCalledWith('This feature is not yet implemented.', 'info');
+    });
+
+    it('renders input field when attached and updates value', () => {
+        const section = sectionsData.sections.find(s => s.id === 'section-with-input');
+        const config = { enabled: true, testField: '' };
+        render(
+            <ConfigSection
+                {...baseProps}
+                section={section}
+                config={config}
+                isAttached={true}
+                attachState={{ 'section-with-input': true }}
+            />
+        );
+
+        const input = screen.getByTestId('input-testField');
+        expect(input).toBeInTheDocument();
+        fireEvent.change(input, { target: { value: 'hello' } });
+        expect(baseProps.setInputFieldValue).toHaveBeenCalledWith('section-with-input', 'testField', 'hello');
     });
 }); 

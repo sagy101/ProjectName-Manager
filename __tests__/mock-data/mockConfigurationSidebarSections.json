@@ -109,6 +109,28 @@
           }
         ]
       }
+    },
+    {
+      "id": "section-with-input",
+      "title": "Section with Input",
+      "components": {
+        "toggle": true,
+        "attachToggle": true,
+        "inputField": {
+          "id": "testField",
+          "label": "Test Field",
+          "placeholder": "Enter value...",
+          "visibleWhen": {
+            "configKey": "attachState.section-with-input",
+            "hasValue": true
+          }
+        },
+        "modeSelector": {
+          "options": ["run", "suspend"],
+          "labels": ["Run", "Suspend"],
+          "default": "run"
+        }
+      }
     }
   ]
 }
