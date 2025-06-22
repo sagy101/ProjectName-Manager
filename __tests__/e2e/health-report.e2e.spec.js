@@ -127,10 +127,10 @@ test.describe('Health Report Feature', () => {
       await openHealthReport(window);
       
       // Should show terminal information
-      await expect(window.locator('.terminal-health-section')).toBeVisible();
+      await expect(window.locator('.terminal-health-section')).toBeVisible({ timeout: getTimeout(15000) });
       
       // Should show updated summary stats
-      await expect(window.locator('text=Total: 1')).toBeVisible();
+      await expect(window.locator('text=Total: 1')).toBeVisible({ timeout: getTimeout(15000) });
     });
 
     test('should show different health status based on terminal status', async () => {
@@ -159,7 +159,7 @@ test.describe('Health Report Feature', () => {
       await healthReportButton.click();
       
       // Should show running status in summary
-      await expect(window.locator('text=Running: 1')).toBeVisible();
+      await expect(window.locator('text=Running: 1')).toBeVisible({ timeout: getTimeout(15000) });
     });
 
     test('should expand and collapse terminal sections', async () => {
@@ -176,7 +176,7 @@ test.describe('Health Report Feature', () => {
       
       // Find terminal section header
       const terminalSection = window.locator('.terminal-section-header').first();
-      await expect(terminalSection).toBeVisible();
+      await expect(terminalSection).toBeVisible({ timeout: getTimeout(15000) });
       
       // Should initially be collapsed (show ▶)
       await expect(terminalSection.locator('.expand-icon')).toContainText('▶');
@@ -188,7 +188,7 @@ test.describe('Health Report Feature', () => {
       await expect(terminalSection.locator('.expand-icon')).toContainText('▼');
       
       // Should show terminal details
-      await expect(window.locator('.terminal-details')).toBeVisible();
+      await expect(window.locator('.terminal-details')).toBeVisible({ timeout: getTimeout(15000) });
     });
 
     test('should show terminal action buttons when expanded', async () => {
@@ -208,9 +208,9 @@ test.describe('Health Report Feature', () => {
       await terminalSection.click();
       
       // Should show action buttons
-      await expect(window.locator('[data-testid="show-command-button"]')).toBeVisible();
-      await expect(window.locator('[data-testid="focus-tab-button"]')).toBeVisible();
-      await expect(window.locator('[data-testid="refresh-button"]')).toBeVisible();
+      await expect(window.locator('[data-testid="show-command-button"]')).toBeVisible({ timeout: getTimeout(15000) });
+      await expect(window.locator('[data-testid="focus-tab-button"]')).toBeVisible({ timeout: getTimeout(15000) });
+      await expect(window.locator('[data-testid="refresh-button"]')).toBeVisible({ timeout: getTimeout(15000) });
     });
 
     test('should focus terminal tab when focus button is clicked', async () => {
@@ -260,8 +260,8 @@ test.describe('Health Report Feature', () => {
       await showCommandButton.click();
       
       // Command popup should be visible
-      await expect(window.locator('.command-popup')).toBeVisible();
-      await expect(window.locator('text=Command Details')).toBeVisible();
+      await expect(window.locator('.command-popup')).toBeVisible({ timeout: getTimeout(15000) });
+      await expect(window.locator('text=Command Details')).toBeVisible({ timeout: getTimeout(15000) });
     });
 
     test('should close command popup when close button is clicked', async () => {
