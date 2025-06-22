@@ -31,6 +31,7 @@ These are the primary terminals for executing and monitoring your {ProjectName} 
 -   **Conditional Command Refresh**: Ability to re-run commands with dynamic modifications.
 -   **Tab Overflow Management**: Handles numerous tabs gracefully with a dropdown for overflowed tabs.
 -   **Configurable Appearance**: Font size and scrollback buffer size are configurable via application settings.
+-   **Enhanced Terminal Features**: WebGL acceleration, clipboard integration, clickable links, and search functionality.
 
 ### Tab Information Panel
 
@@ -371,6 +372,31 @@ Each tab maintains its own state:
 - Refresh count
 - Start time
 
+### Enhanced Terminal Features
+
+{ProjectName} Manager includes advanced terminal enhancements powered by xterm.js addons:
+
+#### Search Functionality
+- **Keyboard Shortcut**: `Ctrl+F` (or `Cmd+F` on Mac) to open search
+- **Navigation**: `Enter` for next match, `Shift+Enter` for previous match
+- **Visual Interface**: Floating search bar with controls and status indicators
+- **Case Sensitivity**: Configurable search options
+
+#### Performance & Rendering
+- **WebGL Acceleration**: Hardware-accelerated rendering for smoother performance
+- **Optimized Scrolling**: Enhanced performance with large terminal outputs
+- **Reduced CPU Usage**: More efficient rendering engine
+
+#### Link Detection
+- **Auto-Detection**: URLs in terminal output become automatically clickable
+- **Visual Styling**: Links highlighted in blue with hover effects
+- **External Opening**: URLs open in default system browser
+
+#### Clipboard Integration
+- **Enhanced Copy/Paste**: Improved clipboard operations across platforms
+- **Visual Selection**: Custom highlighting for selected text
+- **Cross-Platform**: Consistent behavior on all operating systems
+
 ### Keyboard Shortcuts
 
 | Shortcut | Action |
@@ -379,6 +405,10 @@ Each tab maintains its own state:
 | Ctrl/Cmd + W | Close current tab |
 | Ctrl/Cmd + Tab | Next tab |
 | Ctrl/Cmd + Shift + Tab | Previous tab |
+| Ctrl/Cmd + F | Open terminal search |
+| Enter (in search) | Find next match |
+| Shift + Enter (in search) | Find previous match |
+| Escape (in search) | Close search |
 
 *Note: Keyboard shortcuts may vary by platform*
 
