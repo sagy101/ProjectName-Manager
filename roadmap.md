@@ -5,30 +5,32 @@
 This roadmap outlines the planned enhancements for ProjectName-Manager, focusing on improved functionality, better state management, and enhanced code maintainability.
 
 ```mermaid
-flowchart TD
-    A[URL Intelligence Mock Mode] --> B[State Management Migration]
-    B --> C[Command Dependencies System]
-    C --> D[Enhanced Mutual Exclusion]
-    D --> E[Code Refactoring]
+timeline
+    title ProjectName-Manager Development Timeline
     
-    A1[Add Mock Mode Verification] --> A2[Enhance Mock Mode Command]
-    B1[Evaluate Options] --> B2[Implementation Strategy] --> B3[Migration Plan]
-    C1[Design Dependency System] --> C2[Implementation] --> C3[Ready State Definition]
-    D1[Extend Toggle System] --> D2[Add Condition Support]
-    E1[Split Large Files] --> E2[Modularity Improvements]
-    
-    A -.-> A1
-    A -.-> A2
-    B -.-> B1
-    B -.-> B2
-    B -.-> B3
-    C -.-> C1
-    C -.-> C2
-    C -.-> C3
-    D -.-> D1
-    D -.-> D2
-    E -.-> E1
-    E -.-> E2
+    Phase 1 : URL Intelligence Mock Mode Enhancement
+           : Add verification for mock mode
+           : Enhance mock mode command
+           
+    Phase 2 : State Management Migration  
+           : Evaluate state management options
+           : Implement Zustand stores
+           : Migrate components incrementally
+           
+    Phase 3 : Command Dependencies System
+           : Design dependency system
+           : Implement dependency checking
+           : Add ready state definitions
+           
+    Phase 4 : Enhanced Mutual Exclusion
+           : Extend toggle system
+           : Add conditional support
+           : Implement across all toggles
+           
+    Phase 5 : Code Refactoring
+           : Split large files (>500 lines)
+           : Improve modularity
+           : Enhance maintainability
 ```
 
 ## Phase 1: URL Intelligence Mock Mode Enhancement
