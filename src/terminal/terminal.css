@@ -17,12 +17,25 @@
   position: relative;
 }
 
+/* Outer terminal container (from TerminalContainer.jsx) */
 .terminal-container {
   flex: 1;
-  padding: 15px;
+  padding: 8px;
   position: relative;
   height: calc(100% - 40px); /* Use percentage instead of vh units */
   overflow: hidden;
+}
+
+/* Inner terminal container (from Terminal.jsx) - no additional padding */
+.terminal-inner-container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  display: none;
+}
+
+.terminal-inner-container.active {
+  display: block;
 }
 
 .output-wrapper {
@@ -248,4 +261,175 @@
 
 .terminal-instance-wrapper.active {
     display: block; /* Or 'flex' if its content requires it, but xterm usually manages its own block-like display */
+}
+
+
+/* Terminal Search Styles */
+.terminal-search-bar {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    min-width: 280px;
+    backdrop-filter: blur(10px);
+    animation: search-appear 0.2s ease-out;
+}
+
+@keyframes search-appear {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.search-input-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+}
+
+.search-input {
+    flex: 1;
+    background-color: #1e1e1e;
+    border: 1px solid #555;
+    border-radius: 4px;
+    color: #f0f0f0;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.search-input:focus {
+    border-color: #007acc;
+    box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
+}
+
+.search-input::placeholder {
+    color: #888;
+}
+
+.search-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.search-btn {
+    background-color: #333;
+    border: 1px solid #555;
+    border-radius: 3px;
+    color: #ddd;
+    cursor: pointer;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-family: inherit;
+    transition: background-color 0.2s, border-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+}
+
+.search-btn:hover:not(:disabled) {
+    background-color: #444;
+    border-color: #666;
+}
+
+.search-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.search-btn.search-close {
+    color: #ff6b6b;
+    font-weight: bold;
+}
+
+.search-btn.search-close:hover {
+    background-color: #ff6b6b;
+    color: white;
+    border-color: #ff6b6b;
+}
+
+.search-results {
+    font-size: 11px;
+    color: #aaa;
+    margin: 0 4px;
+    white-space: nowrap;
+    min-width: 60px;
+    text-align: center;
+}
+
+/* Enhanced Terminal Addons Styles */
+
+/* WebGL Addon - Enhanced performance styles */
+.terminal-inner-container .xterm-screen {
+    /* WebGL addon automatically handles rendering optimization */
+    /* These styles ensure smooth transitions and better visual quality */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
+/* Web Links Addon - Enhanced link styling */
+.terminal-inner-container .xterm-link {
+    color: #4fc3f7 !important;
+    text-decoration: underline;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.terminal-inner-container .xterm-link:hover {
+    color: #81d4fa !important;
+    text-decoration: underline;
+}
+
+/* Clipboard Addon - Visual feedback for copy operations */
+.terminal-inner-container .xterm-selection {
+    background-color: rgba(79, 195, 247, 0.3) !important;
+}
+
+/* Enhanced terminal focus styles for better clipboard integration */
+.terminal-inner-container .xterm-focus .xterm-cursor {
+    background-color: #f0f0f0;
+    color: #1e1e1e;
+}
+
+/* Terminal container enhancements for addon compatibility */
+.terminal-inner-container .xterm {
+    /* Ensure proper rendering for WebGL addon */
+    background-color: transparent;
+}
+
+.terminal-inner-container .xterm-viewport {
+    /* Smooth scrolling for better user experience */
+    scroll-behavior: smooth;
+}
+
+/* Search addon enhancement - highlight matched text */
+.terminal-inner-container .xterm-search-highlight {
+    background-color: rgba(255, 235, 59, 0.6) !important;
+    color: #000 !important;
+    border-radius: 2px;
+}
+
+.terminal-inner-container .xterm-search-highlight-active {
+    background-color: rgba(255, 193, 7, 0.8) !important;
+    color: #000 !important;
+    border-radius: 2px;
+    box-shadow: 0 0 4px rgba(255, 193, 7, 0.5);
 }
