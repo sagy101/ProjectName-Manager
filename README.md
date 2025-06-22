@@ -67,6 +67,7 @@ For complete documentation, see the **[Documentation Index](docs/index.md)**.
 - [Auto Setup Guide](docs/auto-setup-guide.md) - Automated environment setup
 - [Export & Import Tools](docs/config-export-import.md) - Save and restore settings
 - [Architecture Overview](docs/architecture-overview.md) - System design and components
+- [Development Roadmap](roadmap.md) - Planned features and enhancements
 
 ## ⚙️ Configuration Overview
 
