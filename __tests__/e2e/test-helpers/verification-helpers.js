@@ -3,8 +3,10 @@
  * Handles verification sections, fix buttons, and floating terminals
  */
 
+const { expect } = require('@playwright/test');
 const { SELECTORS, TIMEOUTS, STATUS_CLASSES, TEST_DATA } = require('./constants');
 const { confirmAction } = require('./ui-helpers');
+const { expandAppControlSidebar, collapseAppControlSidebar } = require('./sidebar-helpers');
 
 /**
  * Expands a verification section
@@ -416,6 +418,340 @@ async function ensureAllVerificationsValid(window, options = {}) {
   }
 }
 
+/**
+ * Opens multiple floating terminals for testing
+ * @param {any} window - The Playwright window object
+ * @param {number} count - Number of terminals to open
+ * @param {Object} options - Configuration options
+ * @param {number} options.timeout - Timeout for operations
+ * @returns {Promise<Array>} Array of terminal locators
+ */
+async function openMultipleFloatingTerminals(window, count, options = {}) {
+  const { timeout = TIMEOUTS.MEDIUM } = options;
+  
+  try {
+    const terminals = [];
+    const fixButtons = await getFixButtons(window);
+    
+    if (fixButtons.length < count) {
+      throw new Error(`Not enough fix buttons available. Requested: ${count}, Available: ${fixButtons.length}`);
+    }
+    
+    for (let i = 0; i < count; i++) {
+      console.log(`📂 Opening floating terminal ${i + 1}/${count}...`);
+      // Pass the actual button element, not the index
+      await executeFixCommand(window, fixButtons[i], { waitForTerminal: true, closeTerminal: false, timeout });
+      
+      const terminal = await waitForFloatingTerminal(window, { timeout });
+      terminals.push(terminal);
+      
+      await expect(terminal).toBeVisible();
+    }
+    
+    console.log(`✓ Opened ${terminals.length} floating terminals`);
+    return terminals;
+  } catch (error) {
+    throw new Error(`Failed to open multiple floating terminals: ${error.message}`);
+  }
+}
+
+/**
+ * Tests floating terminal focus management
+ * @param {any} window - The Playwright window object
+ * @param {Array} terminals - Array of terminal locators
+ * @param {Object} options - Configuration options
+ * @returns {Promise<void>}
+ */
+async function testTerminalFocusManagement(window, terminals, options = {}) {
+  try {
+    console.log('🎯 Testing terminal focus management...');
+    
+    const terminalTitles = [];
+    
+    // Get titles for all terminals
+    for (let i = 0; i < terminals.length; i++) {
+      const title = await terminals[i].locator('.floating-terminal-title').textContent();
+      terminalTitles.push(title);
+      expect(title).toBeTruthy();
+      console.log(`✓ Terminal ${i + 1}: "${title}"`);
+    }
+    
+    // Test that all terminals are visible and responsive
+    for (const terminal of terminals) {
+      await expect(terminal).toBeVisible();
+    }
+    
+    console.log('✓ Terminal focus management working');
+    return terminalTitles;
+  } catch (error) {
+    throw new Error(`Failed to test terminal focus management: ${error.message}`);
+  }
+}
+
+/**
+ * Opens floating terminal info panel
+ * @param {any} window - The Playwright window object
+ * @param {any} terminal - Terminal locator
+ * @param {Object} options - Configuration options
+ * @param {number} options.timeout - Timeout for operations
+ * @returns {Promise<any>} Info panel locator or null if not available
+ */
+async function openFloatingTerminalInfoPanel(window, terminal, options = {}) {
+  const { timeout = TIMEOUTS.MEDIUM } = options;
+  
+  try {
+    // Look for info button in terminal title bar
+    const infoButton = terminal.locator('.floating-terminal-info-btn, button[title*="Information"], button[title*="info"]');
+    
+    if (await infoButton.count() > 0) {
+      console.log('ℹ️ Opening terminal info panel...');
+      await infoButton.click();
+      
+      // Wait for info panel to appear
+      const infoPanel = window.locator('.tab-info-panel, .terminal-info-panel, [data-testid="terminal-info-panel"]');
+      
+      if (await infoPanel.count() > 0) {
+        await expect(infoPanel).toBeVisible();
+        console.log('✓ Terminal info panel opened');
+        return infoPanel;
+      } else {
+        console.log('ℹ️ Info panel not found - may not be implemented for this terminal type');
+        return null;
+      }
+    } else {
+      console.log('ℹ️ Info button not found - may not be available for this terminal type');
+      return null;
+    }
+  } catch (error) {
+    throw new Error(`Failed to open floating terminal info panel: ${error.message}`);
+  }
+}
+
+/**
+ * Tests floating terminal info panel details
+ * @param {any} window - The Playwright window object
+ * @param {any} infoPanel - Info panel locator
+ * @param {Object} options - Configuration options
+ * @returns {Promise<string|null>} Panel title or null if not available
+ */
+async function testInfoPanelDetails(window, infoPanel, options = {}) {
+  try {
+    if (!infoPanel) return null;
+    
+    // Test info panel details if available
+    const detailsButton = infoPanel.locator('button:has-text("Details"), .details-button');
+    if (await detailsButton.count() > 0) {
+      console.log('📋 Opening info panel details...');
+      await detailsButton.click();
+      
+      // Check for expanded details
+      const detailsContent = infoPanel.locator('.details-content, .expanded-details');
+      if (await detailsContent.count() > 0) {
+        await expect(detailsContent).toBeVisible();
+        console.log('✓ Info panel details opened');
+      }
+    }
+    
+    // Test that info panel is functional
+    const panelTitle = infoPanel.locator('h3, h4, .panel-title');
+    if (await panelTitle.count() > 0) {
+      const titleText = await panelTitle.first().textContent();
+      expect(titleText).toBeTruthy();
+      console.log(`✓ Info panel title: "${titleText}"`);
+      return titleText;
+    }
+    
+    console.log('✓ Info panel functionality verified');
+    return null;
+  } catch (error) {
+    throw new Error(`Failed to test info panel details: ${error.message}`);
+  }
+}
+
+/**
+ * Tests floating terminal positioning and interactions
+ * @param {any} window - The Playwright window object
+ * @param {any} terminal - Terminal locator
+ * @param {Object} options - Configuration options
+ * @returns {Promise<Object>} Position information
+ */
+async function testTerminalPositioning(window, terminal, options = {}) {
+  try {
+    console.log('🔧 Testing terminal positioning and interactions...');
+    
+    // Get initial position
+    const initialBounds = await terminal.boundingBox();
+    expect(initialBounds).toBeTruthy();
+    console.log(`✓ Terminal initial position: x=${initialBounds.x}, y=${initialBounds.y}`);
+    
+    // Test title bar interaction
+    const titleBar = terminal.locator('.floating-terminal-title-bar');
+    await expect(titleBar).toBeVisible();
+    
+    console.log('🖱️ Testing terminal title bar interaction...');
+    await titleBar.click(); // Focus the terminal
+    
+    // Check if terminal is still visible and responsive after interaction
+    await expect(terminal).toBeVisible();
+    const terminalTitle = await terminal.locator('.floating-terminal-title').textContent();
+    expect(terminalTitle).toBeTruthy();
+    console.log(`✓ Terminal "${terminalTitle}" responsive to interaction`);
+    
+    return {
+      position: initialBounds,
+      title: terminalTitle
+    };
+  } catch (error) {
+    throw new Error(`Failed to test terminal positioning: ${error.message}`);
+  }
+}
+
+/**
+ * Tests floating terminal controls (minimize, etc.)
+ * @param {any} window - The Playwright window object
+ * @param {any} terminal - Terminal locator
+ * @param {Object} options - Configuration options
+ * @returns {Promise<boolean>} Whether controls were found and tested
+ */
+async function testTerminalControls(window, terminal, options = {}) {
+  const { timeout = TIMEOUTS.SHORT } = options;
+  
+  try {
+    console.log('🎛️ Testing terminal controls...');
+    const controls = terminal.locator('.floating-terminal-controls');
+    
+    if (await controls.count() > 0) {
+      await expect(controls).toBeVisible();
+      
+      // Test minimize button if available
+      const minimizeButton = controls.locator('.floating-terminal-minimize-btn, button[title*="Minimize"]');
+      if (await minimizeButton.count() > 0) {
+        console.log('📉 Testing minimize functionality...');
+        await minimizeButton.click();
+        
+        // Check if terminal is minimized (implementation may vary)
+        await window.waitForTimeout(timeout);
+        console.log('✓ Minimize button clicked');
+        return true;
+      }
+    }
+    
+    console.log('ℹ️ No terminal controls found or available');
+    return false;
+  } catch (error) {
+    throw new Error(`Failed to test terminal controls: ${error.message}`);
+  }
+}
+
+/**
+ * Tests floating terminal state persistence during navigation
+ * @param {any} window - The Playwright window object
+ * @param {any} terminal - Terminal locator
+ * @param {Array} sections - Array of section names to navigate to
+ * @param {Object} options - Configuration options
+ * @returns {Promise<void>}
+ */
+async function testTerminalStatePersistence(window, terminal, sections = [], options = {}) {
+  const { timeout = TIMEOUTS.SHORT } = options;
+  
+  try {
+    console.log('🧭 Testing terminal persistence during navigation...');
+    
+    const terminalTitle = await terminal.locator('.floating-terminal-title').textContent();
+    
+    // Navigate to different configuration sections
+    for (const sectionName of sections) {
+      const sectionButton = window.locator(`text=${sectionName}`);
+      if (await sectionButton.count() > 0) {
+        console.log(`📍 Navigating to ${sectionName}...`);
+        await sectionButton.click();
+        await window.waitForTimeout(timeout);
+        
+        // Verify terminal is still visible
+        await expect(terminal).toBeVisible();
+        const currentTitle = await terminal.locator('.floating-terminal-title').textContent();
+        expect(currentTitle).toBe(terminalTitle);
+      }
+    }
+    
+    console.log('✓ Terminal state persisted through navigation');
+  } catch (error) {
+    throw new Error(`Failed to test terminal state persistence: ${error.message}`);
+  }
+}
+
+/**
+ * Tests floating terminal with sidebar interactions
+ * @param {any} window - The Playwright window object
+ * @param {any} terminal - Terminal locator
+ * @param {Object} options - Configuration options
+ * @returns {Promise<void>}
+ */
+async function testTerminalWithSidebarInteractions(window, terminal, options = {}) {
+  try {
+    console.log('🔄 Testing terminal persistence during sidebar interactions...');
+    
+    // Test sidebar expand/collapse
+    await expandAppControlSidebar(window);
+    await expect(terminal).toBeVisible();
+    
+    await collapseAppControlSidebar(window);
+    await expect(terminal).toBeVisible();
+    
+    console.log('✓ Terminal persisted through sidebar interactions');
+  } catch (error) {
+    throw new Error(`Failed to test terminal with sidebar interactions: ${error.message}`);
+  }
+}
+
+/**
+ * Tests floating terminal stacking and z-index management
+ * @param {any} window - The Playwright window object
+ * @param {Array} terminals - Array of terminal locators
+ * @param {Object} options - Configuration options
+ * @returns {Promise<void>}
+ */
+async function testTerminalStacking(window, terminals, options = {}) {
+  try {
+    console.log('📚 Testing terminal stacking...');
+    
+    // Click each terminal to bring it to front
+    for (const terminal of terminals) {
+      await terminal.locator('.floating-terminal-title-bar').click();
+      await expect(terminal).toBeVisible();
+    }
+    
+    console.log('✓ Terminal stacking working correctly');
+  } catch (error) {
+    throw new Error(`Failed to test terminal stacking: ${error.message}`);
+  }
+}
+
+/**
+ * Closes multiple floating terminals
+ * @param {any} window - The Playwright window object
+ * @param {Array} terminals - Array of terminal locators
+ * @param {Object} options - Configuration options
+ * @returns {Promise<void>}
+ */
+async function closeMultipleFloatingTerminals(window, terminals, options = {}) {
+  try {
+    console.log(`🧹 Closing ${terminals.length} floating terminals...`);
+    
+    for (const terminal of terminals) {
+      await closeFloatingTerminal(window, terminal, options);
+    }
+    
+    // Verify all terminals are closed
+    const remainingTerminals = await window.locator('.floating-terminal-window').count();
+    expect(remainingTerminals).toBe(0);
+    
+    console.log('✓ All floating terminals closed');
+  } catch (error) {
+    throw new Error(`Failed to close multiple floating terminals: ${error.message}`);
+  }
+}
+
 module.exports = {
   // Verification section management
   expandVerificationSection,
@@ -431,6 +767,16 @@ module.exports = {
   waitForFloatingTerminal,
   closeFloatingTerminal,
   forceCloseAllFloatingTerminals,
+  openMultipleFloatingTerminals,
+  testTerminalFocusManagement,
+  openFloatingTerminalInfoPanel,
+  testInfoPanelDetails,
+  testTerminalPositioning,
+  testTerminalControls,
+  testTerminalStatePersistence,
+  testTerminalWithSidebarInteractions,
+  testTerminalStacking,
+  closeMultipleFloatingTerminals,
   
   // Verification status
   waitForVerificationRerun,

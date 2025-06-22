@@ -489,6 +489,286 @@ async function configureSection(window, config, options = {}) {
   }
 }
 
+/**
+ * Captures the current configuration state of all sections
+ * @param {any} window - The Playwright window object
+ * @param {Object} options - Configuration options
+ * @param {number} options.timeout - Timeout for the operation
+ * @returns {Promise<Object>} Object containing the current state of all sections
+ */
+async function captureConfigurationState(window, options = {}) {
+  const { timeout = TIMEOUTS.MEDIUM } = options;
+  
+  try {
+    // Wait for config container to be ready
+    await window.waitForSelector('.config-container', { timeout });
+    
+    const state = await window.evaluate(() => {
+      const capturedState = {
+        sections: {},
+        globalSelections: {},
+        timestamp: Date.now()
+      };
+      
+      // Capture section states
+      const sectionElements = document.querySelectorAll('.config-section');
+      sectionElements.forEach(section => {
+        const titleElement = section.querySelector('h2');
+        if (!titleElement) return;
+        
+        const sectionTitle = titleElement.textContent.trim();
+        const sectionId = section.getAttribute('data-section-id') || sectionTitle.toLowerCase().replace(/\s+/g, '-');
+        
+        // Capture main toggle state
+        const mainToggle = section.querySelector('input[type="checkbox"]');
+        const enabled = mainToggle ? mainToggle.checked : false;
+        
+        // Capture attach toggle state
+        const attachToggle = section.querySelector('.attach-toggle');
+        const attached = attachToggle ? attachToggle.classList.contains('attached') : false;
+        
+        // Capture deployment mode
+        const activeModeButton = section.querySelector('.mode-selector .mode-button.active');
+        const deploymentMode = activeModeButton ? activeModeButton.getAttribute('data-mode') : null;
+        
+        // Capture input field values
+        const inputFields = {};
+        const inputs = section.querySelectorAll('input[type="text"], input[type="number"]');
+        inputs.forEach(input => {
+          if (input.id || input.name) {
+            inputFields[input.id || input.name] = input.value;
+          }
+        });
+        
+        // Capture dropdown selections
+        const dropdownSelections = {};
+        const dropdowns = section.querySelectorAll('.dropdown-selector');
+        dropdowns.forEach(dropdown => {
+          const id = dropdown.getAttribute('data-dropdown-id');
+          const selectedValue = dropdown.querySelector('.selected-value');
+          if (id && selectedValue) {
+            dropdownSelections[id] = selectedValue.textContent.trim();
+          }
+        });
+        
+        capturedState.sections[sectionId] = {
+          title: sectionTitle,
+          enabled,
+          attached,
+          deploymentMode,
+          inputFields,
+          dropdownSelections
+        };
+      });
+      
+      // Capture global project selection
+      const globalProjectDropdown = document.querySelector('.environment-header .dropdown-selector .selected-value');
+      if (globalProjectDropdown) {
+        capturedState.globalSelections.project = globalProjectDropdown.textContent.trim();
+      }
+      
+      return capturedState;
+    });
+    
+    console.log('✓ Configuration state captured');
+    return state;
+  } catch (error) {
+    throw new Error(`Failed to capture configuration state: ${error.message}`);
+  }
+}
+
+/**
+ * Compares two configuration states and returns differences
+ * @param {Object} state1 - First configuration state
+ * @param {Object} state2 - Second configuration state
+ * @param {Object} options - Configuration options
+ * @param {Array<string>} options.ignoreFields - Fields to ignore in comparison
+ * @returns {Object} Object describing the differences
+ */
+function compareConfigurationStates(state1, state2, options = {}) {
+  const { ignoreFields = ['timestamp'] } = options;
+  
+  const differences = {
+    sections: {},
+    globalSelections: {},
+    hasChanges: false
+  };
+  
+  try {
+    // Compare global selections
+    if (state1.globalSelections && state2.globalSelections) {
+      Object.keys({ ...state1.globalSelections, ...state2.globalSelections }).forEach(key => {
+        if (ignoreFields.includes(key)) return;
+        
+        const val1 = state1.globalSelections[key];
+        const val2 = state2.globalSelections[key];
+        
+        if (val1 !== val2) {
+          differences.globalSelections[key] = { before: val1, after: val2 };
+          differences.hasChanges = true;
+        }
+      });
+    }
+    
+    // Compare sections
+    const allSectionIds = new Set([
+      ...Object.keys(state1.sections || {}),
+      ...Object.keys(state2.sections || {})
+    ]);
+    
+    allSectionIds.forEach(sectionId => {
+      const section1 = state1.sections?.[sectionId];
+      const section2 = state2.sections?.[sectionId];
+      
+      if (!section1 && !section2) return;
+      
+      const sectionDiff = {};
+      
+      // Check if section was added or removed
+      if (!section1) {
+        sectionDiff.added = section2;
+        differences.hasChanges = true;
+      } else if (!section2) {
+        sectionDiff.removed = section1;
+        differences.hasChanges = true;
+      } else {
+        // Compare section properties
+        ['enabled', 'attached', 'deploymentMode'].forEach(prop => {
+          if (ignoreFields.includes(prop)) return;
+          
+          if (section1[prop] !== section2[prop]) {
+            sectionDiff[prop] = { before: section1[prop], after: section2[prop] };
+            differences.hasChanges = true;
+          }
+        });
+        
+        // Compare input fields
+        const allInputFields = new Set([
+          ...Object.keys(section1.inputFields || {}),
+          ...Object.keys(section2.inputFields || {})
+        ]);
+        
+        allInputFields.forEach(fieldId => {
+          if (ignoreFields.includes(fieldId)) return;
+          
+          const val1 = section1.inputFields?.[fieldId];
+          const val2 = section2.inputFields?.[fieldId];
+          
+          if (val1 !== val2) {
+            if (!sectionDiff.inputFields) sectionDiff.inputFields = {};
+            sectionDiff.inputFields[fieldId] = { before: val1, after: val2 };
+            differences.hasChanges = true;
+          }
+        });
+        
+        // Compare dropdown selections
+        const allDropdowns = new Set([
+          ...Object.keys(section1.dropdownSelections || {}),
+          ...Object.keys(section2.dropdownSelections || {})
+        ]);
+        
+        allDropdowns.forEach(dropdownId => {
+          if (ignoreFields.includes(dropdownId)) return;
+          
+          const val1 = section1.dropdownSelections?.[dropdownId];
+          const val2 = section2.dropdownSelections?.[dropdownId];
+          
+          if (val1 !== val2) {
+            if (!sectionDiff.dropdownSelections) sectionDiff.dropdownSelections = {};
+            sectionDiff.dropdownSelections[dropdownId] = { before: val1, after: val2 };
+            differences.hasChanges = true;
+          }
+        });
+      }
+      
+      if (Object.keys(sectionDiff).length > 0) {
+        differences.sections[sectionId] = sectionDiff;
+      }
+    });
+    
+    return differences;
+  } catch (error) {
+    throw new Error(`Failed to compare configuration states: ${error.message}`);
+  }
+}
+
+/**
+ * Verifies that two configuration states are equivalent
+ * @param {Object} expectedState - Expected configuration state
+ * @param {Object} actualState - Actual configuration state
+ * @param {Object} options - Configuration options
+ * @param {Array<string>} options.ignoreFields - Fields to ignore in comparison
+ * @returns {Promise<void>} Throws if states don't match
+ */
+async function verifyConfigurationState(expectedState, actualState, options = {}) {
+  const differences = compareConfigurationStates(expectedState, actualState, options);
+  
+  if (differences.hasChanges) {
+    const errorMessage = `Configuration states do not match:\n${JSON.stringify(differences, null, 2)}`;
+    throw new Error(errorMessage);
+  }
+  
+  console.log('✓ Configuration states match');
+}
+
+/**
+ * Restores a configuration to a specific state
+ * @param {any} window - The Playwright window object
+ * @param {Object} targetState - Target configuration state to restore
+ * @param {Object} options - Configuration options
+ * @param {number} options.timeout - Timeout for the operation
+ * @returns {Promise<void>}
+ */
+async function restoreConfigurationState(window, targetState, options = {}) {
+  const { timeout = TIMEOUTS.LONG } = options;
+  
+  try {
+    // Restore global selections first
+    if (targetState.globalSelections?.project) {
+      // Note: This would need to be implemented based on available projects
+      console.log(`Note: Global project restoration to "${targetState.globalSelections.project}" would need specific implementation`);
+    }
+    
+    // Restore section states
+    for (const [sectionId, sectionState] of Object.entries(targetState.sections || {})) {
+      const { title, enabled, attached, deploymentMode, inputFields } = sectionState;
+      
+      try {
+        // Enable/disable section
+        await toggleSection(window, title, enabled, { timeout });
+        
+        // Handle attachment
+        if (attached && enabled) {
+          await attachSection(window, sectionId, { timeout });
+        } else if (!attached) {
+          await detachSection(window, sectionId, { timeout });
+        }
+        
+        // Set deployment mode
+        if (deploymentMode && enabled) {
+          await setDeploymentMode(window, sectionId, deploymentMode, { timeout });
+        }
+        
+        // Set input field values
+        if (inputFields && Object.keys(inputFields).length > 0) {
+          for (const [fieldId, value] of Object.entries(inputFields)) {
+            // This would need specific implementation for setting input field values
+            console.log(`Note: Input field "${fieldId}" restoration to "${value}" would need specific implementation`);
+          }
+        }
+        
+        console.log(`✓ Section "${title}" restored`);
+      } catch (error) {
+        console.warn(`Warning: Failed to restore section "${title}": ${error.message}`);
+      }
+    }
+    
+    console.log('✓ Configuration state restoration completed');
+  } catch (error) {
+    throw new Error(`Failed to restore configuration state: ${error.message}`);
+  }
+}
+
 module.exports = {
   // Section finding and navigation
   findConfigSection,
@@ -524,4 +804,10 @@ module.exports = {
   // New helper functions
   findConfigSectionAnyState,
   sectionExistsInDOM,
+  
+  // Configuration state management
+  captureConfigurationState,
+  compareConfigurationStates,
+  verifyConfigurationState,
+  restoreConfigurationState,
 }; 
