@@ -389,4 +389,145 @@ describe('ConfigSection', () => {
         fireEvent.change(input, { target: { value: 'hello' } });
         expect(baseProps.setInputFieldValue).toHaveBeenCalledWith('section-with-input', 'testField', 'hello');
     });
+
+    it('handles visibleWhen rules with dot-separated configKey paths', () => {
+        const mockSection = {
+            id: 'test-section',
+            title: 'Test Section',
+            components: {
+                toggle: true,
+                dropdownSelectors: [{
+                    id: 'test-dropdown',
+                    visibleWhen: {
+                        configKey: 'nested.config.value',
+                        hasValue: true
+                    }
+                }]
+            }
+        };
+
+        const config = { 
+            enabled: true,
+            nested: { config: { value: true } }
+        };
+
+        render(<ConfigSection {...baseProps} section={mockSection} config={config} />);
+        
+        // Should render dropdown since nested.config.value === true
+        expect(screen.getByTestId('dropdown-test-dropdown')).toBeInTheDocument();
+    });
+
+    it('handles invalid visibleWhen rules gracefully', () => {
+        console.warn = jest.fn(); // Mock console.warn
+        
+        const mockSection = {
+            id: 'test-section',
+            title: 'Test Section',
+            components: {
+                toggle: true,
+                dropdownSelectors: [{
+                    id: 'test-dropdown',
+                    visibleWhen: {
+                        configKey: null, // Invalid rule
+                        hasValue: true
+                    }
+                }]
+            }
+        };
+
+        render(<ConfigSection {...baseProps} section={mockSection} config={{ enabled: true }} />);
+        
+        // Should still render dropdown (defaults to visible on invalid rule)
+        expect(screen.getByTestId('dropdown-test-dropdown')).toBeInTheDocument();
+        expect(console.warn).toHaveBeenCalledWith(expect.any(String), 'Invalid visibleWhen rule:', expect.any(Object));
+        
+        console.warn.mockRestore();
+    });
+
+    it('handles verification info button click and popover', () => {
+        const section = sectionsData.sections[0];
+        render(<ConfigSection {...baseProps} section={section} config={{ enabled: true }} />);
+        
+        // Find and click the verification info button
+        const infoButton = screen.getByTitle('Show verification details');
+        expect(infoButton).toBeInTheDocument();
+        
+        fireEvent.click(infoButton);
+        
+        // Popover should be visible (though actual popover content depends on about data)
+        const popover = document.querySelector('.config-section-verification-popover');
+        expect(popover).toBeInTheDocument();
+    });
+
+    it('handles sectionPathStatus as string for backward compatibility', () => {
+        const section = sectionsData.sections[0];
+        const props = { 
+            ...baseProps, 
+            sectionPathStatus: 'VALID' // String instead of object
+        };
+        
+        render(<ConfigSection {...props} section={section} config={{ enabled: true }} />);
+        
+        // Should render without errors
+        expect(screen.getByText(section.title)).toBeInTheDocument();
+    });
+
+    it('renders custom buttons array correctly', () => {
+        const mockSection = {
+            id: 'test-section',
+            title: 'Test Section',
+            components: {
+                toggle: true,
+                customButtons: [
+                    { id: 'btn1', label: 'Button 1', commandId: 'cmd1' },
+                    { id: 'btn2', label: 'Button 2', commandId: 'cmd2' }
+                ]
+            }
+        };
+
+        const mockCommands = [
+            { id: 'cmd1', command: { base: 'echo test1' } },
+            { id: 'cmd2', command: { base: 'echo test2' } }
+        ];
+
+        render(
+            <ConfigSection 
+                {...baseProps} 
+                section={mockSection} 
+                config={{ enabled: true }}
+                configSidebarCommands={mockCommands}
+            />
+        );
+
+        expect(screen.getByText('Button 1')).toBeInTheDocument();
+        expect(screen.getByText('Button 2')).toBeInTheDocument();
+        
+        fireEvent.click(screen.getByText('Button 1'));
+        expect(baseProps.openFloatingTerminal).toHaveBeenCalledWith('cmd1', 'Button 1', 'echo test1');
+    });
+
+    it('handles input fields array correctly', () => {
+        const mockSection = {
+            id: 'test-section',
+            title: 'Test Section',
+            components: {
+                toggle: true,
+                inputFields: [
+                    { id: 'field1', placeholder: 'Field 1' },
+                    { id: 'field2', placeholder: 'Field 2' }
+                ]
+            }
+        };
+
+        render(
+            <ConfigSection 
+                {...baseProps} 
+                section={mockSection} 
+                config={{ enabled: true, field1: 'value1', field2: 'value2' }}
+            />
+        );
+
+        expect(screen.getByTestId('input-field1')).toBeInTheDocument();
+        expect(screen.getByTestId('input-field2')).toBeInTheDocument();
+    });
 }); 

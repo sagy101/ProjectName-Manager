@@ -42,7 +42,8 @@ jest.mock('../../src/project-config/hooks/useProjectConfig', () => ({
     toggleSubSectionEnabled: jest.fn(),
     setMode: jest.fn(),
     handleAttachToggle: jest.fn(),
-    setSectionDropdownValue: jest.fn()
+    setSectionDropdownValue: jest.fn(),
+    setInputFieldValue: jest.fn()
   })
 }));
 
@@ -103,6 +104,51 @@ describe('ProjectConfiguration notifications and statuses', () => {
       jest.advanceTimersByTime(5000);
     });
     await waitFor(() => expect(queryByTestId('notification')).toBeNull());
+  });
+
+  test('shows error notification when changing mode while running', async () => {
+    const { getByTestId } = render(<ProjectConfiguration {...baseProps} />);
+    const runButton = getByTestId('run-btn');
+
+    fireEvent.click(runButton); // start
+    await waitFor(() => expect(baseProps.terminalRef.current.openTabs).toHaveBeenCalled());
+    
+    const mirrorProps = [...global.__configSectionCalls].reverse().find(p => p.section.id === 'mirror');
+    act(() => {
+      mirrorProps.setMode('mirror', 'dev', 'sub1');
+    });
+
+    expect(getByTestId('notification').textContent).toBe('Cannot change deployment type while the project is running.');
+  });
+
+  test('shows error notification when changing input field while running', async () => {
+    const { getByTestId } = render(<ProjectConfiguration {...baseProps} />);
+    const runButton = getByTestId('run-btn');
+
+    fireEvent.click(runButton); // start
+    await waitFor(() => expect(baseProps.terminalRef.current.openTabs).toHaveBeenCalled());
+    
+    const mirrorProps = [...global.__configSectionCalls].reverse().find(p => p.section.id === 'mirror');
+    act(() => {
+      mirrorProps.setInputFieldValue('mirror', 'inputId', 'value');
+    });
+
+    expect(getByTestId('notification').textContent).toBe('Cannot change settings while the project is running.');
+  });
+
+  test('shows error notification when toggling subsection while running', async () => {
+    const { getByTestId } = render(<ProjectConfiguration {...baseProps} />);
+    const runButton = getByTestId('run-btn');
+
+    fireEvent.click(runButton); // start
+    await waitFor(() => expect(baseProps.terminalRef.current.openTabs).toHaveBeenCalled());
+    
+    const mirrorProps = [...global.__configSectionCalls].reverse().find(p => p.section.id === 'mirror');
+    act(() => {
+      mirrorProps.toggleSubSectionEnabled('mirror', 'sub1', false);
+    });
+
+    expect(getByTestId('notification').textContent).toBe('Cannot change settings while the project is running.');
   });
 
   test('passes verification statuses to ConfigSection', () => {

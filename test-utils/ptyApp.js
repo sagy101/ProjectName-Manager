@@ -9,7 +9,19 @@ console.log(`CHILD_PID:${child.pid}`);
 
 function cleanup() {
   try {
-    child.kill();
+    // First try SIGTERM
+    child.kill('SIGTERM');
+    
+    // If process is still alive after 50ms, force kill with SIGKILL
+    setTimeout(() => {
+      try {
+        if (child.pid && !child.killed) {
+          child.kill('SIGKILL');
+        }
+      } catch (e) {
+        // ignore
+      }
+    }, 100);
   } catch (e) {
     // ignore
   }

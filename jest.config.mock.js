@@ -13,5 +13,18 @@ module.exports = {
     '^../src/configurationSidebarAbout.json$': '<rootDir>/__tests__/mock-data/mockConfigurationSidebarAbout.json',
     '^../configurationSidebarCommands.json$': '<rootDir>/__tests__/mock-data/mockConfigurationSidebarCommands.json',
     '^../src/configurationSidebarCommands.json$': '<rootDir>/__tests__/mock-data/mockConfigurationSidebarCommands.json'
-  }
+  },
+  
+  // Coverage configuration - matches jest.config.js
+  collectCoverageFrom: [
+    'src/**/*.{js,jsx}',
+    '!src/**/*.test.{js,jsx}',
+    '!src/**/__tests__/**',
+    '!**/node_modules/**',
+    '!**/coverage/**',
+    '!**/dist/**'
+  ],
+  
+  coverageDirectory: 'coverage',
+  coverageReporters: ['text', 'lcov', 'html']
 };

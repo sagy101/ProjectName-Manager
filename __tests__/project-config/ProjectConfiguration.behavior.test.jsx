@@ -5,7 +5,7 @@ import { render, fireEvent, waitFor } from '@testing-library/react';
 // Mock child components to isolate ProjectConfiguration logic
 jest.mock('../../src/project-config/ConfigSection', () => () => <div data-testid="config-section" />);
 jest.mock('../../src/common/components/Notification', () => props => props.isVisible ? <div data-testid="notification">{props.message}</div> : null);
-jest.mock('../../src/stopping-status/StoppingStatusScreen', () => props => props.isVisible ? <div data-testid="stopping">Stopping</div> : null);
+jest.mock('../../src/stopping-status/StoppingStatusScreen', () => props => props.isVisible ? <div data-testid="stopping" onClick={props.onClose}>Stopping</div> : null);
 jest.mock('../../src/project-config/RunButton', () => props => <button data-testid="run-btn" disabled={props.disabled} onClick={props.onClick}>Run</button>);
 
 // Mock generateCommandList to return a deterministic command list
@@ -26,7 +26,8 @@ jest.mock('../../src/project-config/hooks/useProjectConfig', () => ({
     toggleSubSectionEnabled: jest.fn(),
     setMode: jest.fn(),
     handleAttachToggle: jest.fn(),
-    setSectionDropdownValue: jest.fn()
+    setSectionDropdownValue: jest.fn(),
+    setInputFieldValue: jest.fn()
   })
 }));
 
@@ -89,6 +90,55 @@ describe('ProjectConfiguration run logic', () => {
     const newAttach = { sec2: true };
     ref.current.setStateFromImport({ configState: newConfig, attachState: newAttach });
     expect(ref.current.getCurrentState()).toEqual({ configState: { sec1: { enabled: true } }, attachState: {} });
+  });
+
+  test('closes stopping screen when clicked', async () => {
+    const { utils } = setup();
+    const runButton = utils.getByTestId('run-btn');
+
+    // Start execution to trigger stopping screen
+    fireEvent.click(runButton);
+    await waitFor(() => expect(utils.getByTestId('run-btn')).toBeInTheDocument());
+    
+    // Stop execution to show stopping screen
+    fireEvent.click(runButton);
+    
+    // Wait for stopping screen to appear and click to close it
+    await waitFor(() => expect(utils.getByTestId('stopping')).toBeInTheDocument());
+    fireEvent.click(utils.getByTestId('stopping'));
+    
+    // Stopping screen should disappear
+    await waitFor(() => expect(utils.queryByTestId('stopping')).not.toBeInTheDocument());
+  });
+
+  test('handles null terminalRef gracefully', () => {
+    const onIsRunningChange = jest.fn();
+    const utils = render(
+      <ProjectConfiguration
+        projectName="proj"
+        globalDropdownValues={{}}
+        terminalRef={{ current: null }}
+        verificationStatuses={{}}
+        onTriggerRefresh={jest.fn()}
+        showTestSections={false}
+        onConfigStateChange={jest.fn()}
+        onIsRunningChange={onIsRunningChange}
+        openFloatingTerminal={jest.fn()}
+        discoveredVersions={{}}
+        onBranchChangeError={jest.fn()}
+        showAppNotification={jest.fn()}
+        onFixCommand={jest.fn()}
+        isCollapsed={false}
+      />
+    );
+    
+    const runButton = utils.getByTestId('run-btn');
+    
+    // Should not crash when terminalRef.current is null
+    fireEvent.click(runButton);
+    expect(generateCommandList).toHaveBeenCalled();
+    // onIsRunningChange should not be called when terminalRef is null
+    expect(onIsRunningChange).not.toHaveBeenCalledWith(true);
   });
 });
 
