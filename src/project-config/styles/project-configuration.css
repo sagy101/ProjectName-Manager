@@ -11,6 +11,34 @@
   flex-grow: 1;
   overflow-y: auto;
   transition: opacity 0.2s ease;
+  padding: 0px 8px 0px 0px;
+}
+
+/* Enhanced scrollbar styling for config sections */
+#config-sections::-webkit-scrollbar {
+  width: 12px;
+  background: transparent;
+}
+
+#config-sections::-webkit-scrollbar-track {
+  background: rgba(44, 26, 26, 0.3);
+  border-radius: 6px;
+  margin: 2px;
+}
+
+#config-sections::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #4a505c 0%, #353b48 100%);
+  border-radius: 6px;
+  border: 2px solid #2c1a1a;
+  transition: background 0.2s ease;
+}
+
+#config-sections::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #FEB32E 0%, #D97706 100%);
+}
+
+#config-sections::-webkit-scrollbar-thumb:active {
+  background: #FEB32E;
 }
 
 .sidebar.collapsed #config-sections,

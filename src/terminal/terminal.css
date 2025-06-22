@@ -40,14 +40,58 @@
   overflow-y: auto;
 }
 
+/* Enhanced scrollbar styling for output-area */
 .output-area::-webkit-scrollbar {
-  width: 10px;
+  width: 12px;
   background: transparent;
 }
 
+.output-area::-webkit-scrollbar-track {
+  background: rgba(45, 46, 44, 0.3);
+  border-radius: 6px;
+  margin: 2px;
+}
+
 .output-area::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 5px;
+  background: linear-gradient(180deg, #4a505c 0%, #353b48 100%);
+  border-radius: 6px;
+  border: 2px solid #2D2E2C;
+  transition: background 0.2s ease;
+}
+
+.output-area::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #FEB32E 0%, #D97706 100%);
+}
+
+.output-area::-webkit-scrollbar-thumb:active {
+  background: #FEB32E;
+}
+
+/* Enhanced scrollbar styling for xterm viewport */
+.xterm-viewport::-webkit-scrollbar {
+  width: 12px;
+  background: transparent;
+}
+
+.xterm-viewport::-webkit-scrollbar-track {
+  background: rgba(30, 30, 30, 0.3);
+  border-radius: 6px;
+  margin: 2px;
+}
+
+.xterm-viewport::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #4a505c 0%, #353b48 100%);
+  border-radius: 6px;
+  border: 2px solid #1e1e1e;
+  transition: background 0.2s ease;
+}
+
+.xterm-viewport::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #FEB32E 0%, #D97706 100%);
+}
+
+.xterm-viewport::-webkit-scrollbar-thumb:active {
+  background: #FEB32E;
 }
 
 /* Style for error text */
@@ -117,15 +161,27 @@
   }
 }
 
-/* Make sure scrollbars in dropdown are styled */
+/* Enhanced scrollbar styling for dropdown */
 .overflow-dropdown::-webkit-scrollbar {
   width: 8px;
   background: transparent;
 }
 
-.overflow-dropdown::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+.overflow-dropdown::-webkit-scrollbar-track {
+  background: rgba(48, 48, 48, 0.3);
   border-radius: 4px;
+  margin: 2px;
+}
+
+.overflow-dropdown::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #4a505c 0%, #353b48 100%);
+  border-radius: 4px;
+  border: 1px solid #303030;
+  transition: background 0.2s ease;
+}
+
+.overflow-dropdown::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #FEB32E 0%, #D97706 100%);
 }
 
 .overflow-tab {

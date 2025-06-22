@@ -133,7 +133,7 @@
                   "command": "kubectl --context ${kubectlContext} get pods -l app=threat-intelligence --no-headers -o custom-columns=\":metadata.name\"",
                   "parseResponse": "lines",
                   "placeholder": "Select Threat Intel pod...",
-                  "loadingText": "Loading pods...",
+                  "loadingText": "Loading Threat Intel pods...",
                   "errorText": "Error loading Threat Intel pods",
                   "noOptionsText": "No Threat Intel pods found",
                   "dependsOn": "kubectlContext"
