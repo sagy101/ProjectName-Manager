@@ -33,7 +33,6 @@ module.exports = {
     'src/**/*.{js,jsx}',
     '!src/**/*.test.{js,jsx}',
     '!src/**/__tests__/**',
-    '!src/main-process/**', // Exclude main process files from coverage
     '!**/node_modules/**',
     '!**/coverage/**',
     '!**/dist/**'
