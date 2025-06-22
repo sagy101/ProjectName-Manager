@@ -8,6 +8,11 @@ This roadmap outlines the planned enhancements for ProjectName-Manager, focusing
 timeline
     title ProjectName-Manager Development Timeline
     
+    Phase 0 : Deployment & Stabilization
+           : Fix critical bugs
+           : Improve deployment process
+           : Stabilize core functionality
+    
     Phase 1 : URL Intelligence Mock Mode Enhancement
            : Add verification for mock mode
            : Enhance mock mode command
@@ -32,6 +37,27 @@ timeline
            : Improve modularity
            : Enhance maintainability
 ```
+
+## Phase 0: Deployment & Stabilization
+
+### 0.1 Fix Critical Bugs
+- **Priority**: Address any blocking issues preventing normal app operation
+- **Focus areas**: Terminal management, configuration loading, IPC communication
+- **Testing**: Ensure all existing functionality works reliably
+
+### 0.2 Improve Deployment Process
+- **Target**: Streamline build and distribution process
+- **Enhancements**: 
+  - Automated build pipeline
+  - Cross-platform compatibility testing
+  - Package app
+- **Goal**: Make deployment consistent and reliable
+
+### 0.3 Stabilize Core Functionality
+- **Terminal operations**: Ensure PTY management is robust
+- **Configuration management**: Validate config loading/saving reliability
+- **Error handling**: Improve error boundaries and recovery mechanisms
+- **Performance**: Address any memory leaks or performance bottlenecks
 
 ## Phase 1: URL Intelligence Mock Mode Enhancement
 
