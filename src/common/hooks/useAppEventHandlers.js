@@ -108,7 +108,7 @@ export const useAppEventHandlers = ({
     handleToggleNoRunMode,
     handleConfigStateChange,
     handleProjectRunStateChange,
-    handleShowAppNotification,
+    showAppNotification: handleShowAppNotification,
     hideAppNotification,
     handleRefresh,
     toggleMainTerminalWritable,
