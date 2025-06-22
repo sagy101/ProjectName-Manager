@@ -29,20 +29,29 @@ body, html {
   overflow: hidden;
 }
 
-/* Custom scrollbar for sidebar */
+/* Enhanced scrollbar styling for sidebar */
 .sidebar::-webkit-scrollbar {
-  width: 8px;
+  width: 12px;
+  background: transparent;
 }
 
 .sidebar::-webkit-scrollbar-track {
-  background: #343532;
+  background: rgba(58, 59, 56, 0.3);
+  border-radius: 6px;
+  margin: 2px;
 }
 
 .sidebar::-webkit-scrollbar-thumb {
-  background-color: #454642;
-  border-radius: 4px;
+  background: linear-gradient(180deg, #4a505c 0%, #353b48 100%);
+  border-radius: 6px;
+  border: 2px solid #3a3b38;
+  transition: background 0.2s ease;
 }
 
 .sidebar::-webkit-scrollbar-thumb:hover {
-  background-color: #5A5B57;
+  background: linear-gradient(180deg, #FEB32E 0%, #D97706 100%);
+}
+
+.sidebar::-webkit-scrollbar-thumb:active {
+  background: #FEB32E;
 } 
