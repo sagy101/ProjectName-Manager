@@ -58,7 +58,7 @@ describe('useAppEventHandlers', () => {
     expect(result.current).toHaveProperty('handleToggleNoRunMode');
     expect(result.current).toHaveProperty('handleConfigStateChange');
     expect(result.current).toHaveProperty('handleProjectRunStateChange');
-    expect(result.current).toHaveProperty('handleShowAppNotification');
+    expect(result.current).toHaveProperty('showAppNotification');
     expect(result.current).toHaveProperty('hideAppNotification');
     expect(result.current).toHaveProperty('handleRefresh');
     expect(result.current).toHaveProperty('toggleMainTerminalWritable');
@@ -118,11 +118,11 @@ describe('useAppEventHandlers', () => {
     expect(defaultProps.setAppIsProjectRunning).toHaveBeenCalledWith(true);
   });
 
-  test('handleShowAppNotification shows notification with default values', () => {
+  test('showAppNotification shows notification with default values', () => {
     const { result } = renderHook(() => useAppEventHandlers(defaultProps));
     
     act(() => {
-      result.current.handleShowAppNotification('Test message');
+      result.current.showAppNotification('Test message');
     });
     
     expect(defaultProps.setAppNotification).toHaveBeenCalledWith({
@@ -133,11 +133,11 @@ describe('useAppEventHandlers', () => {
     });
   });
 
-  test('handleShowAppNotification shows notification with custom values', () => {
+  test('showAppNotification shows notification with custom values', () => {
     const { result } = renderHook(() => useAppEventHandlers(defaultProps));
     
     act(() => {
-      result.current.handleShowAppNotification('Error message', 'error', 5000);
+      result.current.showAppNotification('Error message', 'error', 5000);
     });
     
     expect(defaultProps.setAppNotification).toHaveBeenCalledWith({
