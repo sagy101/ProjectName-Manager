@@ -202,6 +202,9 @@ const { launchElectron, enableSection, runConfiguration } = require('./test-help
 | `detachSection(window, sectionId)` | Detach a section | config-helpers |
 | `setDeploymentMode(window, sectionId, mode)` | Set deployment mode (run/debug/container) | config-helpers |
 | `selectGlobalProject(window, index)` | Select global project from dropdown | config-helpers |
+| `captureConfigurationState(window, options)` | Capture current configuration state | config-helpers |
+| `verifyConfigurationState(expectedState, actualState, options)` | Verify configuration state matches expected | config-helpers |
+| `compareConfigurationStates(state1, state2, options)` | Compare two configuration states | config-helpers |
 
 ##### Terminal Operations
 
@@ -230,9 +233,27 @@ const { launchElectron, enableSection, runConfiguration } = require('./test-help
 | `setTerminalMode(window, mode)` | Set terminal mode (readonly/writable) | debug-helpers |
 | `showTestSections(window)` | Show test sections in UI | debug-helpers |
 | `hideTestSections(window)` | Hide test sections in UI | debug-helpers |
+| `exportConfiguration(window, options)` | Export current configuration | debug-helpers |
+| `importConfiguration(window, options)` | Import a configuration | debug-helpers |
+| `waitForImportStatusScreen(window, options)` | Wait for import status screen to appear | debug-helpers |
+| `waitForImportComplete(window, options)` | Wait for import to complete successfully | debug-helpers |
+| `closeImportStatusScreen(window, options)` | Close the import status screen | debug-helpers |
 | `expandVerificationSection(window, title)` | Expand verification section | verification-helpers |
 | `waitForFixButtons(window)` | Wait for fix buttons to appear | verification-helpers |
 | `executeFixCommand(window, buttonIndex)` | Execute a fix command workflow | verification-helpers |
+| `waitForFloatingTerminal(window, options)` | Wait for floating terminal to appear | verification-helpers |
+| `closeFloatingTerminal(window, terminalLocator, options)` | Close a floating terminal | verification-helpers |
+| `forceCloseAllFloatingTerminals(window, options)` | Force close all floating terminals | verification-helpers |
+| `openMultipleFloatingTerminals(window, count, options)` | Open multiple floating terminals for testing | verification-helpers |
+| `testTerminalFocusManagement(window, terminals, options)` | Test terminal focus and title management | verification-helpers |
+| `openFloatingTerminalInfoPanel(window, terminal, options)` | Open terminal info panel | verification-helpers |
+| `testInfoPanelDetails(window, infoPanel, options)` | Test info panel details and functionality | verification-helpers |
+| `testTerminalPositioning(window, terminal, options)` | Test terminal positioning and interactions | verification-helpers |
+| `testTerminalControls(window, terminal, options)` | Test terminal controls (minimize, etc.) | verification-helpers |
+| `testTerminalStatePersistence(window, terminal, sections, options)` | Test terminal persistence during navigation | verification-helpers |
+| `testTerminalWithSidebarInteractions(window, terminal, options)` | Test terminal with sidebar expand/collapse | verification-helpers |
+| `testTerminalStacking(window, terminals, options)` | Test terminal z-index and stacking | verification-helpers |
+| `closeMultipleFloatingTerminals(window, terminals, options)` | Close multiple floating terminals | verification-helpers |
 
 ##### UI Interactions & Utilities
 
@@ -318,6 +339,50 @@ await toggleAllVerifications(window);
 // Test configuration in debug mode
 await enableSection(window, 'Mirror + MariaDB');
 await runConfiguration(window);
+```
+
+**Floating Terminal Testing:**
+```javascript
+// Open multiple floating terminals and test management
+const terminals = await openMultipleFloatingTerminals(window, 3);
+await testTerminalFocusManagement(window, terminals);
+await testTerminalStacking(window, terminals);
+
+// Test individual terminal features
+const terminal = terminals[0];
+const infoPanel = await openFloatingTerminalInfoPanel(window, terminal);
+await testInfoPanelDetails(window, infoPanel);
+await testTerminalPositioning(window, terminal);
+await testTerminalControls(window, terminal);
+
+// Test state persistence
+await testTerminalStatePersistence(window, terminal, ['Mirror + MariaDB', 'GoPM + Agent + Chromium']);
+await testTerminalWithSidebarInteractions(window, terminal);
+
+// Clean up
+await closeMultipleFloatingTerminals(window, terminals);
+```
+
+**Import/Export Configuration Testing:**
+```javascript
+// Capture initial state
+const initialState = await captureConfigurationState(window);
+
+// Export configuration
+await exportConfiguration(window);
+
+// Modify configuration
+await enableSection(window, 'Mirror + MariaDB');
+await attachSection(window, 'mirror');
+
+// Import original configuration
+await importConfiguration(window);
+await waitForImportComplete(window);
+await closeImportStatusScreen(window);
+
+// Verify restoration
+const restoredState = await captureConfigurationState(window);
+await verifyConfigurationState(initialState, restoredState);
 ```
 
 #### Migration from Manual Operations

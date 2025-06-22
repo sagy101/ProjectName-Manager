@@ -389,6 +389,134 @@ async function clickNoRunMode(window) {
   return enableNoRunMode(window);
 }
 
+/**
+ * Exports the current configuration
+ * @param {any} window - The Playwright window object
+ * @param {Object} options - Configuration options
+ * @param {number} options.timeout - Timeout for the operation
+ * @param {string} options.filePath - Optional file path for export (for testing)
+ * @returns {Promise<void>}
+ */
+async function exportConfiguration(window, options = {}) {
+  const { timeout = TIMEOUTS.MEDIUM } = options;
+  
+  try {
+    await openDebugTools(window, { timeout });
+    
+    const exportButton = window.locator(SELECTORS.DEBUG_EXPORT_CONFIG);
+    await exportButton.waitFor({ state: 'visible', timeout });
+    await exportButton.click();
+    
+    // Wait for file dialog to be handled (in real tests, this will open a file dialog)
+    // In e2e tests, we'll need to mock the file dialog response
+    await window.waitForTimeout(TIMEOUTS.ANIMATION);
+    
+    console.log('✓ Configuration export initiated');
+  } catch (error) {
+    throw new Error(`Failed to export configuration: ${error.message}`);
+  }
+}
+
+/**
+ * Imports a configuration
+ * @param {any} window - The Playwright window object
+ * @param {Object} options - Configuration options
+ * @param {number} options.timeout - Timeout for the operation
+ * @param {string} options.filePath - Optional file path for import (for testing)
+ * @returns {Promise<void>}
+ */
+async function importConfiguration(window, options = {}) {
+  const { timeout = TIMEOUTS.MEDIUM } = options;
+  
+  try {
+    await openDebugTools(window, { timeout });
+    
+    const importButton = window.locator(SELECTORS.DEBUG_IMPORT_CONFIG);
+    await importButton.waitFor({ state: 'visible', timeout });
+    await importButton.click();
+    
+    // Wait for file dialog to be handled and import process to start
+    await window.waitForTimeout(TIMEOUTS.ANIMATION);
+    
+    console.log('✓ Configuration import initiated');
+  } catch (error) {
+    throw new Error(`Failed to import configuration: ${error.message}`);
+  }
+}
+
+/**
+ * Waits for import status screen to appear
+ * @param {any} window - The Playwright window object
+ * @param {Object} options - Configuration options
+ * @param {number} options.timeout - Timeout for waiting
+ * @returns {Promise<void>}
+ */
+async function waitForImportStatusScreen(window, options = {}) {
+  const { timeout = TIMEOUTS.LONG } = options;
+  
+  try {
+    const importScreen = window.locator('.import-status-container');
+    await importScreen.waitFor({ state: 'visible', timeout });
+    
+    console.log('✓ Import status screen appeared');
+  } catch (error) {
+    throw new Error(`Import status screen did not appear: ${error.message}`);
+  }
+}
+
+/**
+ * Waits for import to complete successfully
+ * @param {any} window - The Playwright window object
+ * @param {Object} options - Configuration options
+ * @param {number} options.timeout - Timeout for completion
+ * @returns {Promise<void>}
+ */
+async function waitForImportComplete(window, options = {}) {
+  const { timeout = TIMEOUTS.VERY_LONG } = options;
+  
+  try {
+    // Wait for import status screen to appear first
+    await waitForImportStatusScreen(window, options);
+    
+    // Wait for completion message
+    const completionMessage = window.locator('text=/Configuration imported/');
+    await completionMessage.waitFor({ state: 'visible', timeout });
+    
+    // Wait for close button to be enabled (indicating import is fully complete)
+    const closeButton = window.locator('.import-status-container .close-button');
+    await closeButton.waitFor({ state: 'visible', timeout: TIMEOUTS.MEDIUM });
+    
+    console.log('✓ Import completed successfully');
+  } catch (error) {
+    throw new Error(`Import did not complete successfully: ${error.message}`);
+  }
+}
+
+/**
+ * Closes the import status screen
+ * @param {any} window - The Playwright window object
+ * @param {Object} options - Configuration options
+ * @param {number} options.timeout - Timeout for the operation
+ * @returns {Promise<void>}
+ */
+async function closeImportStatusScreen(window, options = {}) {
+  const { timeout = TIMEOUTS.MEDIUM } = options;
+  
+  try {
+    const closeButton = window.locator('.import-status-container .close-button');
+    await closeButton.waitFor({ state: 'visible', timeout });
+    await closeButton.click();
+    
+    // Wait for import screen to disappear
+    const importScreen = window.locator('.import-status-container');
+    await importScreen.waitFor({ state: 'hidden', timeout: TIMEOUTS.ANIMATION });
+    
+    console.log('✓ Import status screen closed');
+  } catch (error) {
+    throw new Error(`Failed to close import status screen: ${error.message}`);
+  }
+}
+
 module.exports = {
   // Debug section management
   isDebugSectionOpen,
@@ -417,4 +545,11 @@ module.exports = {
   // Legacy compatibility
   expandDebugMenu,
   clickNoRunMode,
+  
+  // Import/Export operations
+  exportConfiguration,
+  importConfiguration,
+  waitForImportStatusScreen,
+  waitForImportComplete,
+  closeImportStatusScreen,
 }; 
