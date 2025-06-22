@@ -51,7 +51,7 @@
         "title": "Chromium installed",
         "command": "chromium --version",
         "checkType": "commandSuccess",
-        "fixCommand": "curl -L -o ungoogled-chromium.dmg \"https://github.com/ungoogled-software/ungoogled-chromium-macos/releases/download/125.0.6422.141-1.1/ungoogled-chromium_125.0.6422.141-1.1_arm64-macos.dmg\" && hdiutil attach ungoogled-chromium.dmg && cp -R /Volumes/Chromium/Chromium.app /Applications/ && hdiutil detach /Volumes/Chromium && rm ungoogled-chromium.dmg && open /Applications/Chromium.app",
+        "fixCommand": "cd ./ProjectName-Manager/src/project-config/config/scripts && chmod +x install-ungoogled.sh && install-ungoogled.sh",
         "fixPriority": 3
       }
     ]
