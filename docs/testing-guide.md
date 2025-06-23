@@ -168,7 +168,8 @@ const { launchElectron, enableSection, runConfiguration } = require('./test-help
 
 #### Complete Helper Reference
 
-##### App Lifecycle & Setup
+<details>
+<summary>**App Lifecycle & Setup**</summary>
 
 | Helper | Purpose | Module |
 |--------|---------|--------|
@@ -177,8 +178,11 @@ const { launchElectron, enableSection, runConfiguration } = require('./test-help
 | `teardownTest()` | Clean teardown with terminal cleanup | app-lifecycle |
 | `waitForAppReady(window)` | Wait for app to fully initialize | app-lifecycle |
 | `setupMockVerificationEndpoints()` | Set up mock verification endpoints | app-lifecycle |
+</details>
 
-##### Navigation & Sidebar Operations
+
+<details>
+<summary>**Navigation & Sidebar Operations**</summary>
 
 | Helper | Purpose | Module |
 |--------|---------|--------|
@@ -188,8 +192,11 @@ const { launchElectron, enableSection, runConfiguration } = require('./test-help
 | `expandConfigSidebar(window)` | Expand the Configuration Sidebar | sidebar-helpers |
 | `collapseConfigSidebar(window)` | Collapse the Configuration Sidebar | sidebar-helpers |
 | `isConfigSidebarExpanded(window)` | Check if Configuration Sidebar is expanded | sidebar-helpers |
+</details>
 
-##### Configuration Management
+
+<details>
+<summary>**Configuration Management**</summary>
 
 | Helper | Purpose | Module |
 |--------|---------|--------|
@@ -205,8 +212,11 @@ const { launchElectron, enableSection, runConfiguration } = require('./test-help
 | `captureConfigurationState(window, options)` | Capture current configuration state | config-helpers |
 | `verifyConfigurationState(expectedState, actualState, options)` | Verify configuration state matches expected | config-helpers |
 | `compareConfigurationStates(state1, state2, options)` | Compare two configuration states | config-helpers |
+</details>
 
-##### Terminal Operations
+
+<details>
+<summary>**Terminal Operations**</summary>
 
 | Helper | Purpose | Module |
 |--------|---------|--------|
@@ -220,8 +230,11 @@ const { launchElectron, enableSection, runConfiguration } = require('./test-help
 | `waitForTerminalStatus(window, status)` | Wait for specific terminal status | terminal-status-helpers |
 | `sendCtrlC(window)` | Send Ctrl+C to active terminal | terminal-status-helpers |
 | `runAndInterruptTerminal(window, config)` | Run terminal and interrupt with Ctrl+C | terminal-status-helpers |
+</details>
 
-##### Debug Tools & Verification
+
+<details>
+<summary>**Debug Tools & Verification**</summary>
 
 | Helper | Purpose | Module |
 |--------|---------|--------|
@@ -254,8 +267,11 @@ const { launchElectron, enableSection, runConfiguration } = require('./test-help
 | `testTerminalWithSidebarInteractions(window, terminal, options)` | Test terminal with sidebar expand/collapse | verification-helpers |
 | `testTerminalStacking(window, terminals, options)` | Test terminal z-index and stacking | verification-helpers |
 | `closeMultipleFloatingTerminals(window, terminals, options)` | Close multiple floating terminals | verification-helpers |
+</details>
 
-##### UI Interactions & Utilities
+
+<details>
+<summary>**UI Interactions & Utilities**</summary>
 
 | Helper | Purpose | Module |
 |--------|---------|--------|
@@ -267,8 +283,11 @@ const { launchElectron, enableSection, runConfiguration } = require('./test-help
 | `cancelAction(window, popupSelector)` | Cancel action in popup | ui-helpers |
 | `waitForTextContent(window, selector, text)` | Wait for specific text in element | ui-helpers |
 | `hasClass(window, selector, className)` | Check if element has specific class | ui-helpers |
+</details>
 
-##### Specialized Features
+
+<details>
+<summary>**Specialized Features**</summary>
 
 | Helper | Purpose | Module |
 |--------|---------|--------|
@@ -280,6 +299,8 @@ const { launchElectron, enableSection, runConfiguration } = require('./test-help
 | `checkGroupCompleted(window, priority)` | Check if priority group completed | auto-setup-helpers |
 | `setupFixCommandEnvironment(window)` | Set up complex fix command test environment | fix-command-helpers |
 | `executeFixCommand(window, buttonIndex)` | Execute fix command with confirmation | fix-command-helpers |
+</details>
+
 
 #### Helper Module Organization
 
