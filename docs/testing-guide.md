@@ -12,9 +12,7 @@ This guide covers the testing infrastructure, strategies, and practices used in 
 
 1. **Behavior-Driven**: Test what the code does, not how it does it
 2. **Bug Prevention**: Each test catches specific bugs that have caused real issues
-3. **Data Structure Compatibility**: Ensure frontend/backend contracts remain stable
-4. **Minimal Mocking**: Only mock external dependencies
-5. **Fast and Reliable**: Quick execution without flaky failures
+3. **Fast and Reliable**: Quick execution without flaky failures
 
 <details>
 <summary><strong>Enhanced Logging System</strong></summary>
