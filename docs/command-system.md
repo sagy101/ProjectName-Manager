@@ -132,56 +132,56 @@ Use separate command objects when handling multiple command variants. They:
 ]
 ```
 
-**Example (url-intelligence-sub):**
+**Example (external-service-sub):**
 ```json
 [
   {
-    "id": "url-intelligence-sub",
+    "id": "external-service-sub",
     "conditions": {
       "enabled": true,
-      "url-intelligenceConfig.enabled": true,
-      "url-intelligenceConfig.deploymentType": "mock"
+      "serviceConfig.enabled": true,
+      "serviceConfig.deploymentType": "mock"
     },
     "command": {
-      "base": "cd ./ThreatIntelligenceMock && node inteligence.js",
+      "base": "cd ./MockService && node server.js",
       "prefix": "nvm use <version> && ",
       "tabTitle": {
-        "base": "URL Intelligence (Mock)"
+        "base": "Service (Mock)"
       }
     }
   },
   {
-    "id": "url-intelligence-sub",
+    "id": "external-service-sub",
     "conditions": {
       "enabled": true,
-      "url-intelligenceConfig.enabled": true,
-      "url-intelligenceConfig.deploymentType": "process"
+      "serviceConfig.enabled": true,
+      "serviceConfig.deploymentType": "process"
     },
     "command": {
-      "base": "kubectx ${kubectlContext} && PROOFPOINT_AUTH_CLIENT_SECRET=$(./infrastructure/scripts/decode-secret.sh default env-url-intelligence client_secret) PROOFPOINT_AUTH_CLIENT_ID=$(./infrastructure/scripts/decode-secret.sh default env-url-intelligence client_id) PROOFPOINT_SCORER_CUSTOMER_ID=$(./infrastructure/scripts/decode-secret.sh default env-url-intelligence customer_id) cd ./threatintelligence/url-intelligence && ./gradlew bootRun --args='--spring.profiles.active=staging --proofpoint.proxy.url= --server.port=8083 --threatintelligence.url=http://127.0.0.1:8084'",
+      "base": "cd ./external-service && ./gradlew bootRun",
       "prefix": "nvm use <version> && ",
       "tabTitle": {
-        "base": "URL Intelligence (Process)"
+        "base": "Service (Process)"
       }
     }
   },
   {
-    "id": "url-intelligence-sub",
+    "id": "external-service-sub",
     "conditions": {
       "enabled": true,
-      "url-intelligenceConfig.enabled": true,
-      "url-intelligenceConfig.deploymentType": "forwarding",
-      "urlIntelPodSelected": true
+      "serviceConfig.enabled": true,
+      "serviceConfig.deploymentType": "forwarding",
+      "servicePodSelected": true
     },
     "command": {
-      "base": "cd ./threatintelligence && kubectx ${kubectlContext} && kubectl port-forward ${urlIntelPod} 8083:8080",
+      "base": "cd ./external-service && kubectx ${kubectlContext} && kubectl port-forward ${servicePod} 8083:8080",
       "prefix": "nvm use <version> && ",
       "tabTitle": {
-        "base": "URL Intelligence",
+        "base": "Service",
         "conditionalAppends": [
           {
-            "condition": "url-intelligenceConfig.deploymentType === 'forwarding' && urlIntelPodSelected === true",
-            "append": " (Forwarding ${urlIntelPod})"
+            "condition": "serviceConfig.deploymentType === 'forwarding' && servicePodSelected === true",
+            "append": " (Forwarding ${servicePod})"
           }
         ]
       }
@@ -291,7 +291,7 @@ When defining conditions in `configurationSidebarCommands.json` for a command en
 1.  **Direct Properties of the referenced section's config object**:
     *   If the `id` refers to a **top-level section** (e.g., `"alpha"`), simple keys like `"enabled"` or `"deploymentType"` refer to `configState.alpha.enabled` or `configState.alpha.deploymentType`.
     *   If the `id` refers to a **sub-section** (e.g., `"frontend"`, which is a sub-section of `"alpha"`), simple keys like `"enabled"` or `"deploymentType"` refer to properties within that sub-section's specific config object (e.g., `configState.alpha.frontendConfig.enabled` or `configState.alpha.frontendConfig.deploymentType`).
-    *   **Dropdown Values for Sub-section Dropdowns**: If a dropdown is defined within a sub-section (e.g., `urlIntelPod` in `url-intelligence-sub` which is under `url-intelligence`), its value is stored directly on the parent section's config object (e.g., `configState['url-intelligence'].urlIntelPod`). Conditions for the sub-section command can reference this as `urlIntelPod` (if the command `id` is `url-intelligence-sub`, the variable resolver will check its parent `url-intelligence` for `urlIntelPod`). A boolean flag like `urlIntelPodSelected` is also available on the parent section's config: `configState['url-intelligence'].urlIntelPodSelected`.
+    *   **Dropdown Values for Sub-section Dropdowns**: If a dropdown is defined within a sub-section (e.g., `servicePod` in `external-service-sub` which is under `external-service`), its value is stored directly on the parent section's config object (e.g., `configState['external-service'].servicePod`). Conditions for the sub-section command can reference this as `servicePod` (if the command `id` is `external-service-sub`, the variable resolver will check its parent `external-service` for `servicePod`). A boolean flag like `servicePodSelected` is also available on the parent section's config: `configState['external-service'].servicePodSelected`.
 
 2.  **Properties of Other Top-Level Section Configs (Cross-Section References)**:
     *   Use the format `"sectionNameConfig.propertyName"` (e.g., `"alphaConfig.enabled"`). This will correctly resolve to `configState.alpha.enabled`.
@@ -331,12 +331,12 @@ When defining conditions in `configurationSidebarCommands.json` for a command en
 "frontendConfig.deploymentType": "dev"
 ```
 
-**For a command with `"id": "url-intelligence-sub"` (sub-section of `url-intelligence` with a dropdown `urlIntelPod`):**
+**For a command with `"id": "external-service-sub"` (sub-section of `external-service` with a dropdown `servicePod`):**
 ```json
-// "id": "url-intelligence-sub"
+// "id": "external-service-sub"
 "conditions": {
-  // Checks configState['url-intelligence'].urlIntelPodSelected (boolean flag for the dropdown)
-  "urlIntelPodSelected": true
+  // Checks configState['external-service'].servicePodSelected (boolean flag for the dropdown)
+  "servicePodSelected": true
 }
 ```
 
@@ -489,7 +489,7 @@ The command system handles various error conditions:
 
 ## Integration with Terminal
 
-Generated commands are executed in the integrated terminal system. Variable substitution (e.g., `${kubectlContext}`, `${urlIntelPod}`) occurs before execution, drawing values from the relevant section or parent section's configuration state, or global dropdowns.
+Generated commands are executed in the integrated terminal system. Variable substitution (e.g., `${kubectlContext}`, `${servicePod}`) occurs before execution, drawing values from the relevant section or parent section's configuration state, or global dropdowns.
 
 ### Dropdown Integration
 
