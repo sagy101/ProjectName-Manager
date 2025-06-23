@@ -148,14 +148,6 @@ For processes that exit naturally (not killed by user):
 - **Status Determination**: Distinguishes between successful completion (exit code 0) and errors (non-zero)
 - **Detailed Reporting**: Provides specific exit codes for debugging
 
-#### Process Information Display
-
-The Tab Information Panel shows detailed process information:
-- **Process Count**: Number of active child processes
-- **Process States**: Individual state of each process
-- **Resource Usage**: CPU and memory consumption
-- **Command Hierarchy**: Parent-child process relationships
-
 #### Performance Optimizations
 
 - **Efficient Monitoring**: Only monitors when processes are active
@@ -163,39 +155,6 @@ The Tab Information Panel shows detailed process information:
 - **Resource Management**: Automatic cleanup when processes complete
 - **Smart Filtering**: Avoids monitoring system utilities and shell commands
 
-### Advanced Process Monitoring Details
-
-The terminal system implements comprehensive process monitoring through multiple detection methods:
-
-#### Process Tree Discovery
-- **Method**: Uses `ps -ax -o pid,ppid,state,command,rss,pcpu` on Unix systems
-- **Capability**: Discovers all descendant processes of the shell
-- **Frequency**: Real-time monitoring every second
-- **Filtering**: Intelligently filters out shell utilities and monitoring commands
-
-#### Process State Detection
-The system interprets Unix process states to provide accurate status information:
-
-| State | Status | Description |
-|-------|--------|-------------|
-| `R`, `R+` | running | Process is running or runnable |
-| `S`, `S+` | sleeping | Interruptible sleep (waiting for events) |
-| `D` | waiting | Uninterruptible sleep (I/O operations) |
-| `T` | paused | Stopped by signal (Ctrl+Z) |
-| `Z` | finishing | Zombie process (terminated, not reaped) |
-| `I` | idle | Idle kernel thread |
-
-#### Control Character Detection
-The system monitors input streams for control characters:
-
-- **Ctrl+C (`\x03`)**: Interrupt signal - marks process as terminated by user
-- **Ctrl+D (`\x04`)**: EOF signal - marks process as terminated by EOF
-- **Ctrl+Z (`\x1a`)**: Suspend signal - detected via process state 'T'
-
-#### Exit Code Capture
-- **Method**: Injects `echo "EXIT_CODE:$?"` after natural process completion
-- **Purpose**: Distinguishes between successful completion and error conditions
-- **Pattern Matching**: Monitors output for `EXIT_CODE:(\d+)` pattern
 
 ### Container Status Indicators
 
