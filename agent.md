@@ -24,7 +24,7 @@ For container customization, see [OpenAI docs](https://platform.openai.com/docs/
 
 Testing practices follow `docs/testing-guide.md`:
 
-- Run all tests with `npm test`. Pretest and posttest scripts rebuild `node-pty` for the appropriate environment.
+- Run all tests with `npm test` (Jest + Playwright).
 - Jest tests only: `npm run test:jest` (use `:prod` or `:mock` for different data sets).
 - End-to-end tests: `HEADLESS=true npm run test:e2e` (or `npm run test:e2e:report`).
   - Run `scripts/setup-mock-e2e-env.sh` beforehand to create the mocked toolchain used in CI (the GitHub workflow runs this script as well).
@@ -35,6 +35,9 @@ Testing practices follow `docs/testing-guide.md`:
 - For tests that require the DOM, add `/** @jest-environment jsdom */` at the top of the file.
 - Mock configuration data lives under `__tests__/mock-data`.
 - If `node-pty` build errors occur, run `npx @electron/rebuild -f -w node-pty`.
+- Test categories include bug prevention tests (`__tests__/main-startup.test.js`), unit tests, component rendering tests, and Playwright E2E workflows in `__tests__/e2e`.
+- Use the helper system in `__tests__/e2e/test-helpers` for consistent UI interactions.
+- The mock environment for E2E tests is generated dynamically based on JSON verifications and fix commands.
 
 Every code change must pass:
 1. `npm run test:jest` with no fails.
@@ -42,11 +45,60 @@ Every code change must pass:
 
 ## Additional documentation
 
-- `docs/architecture.md` – system design and data flow
+- `docs/index.md` – entry point for all docs
+- `docs/architecture-overview.md` – high level design
+- `docs/architecture-details.md` – in-depth system architecture
+- `docs/testing-guide.md` – test strategy and commands
 - `docs/configuration-guide.md` – JSON configuration files and concepts
 - `docs/command-system.md` – command generation mechanics
-- `docs/terminal-features.md` – terminal types and behaviour
+- `docs/terminal-features.md` – terminal types and behavior
 - `docs/verification-types.md` – reference for environment verification checks
+- `docs/health-report.md` – service monitoring details
 - `docs/llm-experiments.md` – background on AI tools used during development
 
 These resources provide the context needed when modifying or extending the project.
+
+## Project structure overview
+
+- `src/` – application source code
+  - `main-process/` – Electron main process modules
+  - `common/` – shared components and hooks
+  - `project-config/` – configuration UI and logic
+    - `config/` – JSON configuration files
+  - `environment-verification/` – verification UI and data
+  - `terminal/` – terminal components
+  - `floating-terminal/` – floating terminal system
+  - `auto-setup/` – automated setup feature
+  - `health-report/` – service monitoring
+- `scripts/` – development and CI helper scripts
+- `__tests__/` – Jest and Playwright test suites (unit tests and `e2e/` workflows)
+- `docs/` – in-depth documentation
+
+## Coding conventions
+
+- Use the existing code style and meaningful variable and function names
+- Prefer functional React components with hooks and keep them small
+- Use Tailwind CSS utilities; add custom CSS only when necessary
+- Name component files in `PascalCase.jsx`
+- Follow the modular architecture: keep hooks and components grouped by feature
+- Export custom hooks from their feature folders
+- Use PropTypes for component validation when appropriate
+
+## Pull request guidelines
+
+1. Provide a clear description of the change
+2. Reference related issues when applicable
+3. Ensure all tests pass before submitting
+4. Include screenshots for UI changes
+5. Keep PRs focused on a single concern
+
+## Programmatic checks
+
+Run these commands before merging:
+
+```bash
+npm run lint
+npm run build
+npm run test
+```
+
