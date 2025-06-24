@@ -1,17 +1,29 @@
-# {ProjectName} Manager
+<div align="center">
+  <img src="assets/banner.png" alt="ProjectName Manager Banner" width="100%">
+</div>
 
-> **Note:** The Electron app requires Node.js **22.16.0**. The managed Isolation Project terminal commands may require Node.js **15** or **16** depending on the specific project configuration. It is recommended to use [nvm](https://github.com/nvm-sh/nvm) to manage multiple Node.js versions. Once you have `nvm` installed, you can run `nvm use` in the project directory to automatically switch to the correct version for the Electron runtime.
-
-> The application has been tested on **macOS**. It should also work on **Linux**, though this has not been verified. Windows compatibility is not planned at this time.
-
+<div align="center">
+  
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Electron](https://img.shields.io/badge/Electron-36.5.0-47848F?style=flat&logo=electron&logoColor=white)](https://electronjs.org/)
 [![React](https://img.shields.io/badge/React-19.1.0-61DAFB?style=flat&logo=react&logoColor=black)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-22.16.0-339933?style=flat&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux-lightgrey)](https://github.com/electron/electron)
 
-A powerful, modular desktop application for managing project environments with integrated terminal support, environment verification, and dynamic configuration management.
+</div>
 
-This project is also an experiment in "vibe coding" mixed with solid code practices. I explored a variety of AI tools and language models to see how they complement traditional development. Details can be found in the [AI Coding Experiment](docs/development/ai-experiments.md) document.
+**Born from the frustration of managing complex development environments.**
+
+Every developer knows the pain: switching between projects means hunting down the right Node version, remembering which containers to spin up, and hoping your environment scripts still work. {ProjectName} Manager solves this by providing a unified, intuitive interface that handles environment verification, terminal management, and configuration—all through simple JSON files.
+
+**🚀 Why developers love it:**
+- **Set Once, Use Everywhere** - JSON configurations eliminate setup repetition
+- **Catch Issues Early** - Smart verification prevents deployment headaches
+- **Terminal Mastery** - Integrated terminals with advanced tab management
+- **Safety Net** - Preview and read-only modes protect against mistakes
+
+
+This project is also an experiment in "vibe coding" mixed with good old coding. I explored a variety of AI tools and language models to see how they complement traditional development. Details can be found in the [AI Coding Experiment](docs/development/ai-experiments.md) document.
 
 ## 🚀 Quick Start
 

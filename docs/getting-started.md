@@ -14,7 +14,7 @@ This guide provides detailed instructions for setting up and running {ProjectNam
 ### Important Note on Node.js Versions
 
 - **Electron App**: Requires Node.js 22.16.0
-- **Managed Projects**: The Isolation Project commands that run in the terminals may require Node.js 15 or 16, depending on the specific project configuration
+- **Managed Projects**: The Isolation Project commands that run in the terminals may require different Node.js version other then 22.16.0, depending on the specific project configuration
 
 I recommend using [nvm](https://github.com/nvm-sh/nvm) to manage multiple Node.js versions:
 
