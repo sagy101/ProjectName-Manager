@@ -42,13 +42,9 @@ The Tab Information Panel is accessible via the info button (ℹ) on each main t
 
 #### Features
 
-##### Process Information
+##### Basic Information
 - **Tab Name**: The display name of the terminal tab
 - **Terminal ID**: Unique identifier for the terminal session
-- **Start Time**: When the command was initiated
-- **Elapsed Time**: How long the process has been running
-- **Status**: Current state (idle, running, done, error)
-- **Section**: Which configuration section spawned this tab
 
 ##### Command Management
 - **More Details**: Opens a popup displaying the full command and associated containers
@@ -95,55 +91,18 @@ The Tab Information Panel is accessible via the info button (ℹ) on each main t
 | initializing | Blue | Process is starting up |
 | degraded | Orange | Process is running but some dependencies are not |
 
-### Process Monitoring and Status Detection
+### Basic Status Detection
 
-{ProjectName} Manager implements sophisticated real-time process monitoring to provide accurate status information and detailed process insights.
+{ProjectName} Manager provides basic terminal status information:
 
-#### Real-Time Process Monitoring
+#### Terminal Status Types
 
-The application continuously monitors all descendant processes of each terminal session:
-
-- **Process Tree Discovery**: Uses system commands (`ps` on Unix) to discover all child processes
-- **State Analysis**: Interprets process states to determine overall command status
-- **Resource Tracking**: Monitors CPU usage, memory consumption, and process hierarchy
-- **Intelligent Filtering**: Excludes shell utilities and monitoring commands from status calculations
-
-#### Advanced Status Detection
-
-Beyond basic running/stopped states, the system detects:
-
-| Detailed Status | Description | Trigger |
-|----------------|-------------|---------|
-| **running** | Process actively executing | Any child process in 'R' state |
-| **sleeping** | Process waiting for events | All processes in 'S' state |
-| **waiting** | Process blocked on I/O | Any process in 'D' state |
-| **paused** | Process suspended | Any process in 'T' state (Ctrl+Z) |
-| **finishing** | Process terminating | Zombie processes detected |
-| **stopped** | Process terminated by user | Ctrl+C or Ctrl+D detected |
-| **error** | Process failed | Non-zero exit code |
-| **done** | Process completed successfully | Zero exit code |
-
-#### Control Character Detection
-
-The system monitors input streams for control characters to accurately determine termination reasons:
-
-- **Ctrl+C (`\x03`)**: Interrupt signal - process terminated by user
-- **Ctrl+D (`\x04`)**: EOF signal - process terminated by end-of-file
-- **Ctrl+Z (`\x1a`)**: Suspend signal - process paused (also detected via process state)
-
-#### Exit Code Analysis
-
-For processes that exit naturally (not killed by user):
-- **Automatic Detection**: System injects exit code checking after process completion
-- **Status Determination**: Distinguishes between successful completion (exit code 0) and errors (non-zero)
-- **Detailed Reporting**: Provides specific exit codes for debugging
-
-#### Performance Optimizations
-
-- **Efficient Monitoring**: Only monitors when processes are active
-- **State Caching**: Updates sent only when status actually changes
-- **Resource Management**: Automatic cleanup when processes complete
-- **Smart Filtering**: Avoids monitoring system utilities and shell commands
+| Status | Description |
+|--------|-------------|
+| **running** | Terminal has an active process |
+| **done** | Process completed successfully |
+| **error** | Process encountered an error |
+| **idle** | No active process in terminal |
 
 
 ### Container Status Indicators

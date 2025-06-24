@@ -42,12 +42,17 @@ This documentation is organized into focused guides for different audiences and 
 - [Health Report](features/health-report.md) - Service monitoring and health checks
 - [Environment Verification](features/verification.md) - Verification types and configuration
 
-### 🛠️ [Development Guides](development/)
+#### 🛠️ [Development Guides](development/)
 **Resources for developers and contributors**
 
 - [Testing Guide](development/testing.md) - Test infrastructure and practices
 - [Export & Import](development/export-import.md) - Configuration backup tools
 - [AI Experiments](development/ai-experiments.md) - Development methodology
+
+### 🗺️ [Project Roadmap](roadmap.md)
+**Future development plans and feature roadmap**
+
+- [Development Roadmap](roadmap.md) - Planned enhancements and feature timeline
 
 ## 🗺️ Quick Navigation Guide
 
@@ -65,6 +70,7 @@ This documentation is organized into focused guides for different audiences and 
 | **Monitor running services** | [Health Report Guide](features/health-report.md) |
 | **Configure dynamic dropdowns** | [Dropdown Configuration](configuration/dropdowns.md) |
 | **Export/import configuration** | [Export & Import Guide](development/export-import.md) |
+| **See future development plans** | [Development Roadmap](roadmap.md) |
 
 ## 🔍 Quick Reference
 
