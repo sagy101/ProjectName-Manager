@@ -2,6 +2,11 @@
 
 > One-click automated environment configuration with intelligent fix command execution
 
+<div align="center">
+  <img src="../../assets/auto_setup.png" alt="Auto Setup Interface" width="100%">
+  <p><em>Auto Setup screen showing priority-grouped commands with real-time progress tracking</em></p>
+</div>
+
 ## Overview
 
 Auto Setup transforms the tedious process of environment configuration into a single-click operation. This powerful feature intelligently manages all your fix commands, ensuring your development environment is properly configured in minutes instead of hours.

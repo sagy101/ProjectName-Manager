@@ -2,6 +2,11 @@
 
 > Real-time monitoring dashboard for all services and dependencies
 
+<div align="center">
+  <img src="../../assets/health_report.png" alt="Health Report Dashboard" width="100%">
+  <p><em>Health Report dashboard showing service statuses, container monitoring, and interactive controls</em></p>
+</div>
+
 ## Overview
 
 The Health Report provides a centralized view of your entire {ProjectName} Manager environment. Access it via the status indicator button in the App Control Sidebar for instant visibility into service health.
