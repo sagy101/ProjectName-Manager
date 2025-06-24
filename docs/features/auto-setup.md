@@ -26,7 +26,7 @@ Auto Setup transforms the tedious process of environment configuration into a si
 ### Enhanced No Run Mode
 - **Safe Testing**: Complete workflow testing without system changes
 - **Visual Simulation**: Commands display with clear `[NO-RUN MODE]` indicators
-- **Realistic Timing**: 2-second execution simulation with progress feedback
+- **Realistic Timing**: 8-second execution simulation with progress feedback
 - **Persistent Warning**: Always-visible warning pinned to bottom of screen
 - **Smart Limitations**: Start and retry buttons appropriately disabled for safety
 

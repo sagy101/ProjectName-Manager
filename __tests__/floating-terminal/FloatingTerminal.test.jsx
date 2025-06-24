@@ -49,7 +49,7 @@ describe('FloatingTerminal component', () => {
     render(<FloatingTerminal {...baseProps} isFixCommand={true} onClose={onClose} />);
     act(() => {
       finishCb({ terminalId: 't1', status: 'done', exitCode: 0 });
-      jest.advanceTimersByTime(2100);
+      jest.advanceTimersByTime(10000);
     });
     expect(onClose).toHaveBeenCalledWith('t1');
     jest.useRealTimers();
