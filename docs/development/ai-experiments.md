@@ -139,6 +139,7 @@ Different models serve different roles based on their strengths:
 - Quick assistance and suggestions
 - Real-time code generation
 - Immediate problem resolution
+- Quickly generates simple logos or banners via ChatGPT 4o
 
 ### Interactive Development
 **Gemini 2.0 Flash**
