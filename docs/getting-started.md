@@ -2,6 +2,11 @@
 
 This guide provides detailed instructions for setting up and running {ProjectName} Manager.
 
+<div align="center">
+  <img src="../assets/loading_screen.png" alt="First Launch - Environment Verification" width="80%">
+  <p><em>Initial loading screen showing environment verification progress on first launch</em></p>
+</div>
+
 ## Prerequisites
 
 ### System Requirements

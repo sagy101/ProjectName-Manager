@@ -20,7 +20,10 @@
 - **Terminal Mastery** – integrated terminals with advanced tab management
 - **Safety Net** – preview and read-only modes guard against mistakes
 
-
+<div align="center">
+  <img src="assets/main_screen.png" alt="ProjectName Manager Main Interface" width="100%">
+  <p><em>Main interface showing project configuration with integrated terminals</em></p>
+</div>
 
 This project is also an experiment in "vibe coding" mixed with good old coding. I explored a variety of AI tools and language models to see how they complement traditional development. Details can be found in the [AI Coding Experiment](docs/development/ai-experiments.md) document.
 
@@ -54,6 +57,11 @@ npm start      # In another terminal
 - **Auto-Fix Commands** for one-click remediation
 - **Auto Setup** for automated environment configuration
 - **Generic Dropdown Selectors** with dependency chains
+
+<div align="center">
+  <img src="assets/loading_screen.png" alt="ProjectName Manager Loading Screen" width="60%">
+  <p><em>Loading screen with environment verification progress</em></p>
+</div>
 
 ### Terminal System  
 - **Integrated Terminal** with full PTY support and tab management

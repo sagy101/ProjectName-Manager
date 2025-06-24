@@ -2,6 +2,11 @@
 
 > Comprehensive dual-terminal system with advanced process monitoring and management
 
+<div align="center">
+  <img src="../../assets/terminal.png" alt="Main Terminal Interface" width="100%">
+  <p><em>Main tabbed terminals with integrated command execution and monitoring</em></p>
+</div>
+
 ## Overview
 
 {ProjectName} Manager features a sophisticated terminal system that goes beyond basic command execution. With both main tabbed terminals and floating terminals, plus advanced features like process monitoring and container management, it provides a complete terminal experience tailored for complex development environments.
@@ -324,6 +329,11 @@ Each tab maintains its own state:
 
 Floating terminals provide a flexible way to run and view specific commands or logs in separate, manageable windows.
 
+<div align="center">
+  <img src="../../assets/floating_terminal.png" alt="Floating Terminal Window" width="80%">
+  <p><em>Floating terminal window with draggable interface for auxiliary tasks</em></p>
+</div>
+
 ### Key Features
 
 -   **Purpose-Driven**: Typically launched by `customButton` components within configuration sections for tasks like viewing specific logs or running utility scripts.
@@ -353,6 +363,11 @@ The **App Control Sidebar**, accessible from the right edge of the application, 
 - Access to **Debug Tools** via a gear icon at the bottom
 
 When any debug options are active, the gear icon will show an orange border.
+
+<div align="center">
+  <img src="../../assets/debug_menu.png" alt="Debug Tools Menu" width="60%">
+  <p><em>Debug tools menu with developer utilities and execution modes</em></p>
+</div>
 
 ### Debug Tools Features (within App Control Sidebar)
 

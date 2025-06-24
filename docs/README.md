@@ -2,6 +2,11 @@
 
 > Complete documentation for {ProjectName} Manager - a powerful, modular desktop application for managing project environments.
 
+<div align="center">
+  <img src="../assets/main_screen.png" alt="ProjectName Manager Interface" width="100%">
+  <p><em>ProjectName Manager main interface with integrated development environment</em></p>
+</div>
+
 ## 📖 Documentation Structure
 
 This documentation is organized into focused guides for different audiences and use cases.
@@ -37,10 +42,12 @@ This documentation is organized into focused guides for different audiences and 
 ### 🎯 [Feature Guides](features/)
 **Detailed guides for major application features**
 
-- [Auto Setup](features/auto-setup.md) - Automated environment configuration
-- [Terminal System](features/terminal-system.md) - Integrated terminal features
-- [Health Report](features/health-report.md) - Service monitoring and health checks
-- [Environment Verification](features/verification.md) - Verification types and configuration
+| Feature | Description | Screenshot |
+|---------|-------------|------------|
+| [Auto Setup](features/auto-setup.md) | Automated environment configuration | <img src="../assets/auto_setup.png" alt="Auto Setup" width="200"> |
+| [Terminal System](features/terminal-system.md) | Integrated terminal features | <img src="../assets/terminal.png" alt="Terminal System" width="200"> |
+| [Health Report](features/health-report.md) | Service monitoring and health checks | <img src="../assets/health_report.png" alt="Health Report" width="200"> |
+| [Environment Verification](features/verification.md) | Verification types and configuration | <img src="../assets/loading_screen.png" alt="Environment Verification" width="200"> |
 
 #### 🛠️ [Development Guides](development/)
 **Resources for developers and contributors**
