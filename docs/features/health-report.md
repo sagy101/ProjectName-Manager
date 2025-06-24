@@ -1,4 +1,4 @@
-# Health Report Guide
+# Health Report
 
 > Real-time monitoring dashboard for all services and dependencies
 
@@ -52,9 +52,8 @@ The combined status is calculated based on the following hierarchy of importance
 
 This logic ensures that the header status provides a clear and accurate summary of each service's health, while the detailed view inside each section shows the specific status of the main process and its containers.
 
-## Related Documentation
+## See Also
 
-- [Terminal Features](terminal-features.md) - Understanding terminal status indicators
-- [Configuration Guide](configuration-guide.md) - Configuring services to monitor
-- [Getting Started](getting-started.md) - Initial setup and monitoring
-- [Architecture Overview](architecture-overview.md) - System monitoring architecture 
+- [Terminal System](terminal-system.md) - Understanding terminal status indicators
+- [Configuration Commands Guide](../configuration/commands.md) - Configuring services to monitor
+- [Architecture Overview](../architecture/overview.md) - System monitoring architecture 

@@ -1,6 +1,8 @@
 # Architecture Overview
 
-This document provides a high-level overview of {ProjectName} Manager's architecture. For detailed technical information, see the [complete Architecture document](architecture-details.md).
+> **Navigation:** [Architecture Guides](README.md) > Overview
+
+This document provides a high-level overview of {ProjectName} Manager's architecture. For detailed technical information, see the other architecture guides.
 
 ## Core Architecture Principles
 
@@ -37,6 +39,8 @@ Located in `src/main-process/`, each module handles specific functionality:
 - **`configurationManagement.js`**: Config import/export
 - **`windowManagement.js`**: Window creation
 
+> **Detailed Information**: See [Main Process Architecture](main-process.md)
+
 ### 3. Renderer Process Components
 
 Feature-based organization in `src/`:
@@ -48,6 +52,8 @@ Feature-based organization in `src/`:
 - **`auto-setup/`**: Automated setup
 - **`health-report/`**: Service monitoring
 - **`environment-verification/`**: Verification UI
+
+> **Detailed Information**: See [Renderer Process Architecture](renderer.md)
 
 ### 4. Configuration System
 
@@ -65,6 +71,8 @@ graph LR
     D --> H[Section Info]
     E --> I[System Checks]
 ```
+
+> **Detailed Information**: See [Configuration Guides](../configuration/)
 
 ## Data Flow
 
@@ -89,6 +97,8 @@ graph LR
 4. UI updated with status indicators
 5. Fix buttons shown for failures
 
+> **Detailed Information**: See [Communication Flow](communication.md)
+
 ## Key Features Architecture
 
 ### Terminal System
@@ -97,11 +107,15 @@ graph LR
 - **Process Monitoring**: Real-time status detection
 - **Container Management**: Lifecycle tied to terminal tabs
 
+> **Detailed Information**: See [Terminal System Features](../features/terminal-system.md)
+
 ### Auto Setup System
 - **Priority Groups**: Sequential execution order
 - **Parallel Execution**: Within-group parallelization
 - **Smart Terminals**: Auto-minimized floating windows
 - **Progress Tracking**: Real-time status updates
+
+> **Detailed Information**: See [Auto Setup Features](../features/auto-setup.md)
 
 ### Health Report
 - **Centralized Monitoring**: All services in one view
@@ -109,12 +123,16 @@ graph LR
 - **Real-time Updates**: Automatic refresh
 - **Interactive Controls**: Direct service management
 
+> **Detailed Information**: See [Health Report Features](../features/health-report.md)
+
 ## Performance Optimizations
 
 - **Multi-layer Caching**: Verification, dropdown, and git data
 - **Lazy Loading**: Components loaded as needed
 - **Efficient IPC**: Batched updates and streaming
 - **Resource Cleanup**: Automatic process termination
+
+> **Detailed Information**: See [Performance Optimization](performance.md)
 
 ## Security Considerations
 
@@ -137,9 +155,32 @@ graph LR
 - **Modular Design**: Clear separation of concerns
 - **Type Safety**: PropTypes for validation
 
+> **Detailed Information**: See [Development Testing Guide](../development/testing.md)
+
+## Technology Stack
+
+### Core Technologies
+- **Electron**: Cross-platform desktop application framework
+- **React**: Frontend UI library with hooks-based architecture
+- **Node.js**: Backend runtime for main process
+- **node-pty**: Terminal emulation and process management
+
+### Development Tools
+- **Jest**: Testing framework for unit and integration tests
+- **Playwright**: End-to-end testing automation
+- **ESLint**: Code quality and style enforcement
+- **Webpack**: Module bundling and build process
+
+### System Integration
+- **Docker**: Container management and lifecycle
+- **Git**: Repository operations and branch management
+- **Shell**: Command execution through PTY processes
+
 ## Next Steps
 
-- For implementation details, see [Complete Architecture](architecture-details.md)
-- To understand the UI system, read [Configuration Guide](configuration-guide.md)
-- For terminal specifics, check [Terminal Features](terminal-features.md)
-- To learn about testing, see [Testing Guide](testing-guide.md) 
+- **Implementation Details**: See [Main Process](main-process.md) and [Renderer Process](renderer.md)
+- **Communication Patterns**: Read [Communication Flow](communication.md)
+- **Performance Details**: Check [Performance Optimization](performance.md)
+- **Configuration System**: Explore [Configuration Guides](../configuration/)
+- **Feature Details**: Browse [Feature Guides](../features/)
+- **Development Info**: Visit [Development Guides](../development/) 

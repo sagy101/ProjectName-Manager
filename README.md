@@ -11,7 +11,7 @@
 
 A powerful, modular desktop application for managing project environments with integrated terminal support, environment verification, and dynamic configuration management.
 
-This project is also an experiment in "vibe coding" mixed with solid code practices. I explored a variety of AI tools and language models to see how they complement traditional development. Details can be found in the [AI Coding Experiment](docs/llm-experiments.md) document.
+This project is also an experiment in "vibe coding" mixed with solid code practices. I explored a variety of AI tools and language models to see how they complement traditional development. Details can be found in the [AI Coding Experiment](docs/development/ai-experiments.md) document.
 
 ## 🚀 Quick Start
 
@@ -59,28 +59,49 @@ npm start      # In another terminal
 
 ## 📚 Documentation
 
-For complete documentation, see the **[Documentation Index](docs/index.md)**.
+For complete documentation, see the **[Documentation Guides](docs/README.md)**.
 
-### Quick Links
+### 🚀 Quick Start Guides
 - [Getting Started & Installation](docs/getting-started.md) - Detailed setup instructions
-- [Configuration Guide](docs/configuration-guide.md) - JSON configuration system  
-- [Auto Setup Guide](docs/auto-setup-guide.md) - Automated environment setup
-- [Export & Import Tools](docs/config-export-import.md) - Save and restore settings
-- [Architecture Overview](docs/architecture-overview.md) - System design and components
-- [Development Roadmap](roadmap.md) - Planned features and enhancements
+- [Configuration Overview](docs/configuration/overview.md) - JSON configuration system basics
+- [Auto Setup Guide](docs/features/auto-setup.md) - Automated environment setup
+
+### 🏗️ Architecture & Development
+- [Architecture Overview](docs/architecture/overview.md) - System design and components
+- [Main Process Architecture](docs/architecture/main-process.md) - Backend modules
+- [Renderer Process Architecture](docs/architecture/renderer.md) - Frontend React architecture
+- [Communication Flow](docs/architecture/communication.md) - IPC system
+
+### ⚙️ Configuration System
+- [Configuration Overview](docs/configuration/overview.md) - Basic concepts and principles
+- [Section Configuration](docs/configuration/sections.md) - UI components and structure
+- [Command Configuration](docs/configuration/commands.md) - Command generation logic
+- [Dropdown Configuration](docs/configuration/dropdowns.md) - Dynamic dropdown selectors
+- [Configuration Examples](docs/configuration/examples.md) - Complete working examples
+
+### 🎯 Feature Guides
+- [Auto Setup System](docs/features/auto-setup.md) - Automated environment configuration
+- [Terminal System](docs/features/terminal-system.md) - Integrated terminal features
+- [Health Report](docs/features/health-report.md) - Service monitoring
+- [Environment Verification](docs/features/verification.md) - Verification types
+
+### 🛠️ Development Resources
+- [Testing Guide](docs/development/testing.md) - Test infrastructure and practices
+- [Export & Import Tools](docs/development/export-import.md) - Configuration backup
+- [AI Experiments](docs/development/ai-experiments.md) - Development methodology
 
 ## ⚙️ Configuration Overview
 
 {ProjectName} Manager uses a modular JSON-based configuration system:
 
-| File | Purpose |
-|------|---------|
-| `src/project-config/config/configurationSidebarSections.json` | UI structure and components |
-| `src/project-config/config/configurationSidebarCommands.json` | Command generation logic |
-| `src/project-config/config/configurationSidebarAbout.json` | Section descriptions and verifications |
-| `src/environment-verification/generalEnvironmentVerifications.json` | System-wide environment checks |
+| File | Purpose | Guide |
+|------|---------|-------|
+| `configurationSidebarSections.json` | UI structure and components | [Sections Guide](docs/configuration/sections.md) |
+| `configurationSidebarCommands.json` | Command generation logic | [Commands Guide](docs/configuration/commands.md) |
+| `configurationSidebarAbout.json` | Section descriptions and verifications | [Configuration Overview](docs/configuration/overview.md) |
+| `generalEnvironmentVerifications.json` | System-wide environment checks | [Verification Guide](docs/features/verification.md) |
 
-See the [Configuration Guide](docs/configuration-guide.md) for detailed information.
+See the [Configuration Overview](docs/configuration/overview.md) for detailed information.
 
 ## 🔧 Adding New Sections
 
@@ -90,7 +111,7 @@ Adding new functionality requires updating three JSON files - no code changes ne
 2. **Add Descriptions** in `configurationSidebarAbout.json`  
 3. **Configure Commands** in `configurationSidebarCommands.json`
 
-See [Adding New Sections](docs/configuration-guide.md#adding-new-sections) for a step-by-step guide.
+See [Configuration Examples](docs/configuration/examples.md) for step-by-step examples.
 
 ## 🛠️ Development
 
@@ -130,10 +151,6 @@ ProjectName-Manager/
 ├── docs/                      # Documentation
 └── main.js                    # Entry point
 ```
-
-## 💾 Export & Import Tools
-
-Detailed steps for exporting configuration and verification data have moved to [Export & Import Tools](docs/config-export-import.md).
 
 ## 📄 License
 
