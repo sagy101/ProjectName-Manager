@@ -266,17 +266,19 @@ function generateMockScript(commandName, commandData) {
         }
       }
       
-      // Handle specific command patterns
-      if (cmd.fullCommand) {
-        const args = cmd.fullCommand.replace(new RegExp(`^${commandName}\\s*`), '');
-        if (args && args !== cmd.fullCommand) { // Make sure we actually removed the command name
-          patterns.push({
-            pattern: args,
-            output: cmd.expectedValue || defaultOutput,
-            stream: cmd.outputStream || 'stdout'
-          });
+              // Handle specific command patterns
+        if (cmd.fullCommand) {
+          // Escape special regex characters in command name
+          const escapedCommandName = commandName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const args = cmd.fullCommand.replace(new RegExp(`^${escapedCommandName}\\s*`), '');
+          if (args && args !== cmd.fullCommand) { // Make sure we actually removed the command name
+            patterns.push({
+              pattern: args,
+              output: cmd.expectedValue || defaultOutput,
+              stream: cmd.outputStream || 'stdout'
+            });
+          }
         }
-      }
     });
     
     if (patterns.length > 0) {
