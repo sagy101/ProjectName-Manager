@@ -31,7 +31,10 @@ beforeEach(() => {
 
 describe('getDropdownOptions', () => {
   test('caches results for same command', async () => {
-    child_process.exec.mockImplementation((cmd, opts, cb) => cb(null, 'a\nb\n', ''));
+    child_process.exec.mockImplementation((cmd, opts, cb) => {
+      expect(opts.cwd).toBe('/Users/sashlag/projects');
+      cb(null, 'a\nb\n', '');
+    });
     const config = { id: 'd1', command: 'echo', parseResponse: 'lines', args: {} };
 
     const first = await getDropdownOptions(config);
@@ -100,7 +103,11 @@ describe('executeDropdownChangeCommand', () => {
     });
     expect(child_process.exec).toHaveBeenCalledWith(
       'gcloud config set project my-project',
-      { timeout: 30000, maxBuffer: 1024 * 1024 },
+      { 
+        timeout: 30000, 
+        maxBuffer: 1024 * 1024,
+        cwd: '/Users/sashlag/projects'
+      },
       expect.any(Function)
     );
   });

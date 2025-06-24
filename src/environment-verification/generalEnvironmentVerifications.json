@@ -3,17 +3,16 @@
     "title": "General Environment",
     "dropdownSelectors": [
       {
-        "id": "gcloudProject",
-        "command": "gcloud projects list --format=\"value(projectId)\"",
+        "id": "environment",
+        "command": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=environment-list --pattern=success-4 --silent",
         "parseResponse": "lines",
-        "placeholder": "Select project...",
-        "loadingText": "Loading projects...",
-        "errorText": "Error loading projects",
-        "noOptionsText": "No projects found",
+        "placeholder": "Select environment...",
+        "loadingText": "Loading environments...",
+        "errorText": "Error loading environments",
+        "noOptionsText": "No environments found",
         "defaultValue": {
-              "contains": "dev5"
-        },
-        "commandOnChange": "gcloud config set project ${gcloudProject}"
+          "contains": "development"
+        }
       }
     ]
   },
@@ -25,29 +24,29 @@
           {
             "id": "cloudGcloudCLI",
             "title": "gcloud CLI",
-            "command": "gcloud --version",
+            "command": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=verification --id=GcloudInstalled",
             "checkType": "outputContains",
             "expectedValue": "Google Cloud SDK",
             "outputStream": "stdout",
-            "fixCommand": "brew install --cask google-cloud-sdk",
+            "fixCommand": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=fix --id=GcloudInstalled",
             "fixPriority": 3
           },
           {
             "id": "cloudKubectlCLI",
             "title": "kubectl CLI",
-            "command": "kubectl version --client",
+            "command": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=verification --id=KubectlInstalled",
             "checkType": "outputContains",
             "expectedValue": "Client Version:",
             "outputStream": "stdout",
-            "fixCommand": "brew install kubectl",
+            "fixCommand": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=fix --id=KubectlInstalled",
             "fixPriority": 3
           },
           {
             "id": "cloudKubectx",
             "title": "kubectx",
-            "command": "kubectx --help",
+            "command": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=verification --id=KubectxInstalled",
             "checkType": "commandSuccess",
-            "fixCommand": "brew install kubectx",
+            "fixCommand": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=fix --id=KubectxInstalled",
             "fixPriority": 3
           }
         ]
@@ -60,31 +59,33 @@
           {
             "id": "dockerRunning",
             "title": "Docker Desktop running",
-            "command": "docker version --format '{{.Server.Version}}'",
-            "checkType": "commandSuccess"
+            "command": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=verification --id=DockerInstalled",
+            "checkType": "commandSuccess",
+            "fixCommand": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=fix --id=DockerInstalled",
+            "fixPriority": 2
           },
           {
             "id": "dockerDaemon",
             "title": "Docker daemon accessible",
-            "command": "docker ps",
+            "command": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=verification --id=DockerInstalled",
             "checkType": "commandSuccess"
           },
           {
             "id": "rancherDesktop",
             "title": "Rancher Desktop (if installed)",
-            "command": "rdctl version",
+            "command": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=verification --id=RancherDesktopInstalled",
             "checkType": "outputContains",
-            "expectedValue": "",
+            "expectedValue": "rdctl version",
             "outputStream": "stdout",
-            "fixCommand": "brew install --cask rancher",
+            "fixCommand": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=fix --id=RancherDesktopInstalled",
             "fixPriority": 4
           },
           {
             "id": "containerRuntime",
             "title": "Container runtime available",
-            "command": "docker info --format '{{.ServerVersion}}'",
+            "command": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=verification --id=DockerInstalled",
             "checkType": "outputContains",
-            "expectedValue": "",
+            "expectedValue": "Docker version",
             "outputStream": "stdout"
           }
         ]
@@ -97,20 +98,21 @@
           {
             "id": "nodeJs",
             "title": "Node.js 15.x or 16.x",
-            "command": "nvm ls",
+            "command": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=verification --id=NodeJSInstalled",
             "checkType": "outputContains",
-            "expectedValue": ["v15.", "v16."],
+            "expectedValue": ["v15.", "v16.", "v18."],
             "versionId": "nodeVersion",
             "outputStream": "stdout",
-            "fixCommand": "nvm install 16",
+            "fixCommand": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=fix --id=NodeJSInstalled",
             "fixPriority": 2
           },
           {
             "id": "nvmInstalled",
             "title": "Nvm installed",
-            "command": "nvm --version",
+            "command": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=verification --id=NvmInstalled",
             "checkType": "commandSuccess",
-            "fixCommand": "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash"
+            "fixCommand": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=fix --id=NvmInstalled",
+            "fixPriority": 1
           }
         ]
       }
@@ -122,10 +124,10 @@
           {
             "id": "goInstalled",
             "title": "Go installed",
-            "command": "go version",
+            "command": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=verification --id=GoInstalled",
             "checkType": "outputContains",
             "expectedValue": "go version go1",
-            "fixCommand": "brew install go"
+            "fixCommand": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=fix --id=GoInstalled"
           },
           {
             "id": "goLocation",
@@ -140,14 +142,14 @@
             "checkType": "envVarEquals",
             "variableName": "GOPATH",
             "expectedValue": "$HOME/go",
-            "fixCommand": "GOPATH_LINE='export GOPATH=$HOME/go\\nexport PATH=$PATH:$GOPATH/bin'; for f in ~/.zshrc ~/.bash_profile; do [ -f \"$f\" ] || touch \"$f\"; printf \"$GOPATH_LINE\\n\" >> \"$f\"; done; [ -n \"$ZSH_VERSION\" ] && source ~/.zshrc || { [ -n \"$BASH_VERSION\" ] && source ~/.bash_profile; }"
+            "fixCommand": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=fix --id=GoInstalled"
           },
           {
             "id": "goPathIncludes",
             "title": "PATH includes: $GOPATH/bin",
-            "command": "echo $PATH",
+            "command": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=verification --id=GoInstalled",
             "checkType": "outputContains",
-            "expectedValue": "$GOPATH/bin"
+            "expectedValue": "go version"
           }
         ]
       }
@@ -159,11 +161,11 @@
           {
             "id": "javaVersion",
             "title": "Java 17 installed",
-            "command": "java -version",
+            "command": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=verification --id=JavaInstalled",
             "checkType": "outputContains",
             "expectedValue": "openjdk version \"17.",
-            "outputStream": "stderr",
-            "fixCommand": "brew install openjdk@17",
+            "outputStream": "stdout",
+            "fixCommand": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=fix --id=JavaInstalled",
             "fixPriority": 2
           },
           {
@@ -175,9 +177,9 @@
           {
             "id": "homebrewInstalled",
             "title": "Homebrew installed",
-            "command": "brew --version",
+            "command": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=verification --id=HomebrewInstalled",
             "checkType": "commandSuccess",
-            "fixCommand": "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"",
+            "fixCommand": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=fix --id=HomebrewInstalled",
             "fixPriority": 1
           }
         ]

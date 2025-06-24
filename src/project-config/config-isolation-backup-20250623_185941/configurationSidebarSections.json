@@ -1,6 +1,6 @@
 {
   "settings": {
-    "projectName": "ProjectName",
+    "projectName": "ISO",
     "openDevToolsByDefault": false,
     "autoSetupTimeoutSeconds": 90,
     "loadingScreenTimeoutSeconds": 20,
@@ -12,13 +12,13 @@
   },
   "sections": [
     {
-      "id": "service-a",
-      "title": "Service-A + Database",
+      "id": "mirror",
+      "title": "Mirror + MariaDB",
       "components": {
         "toggle": true,
         "attachToggle": {
           "enabled": true,
-          "mutuallyExclusiveWith": ["logger-service"]
+          "mutuallyExclusiveWith": ["activity-logger"]
         },
         "infoButton": true,
         "gitBranch": true,
@@ -27,7 +27,7 @@
           "placeholder": "Enter debug port",
           "default": "5005",
           "visibleWhen": {
-            "configKey": "attachState.service-a",
+            "configKey": "attachState.mirror",
             "hasValue": true
           }
         },
@@ -38,15 +38,15 @@
         },
         "customButtons": [
           {
-            "id": "runDocsButton",
-            "label": "Run Documentation",
-            "commandId": "runDocs"
+            "id": "runStorybookButton",
+            "label": "Run Storybook",
+            "commandId": "runStorybook"
           }
         ],
         "subSections": [
           {
-            "id": "ui-component",
-            "title": "UI Component",
+            "id": "frontend",
+            "title": "Frontend",
             "components": {
               "toggle": true,
               "modeSelector": {
@@ -59,8 +59,8 @@
       }
     },
     {
-      "id": "backend-service",
-      "title": "Backend-Service + Agent + Browser",
+      "id": "gopm",
+      "title": "GoPM + Agent + Chromium",
       "components": {
         "toggle": true,
         "infoButton": true,
@@ -72,22 +72,22 @@
       }
     },
     {
-      "id": "api-service",
-      "title": "API-Service + External-Integration",
+      "id": "url-intelligence",
+      "title": "URL Intelligence + TI (Cloud)",
       "components": {
         "toggle": true,
         "infoButton": true,
         "gitBranch": true,
         "dropdownSelectors": [
           {
-            "id": "containerContext",
-            "command": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=container-list --pattern=success-3 --silent",
+            "id": "kubectlContext",
+            "command": "kubectl config get-contexts -o name",
             "parseResponse": "lines",
             "placeholder": "Select context...",
             "loadingText": "Loading contexts...",
             "errorText": "Error loading contexts",
             "noOptionsText": "No contexts found",
-            "dependsOn": "environment",
+            "dependsOn": "gcloudProject",
             "defaultValue": {
               "contains": "staging"
             }
@@ -95,8 +95,8 @@
         ],
         "subSections": [
           {
-            "id": "api-service-component",
-            "title": "API Service Component",
+            "id": "url-intelligence-sub",
+            "title": "URL Intelligence",
             "components": {
               "toggle": true,
               "modeSelector": {
@@ -106,14 +106,14 @@
               },
               "dropdownSelectors": [
                 {
-                  "id": "apiServicePod",
-                  "command": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=api-pods --pattern=success-2 --silent",
+                  "id": "urlIntelPod",
+                  "command": "kubectl --context ${kubectlContext} get pods -l app=url-intelligence --no-headers -o custom-columns=\":metadata.name\"",
                   "parseResponse": "lines",
-                  "placeholder": "Select pod...",
-                  "loadingText": "Loading API pods...",
-                  "errorText": "Error loading pods",
-                  "noOptionsText": "No pods found",
-                  "dependsOn": "containerContext",
+                  "placeholder": "Select URL Intel pod (for Forwarding)...",
+                  "loadingText": "Loading URL Intel pods...",
+                  "errorText": "Error loading URL Intel pods",
+                  "noOptionsText": "No URL Intel pods found",
+                  "dependsOn": "kubectlContext",
                   "visibleWhen": {
                     "configKey": "mode",
                     "hasValue": "forwarding"
@@ -123,20 +123,20 @@
             }
           },
           {
-            "id": "external-integration",
-            "title": "External Integration",
+            "id": "threat-intelligence-sub",
+            "title": "Threat Intelligence",
             "components": {
               "toggle": true,
               "dropdownSelectors": [
                 {
-                  "id": "integrationPod",
-                  "command": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=integration-pods --pattern=success-2 --silent",
+                  "id": "threatIntelPod",
+                  "command": "kubectl --context ${kubectlContext} get pods -l app=threat-intelligence --no-headers -o custom-columns=\":metadata.name\"",
                   "parseResponse": "lines",
-                  "placeholder": "Select integration pod...",
-                  "loadingText": "Loading integration pods...",
-                  "errorText": "Error loading pods",
-                  "noOptionsText": "No pods found",
-                  "dependsOn": "containerContext"
+                  "placeholder": "Select Threat Intel pod...",
+                  "loadingText": "Loading pods...",
+                  "errorText": "Error loading Threat Intel pods",
+                  "noOptionsText": "No Threat Intel pods found",
+                  "dependsOn": "kubectlContext"
                 }
               ]
             }
@@ -145,13 +145,13 @@
       }
     },
     {
-      "id": "logger-service",
-      "title": "Logger Service",
+      "id": "activity-logger",
+      "title": "Activity Logger",
       "components": {
         "toggle": true,
         "attachToggle": {
           "enabled": true,
-          "mutuallyExclusiveWith": ["service-a"]
+          "mutuallyExclusiveWith": ["mirror"]
         },
         "infoButton": true,
         "gitBranch": true,
@@ -160,14 +160,14 @@
           "placeholder": "Enter debug port",
           "default": "5005",
           "visibleWhen": {
-            "configKey": "attachState.logger-service",
+            "configKey": "attachState.activity-logger",
             "hasValue": true
           }
         },
         "mainToggle": {
           "validationRequired": {
-            "condition": "environment && !environmentSelectorFallbacks.includes(environment)",
-            "errorMessage": "Cannot enable Logger Service until an environment is selected."
+                        "condition": "gcloudProject && !projectSelectorFallbacks.includes(gcloudProject)",
+              "errorMessage": "Cannot enable Activity Logger until a cloud project is selected."
           }
         },
         "modeSelector": {
@@ -178,8 +178,8 @@
       }
     },
     {
-      "id": "processing-engine",
-      "title": "Processing Engine",
+      "id": "rule-engine",
+      "title": "Rule Engine",
       "components": {
         "toggle": true,
         "infoButton": true,
@@ -188,8 +188,8 @@
       }
     },
     {
-      "id": "analytics-service",
-      "title": "Analytics Service Engine",
+      "id": "test-analytics",
+      "title": "Test Analytics Engine",
       "testSection": true,
       "components": {
         "toggle": true,
@@ -206,8 +206,8 @@
         },
         "subSections": [
           {
-            "id": "data-service",
-            "title": "Data Service",
+            "id": "data-processor",
+            "title": "Data Processor",
             "components": {
               "toggle": true,
               "modeSelector": {
@@ -216,26 +216,26 @@
             }
           },
           {
-            "id": "processing-component",
-            "title": "Processing Component",
+            "id": "ml-engine",
+            "title": "ML Engine",
             "components": {
               "toggle": true,
               "modeSelector": {
-                "options": ["engine-a", "engine-b", "engine-c"],
-                "labels": ["Engine A", "Engine B", "Engine C"]
+                "options": ["tensorflow", "pytorch", "sklearn"],
+                "labels": ["TensorFlow", "PyTorch", "Scikit-learn"]
               },
               "customButton": {
-                "id": "processingLogs",
-                "label": "Processing Logs",
-                "commandId": "processingLogCommand"
+                "id": "mlEngineLogs",
+                "label": "ML Logs",
+                "commandId": "mlEngineLogCommand"
               }
             }
           }
         ],
         "customButton": {
-          "id": "analyticsLogs",
+          "id": "testAnalyticsLogs",
           "label": "View Logs",
-          "commandId": "analyticsLogCommand"
+          "commandId": "testAnalyticsLogCommand"
         }
       }
     }

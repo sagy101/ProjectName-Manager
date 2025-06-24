@@ -1,163 +1,239 @@
 [
   {
-    "sectionId": "frontend",
+    "sectionId": "ui-component",
     "skipVerification": true,
-    "description": "Frontend section without specific path verification."
+    "description": "UI component section without specific path verification."
   },
   {
-    "sectionId": "mirror",
-    "directoryPath": "weblifemirror",
-    "description": "Handles traffic mirroring and database for ISO testing.",
+    "sectionId": "service-a",
+    "directoryPath": "service-a",
+    "description": "Handles primary service functionality and database operations for the project.",
     "verifications": [
       {
-        "id": "mirrorDirExists",
-        "title": "./weblifemirror directory exists",
+        "id": "serviceADirExists",
+        "title": "./service-a directory exists",
         "checkType": "pathExists",
-        "pathValue": "./weblifemirror",
+        "pathValue": "./service-a",
         "pathType": "directory",
-        "fixCommand": "git clone https://github.com/PFPT-Isolation/weblifemirror.git ./weblifemirror",
+        "fixCommand": "mkdir -p ./service-a && echo 'Service A directory created'",
         "fixPriority": 1
       },
       {
-        "id": "mirrorGradlewExists",
-        "title": "gradlew exists",
+        "id": "serviceAConfigExists",
+        "title": "service configuration exists",
         "checkType": "pathExists",
-        "pathValue": "./weblifemirror/gradlew",
-        "pathType": "file"
-      }
-    ]
-  },
-  {
-    "sectionId": "gopm",
-    "directoryPath": "weblifemirror",
-    "description": "Manages Go agent and browser automation.",
-    "verifications": [
-      {
-        "id": "gopmDirExists",
-        "title": "./gopm directory exists",
-        "checkType": "pathExists",
-        "pathValue": "./gopm",
-        "pathType": "directory"
-      },
-      {
-        "id": "agentDirExists",
-        "title": "./weblifemirror/agent directory exists",
-        "checkType": "pathExists",
-        "pathValue": "./weblifemirror/agent",
-        "pathType": "directory"
-      },
-      {
-        "id": "ChromiumInstalled",
-        "title": "Chromium installed",
-        "command": "chromium --version",
-        "checkType": "commandSuccess",
-        "fixCommand": "cd ./ProjectName-Manager/src/project-config/config/scripts && chmod +x install-ungoogled.sh && install-ungoogled.sh",
-        "fixPriority": 3
-      }
-    ]
-  },
-  {
-    "sectionId": "url-intelligence",
-    "directoryPath": "threatintelligence",
-    "description": "Provides URL and threat analysis capabilities.",
-    "verifications": [
-      {
-        "id": "threatIntelligenceDirExists",
-        "title": "./threatintelligence directory exists",
-        "checkType": "pathExists",
-        "pathValue": "./threatintelligence",
-        "pathType": "directory",
-        "fixCommand": "git clone https://github.com/PFPT-Isolation/threatintelligence.git ./threatintelligence",
-        "fixPriority": 1
-      },
-      {
-        "id": "threatIntelligenceGradlewExists",
-        "title": "/threat-intelligence gradlew exists",
-        "checkType": "pathExists",
-        "pathValue": "./threatintelligence/threat-intelligence/gradlew",
-        "pathType": "file"
-      },
-      {
-        "id": "urlIntelligenceGradlewExists",
-        "title": "/url-intelligence gradlew exists",
-        "checkType": "pathExists",
-        "pathValue": "./threatintelligence/url-intelligence/gradlew",
-        "pathType": "file"
-      },
-      {
-        "id": "infraDirExists",
-        "title": "./infrastructure directory exists",
-        "checkType": "pathExists",
-        "pathValue": "./infrastructure",
-        "pathType": "directory",
-        "fixCommand": "git clone https://github.com/PFPT-Isolation/infrastructure.git ./infrastructure",
-        "fixPriority": 1
-      }
-    ]
-  },
-  {
-    "sectionId": "activity-logger",
-    "directoryPath": "activity-logger",
-    "description": "Logs and tracks user and system activity.",
-    "verifications": [
-      {
-        "id": "activityLoggerDirExists",
-        "title": "./activity-logger directory exists",
-        "checkType": "pathExists",
-        "pathValue": "./activity-logger",
-        "pathType": "directory",
-        "fixCommand": "git clone https://github.com/PFPT-Isolation/activity-logger.git ./activity-logger",
-        "fixPriority": 1
-      },
-      {
-        "id": "activityLoggerGradlewExists",
-        "title": "gradlew exists",
-        "checkType": "pathExists",
-        "pathValue": "./activity-logger/gradlew",
-        "pathType": "file"
-      }
-    ]
-  },
-  {
-    "sectionId": "rule-engine",
-    "directoryPath": "rule-engine",
-    "description": "Evaluates and enforces custom rules for ISO.",
-    "verifications": [
-      {
-        "id": "ruleEngineDirExists",
-        "title": "./rule-engine directory exists",
-        "checkType": "pathExists",
-        "pathValue": "./rule-engine",
-        "pathType": "directory",
-        "fixCommand": "git clone https://github.com/PFPT-Isolation/rule-engine.git ./rule-engine",
-        "fixPriority": 1
-      }
-    ]
-  },
-  {
-    "sectionId": "test-analytics",
-    "directoryPath": "test-analytics",
-    "description": "Advanced analytics engine for processing test data with ML capabilities and real-time stream processing.",
-    "verifications": [
-      {
-        "id": "testAnalyticsDirExists",
-        "title": "./test-analytics directory exists",
-        "checkType": "pathExists",
-        "pathValue": "./test-analytics",
-        "pathType": "directory",
-        "fixCommand": "mkdir -p ./test-analytics",
+        "pathValue": "./service-a/config.json",
+        "pathType": "file",
+        "fixCommand": "echo '{\"service\": \"service-a\", \"version\": \"1.0.0\"}' > ./service-a/config.json",
         "fixPriority": 2
       }
     ]
   },
   {
-    "sectionId": "testAnalyticsLogCommand",
-    "description": "Displays logs for the Test Analytics Engine in a floating terminal.",
+    "sectionId": "backend-service",
+    "directoryPath": "backend-service",
+    "description": "Manages backend service and agent automation.",
+    "verifications": [
+      {
+        "id": "backendDirExists",
+        "title": "./backend-service directory exists",
+        "checkType": "pathExists",
+        "pathValue": "./backend-service",
+        "pathType": "directory",
+        "fixCommand": "mkdir -p ./backend-service && echo 'Backend service directory created'",
+        "fixPriority": 1
+      },
+      {
+        "id": "agentDirExists",
+        "title": "./backend-service/agent directory exists",
+        "checkType": "pathExists",
+        "pathValue": "./backend-service/agent",
+        "pathType": "directory",
+        "fixCommand": "mkdir -p ./backend-service/agent && echo 'Agent directory created'",
+        "fixPriority": 2
+      },
+      {
+        "id": "BrowserInstalled",
+        "title": "Browser installed",
+        "command": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=verification --id=BrowserInstalled",
+        "checkType": "commandSuccess",
+        "fixCommand": "node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=fix --id=BrowserInstalled",
+        "fixPriority": 3
+      }
+    ]
+  },
+  {
+    "sectionId": "api-service",
+    "directoryPath": "api-service",
+    "description": "Provides API and external integration capabilities.",
+    "verifications": [
+      {
+        "id": "apiServiceDirExists",
+        "title": "./api-service directory exists",
+        "checkType": "pathExists",
+        "pathValue": "./api-service",
+        "pathType": "directory",
+        "fixCommand": "mkdir -p ./api-service && echo 'API service directory created'",
+        "fixPriority": 1
+      },
+      {
+        "id": "integrationConfigExists",
+        "title": "/integration config exists",
+        "checkType": "pathExists",
+        "pathValue": "./api-service/integration/config.yaml",
+        "pathType": "file",
+        "fixCommand": "mkdir -p ./api-service/integration && echo 'integration: enabled' > ./api-service/integration/config.yaml",
+        "fixPriority": 2
+      },
+      {
+        "id": "apiConfigExists",
+        "title": "/api config exists",
+        "checkType": "pathExists",
+        "pathValue": "./api-service/api/config.yaml",
+        "pathType": "file",
+        "fixCommand": "mkdir -p ./api-service/api && echo 'api: enabled' > ./api-service/api/config.yaml",
+        "fixPriority": 2
+      },
+      {
+        "id": "sharedConfigDirExists",
+        "title": "./shared-config directory exists",
+        "checkType": "pathExists",
+        "pathValue": "./shared-config",
+        "pathType": "directory",
+        "fixCommand": "mkdir -p ./shared-config && echo '{}' > ./shared-config/default.json",
+        "fixPriority": 1
+      }
+    ]
+  },
+  {
+    "sectionId": "logger-service",
+    "directoryPath": "logger-service",
+    "description": "Logs and tracks user and system activity.",
+    "verifications": [
+      {
+        "id": "loggerServiceDirExists",
+        "title": "./logger-service directory exists",
+        "checkType": "pathExists",
+        "pathValue": "./logger-service",
+        "pathType": "directory",
+        "fixCommand": "mkdir -p ./logger-service && echo 'Logger service directory created'",
+        "fixPriority": 1
+      },
+      {
+        "id": "loggerConfigExists",
+        "title": "logger config exists",
+        "checkType": "pathExists",
+        "pathValue": "./logger-service/logger.conf",
+        "pathType": "file",
+        "fixCommand": "echo 'log_level=info' > ./logger-service/logger.conf",
+        "fixPriority": 2
+      }
+    ]
+  },
+  {
+    "sectionId": "processing-engine",
+    "directoryPath": "processing-engine",
+    "description": "Evaluates and enforces custom processing rules for the project.",
+    "verifications": [
+      {
+        "id": "processingEngineDirExists",
+        "title": "./processing-engine directory exists",
+        "checkType": "pathExists",
+        "pathValue": "./processing-engine",
+        "pathType": "directory",
+        "fixCommand": "mkdir -p ./processing-engine && echo 'Processing engine directory created'",
+        "fixPriority": 1
+      },
+      {
+        "id": "processingRulesExist",
+        "title": "processing rules exist",
+        "checkType": "pathExists",
+        "pathValue": "./processing-engine/rules.json",
+        "pathType": "file",
+        "fixCommand": "echo '{\"rules\": []}' > ./processing-engine/rules.json",
+        "fixPriority": 2
+      }
+    ]
+  },
+  {
+    "sectionId": "analytics-service",
+    "directoryPath": "analytics-service",
+    "description": "Advanced analytics engine for processing data with modern capabilities and real-time stream processing.",
+    "verifications": [
+      {
+        "id": "analyticsServiceDirExists",
+        "title": "./analytics-service directory exists",
+        "checkType": "pathExists",
+        "pathValue": "./analytics-service",
+        "pathType": "directory",
+        "fixCommand": "mkdir -p ./analytics-service && echo 'Analytics service directory created'",
+        "fixPriority": 2
+      },
+      {
+        "id": "dataServiceDirExists",
+        "title": "./analytics-service/data-service directory exists",
+        "checkType": "pathExists",
+        "pathValue": "./analytics-service/data-service",
+        "pathType": "directory",
+        "fixCommand": "mkdir -p ./analytics-service/data-service && echo 'Data service directory created'",
+        "fixPriority": 3
+      },
+      {
+        "id": "processingComponentDirExists",
+        "title": "./analytics-service/processing-component directory exists",
+        "checkType": "pathExists",
+        "pathValue": "./analytics-service/processing-component",
+        "pathType": "directory",
+        "fixCommand": "mkdir -p ./analytics-service/processing-component && echo 'Processing component directory created'",
+        "fixPriority": 3
+      }
+    ]
+  },
+  {
+    "sectionId": "data-service",
+    "directoryPath": "analytics-service/data-service",
+    "description": "Data processing service with batch, stream, and hybrid processing modes.",
+    "verifications": [
+      {
+        "id": "dataServiceConfigExists",
+        "title": "data service config exists",
+        "checkType": "pathExists",
+        "pathValue": "./analytics-service/data-service/config.yaml",
+        "pathType": "file",
+        "fixCommand": "mkdir -p ./analytics-service/data-service && echo 'data_service: enabled' > ./analytics-service/data-service/config.yaml",
+        "fixPriority": 2
+      }
+    ]
+  },
+  {
+    "sectionId": "processing-component",
+    "directoryPath": "analytics-service/processing-component",
+    "description": "Processing component with multiple engine options for flexible data processing.",
+    "verifications": [
+      {
+        "id": "processingComponentConfigExists",
+        "title": "processing component config exists",
+        "checkType": "pathExists",
+        "pathValue": "./analytics-service/processing-component/engines.json",
+        "pathType": "file",
+        "fixCommand": "mkdir -p ./analytics-service/processing-component && echo '{\"engines\": [\"engine-a\", \"engine-b\", \"engine-c\"]}' > ./analytics-service/processing-component/engines.json",
+        "fixPriority": 2
+      }
+    ]
+  },
+  {
+    "sectionId": "analyticsLogCommand",
+    "description": "Displays logs for the Analytics Service in a floating terminal.",
     "verifications": []
   },
   {
-    "sectionId": "mlEngineLogCommand",
-    "description": "About info for the ML Engine logs button command.",
+    "sectionId": "processingLogCommand",
+    "description": "About info for the Processing Component logs button command.",
+    "verifications": []
+  },
+  {
+    "sectionId": "runDocs",
+    "description": "Runs the documentation server for project reference.",
     "verifications": []
   }
 ]

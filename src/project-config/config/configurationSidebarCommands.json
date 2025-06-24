@@ -1,401 +1,392 @@
 [
   {
-    "id": "testAnalyticsLogCommand",
+    "id": "analyticsLogCommand",
     "command": {
-      "base": "echo 'Floating terminal for Test Analytics Logs'",
-      "tabTitle": "Test Analytics Logs"
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=analytics-logs --pattern=infinite",
+      "tabTitle": "Analytics Service Logs"
     }
   },
   {
-    "id": "mlEngineLogCommand",
+    "id": "processingLogCommand",
     "command": {
-      "base": "echo 'ML Engine logs'",
-      "tabTitle": "ML Logs"
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=processing-logs --pattern=infinite",
+      "tabTitle": "Processing Logs"
     }
   },
   {
-    "id": "mirror",
+    "id": "service-a",
     "conditions": {
       "enabled": true,
-      "attachState.mirror": false
+      "attachState.service-a": false
     },
     "command": {
-      "base": "nvm use ${nodeVersion} && cd ./weblifemirror && ./gradlew bootRun --info  -x runDockerComposeAuthService -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=service-a --pattern=infinite",
       "associatedContainers": [
-        "wiremock",
-        "weblifemirror-db-replica-1",
-        "weblifemirror-db-master-1",
-        "weblifemirror-redis-1",
-        "weblifemirror-localdb-1"
+        "service-a-cache",
+        "service-a-db-replica",
+        "service-a-db-master",
+        "service-a-redis",
+        "service-a-localdb"
       ],
       "tabTitle": {
-        "base": "Mirror + MariaDB"
+        "base": "Service-A + Database"
       }
     }
   },
   {
-    "id": "mirror",
+    "id": "service-a",
     "conditions": {
       "enabled": true,
-      "attachState.mirror": true,
+      "attachState.service-a": true,
       "mode": "suspend"
     },
     "command": {
-      "base": "nvm use ${nodeVersion} && cd ./weblifemirror && ./gradlew bootRun --debug-jvm --info  -x runDockerComposeAuthService -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=service-a --pattern=infinite --debug=suspend",
       "associatedContainers": [
-        "wiremock",
-        "weblifemirror-db-replica-1",
-        "weblifemirror-db-master-1",
-        "weblifemirror-redis-1",
-        "weblifemirror-localdb-1"
+        "service-a-cache",
+        "service-a-db-replica",
+        "service-a-db-master",
+        "service-a-redis",
+        "service-a-localdb"
       ],
       "tabTitle": {
-        "base": "Mirror + MariaDB (Debug Suspend)"
+        "base": "Service-A + Database (Debug Suspend)"
       }
     }
   },
   {
-    "id": "mirror",
+    "id": "service-a",
     "conditions": {
       "enabled": true,
-      "attachState.mirror": true,
+      "attachState.service-a": true,
       "mode": "run"
     },
     "command": {
-      "base": "nvm use ${nodeVersion} && cd ./weblifemirror && ./gradlew bootRun -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${debugPort}' --info -x runDockerComposeAuthService -x buildAgent -x runDockerComposeRuleEngine -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=service-a --pattern=infinite --debug=run --port=${debugPort}",
       "associatedContainers": [
-        "wiremock",
-        "weblifemirror-db-replica-1",
-        "weblifemirror-db-master-1",
-        "weblifemirror-redis-1",
-        "weblifemirror-localdb-1"
+        "service-a-cache",
+        "service-a-db-replica",
+        "service-a-db-master",
+        "service-a-redis",
+        "service-a-localdb"
       ],
       "tabTitle": {
-        "base": "Mirror + MariaDB (Debug Run)"
+        "base": "Service-A + Database (Debug Run)"
       }
     }
   },
   {
-    "id": "frontend",
+    "id": "ui-component",
     "conditions": {
-      "mirrorConfig.enabled": true,
-      "frontendConfig.enabled": true,
-      "frontendConfig.mode": "dev"
+      "service-aConfig.enabled": true,
+      "ui-componentConfig.enabled": true,
+      "ui-componentConfig.mode": "dev"
     },
     "command": {
-      "base": "cd ./weblifemirror && npx webpack --watch",
-      "prefix": "nvm use ${nodeVersion} && ",
-      "tabTitle": "Frontend (Dev Mode)"
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=ui-component --pattern=infinite --mode=dev",
+      "tabTitle": "UI Component (Dev Mode)"
     }
   },
   {
-    "id": "frontend",
+    "id": "ui-component",
     "conditions": {
-      "mirrorConfig.enabled": true,
-      "frontendConfig.enabled": true,
-      "frontendConfig.mode": "normal"
+      "service-aConfig.enabled": true,
+      "ui-componentConfig.enabled": true,
+      "ui-componentConfig.mode": "normal"
     },
     "command": {
-      "base": "cd ./weblifemirror && npx webpack --bail",
-      "prefix": "nvm use ${nodeVersion} && ",
-      "tabTitle": "Frontend"
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=ui-component --pattern=success-30",
+      "tabTitle": "UI Component"
     }
   },
   {
-    "id": "gopm",
+    "id": "backend-service",
     "conditions": {
       "enabled": true,
       "deploymentType": "process"
     },
     "command": {
-      "base": "cd ./gopm && make run-local",
-      "prefix": "nvm use ${nodeVersion} && ",
-      "tabTitle": "gopm (Process)",
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=backend-service --pattern=infinite --mode=process",
+      "tabTitle": "Backend Service (Process)",
       "refreshConfig": {
         "prependCommands": [
           {
-            "command": "cd ./weblifemirror/agent/src && make darwin-dev && mv bin/agent-darwin-amd64-dev ../bin && cd ../../.. && "
+            "command": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=backend-build --pattern=success-15 && "
           }
         ]
       }
     }
   },
   {
-    "id": "gopm",
+    "id": "backend-service",
     "conditions": {
       "enabled": true,
       "deploymentType": "container"
     },
     "command": {
-      "base": "cd ./gopm && make run-local-docker",
-      "associatedContainers": ["serverbrowseragent"],
-      "prefix": "nvm use ${nodeVersion} && ",
-      "tabTitle": "gopm (Container)"
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=backend-service --pattern=infinite --mode=container",
+      "associatedContainers": ["backend-agent"],
+      "tabTitle": "Backend Service (Container)"
     }
   },
   {
-    "id": "url-intelligence-sub",
+    "id": "api-service-component",
     "conditions": {
       "enabled": true,
-      "url-intelligenceConfig.enabled": true,
-      "url-intelligenceConfig.mode": "mock"
+      "api-serviceConfig.enabled": true,
+      "api-service-componentConfig.mode": "mock"
     },
     "command": {
-      "base": "cd ./ThreatIntelligenceMock && node inteligence.js",
-      "prefix": "nvm use ${nodeVersion} && ",
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=api-service --pattern=infinite --mode=mock",
       "tabTitle": {
-        "base": "URL Intelligence (Mock)"
+        "base": "API Service Component (Mock)"
       }
     }
   },
   {
-    "id": "url-intelligence-sub",
+    "id": "api-service-component",
     "conditions": {
       "enabled": true,
-      "url-intelligenceConfig.enabled": true,
-      "url-intelligenceConfig.mode": "process"
+      "api-serviceConfig.enabled": true,
+      "api-service-componentConfig.mode": "process"
     },
     "command": {
-      "base": "cd ./threatintelligence/url-intelligence && kubectx ${kubectlContext} && PROOFPOINT_AUTH_CLIENT_SECRET=$(../../infrastructure/scripts/decode-secret.sh default env-url-intelligence client_secret) PROOFPOINT_AUTH_CLIENT_ID=$(../../infrastructure/scripts/decode-secret.sh default env-url-intelligence client_id) PROOFPOINT_SCORER_CUSTOMER_ID=$(../../infrastructure/scripts/decode-secret.sh default env-url-intelligence customer_id) ./gradlew bootRun --args='--spring.profiles.active=staging --proofpoint.proxy.url= --server.port=8083 --threatintelligence.url=http://127.0.0.1:8084'",
-      "prefix": "nvm use ${nodeVersion} && ",
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=api-service --pattern=infinite --mode=process --port=8083",
       "tabTitle": {
-        "base": "URL Intelligence (Process)"
+        "base": "API Service Component (Process)"
       }
     }
   },
   {
-    "id": "url-intelligence-sub",
+    "id": "api-service-component",
     "conditions": {
       "enabled": true,
-      "url-intelligenceConfig.enabled": true,
-      "url-intelligenceConfig.mode": "forwarding",
-      "urlIntelPodSelected": true
+      "api-serviceConfig.enabled": true,
+      "api-service-componentConfig.mode": "forwarding",
+      "apiServicePodSelected": true
     },
     "command": {
-      "base": "cd ./threatintelligence && kubectx ${kubectlContext} && kubectl port-forward ${urlIntelPod} 8083:8080",
-      "prefix": "nvm use ${nodeVersion} && ",
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=api-forwarding --pattern=infinite --port=8083",
       "tabTitle": {
-        "base": "URL Intelligence",
+        "base": "API Service Component",
         "conditionalAppends": [
           {
-            "condition": "url-intelligenceConfig.mode === 'forwarding' && urlIntelPodSelected === true",
-            "append": " (Forwarding ${urlIntelPod})"
+            "condition": "api-service-componentConfig.mode === 'forwarding' && apiServicePodSelected === true",
+            "append": " (Forwarding ${apiServicePod})"
           }
         ]
       }
     }
   },
   {
-    "id": "threat-intelligence-sub",
+    "id": "external-integration",
     "conditions": {
       "enabled": true,
-      "url-intelligenceConfig.enabled": true,
-      "threatIntelPodSelected": true
+      "api-serviceConfig.enabled": true,
+      "integrationPodSelected": true
     },
     "command": {
-      "base": "kubectx ${kubectlContext} && kubectl port-forward ${threatIntelPod} 8084:8080",
-      "prefix": "nvm use ${nodeVersion} && ",
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=external-integration --pattern=infinite --port=8084",
       "tabTitle": {
-        "base": "Threat Intelligence"
+        "base": "External Integration"
       }
     }
   },
   {
-    "id": "activity-logger",
+    "id": "logger-service",
     "conditions": {
       "enabled": true,
-      "attachState.activity-logger": false
+      "attachState.logger-service": false
     },
     "command": {
-      "base": "nvm use ${nodeVersion} && cd ./activity-logger && ./gradlew bootRun -Dspring.profiles.active=dev -Dgcloud.project=${gcloudProject}",
-      "tabTitle": "Activity Logger"
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=logger-service --pattern=infinite",
+      "tabTitle": "Logger Service"
     }
   },
   {
-    "id": "activity-logger",
+    "id": "logger-service",
     "conditions": {
       "enabled": true,
-      "attachState.activity-logger": true,
+      "attachState.logger-service": true,
       "mode": "suspend"
     },
     "command": {
-      "base": "nvm use ${nodeVersion} && cd ./activity-logger && ./gradlew bootRun --debug-jvm -Dspring.profiles.active=dev -Dgcloud.project=${gcloudProject}",
-      "tabTitle": "Activity Logger (Debug Suspend)"
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=logger-service --pattern=infinite --debug=suspend",
+      "tabTitle": "Logger Service (Debug Suspend)"
     }
   },
   {
-    "id": "activity-logger",
+    "id": "logger-service",
     "conditions": {
       "enabled": true,
-      "attachState.activity-logger": true,
+      "attachState.logger-service": true,
       "mode": "run"
     },
     "command": {
-      "base": "nvm use ${nodeVersion} && cd ./activity-logger && ./gradlew bootRun -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${debugPort}' -Dspring.profiles.active=dev -Dgcloud.project=${gcloudProject}",
-      "tabTitle": "Activity Logger (Debug Run)"
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=logger-service --pattern=infinite --debug=run --port=${debugPort}",
+      "tabTitle": "Logger Service (Debug Run)"
     }
   },
   {
-    "id": "rule-engine",
+    "id": "processing-engine",
     "conditions": {
       "enabled": true,
       "deploymentType": "process"
     },
     "command": {
-      "base": "cd rule-engine && ./out/rule-engine",
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=processing-engine --pattern=success-30",
       "tabTitle": {
-        "base": "Rule Engine (Process)"
+        "base": "Processing Engine (Process)"
       },
       "refreshConfig": {
         "prependCommands": [
           {
-            "command": "make run-local && "
+            "command": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=processing-build --pattern=success-10 && "
           }
         ]
       }
     }
   },
   {
-    "id": "rule-engine",
+    "id": "processing-engine",
     "conditions": {
       "enabled": true,
       "deploymentType": "container"
     },
     "command": {
-      "base": "cd ./weblifemirror && ./gradlew runDockerComposeRuleEngine",
-      "associatedContainers": ["rule-engine"],
-      "prefix": "nvm use ${nodeVersion} && ",
-      "tabTitle": "Rule Engine (Container)"
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=processing-engine --pattern=success-30 --mode=container",
+      "associatedContainers": ["processing-engine"],
+      "tabTitle": "Processing Engine (Container)"
     }
   },
   {
-    "id": "test-analytics",
+    "id": "analytics-service",
     "conditions": {
       "enabled": true,
       "mode": "development"
     },
     "command": {
-      "base": "cd test-analytics && npm run dev -- --analytics-mode",
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=analytics-service --pattern=infinite --mode=development",
       "tabTitle": {
-        "base": "Test Analytics (Dev)"
+        "base": "Analytics Service (Dev)"
       }
     }
   },
   {
-    "id": "test-analytics",
+    "id": "analytics-service",
     "conditions": {
       "enabled": true,
       "mode": "staging"
     },
     "command": {
-      "base": "cd test-analytics && npm run staging -- --analytics-mode",
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=analytics-service --pattern=infinite --mode=staging",
       "tabTitle": {
-        "base": "Test Analytics (Staging)"
+        "base": "Analytics Service (Staging)"
       }
     }
   },
   {
-    "id": "test-analytics",
+    "id": "analytics-service",
     "conditions": {
       "enabled": true,
       "mode": "production"
     },
     "command": {
-      "base": "cd test-analytics && npm run prod -- --analytics-mode",
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=analytics-service --pattern=infinite --mode=production",
       "tabTitle": {
-        "base": "Test Analytics (Prod)"
+        "base": "Analytics Service (Prod)"
       }
     }
   },
   {
-    "id": "test-analytics",
+    "id": "data-service",
     "conditions": {
       "enabled": true,
-      "dataProcessorConfig.enabled": true,
-      "dataProcessorConfig.mode": "batch"
+      "data-serviceConfig.enabled": true,
+      "data-serviceConfig.mode": "batch"
     },
     "command": {
-      "base": "cd test-analytics/data-processor && python batch_processor.py --mode=${mode}",
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=data-service --pattern=success-45 --mode=batch",
       "tabTitle": {
-        "base": "Data Processor (Batch)"
+        "base": "Data Service (Batch)"
       }
     }
   },
   {
-    "id": "test-analytics",
+    "id": "data-service",
     "conditions": {
       "enabled": true,
-      "dataProcessorConfig.enabled": true,
-      "dataProcessorConfig.mode": "stream"
+      "data-serviceConfig.enabled": true,
+      "data-serviceConfig.mode": "stream"
     },
     "command": {
-      "base": "cd test-analytics/data-processor && python stream_processor.py --mode=${mode}",
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=data-service --pattern=infinite --mode=stream",
       "tabTitle": {
-        "base": "Data Processor (Stream)"
+        "base": "Data Service (Stream)"
       }
     }
   },
   {
-    "id": "test-analytics",
+    "id": "data-service",
     "conditions": {
       "enabled": true,
-      "dataProcessorConfig.enabled": true,
-      "dataProcessorConfig.mode": "hybrid"
+      "data-serviceConfig.enabled": true,
+      "data-serviceConfig.mode": "hybrid"
     },
     "command": {
-      "base": "cd test-analytics/data-processor && python hybrid_processor.py --mode=${mode}",
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=data-service --pattern=infinite --mode=hybrid",
       "tabTitle": {
-        "base": "Data Processor (Hybrid)"
+        "base": "Data Service (Hybrid)"
       }
     }
   },
   {
-    "id": "test-analytics",
+    "id": "processing-component",
     "conditions": {
       "enabled": true,
-      "mlEngineConfig.enabled": true,
-      "mlEngineConfig.mode": "tensorflow"
+      "processing-componentConfig.enabled": true,
+      "processing-componentConfig.mode": "engine-a"
     },
     "command": {
-      "base": "cd test-analytics/ml-engine && python run_tf_model.py --env=${mode}",
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=processing-component --pattern=infinite --mode=engine-a",
       "tabTitle": {
-        "base": "ML Engine (TensorFlow)"
+        "base": "Processing Component (Engine A)"
       }
     }
   },
   {
-    "id": "test-analytics",
+    "id": "processing-component",
     "conditions": {
       "enabled": true,
-      "mlEngineConfig.enabled": true,
-      "mlEngineConfig.mode": "pytorch"
+      "processing-componentConfig.enabled": true,
+      "processing-componentConfig.mode": "engine-b"
     },
     "command": {
-      "base": "cd test-analytics/ml-engine && python run_pytorch_model.py --env=${mode}",
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=processing-component --pattern=infinite --mode=engine-b",
       "tabTitle": {
-        "base": "ML Engine (PyTorch)"
+        "base": "Processing Component (Engine B)"
       }
     }
   },
   {
-    "id": "test-analytics",
+    "id": "processing-component",
     "conditions": {
       "enabled": true,
-      "mlEngineConfig.enabled": true,
-      "mlEngineConfig.mode": "sklearn"
+      "processing-componentConfig.enabled": true,
+      "processing-componentConfig.mode": "engine-c"
     },
     "command": {
-      "base": "cd test-analytics/ml-engine && python run_sklearn_model.py --env=${mode}",
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=processing-component --pattern=infinite --mode=engine-c",
       "tabTitle": {
-        "base": "ML Engine (Scikit-learn)"
+        "base": "Processing Component (Engine C)"
       }
     }
   },
   {
-    "id": "runStorybook",
+    "id": "runDocs",
     "command": {
-      "base": "cd ./weblifemirror && nvm use ${nodeVersion} && npm run storybook",
-      "tabTitle": "Storybook"
+      "base": "node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=documentation --pattern=infinite",
+      "tabTitle": "Documentation Server"
     }
   }
 ] 

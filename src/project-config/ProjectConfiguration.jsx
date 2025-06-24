@@ -125,7 +125,7 @@ const ProjectConfiguration = forwardRef(({ projectName, globalDropdownValues, te
     const sectionStatus = statuses[cacheKey];
     if (!sectionStatus) return STATUS.WAITING;
     if (sectionStatus.status === 'no_specific_checks') return STATUS.VALID;
-    return sectionStatus;
+    return sectionStatus.status || sectionStatus;
   };
 
   const getSectionGitBranch = (sectionId, statuses) => {

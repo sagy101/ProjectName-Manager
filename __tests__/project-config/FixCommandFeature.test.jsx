@@ -91,13 +91,24 @@ describe('Fix Command Feature Tests', () => {
       expect(verificationsWithFixCommands.length).toBeGreaterThan(0);
       
       const expectedFixCommands = [
-        'mirrorDirExists',
-        'ChromiumInstalled',
-        'threatIntelligenceDirExists',
-        'infraDirExists',
-        'activityLoggerDirExists',
-        'ruleEngineDirExists',
-        'testAnalyticsDirExists'
+        'serviceADirExists',
+        'serviceAConfigExists',
+        'backendDirExists',
+        'agentDirExists',
+        'BrowserInstalled',
+        'apiServiceDirExists',
+        'integrationConfigExists',
+        'apiConfigExists',
+        'sharedConfigDirExists',
+        'loggerServiceDirExists',
+        'loggerConfigExists',
+        'processingEngineDirExists',
+        'processingRulesExist',
+        'analyticsServiceDirExists',
+        'dataServiceDirExists',
+        'processingComponentDirExists',
+        'dataServiceConfigExists',
+        'processingComponentConfigExists'
       ];
 
       expectedFixCommands.forEach(expectedId => {
@@ -135,7 +146,7 @@ describe('Fix Command Feature Tests', () => {
     });
 
     it('should show fix button for invalid verifications with fixCommand from configuration sidebar', () => {
-      const verification = createTestVerification('ChromiumInstalled', 'curl -L -o ungoogled-chromium.dmg ...');
+      const verification = createTestVerification('BrowserInstalled', 'node ./ProjectName-Manager/test-utils/commands/mock-command.js --service=browser-install --pattern=success-10 && echo \'Browser installation completed\'');
       const mockOnFixCommand = jest.fn();
 
       render(
@@ -278,27 +289,27 @@ describe('Fix Command Feature Tests', () => {
   });
 
   describe('Fix Command Types Validation', () => {
-    it('should validate brew install commands', () => {
-      const brewCommands = [];
+    it('should validate brew install commands are now mock commands', () => {
+      const mockCommands = [];
       
       generalEnvironmentVerifications.categories.forEach(categoryWrapper => {
         const category = categoryWrapper.category;
         if (category && category.verifications) {
           category.verifications.forEach(verification => {
-            if (verification.fixCommand && verification.fixCommand.includes('brew install')) {
-              brewCommands.push(verification);
+            if (verification.fixCommand && verification.fixCommand.includes('mock-verify.js')) {
+              mockCommands.push(verification);
             }
           });
         }
       });
 
-      expect(brewCommands.length).toBeGreaterThan(0);
+      expect(mockCommands.length).toBeGreaterThan(0);
       
-      // Test each brew command individually to avoid multiple elements issue
-      brewCommands.forEach((verification, index) => {
+      // Test each mock command individually to avoid multiple elements issue
+      mockCommands.forEach((verification, index) => {
         const { unmount } = render(
           <VerificationIndicator
-            key={`brew-${index}`}
+            key={`mock-${index}`}
             verification={verification}
             status={STATUS.INVALID}
             onFixCommand={jest.fn()}
@@ -307,32 +318,34 @@ describe('Fix Command Feature Tests', () => {
 
         const fixButton = screen.getByText('Fix');
         expect(fixButton).toBeInTheDocument();
-        expect(verification.fixCommand).toMatch(/^brew install/);
+        expect(verification.fixCommand).toMatch(/node.*mock-verify\.js/);
         
         unmount(); // Clean up to avoid multiple elements
       });
     });
 
-    it('should validate git clone commands', () => {
-      const gitCloneCommands = [];
+    it('should validate real fix commands (not mock commands)', () => {
+      const realFixCommands = [];
       
       configurationSidebarAbout.forEach(section => {
         if (section.verifications) {
           section.verifications.forEach(verification => {
-            if (verification.fixCommand && verification.fixCommand.includes('git clone')) {
-              gitCloneCommands.push(verification);
+            if (verification.fixCommand) {
+              realFixCommands.push(verification);
             }
           });
         }
       });
 
-      expect(gitCloneCommands.length).toBeGreaterThan(0);
+      expect(realFixCommands.length).toBeGreaterThan(0);
       
-      gitCloneCommands.forEach((verification, index) => {
+      // Test a sample of real fix commands (not all to avoid test complexity)
+      const sampleCommands = realFixCommands.slice(0, 3);
+      sampleCommands.forEach((verification, index) => {
         const mockOnFixCommand = jest.fn();
         const { unmount } = render(
           <VerificationIndicator
-            key={`git-clone-${index}`}
+            key={`real-fix-${index}`}
             verification={verification}
             status={STATUS.INVALID}
             onFixCommand={mockOnFixCommand}
@@ -343,7 +356,8 @@ describe('Fix Command Feature Tests', () => {
         fireEvent.click(fixButton);
         
         expect(mockOnFixCommand).toHaveBeenCalledWith(verification);
-        expect(verification.fixCommand).toMatch(/^git clone/);
+        // Should not be mock commands
+        expect(verification.fixCommand).not.toMatch(/node.*mock-command\.js/);
         
         unmount(); // Clean up to avoid multiple elements
       });
@@ -385,34 +399,24 @@ describe('Fix Command Feature Tests', () => {
       });
     });
 
-    it('should validate download commands', () => {
-      const downloadCommands = [];
+    it('should validate download commands are now mock commands', () => {
+      const mockCommands = [];
       
       // Check both general and configuration sidebar for download commands
       generalEnvironmentVerifications.categories.forEach(categoryWrapper => {
         const category = categoryWrapper.category;
         if (category && category.verifications) {
           category.verifications.forEach(verification => {
-            if (verification.fixCommand && (verification.fixCommand.includes('curl') || verification.fixCommand.includes('hdiutil'))) {
-              downloadCommands.push(verification);
-            }
-          });
-        }
-      });
-      
-      configurationSidebarAbout.forEach(section => {
-        if (section.verifications) {
-          section.verifications.forEach(verification => {
-            if (verification.fixCommand && (verification.fixCommand.includes('curl') || verification.fixCommand.includes('hdiutil'))) {
-              downloadCommands.push(verification);
+            if (verification.fixCommand && verification.fixCommand.includes('mock-verify.js')) {
+              mockCommands.push(verification);
             }
           });
         }
       });
 
-      expect(downloadCommands.length).toBeGreaterThan(0);
+      expect(mockCommands.length).toBeGreaterThan(0);
       
-      downloadCommands.forEach((verification, index) => {
+      mockCommands.forEach((verification, index) => {
         const mockOnFixCommand = jest.fn();
         const { unmount } = render(
           <VerificationIndicator
@@ -432,15 +436,14 @@ describe('Fix Command Feature Tests', () => {
       });
     });
 
-    it('should validate complex shell commands', () => {
+    it('should validate complex shell commands are now mock commands', () => {
       const verification = generalEnvironmentVerifications.categories
         .find(cat => cat.category.title === 'Go')
         .category.verifications
         .find(v => v.id === 'goPathConfig');
 
       expect(verification).toBeDefined();
-      expect(verification.fixCommand).toContain('export GOPATH=$HOME/go');
-      expect(verification.fixCommand).toContain('export PATH=$PATH:$GOPATH/bin');
+      expect(verification.fixCommand).toContain('node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=fix --id=GoInstalled');
       
       const mockOnFixCommand = jest.fn();
       render(

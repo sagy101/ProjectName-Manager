@@ -25,7 +25,10 @@ beforeEach(() => {
 
 describe('getDropdownOptions additional cases', () => {
   test('performs variable substitution and single output', async () => {
-    child_process.exec.mockImplementation((cmd, opts, cb) => cb(null, 'sub', ''));
+    child_process.exec.mockImplementation((cmd, opts, cb) => {
+      expect(opts.cwd).toBe('/Users/sashlag/projects');
+      cb(null, 'sub', '');
+    });
     const config = { id: 'v', command: 'echo ${foo}_${bar}', parseResponse: 'text', args: { foo: 'A', bar: 'B' } };
     const res = await getDropdownOptions(config);
     expect(child_process.exec.mock.calls[0][0]).toBe('echo A_B');
@@ -33,7 +36,10 @@ describe('getDropdownOptions additional cases', () => {
   });
 
   test('returns error when command fails', async () => {
-    child_process.exec.mockImplementation((cmd, opts, cb) => cb(new Error('fail'), '', 'bad'));
+    child_process.exec.mockImplementation((cmd, opts, cb) => {
+      expect(opts.cwd).toBe('/Users/sashlag/projects');
+      cb(new Error('fail'), '', 'bad');
+    });
     const res = await getDropdownOptions({ id: 'e', command: 'bad', parseResponse: 'lines', args: {} });
     expect(res).toEqual({ options: [], error: 'bad' });
   });
@@ -74,6 +80,10 @@ describe('executeDropdownChangeCommand sidebar lookup', () => {
     child_process.exec.mockImplementation((cmd, opts, cb) => cb(null, 'ok', ''));
     const res = await executeDropdownChangeCommand('sb', 'v', { sb: 'v' });
     expect(res.success).toBe(true);
-    expect(child_process.exec).toHaveBeenCalledWith('echo v', { timeout: 30000, maxBuffer: 1024 * 1024 }, expect.any(Function));
+    expect(child_process.exec).toHaveBeenCalledWith('echo v', { 
+      timeout: 30000, 
+      maxBuffer: 1024 * 1024,
+      cwd: '/Users/sashlag/projects'
+    }, expect.any(Function));
   });
 });

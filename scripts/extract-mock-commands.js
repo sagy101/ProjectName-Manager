@@ -186,9 +186,9 @@ const ORIGINAL_MOCK_VALUES = {
     'version': 'rdctl version 1.10.1',
     '*': 'rdctl version 1.10.1'
   },
-  'chromium': {
-    '--version': 'Chromium 125.0.6422.141',
-    '*': 'Chromium 125.0.6422.141'
+  'browser': {
+    '--version': 'Browser 125.0.6422.141',
+    '*': 'Browser 125.0.6422.141'
   }
 };
 
@@ -268,7 +268,9 @@ function generateMockScript(commandName, commandData) {
       
       // Handle specific command patterns
       if (cmd.fullCommand) {
-        const args = cmd.fullCommand.replace(new RegExp(`^${commandName}\\s*`), '');
+        // Escape special regex characters in command name
+        const escapedCommandName = commandName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const args = cmd.fullCommand.replace(new RegExp(`^${escapedCommandName}\\s*`), '');
         if (args && args !== cmd.fullCommand) { // Make sure we actually removed the command name
           patterns.push({
             pattern: args,
@@ -344,6 +346,18 @@ function main() {
       allCommands.set(name, cmd);
     }
   });
+  
+  // Ensure 'browser' mock is always available for testing
+  if (!allCommands.has('browser')) {
+    allCommands.set('browser', {
+      name: 'browser',
+      fullCommand: 'browser --version',
+      checkType: 'commandSuccess',
+      expectedValue: 'Browser 125.0.6422.141',
+      outputStream: 'stdout',
+      source: 'hardcoded'
+    });
+  }
   
   // Output the results
   console.log('# Commands extracted from JSON files:');

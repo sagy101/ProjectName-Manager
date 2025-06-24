@@ -1,0 +1,71 @@
+{
+  "sectionMapping": {
+    "mirror": "service-a",
+    "gopm": "backend-service", 
+    "url-intelligence": "api-service",
+    "activity-logger": "logger-service",
+    "rule-engine": "processing-engine",
+    "test-analytics": "analytics-service"
+  },
+  "subSectionMapping": {
+    "frontend": "ui-component",
+    "url-intelligence-sub": "api-service-component",
+    "threat-intelligence-sub": "external-integration",
+    "data-processor": "data-service",
+    "ml-engine": "processing-component"
+  },
+  "commandMapping": {
+    "runStorybook": "runDocs",
+    "testAnalyticsLogCommand": "analyticsLogCommand",
+    "mlEngineLogCommand": "processingLogCommand"
+  },
+  "containerMapping": {
+    "wiremock": "service-a-cache",
+    "weblifemirror-db-replica-1": "service-a-db-replica",
+    "weblifemirror-db-master-1": "service-a-db-master", 
+    "weblifemirror-redis-1": "service-a-redis",
+    "weblifemirror-localdb-1": "service-a-localdb",
+    "serverbrowseragent": "backend-agent",
+    "rule-engine": "processing-engine"
+  },
+  "pathMapping": {
+    "./weblifemirror": "./service-a",
+    "./gopm": "./backend-service",
+    "./threatintelligence": "./api-service",
+    "./activity-logger": "./logger-service",
+    "./rule-engine": "./processing-engine",
+    "./test-analytics": "./analytics-service",
+    "./infrastructure": "./shared-config"
+  },
+  "configKeyMapping": {
+    "mirrorConfig": "service-aConfig",
+    "frontendConfig": "ui-componentConfig",
+    "url-intelligenceConfig": "api-serviceConfig",
+    "url-intelligence-subConfig": "api-service-componentConfig",
+    "threat-intelligence-subConfig": "external-integrationConfig",
+    "activityLoggerConfig": "logger-serviceConfig",
+    "ruleEngineConfig": "processing-engineConfig",
+    "testAnalyticsConfig": "analytics-serviceConfig",
+    "dataProcessorConfig": "data-serviceConfig",
+    "mlEngineConfig": "processing-componentConfig"
+  },
+  "attachStateMapping": {
+    "attachState.mirror": "attachState.service-a",
+    "attachState.activity-logger": "attachState.logger-service"
+  },
+  "verificationMapping": {
+    "mirrorDirExists": "serviceADirExists",
+    "mirrorGradlewExists": "serviceAConfigExists",
+    "gopmDirExists": "backendDirExists",
+    "agentDirExists": "agentDirExists",
+    "ChromiumInstalled": "BrowserInstalled",
+    "threatIntelligenceDirExists": "apiServiceDirExists",
+    "threatIntelligenceGradlewExists": "integrationConfigExists",
+    "urlIntelligenceGradlewExists": "apiConfigExists",
+    "infraDirExists": "sharedConfigDirExists",
+    "activityLoggerDirExists": "loggerServiceDirExists",
+    "activityLoggerGradlewExists": "loggerConfigExists",
+    "ruleEngineDirExists": "processingEngineDirExists",
+    "testAnalyticsDirExists": "analyticsServiceDirExists"
+  }
+} 

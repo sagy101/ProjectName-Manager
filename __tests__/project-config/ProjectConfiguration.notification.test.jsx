@@ -27,12 +27,12 @@ jest.mock('../../src/project-config/RunButton', () => props =>
 );
 
 jest.mock('../../src/common/utils/evalUtils', () => ({
-  generateCommandList: jest.fn(() => [{ command: 'echo 1', sectionId: 'mirror', tabTitle: 'T1' }])
+  generateCommandList: jest.fn(() => [{ command: 'echo 1', sectionId: 'service-a', tabTitle: 'T1' }])
 }));
 
 jest.mock('../../src/project-config/hooks/useProjectConfig', () => ({
   useProjectConfig: () => ({
-    configState: { mirror: { enabled: true } },
+    configState: { 'service-a': { enabled: true } },
     attachState: {},
     warningState: {},
     initialized: true,
@@ -59,7 +59,7 @@ describe('ProjectConfiguration notifications and statuses', () => {
         clearTabs: jest.fn(),
       },
     },
-    verificationStatuses: { mirror: { status: 'no_specific_checks', gitBranch: 'main' } },
+    verificationStatuses: { 'serviceA': { status: 'valid', gitBranch: 'main' } },
     onTriggerRefresh: jest.fn(),
     showTestSections: false,
     onConfigStateChange: jest.fn(),
@@ -91,12 +91,12 @@ describe('ProjectConfiguration notifications and statuses', () => {
     await waitFor(() => expect(baseProps.terminalRef.current.openTabs).toHaveBeenCalled());
     expect(generateCommandList).toHaveBeenCalled();
     await waitFor(() => {
-      const mirrorProps = [...global.__configSectionCalls].reverse().find(p => p.section.id === 'mirror');
-      return mirrorProps && mirrorProps.isLocked;
+      const serviceAProps = [...global.__configSectionCalls].reverse().find(p => p.section.id === 'service-a');
+      return serviceAProps && serviceAProps.isLocked;
     });
-    const mirrorProps = [...global.__configSectionCalls].reverse().find(p => p.section.id === 'mirror');
+    const serviceAProps = [...global.__configSectionCalls].reverse().find(p => p.section.id === 'service-a');
     act(() => {
-      mirrorProps.toggleEnabled('mirror', false);
+      serviceAProps.toggleEnabled('service-a', false);
     });
 
     expect(getByTestId('notification').textContent).toBe('Cannot change settings while the project is running.');
@@ -113,9 +113,9 @@ describe('ProjectConfiguration notifications and statuses', () => {
     fireEvent.click(runButton); // start
     await waitFor(() => expect(baseProps.terminalRef.current.openTabs).toHaveBeenCalled());
     
-    const mirrorProps = [...global.__configSectionCalls].reverse().find(p => p.section.id === 'mirror');
+    const serviceAProps = [...global.__configSectionCalls].reverse().find(p => p.section.id === 'service-a');
     act(() => {
-      mirrorProps.setMode('mirror', 'dev', 'sub1');
+      serviceAProps.setMode('service-a', 'dev', 'sub1');
     });
 
     expect(getByTestId('notification').textContent).toBe('Cannot change deployment type while the project is running.');
@@ -128,9 +128,9 @@ describe('ProjectConfiguration notifications and statuses', () => {
     fireEvent.click(runButton); // start
     await waitFor(() => expect(baseProps.terminalRef.current.openTabs).toHaveBeenCalled());
     
-    const mirrorProps = [...global.__configSectionCalls].reverse().find(p => p.section.id === 'mirror');
+    const serviceAProps = [...global.__configSectionCalls].reverse().find(p => p.section.id === 'service-a');
     act(() => {
-      mirrorProps.setInputFieldValue('mirror', 'inputId', 'value');
+      serviceAProps.setInputFieldValue('service-a', 'inputId', 'value');
     });
 
     expect(getByTestId('notification').textContent).toBe('Cannot change settings while the project is running.');
@@ -143,9 +143,9 @@ describe('ProjectConfiguration notifications and statuses', () => {
     fireEvent.click(runButton); // start
     await waitFor(() => expect(baseProps.terminalRef.current.openTabs).toHaveBeenCalled());
     
-    const mirrorProps = [...global.__configSectionCalls].reverse().find(p => p.section.id === 'mirror');
+    const serviceAProps = [...global.__configSectionCalls].reverse().find(p => p.section.id === 'service-a');
     act(() => {
-      mirrorProps.toggleSubSectionEnabled('mirror', 'sub1', false);
+      serviceAProps.toggleSubSectionEnabled('service-a', 'sub1', false);
     });
 
     expect(getByTestId('notification').textContent).toBe('Cannot change settings while the project is running.');
@@ -153,8 +153,8 @@ describe('ProjectConfiguration notifications and statuses', () => {
 
   test('passes verification statuses to ConfigSection', () => {
     render(<ProjectConfiguration {...baseProps} />);
-    const mirrorProps = [...global.__configSectionCalls].reverse().find(p => p.section.id === 'mirror');
-    expect(mirrorProps.sectionPathStatus).toBe(STATUS.VALID);
-    expect(mirrorProps.sectionGitBranch).toBe('main');
+    const serviceAProps = [...global.__configSectionCalls].reverse().find(p => p.section.id === 'service-a');
+    expect(serviceAProps.sectionPathStatus).toBe(STATUS.VALID);
+    expect(serviceAProps.sectionGitBranch).toBe('main');
   });
 });

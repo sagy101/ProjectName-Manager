@@ -107,13 +107,24 @@ describe('Fix Command Backend Tests', () => {
       
       // Updated to match all actual fix commands in configuration sidebar
       const expectedFixCommands = [
-        'mirrorDirExists',
-        'ChromiumInstalled',
-        'threatIntelligenceDirExists',
-        'infraDirExists',
-        'activityLoggerDirExists',
-        'ruleEngineDirExists',
-        'testAnalyticsDirExists'
+        'serviceADirExists',
+        'serviceAConfigExists',
+        'backendDirExists',
+        'agentDirExists',
+        'BrowserInstalled',
+        'apiServiceDirExists',
+        'integrationConfigExists',
+        'apiConfigExists',
+        'sharedConfigDirExists',
+        'loggerServiceDirExists',
+        'loggerConfigExists',
+        'processingEngineDirExists',
+        'processingRulesExist',
+        'analyticsServiceDirExists',
+        'dataServiceDirExists',
+        'processingComponentDirExists',
+        'dataServiceConfigExists',
+        'processingComponentConfigExists'
       ];
 
       expectedFixCommands.forEach(expectedId => {
@@ -166,54 +177,50 @@ describe('Fix Command Backend Tests', () => {
   });
 
   describe('Fix Command Types', () => {
-    it('should validate brew install commands', () => {
-      const brewCommands = [];
+    it('should validate brew install commands are now mock commands', () => {
+      const mockCommands = [];
       
       generalEnvironmentVerifications.categories.forEach(categoryWrapper => {
         const category = categoryWrapper.category;
         if (category && category.verifications) {
           category.verifications.forEach(verification => {
-            if (verification.fixCommand && verification.fixCommand.includes('brew install')) {
-              brewCommands.push(verification);
+            if (verification.fixCommand && verification.fixCommand.includes('mock-verify.js')) {
+              mockCommands.push(verification);
             }
           });
         }
       });
 
-      expect(brewCommands.length).toBeGreaterThan(0);
+      expect(mockCommands.length).toBeGreaterThan(0);
       
-      brewCommands.forEach(verification => {
-        expect(verification.fixCommand).toMatch(/^brew install/);
-        
-        // Should not have dangerous flags
-        expect(verification.fixCommand).not.toMatch(/--force-bottle/);
-        expect(verification.fixCommand).not.toMatch(/--ignore-dependencies/);
+      mockCommands.forEach(verification => {
+        expect(verification.fixCommand).toMatch(/node .*mock-verify\.js/);
       });
     });
 
-    it('should validate git clone commands', () => {
-      const gitCloneCommands = [];
+    it('should validate real fix commands (not mock commands)', () => {
+      const realFixCommands = [];
       
       configurationSidebarAbout.forEach(section => {
         if (section.verifications) {
           section.verifications.forEach(verification => {
-            if (verification.fixCommand && verification.fixCommand.includes('git clone')) {
-              gitCloneCommands.push(verification);
+            if (verification.fixCommand) {
+              realFixCommands.push(verification);
             }
           });
         }
       });
 
-      expect(gitCloneCommands.length).toBeGreaterThan(0);
+      expect(realFixCommands.length).toBeGreaterThan(0);
       
-      gitCloneCommands.forEach(verification => {
-        expect(verification.fixCommand).toMatch(/^git clone/);
+      // Fix commands should be real commands like mkdir, brew install, etc.
+      // Not mock commands - those are for service simulation
+      realFixCommands.forEach(verification => {
+        expect(verification.fixCommand).toBeTruthy();
+        expect(typeof verification.fixCommand).toBe('string');
         
-        // Should be cloning from trusted GitHub repositories
-        expect(verification.fixCommand).toContain('github.com/PFPT-Isolation');
-        
-        // Should be cloning to relative paths
-        expect(verification.fixCommand).toMatch(/\.\//);
+        // Should not be mock service commands
+        expect(verification.fixCommand).not.toMatch(/node.*mock-command\.js/);
       });
     });
 
@@ -243,68 +250,33 @@ describe('Fix Command Backend Tests', () => {
       });
     });
 
-    it('should validate download commands', () => {
-      const downloadCommands = [];
+    it('should validate download commands are now mock commands', () => {
+      const mockCommands = [];
       
-      // Check both general and configuration sidebar for download commands
+      // Check general environment for download commands
       generalEnvironmentVerifications.categories.forEach(categoryWrapper => {
         const category = categoryWrapper.category;
         if (category && category.verifications) {
           category.verifications.forEach(verification => {
-            if (verification.fixCommand && (verification.fixCommand.includes('curl') || verification.fixCommand.includes('hdiutil'))) {
-              downloadCommands.push(verification);
+            if (verification.fixCommand && verification.fixCommand.includes('mock-verify.js')) {
+              mockCommands.push(verification);
             }
           });
         }
       });
       
-      configurationSidebarAbout.forEach(section => {
-        if (section.verifications) {
-          section.verifications.forEach(verification => {
-            if (verification.fixCommand && (verification.fixCommand.includes('curl') || verification.fixCommand.includes('hdiutil'))) {
-              downloadCommands.push(verification);
-            }
-          });
-        }
-      });
-
-      // Should have at least some download commands (nvm, chromium, etc.)
-      expect(downloadCommands.length).toBeGreaterThan(0);
-
-      downloadCommands.forEach(verification => {
-        // Should be downloading from trusted sources
-        if (verification.fixCommand.includes('nvm')) {
-          expect(verification.fixCommand).toContain('raw.githubusercontent.com/nvm-sh/nvm');
-        }
-        
-        if (verification.fixCommand.includes('chromium')) {
-          expect(verification.fixCommand).toContain('github.com/ungoogled-software/ungoogled-chromium-macos');
-        }
-        
-        // Should pipe to bash safely if doing so
-        if (verification.fixCommand.includes('| bash')) {
-          expect(verification.fixCommand).toMatch(/curl.*-o-.*\|.*bash/);
-        }
-      });
+      // We expect all download commands to be mocked now
+      expect(mockCommands.length).toBeGreaterThan(0);
     });
 
-    it('should validate complex shell commands', () => {
+    it('should validate complex shell commands are now mock commands', () => {
       const goPathVerification = generalEnvironmentVerifications.categories
         .find(cat => cat.category.title === 'Go')
         .category.verifications
         .find(v => v.id === 'goPathConfig');
 
       expect(goPathVerification).toBeDefined();
-      expect(goPathVerification.fixCommand).toContain('export GOPATH=$HOME/go');
-      expect(goPathVerification.fixCommand).toContain('export PATH=$PATH:$GOPATH/bin');
-      
-      // Should only modify user's shell config files
-      expect(goPathVerification.fixCommand).toMatch(/~\/\.zshrc/);
-      expect(goPathVerification.fixCommand).toMatch(/~\/\.bash_profile/);
-      
-      // Should not modify system files
-      expect(goPathVerification.fixCommand).not.toMatch(/\/etc\/profile/);
-      expect(goPathVerification.fixCommand).not.toMatch(/usr\/local/);
+      expect(goPathVerification.fixCommand).toContain('node ./ProjectName-Manager/test-utils/commands/mock-verify.js --type=fix --id=GoInstalled');
     });
   });
 
@@ -377,11 +349,11 @@ describe('Fix Command Backend Tests', () => {
         }
       });
 
-      // Test with ChromiumInstalled which actually has a fix command
-      const result = await mockRerunSingleVerification('ChromiumInstalled');
+      // Test with BrowserInstalled which actually has a fix command
+      const result = await mockRerunSingleVerification('BrowserInstalled');
       
       expect(result.success).toBe(true);
-      expect(result.verificationId).toBe('ChromiumInstalled');
+      expect(result.verificationId).toBe('BrowserInstalled');
       expect(result.source).toBe('configuration');
     });
 

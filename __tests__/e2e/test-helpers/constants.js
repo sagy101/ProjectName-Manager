@@ -117,9 +117,9 @@ const STATUS_CLASSES = {
 // Common test data
 const TEST_DATA = {
   DEFAULT_PROJECT_NAME: 'ProjectName',
-  MIRROR_SECTION_TITLE: 'Mirror + MariaDB',
-  GOPM_SECTION_TITLE: 'gopm (Process Manager)',
-  URL_INTELLIGENCE_TITLE: 'URL Intelligence + TI (Cloud)',
+  MIRROR_SECTION_TITLE: 'Service-A + Database',
+  GOPM_SECTION_TITLE: 'Backend-Service + Agent + Browser',
+  URL_INTELLIGENCE_TITLE: 'API-Service + External-Integration',
   GENERAL_ENV_TITLE: 'General Environment',
 };
 

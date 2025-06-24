@@ -74,7 +74,8 @@ async function execCommand(commandString, options = {}) {
     
     exec(shellCommand, { 
       timeout: 10000, // 10 second timeout
-      maxBuffer: 1024 * 1024 // 1MB buffer for output
+      maxBuffer: 1024 * 1024, // 1MB buffer for output
+      cwd: path.resolve(process.cwd(), '..') // Run in parent directory
     }, (error, stdout, stderr) => {
       clearTimeout(timeout);
       const sStdout = stdout.trim();

@@ -1,0 +1,546 @@
+{
+  "services": {
+    "service-a": {
+      "defaultPattern": "infinite",
+      "associatedContainers": [
+        "service-a-cache",
+        "service-a-db-replica", 
+        "service-a-db-master",
+        "service-a-redis",
+        "service-a-localdb",
+        "service-a-container"
+      ],
+      "containers": [
+        {
+          "name": "service-a-container",
+          "transitions": [
+            { "at": 0, "status": "created" },
+            { "at": 3000, "status": "running" }
+          ]
+        }
+      ],
+      "transitions": [
+        { "at": 2000, "status": "initializing", "log": "Service A initializing..." },
+        { "at": 5000, "status": "running", "log": "Service A is ready" },
+        { "at": 10000, "status": "healthy", "log": "Health check passed" }
+      ]
+    },
+    "backend-service": {
+      "defaultPattern": "infinite",
+      "associatedContainers": ["backend-db", "backend-cache", "backend-service-container"],
+      "containers": [
+        {
+          "name": "backend-service-container",
+          "transitions": [
+            { "at": 0, "status": "created" },
+            { "at": 2000, "status": "starting" },
+            { "at": 5000, "status": "running" }
+          ]
+        }
+      ],
+      "transitions": [
+        { "at": 2000, "status": "initializing", "log": "Backend service initializing..." },
+        { "at": 5000, "status": "running", "log": "Backend service is ready" },
+        { "at": 10000, "status": "healthy", "log": "Health check passed" }
+      ]
+    },
+    "test-service": {
+      "defaultPattern": "success-30",
+      "associatedContainers": ["test-container"],
+      "containers": [
+        {
+          "name": "test-container",
+          "transitions": [
+            { "at": 0, "status": "created" },
+            { "at": 1000, "status": "running" }
+          ]
+        }
+      ],
+      "transitions": [
+        { "at": 2000, "status": "running", "log": "Test service started" },
+        { "at": 30000, "status": "success", "exit": 0, "log": "Tests completed successfully" }
+      ]
+    },
+    "browser-install": {
+      "pattern": "success-10",
+      "logInterval": 1000,
+      "statusUpdateInterval": 2000
+    },
+    "analytics-service": {
+      "description": "Analytics service with data processing capabilities",
+      "defaultDuration": 12,
+      "containerEnabled": false
+    },
+    "environment-list": {
+      "description": "Lists available deployment environments",
+      "defaultDuration": 2,
+      "containerEnabled": false,
+      "outputs": {
+        "success": [
+          "development",
+          "staging", 
+          "production",
+          "testing"
+        ]
+      }
+    },
+    "gcloud-projects": {
+      "description": "Lists available Google Cloud projects",
+      "defaultDuration": 3,
+      "containerEnabled": false,
+      "outputs": {
+        "success": [
+          "my-project-dev5",
+          "my-project-staging", 
+          "my-project-prod",
+          "shared-resources-dev5",
+          "analytics-pipeline-dev5"
+        ]
+      }
+    },
+    "gcloud-config": {
+      "description": "Configures Google Cloud project settings",
+      "defaultDuration": 1,
+      "containerEnabled": false,
+      "outputs": {
+        "success": ["Updated property [core/project]."]
+      }
+    },
+    "container-list": {
+      "description": "Lists available container contexts",
+      "defaultDuration": 2,
+      "containerEnabled": false,
+      "outputs": {
+        "success": [
+          "docker-desktop",
+          "staging-cluster",
+          "production-cluster"
+        ]
+      }
+    },
+    "api-pods": {
+      "description": "Lists API service pods in a context",
+      "defaultDuration": 3,
+      "containerEnabled": false,
+      "outputs": {
+        "success": [
+          "api-service-pod-1",
+          "api-service-pod-2"
+        ]
+      }
+    },
+    "integration-pods": {
+      "description": "Lists integration service pods in a context",
+      "defaultDuration": 2,
+      "containerEnabled": false,
+      "outputs": {
+        "success": [
+          "integration-pod-1",
+          "integration-pod-2"
+        ]
+      }
+    },
+    "processing-engine": {
+      "defaultPattern": "success-30",
+      "associatedContainers": ["processing-engine"]
+    }
+  },
+  
+  "containers": {
+    "service-a-cache": {
+      "image": "alpine:latest",
+      "command": "sleep 3600",
+      "startupDelay": 1000,
+      "healthCheck": true
+    },
+    "service-a-db-replica": {
+      "image": "alpine:latest", 
+      "command": "sleep 3600",
+      "startupDelay": 3000,
+      "healthCheck": true
+    },
+    "service-a-db-master": {
+      "image": "alpine:latest",
+      "command": "sleep 3600", 
+      "startupDelay": 2000,
+      "healthCheck": true
+    },
+    "service-a-redis": {
+      "image": "redis:alpine",
+      "command": "redis-server --appendonly yes",
+      "startupDelay": 500,
+      "healthCheck": true
+    },
+    "service-a-localdb": {
+      "image": "alpine:latest",
+      "command": "sleep 3600",
+      "startupDelay": 1500,
+      "healthCheck": true
+    },
+    "backend-db": {
+      "image": "postgres:13-alpine",
+      "startupDelay": 3000,
+      "healthCheck": true,
+      "command": "postgres"
+    },
+    "backend-cache": {
+      "image": "redis:6-alpine",
+      "startupDelay": 1000,
+      "healthCheck": true,
+      "command": "redis-server"
+    },
+    "backend-agent": {
+      "image": "alpine:latest",
+      "command": "sleep 3600",
+      "startupDelay": 1500,
+      "healthCheck": true
+    },
+    "processing-engine": {
+      "image": "alpine:latest", 
+      "command": "sleep 3600",
+      "startupDelay": 2500,
+      "healthCheck": true
+    }
+  },
+  
+  "patterns": {
+    "quick-test": [
+      { "at": 1000, "status": "running", "log": "Quick test started" },
+      { "at": 5000, "status": "success", "exit": 0, "log": "Quick test passed" }
+    ],
+    "demo-fail": [
+      { "at": 2000, "status": "running", "log": "Demo started" },
+      { "at": 8000, "status": "error", "exit": 1, "log": "Demo failed for testing" }
+    ],
+    "success-10": [
+      { "at": 2000, "status": "running", "log": "Browser installation started" },
+      { "at": 10000, "status": "success", "exit": 0, "log": "Browser installation completed" }
+    ],
+    "infinite-containers": [
+      { "at": 2000, "status": "initializing", "log": "Service initializing" },
+      { "at": 5000, "status": "running", "log": "Service running with containers" }
+    ]
+  },
+  
+  "verifications": {
+    "NodeJSInstalled": {
+      "initial": {
+        "status": "fail",
+        "output": "bash: node: command not found",
+        "exitCode": 127
+      },
+      "fixed": {
+        "status": "pass",
+        "output": "v18.17.0",
+        "version": "v18.17.0",
+        "exitCode": 0
+      },
+      "fixCommand": {
+        "output": "Installing Node.js v18.17.0...\nNode.js has been installed successfully",
+        "exitCode": 0,
+        "duration": 3000
+      }
+    },
+    "NPMInstalled": {
+      "initial": {
+        "status": "fail",
+        "output": "bash: npm: command not found",
+        "exitCode": 127
+      },
+      "fixed": {
+        "status": "pass",
+        "output": "9.6.7",
+        "version": "9.6.7",
+        "exitCode": 0
+      },
+      "fixCommand": {
+        "output": "Installing npm v9.6.7...\nnpm has been installed successfully",
+        "exitCode": 0,
+        "duration": 2000
+      }
+    },
+    "GitInstalled": {
+      "initial": {
+        "status": "fail",
+        "output": "bash: git: command not found",
+        "exitCode": 127
+      },
+      "fixed": {
+        "status": "pass",
+        "output": "git version 2.39.3",
+        "version": "2.39.3",
+        "exitCode": 0
+      },
+      "fixCommand": {
+        "output": "Installing Git v2.39.3...\nGit has been installed successfully",
+        "exitCode": 0,
+        "duration": 2500
+      }
+    },
+    "BrowserInstalled": {
+      "initial": {
+        "status": "fail",
+        "output": "Browser not found or not properly installed",
+        "exitCode": 1
+      },
+      "fixed": {
+        "status": "pass",
+        "output": "Browser installation verified successfully",
+        "exitCode": 0
+      },
+      "fixCommand": {
+        "output": "Installing browser dependencies...\nBrowser has been installed successfully",
+        "exitCode": 0,
+        "duration": 4000
+      }
+    },
+    "DockerInstalled": {
+      "initial": {
+        "status": "fail",
+        "output": "bash: docker: command not found",
+        "exitCode": 127
+      },
+      "fixed": {
+        "status": "pass",
+        "output": "Docker version 24.0.6, build ed223bc",
+        "version": "24.0.6",
+        "exitCode": 0
+      },
+      "fixCommand": {
+        "output": "Installing Docker v24.0.6...\nDocker has been installed successfully\nStarting Docker service...",
+        "exitCode": 0,
+        "duration": 5000
+      }
+    },
+    "YarnInstalled": {
+      "initial": {
+        "status": "fail",
+        "output": "bash: yarn: command not found",
+        "exitCode": 127
+      },
+      "fixed": {
+        "status": "pass",
+        "output": "1.22.19",
+        "version": "1.22.19",
+        "exitCode": 0
+      },
+      "fixCommand": {
+        "output": "Installing Yarn v1.22.19...\nYarn has been installed successfully",
+        "exitCode": 0,
+        "duration": 2000
+      }
+    },
+    "PythonInstalled": {
+      "initial": {
+        "status": "fail",
+        "output": "bash: python3: command not found",
+        "exitCode": 127
+      },
+      "fixed": {
+        "status": "pass",
+        "output": "Python 3.11.6",
+        "version": "3.11.6",
+        "exitCode": 0
+      },
+      "fixCommand": {
+        "output": "Installing Python v3.11.6...\nPython has been installed successfully",
+        "exitCode": 0,
+        "duration": 3500
+      }
+    },
+    "GcloudInstalled": {
+      "initial": {
+        "status": "fail",
+        "output": "bash: gcloud: command not found",
+        "exitCode": 127
+      },
+      "fixed": {
+        "status": "pass",
+        "output": "Google Cloud SDK 450.0.0\nbq 2.0.99\ncore 2023.10.11\ngsutil 5.26",
+        "version": "450.0.0",
+        "exitCode": 0
+      },
+      "fixCommand": {
+        "output": "Installing Google Cloud SDK...\ngcloud has been installed successfully",
+        "exitCode": 0,
+        "duration": 4000
+      }
+    },
+    "KubectlInstalled": {
+      "initial": {
+        "status": "fail",
+        "output": "bash: kubectl: command not found",
+        "exitCode": 127
+      },
+      "fixed": {
+        "status": "pass",
+        "output": "Client Version: v1.28.4",
+        "version": "v1.28.4",
+        "exitCode": 0
+      },
+      "fixCommand": {
+        "output": "Installing kubectl v1.28.4...\nkubectl has been installed successfully",
+        "exitCode": 0,
+        "duration": 3000
+      }
+    },
+    "KubectxInstalled": {
+      "initial": {
+        "status": "fail",
+        "output": "bash: kubectx: command not found",
+        "exitCode": 127
+      },
+      "fixed": {
+        "status": "pass",
+        "output": "kubectx help information",
+        "exitCode": 0
+      },
+      "fixCommand": {
+        "output": "Installing kubectx...\nkubectx has been installed successfully",
+        "exitCode": 0,
+        "duration": 2000
+      }
+    },
+    "RancherDesktopInstalled": {
+      "initial": {
+        "status": "fail",
+        "output": "bash: rdctl: command not found",
+        "exitCode": 127
+      },
+      "fixed": {
+        "status": "pass",
+        "output": "rdctl version 1.11.1",
+        "version": "1.11.1",
+        "exitCode": 0
+      },
+      "fixCommand": {
+        "output": "Installing Rancher Desktop...\nRancher Desktop has been installed successfully",
+        "exitCode": 0,
+        "duration": 6000
+      }
+    },
+    "NvmInstalled": {
+      "initial": {
+        "status": "fail",
+        "output": "bash: nvm: command not found",
+        "exitCode": 127
+      },
+      "fixed": {
+        "status": "pass",
+        "output": "0.39.7",
+        "version": "0.39.7",
+        "exitCode": 0
+      },
+      "fixCommand": {
+        "output": "Installing nvm v0.39.7...\nnvm has been installed successfully",
+        "exitCode": 0,
+        "duration": 3000
+      }
+    },
+    "GoInstalled": {
+      "initial": {
+        "status": "fail",
+        "output": "bash: go: command not found",
+        "exitCode": 127
+      },
+      "fixed": {
+        "status": "pass",
+        "output": "go version go1.21.4 darwin/arm64",
+        "version": "go1.21.4",
+        "exitCode": 0
+      },
+      "fixCommand": {
+        "output": "Installing Go v1.21.4...\nGo has been installed successfully",
+        "exitCode": 0,
+        "duration": 3500
+      }
+    },
+    "JavaInstalled": {
+      "initial": {
+        "status": "fail",
+        "output": "bash: java: command not found",
+        "exitCode": 127
+      },
+      "fixed": {
+        "status": "pass",
+        "output": "openjdk version \"17.0.8\" 2023-07-18",
+        "version": "17.0.8",
+        "exitCode": 0
+      },
+      "fixCommand": {
+        "output": "Installing OpenJDK 17...\nJava has been installed successfully",
+        "exitCode": 0,
+        "duration": 4000
+      }
+    },
+    "HomebrewInstalled": {
+      "initial": {
+        "status": "fail",
+        "output": "bash: brew: command not found",
+        "exitCode": 127
+      },
+      "fixed": {
+        "status": "pass",
+        "output": "Homebrew 4.1.25",
+        "version": "4.1.25",
+        "exitCode": 0
+      },
+      "fixCommand": {
+        "output": "Installing Homebrew...\nHomebrew has been installed successfully",
+        "exitCode": 0,
+        "duration": 5000
+      }
+    },
+    "serviceADirExists": {
+      "initial": {
+        "status": "fail",
+        "output": "Directory does not exist",
+        "exitCode": 1
+      },
+      "fixed": {
+        "status": "pass", 
+        "output": "Directory exists",
+        "exitCode": 0
+      },
+      "fixCommand": {
+        "output": "Creating service-a directory structure...\nDirectory created successfully",
+        "exitCode": 0,
+        "duration": 1000
+      }
+    },
+    "backendServiceDirExists": {
+      "initial": {
+        "status": "fail",
+        "output": "Directory does not exist", 
+        "exitCode": 1
+      },
+      "fixed": {
+        "status": "pass",
+        "output": "Directory exists",
+        "exitCode": 0
+      },
+      "fixCommand": {
+        "output": "Creating backend-service directory structure...\nDirectory created successfully",
+        "exitCode": 0,
+        "duration": 1000
+      }
+    },
+    "apiServiceDirExists": {
+      "initial": {
+        "status": "fail",
+        "output": "Directory does not exist",
+        "exitCode": 1
+      },
+      "fixed": {
+        "status": "pass",
+        "output": "Directory exists", 
+        "exitCode": 0
+      },
+      "fixCommand": {
+        "output": "Creating api-service directory structure...\nDirectory created successfully",
+        "exitCode": 0,
+        "duration": 1000
+      }
+    }
+  }
+} 

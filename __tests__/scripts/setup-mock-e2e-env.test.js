@@ -168,7 +168,7 @@ describe('setup-mock-e2e-env.sh', () => {
 
       const expectedMocks = [
         'gcloud', 'kubectl', 'kubectx', 'docker', 'go', 
-        'java', 'brew', 'rdctl', 'chromium', 'nvm'
+        'java', 'brew', 'rdctl', 'browser', 'nvm'
       ];
 
       expectedMocks.forEach(mockName => {
@@ -202,7 +202,7 @@ describe('setup-mock-e2e-env.sh', () => {
       ['go', 'version', 'go version go1.21.4 linux/amd64', 'stdout'],
       ['brew', '--version', 'Homebrew 4.1.20', 'stdout'],
       ['rdctl', 'version', 'rdctl version 1.10.1', 'stdout'],
-      ['chromium', '--version', 'Chromium 125.0.6422.141', 'stdout'],
+      ['browser', '--version', 'Browser 125.0.6422.141', 'stdout'],
     ];
 
     const testCasesJustSuccess = [
