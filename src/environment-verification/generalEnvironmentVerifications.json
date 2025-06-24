@@ -33,6 +33,17 @@
             "fixPriority": 3
           },
           {
+            "id": "fileExistsTest",
+            "title": "Check if /tmp/testfile exists",
+            "command": "[ -f /tmp/testfile ] && echo exists || echo missing",
+            "checkType": "outputContains",
+            "expectedValue": "exists",
+            "outputStream": "stdout",
+            "fixCommand": "touch /tmp/testfile",
+            "fixPriority": 3,
+            "testVerification": true
+          },
+          {
             "id": "cloudKubectlCLI",
             "title": "kubectl CLI",
             "command": "kubectl version --client",

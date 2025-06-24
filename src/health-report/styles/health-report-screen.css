@@ -463,9 +463,15 @@
   cursor: not-allowed;
 }
 
-.refresh-button:disabled {
+.action-button.refresh-button {
+  /* Remove any specific styling for refresh button to match other action buttons */
+}
+
+.action-button.refresh-button:disabled {
   background: #353b48; /* Use solid secondary background */
   color: #cccccc; /* Use solid secondary text color */
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Removed old footer styles - refresh button moved to header */

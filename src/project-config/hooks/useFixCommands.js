@@ -29,23 +29,38 @@ export const useFixCommands = ({
         
         if (source === 'general') {
           // Update general environment verification
-          if (newStatuses.general && newStatuses.general.statuses) {
-            newStatuses.general = {
-              ...newStatuses.general,
-              statuses: {
-                ...newStatuses.general.statuses,
+          if (newStatuses.general && typeof newStatuses.general === 'object') {
+            // Handle both direct format and nested format
+            if (newStatuses.general.statuses) {
+              newStatuses.general = {
+                ...newStatuses.general,
+                statuses: {
+                  ...newStatuses.general.statuses,
+                  [verificationId]: result
+                }
+              };
+            } else {
+              // Direct format
+              newStatuses.general = {
+                ...newStatuses.general,
                 [verificationId]: result
-              }
+              };
+            }
+          } else {
+            // Initialize general as direct format
+            newStatuses.general = {
+              [verificationId]: result
             };
           }
         } else if (cacheKey) {
           // Update specific section verification
-          if (newStatuses[cacheKey]) {
-            newStatuses[cacheKey] = {
-              ...newStatuses[cacheKey],
-              [verificationId]: result
-            };
+          if (!newStatuses[cacheKey]) {
+            newStatuses[cacheKey] = {};
           }
+          newStatuses[cacheKey] = {
+            ...newStatuses[cacheKey],
+            [verificationId]: result
+          };
         }
         
         return newStatuses;
@@ -177,8 +192,26 @@ export const useFixCommands = ({
       .map(section => section.id);
     
     // Check all verification statuses (both general and configuration)
-    // but only consider visible sections
-    let hasInvalidStatuses = Object.values(currentGeneralStatuses).includes('invalid');
+    // but only consider visible sections and non-test verifications
+    let hasInvalidStatuses = false;
+    
+    // For general verifications, check only non-test verifications if showTestSections is false
+    if (appState.generalVerificationConfig && Array.isArray(appState.generalVerificationConfig)) {
+      appState.generalVerificationConfig.forEach(categoryWrapper => {
+        if (categoryWrapper.category && categoryWrapper.category.verifications) {
+          categoryWrapper.category.verifications.forEach(verification => {
+            // Skip test verifications if showTestSections is false
+            if (verification.testVerification === true && !appState.showTestSections) {
+              return;
+            }
+            const status = currentGeneralStatuses[verification.id];
+            if (status === 'invalid') {
+              hasInvalidStatuses = true;
+            }
+          });
+        }
+      });
+    }
     
     // Also check configuration statuses (only visible sections)
     if (!hasInvalidStatuses) {
@@ -203,25 +236,35 @@ export const useFixCommands = ({
     // If there are any invalid statuses in visible sections, make all valid. Otherwise make all invalid.
     const newStatus = hasInvalidStatuses ? STATUS.VALID : STATUS.INVALID;
     
-    // Create new statuses for general environment verifications
-    const newGeneralStatuses = {};
+    // Create new statuses for general environment verifications (only visible ones)
+    const newGeneralStatuses = { ...currentGeneralStatuses }; // Start with current statuses
     if (appState.generalVerificationConfig && Array.isArray(appState.generalVerificationConfig)) {
       appState.generalVerificationConfig.forEach(categoryWrapper => {
         if (categoryWrapper.category && categoryWrapper.category.verifications) {
           categoryWrapper.category.verifications.forEach(verification => {
+            // Only set status for visible verifications - skip test verifications if hidden
+            if (verification.testVerification === true && !appState.showTestSections) {
+              return; // Keep existing status for hidden test verifications
+            }
             newGeneralStatuses[verification.id] = newStatus;
           });
         }
       });
     }
     
-    // Create new statuses for configuration sidebar verifications
+    // Create new statuses for configuration sidebar verifications (only visible sections)
     const newConfigStatuses = { ...appState.verificationStatuses };
     
     // Process configuration sidebar about data
     configurationSidebarAbout.forEach(section => {
       if (section.verifications && section.verifications.length > 0) {
         const cacheKey = section.sectionId.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+        
+        // Skip test sections if they're not visible
+        if (!appState.showTestSections && testSectionIds.includes(section.sectionId)) {
+          return; // Keep existing status for hidden test sections
+        }
+        
         if (!newConfigStatuses[cacheKey]) {
           newConfigStatuses[cacheKey] = {};
         }
@@ -239,7 +282,7 @@ export const useFixCommands = ({
     
     // Show notification
     eventHandlers.showAppNotification(
-      `All verifications set to: ${newStatus.toUpperCase()}`,
+      `Visible verifications set to: ${newStatus.toUpperCase()}`,
       'info',
       3000
     );

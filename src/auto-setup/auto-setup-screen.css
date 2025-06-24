@@ -463,7 +463,7 @@
   flex-shrink: 0;
 }
 
-.status-icon.running {
+.auto-setup-container .status-icon.running {
   color: #3B82F6;
   animation: spin 1s linear infinite;
 }
