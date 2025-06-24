@@ -28,7 +28,8 @@ const EnvironmentVerification = ({
   globalDropdownValues,
   onGlobalDropdownChange,
   onInitiateRefresh,
-  onFixCommand  // New prop for fix command handler
+  onFixCommand,  // New prop for fix command handler
+  showTestSections = false  // New prop for test sections visibility
 }) => {
   const [expanded, setExpanded] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -68,7 +69,9 @@ const EnvironmentVerification = ({
       return STATUS.WAITING; // Or some other appropriate default/loading status
     }
     const requiredStatuses = verificationConfig.flatMap(item => 
-      item.category.verifications.map(v => statusMap[v.id] || STATUS.WAITING)
+      item.category.verifications
+        .filter(v => showTestSections || !v.testVerification)  // Filter out test verifications
+        .map(v => statusMap[v.id] || STATUS.WAITING)
     );
     
     // Add dropdown selector statuses if they have validation
@@ -168,15 +171,17 @@ const EnvironmentVerification = ({
             {verificationConfig.map(item => (
               <VerificationSection key={item.category.title} title={item.category.title}>
                 <div>
-                  {item.category.verifications.map(verification => (
-                    <VerificationIndicator 
-                      key={verification.id} 
-                      label={verification.title} 
-                      status={statusMap[verification.id] || STATUS.WAITING}
-                      verification={verification}
-                      onFixCommand={onFixCommand}
-                    />
-                  ))}
+                  {item.category.verifications
+                    .filter(verification => showTestSections || !verification.testVerification)  // Filter out test verifications
+                    .map(verification => (
+                      <VerificationIndicator 
+                        key={verification.id} 
+                        label={verification.title} 
+                        status={statusMap[verification.id] || STATUS.WAITING}
+                        verification={verification}
+                        onFixCommand={onFixCommand}
+                      />
+                    ))}
                 </div>
               </VerificationSection>
             ))}

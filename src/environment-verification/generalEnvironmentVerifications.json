@@ -40,7 +40,8 @@
             "expectedValue": "exists",
             "outputStream": "stdout",
             "fixCommand": "touch /tmp/testfile",
-            "fixPriority": 3
+            "fixPriority": 3,
+            "testVerification": true
           },
           {
             "id": "cloudKubectlCLI",

@@ -192,8 +192,26 @@ export const useFixCommands = ({
       .map(section => section.id);
     
     // Check all verification statuses (both general and configuration)
-    // but only consider visible sections
-    let hasInvalidStatuses = Object.values(currentGeneralStatuses).includes('invalid');
+    // but only consider visible sections and non-test verifications
+    let hasInvalidStatuses = false;
+    
+    // For general verifications, check only non-test verifications if showTestSections is false
+    if (appState.generalVerificationConfig && Array.isArray(appState.generalVerificationConfig)) {
+      appState.generalVerificationConfig.forEach(categoryWrapper => {
+        if (categoryWrapper.category && categoryWrapper.category.verifications) {
+          categoryWrapper.category.verifications.forEach(verification => {
+            // Skip test verifications if showTestSections is false
+            if (verification.testVerification === true && !appState.showTestSections) {
+              return;
+            }
+            const status = currentGeneralStatuses[verification.id];
+            if (status === 'invalid') {
+              hasInvalidStatuses = true;
+            }
+          });
+        }
+      });
+    }
     
     // Also check configuration statuses (only visible sections)
     if (!hasInvalidStatuses) {
@@ -224,6 +242,7 @@ export const useFixCommands = ({
       appState.generalVerificationConfig.forEach(categoryWrapper => {
         if (categoryWrapper.category && categoryWrapper.category.verifications) {
           categoryWrapper.category.verifications.forEach(verification => {
+            // Always set status for all verifications, but only consider visible ones for toggling logic
             newGeneralStatuses[verification.id] = newStatus;
           });
         }

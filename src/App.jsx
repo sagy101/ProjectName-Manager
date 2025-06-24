@@ -255,6 +255,7 @@ const App = () => {
               onGlobalDropdownChange={eventHandlers.handleGlobalDropdownChange}
               onInitiateRefresh={eventHandlers.handleInitiateRefresh}
               onFixCommand={fixCommands.handleFixCommand}
+              showTestSections={appState.showTestSections}
             />
             <TerminalContainer 
               ref={appState.terminalRef} 

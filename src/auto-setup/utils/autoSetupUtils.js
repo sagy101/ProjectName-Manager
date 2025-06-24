@@ -22,6 +22,11 @@ const collectFixCommands = (
     generalVerificationConfig.forEach(category => {
       if (category.category && category.category.verifications) {
         category.category.verifications.forEach(verification => {
+          // Skip test verifications if showTestSections is false
+          if (verification.testVerification === true && !showTestSections) {
+            return;
+          }
+          
           const status = verificationStatuses.general[verification.id];
           if (status === STATUS.INVALID && verification.fixCommand) {
             const priority = verification.fixPriority || DEFAULT_FIX_PRIORITY;
