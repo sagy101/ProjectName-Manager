@@ -66,7 +66,7 @@ const FloatingTerminal = ({
           setTimeout(() => {
             log.debug('Auto-closing now');
             onClose(id);
-          }, 2000);
+          }, 8000);
         } else {
           log.debug('Will NOT auto-close');
         }
