@@ -98,7 +98,7 @@
   top: 50%;
   left: 320px;
   transform: translateY(-50%);
-  z-index: 1000;
+  z-index: 500;
   background: #42433f;
   color: white;
   border: 1px solid #4a5568;

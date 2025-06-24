@@ -56,7 +56,11 @@ async function getDropdownOptions(config) {
 
   try {
     const result = await new Promise((resolve) => {
-      exec(resolvedCommand, { timeout: 15000, maxBuffer: 1024 * 1024 }, (error, stdout, stderr) => {
+      exec(resolvedCommand, { 
+        timeout: 15000,
+        maxBuffer: 1024 * 1024,
+        cwd: path.resolve(process.cwd(), '..')
+      }, (error, stdout, stderr) => {
         if (error) {
           log.error(`Dropdown command failed for ${id}:`, stderr || error.message);
           resolve({ success: false, stdout: '', stderr: stderr || error.message });

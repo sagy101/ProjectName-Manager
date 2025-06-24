@@ -29,23 +29,38 @@ export const useFixCommands = ({
         
         if (source === 'general') {
           // Update general environment verification
-          if (newStatuses.general && newStatuses.general.statuses) {
-            newStatuses.general = {
-              ...newStatuses.general,
-              statuses: {
-                ...newStatuses.general.statuses,
+          if (newStatuses.general && typeof newStatuses.general === 'object') {
+            // Handle both direct format and nested format
+            if (newStatuses.general.statuses) {
+              newStatuses.general = {
+                ...newStatuses.general,
+                statuses: {
+                  ...newStatuses.general.statuses,
+                  [verificationId]: result
+                }
+              };
+            } else {
+              // Direct format
+              newStatuses.general = {
+                ...newStatuses.general,
                 [verificationId]: result
-              }
+              };
+            }
+          } else {
+            // Initialize general as direct format
+            newStatuses.general = {
+              [verificationId]: result
             };
           }
         } else if (cacheKey) {
           // Update specific section verification
-          if (newStatuses[cacheKey]) {
-            newStatuses[cacheKey] = {
-              ...newStatuses[cacheKey],
-              [verificationId]: result
-            };
+          if (!newStatuses[cacheKey]) {
+            newStatuses[cacheKey] = {};
           }
+          newStatuses[cacheKey] = {
+            ...newStatuses[cacheKey],
+            [verificationId]: result
+          };
         }
         
         return newStatuses;

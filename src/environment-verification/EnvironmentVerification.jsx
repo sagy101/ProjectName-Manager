@@ -148,12 +148,13 @@ const EnvironmentVerification = ({
           })}
           
           <button 
-            className="refresh-button" 
+            className={`refresh-button ${isRefreshing ? 'refreshing' : ''}`}
             onClick={(e) => {
               e.stopPropagation();
               handleRefresh();
             }}
             title="Refresh environment verification"
+            disabled={isRefreshing}
           >
             <ArrowPathIcon style={{ width: '18px', height: '18px' }} />
           </button>
