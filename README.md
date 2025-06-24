@@ -75,8 +75,6 @@ For complete documentation, see the **[Documentation Guides](docs/README.md)**.
 
 ### 🚀 Quick Start Guides
 - [Getting Started & Installation](docs/getting-started.md) - Detailed setup instructions
-- [Configuration Overview](docs/configuration/overview.md) - JSON configuration system basics
-- [Auto Setup Guide](docs/features/auto-setup.md) - Automated environment setup
 
 ### 🏗️ Architecture & Development
 - [Architecture Overview](docs/architecture/overview.md) - System design and components
