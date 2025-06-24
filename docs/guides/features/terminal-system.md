@@ -1,6 +1,6 @@
-# Terminal Features
+# Terminal System
 
-> Comprehensive guide to {ProjectName} Manager's dual-terminal system
+> Comprehensive dual-terminal system with advanced process monitoring and management
 
 ## Overview
 
@@ -12,10 +12,6 @@
 |--------------|---------|--------------|
 | **Main Terminals** | Primary service execution | Tabbed interface, read-only by default, container management |
 | **Floating Terminals** | Auxiliary tasks & logs | Draggable windows, always writable, auto-minimize |
-
-For architectural details, see the [System Architecture](architecture-details.md#terminal-system-architecture) document.
-
---- 
 
 ## Main Tabbed Terminals
 
@@ -97,12 +93,6 @@ The Tab Information Panel is accessible via the info button (ℹ) on each main t
 | error | Red | Process encountered an error |
 | initializing | Blue | Process is starting up |
 | degraded | Orange | Process is running but some dependencies are not |
-
-### Real-Time Health Monitoring (Health Report)
-
-The detailed status information described below is aggregated and displayed in the **Health Report**, which provides a centralized, at-a-glance view of the health of all services and their dependencies.
-
-For a comprehensive guide to the Health Report and its features, see the [Health Report Guide](health-report.md).
 
 ### Process Monitoring and Status Detection
 
@@ -382,8 +372,6 @@ Each tab maintains its own state:
 
 *Note: Keyboard shortcuts may vary by platform*
 
---- 
-
 ## Floating Terminals
 
 Floating terminals provide a flexible way to run and view specific commands or logs in separate, manageable windows.
@@ -407,8 +395,6 @@ Floating terminals provide a flexible way to run and view specific commands or l
 ### "About" Information for Floating Terminals
 
 Basic information about a floating terminal's purpose and command can be accessed via the **App Control Sidebar**. This information is typically derived from the `description` field associated with the `commandId` (from the `customButton` that launched it) in the `configurationSidebarAbout.json` file. This is a simpler view compared to the comprehensive Tab Information Panel available for main tabbed terminals.
-
---- 
 
 ## App Control Sidebar & Debug Tools
 
@@ -455,10 +441,9 @@ When any debug options are active, the gear icon will show an orange border.
 - Resources are properly cleaned up
 - Rapid refresh is throttled to prevent issues
 
-## Related Documentation
+## See Also
 
-- [Configuration Guide](configuration-guide.md) - Configuring terminal commands
-- [Command System](command-system.md) - How commands are generated
-- [Architecture Details](architecture-details.md#terminal-system-architecture) - Technical implementation
-- [Getting Started](getting-started.md) - Basic terminal usage
-- [Health Report](health-report.md) - Monitoring terminal status 
+- [Configuration Commands Guide](../configuration/commands.md) - Configuring terminal commands
+- [Auto Setup](auto-setup.md) - Automated command execution
+- [Health Report](health-report.md) - Monitoring terminal status
+- [Architecture Communication Guide](../architecture/communication.md) - Technical implementation 

@@ -1,4 +1,4 @@
-# Auto Setup Guide
+# Auto Setup
 
 > One-click automated environment configuration with intelligent fix command execution
 
@@ -306,11 +306,8 @@ DEBUG_LOGS=true npm start
 - Test Auto Setup on clean systems
 - Document any manual steps required
 
+## See Also
 
-## Related Documentation
-
-- [Verification Types](verification-types.md) - Understanding fix commands and priorities
-- [Configuration Guide](configuration-guide.md) - Setting up fix commands
-- [Getting Started](getting-started.md) - First-time setup with Auto Setup
-- [Terminal Features](terminal-features.md) - Understanding terminal behavior
-- [Documentation Index](index.md) - Complete documentation overview 
+- [Configuration Commands Guide](../configuration/commands.md) - Setting up fix commands
+- [Environment Verification](verification.md) - Understanding verification system
+- [Terminal System](terminal-system.md) - Terminal behavior and management 

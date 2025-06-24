@@ -1,10 +1,10 @@
-# Verification Types Reference
+# Environment Verification
 
-> Comprehensive reference for all verification types in {ProjectName} Manager's environment verification system
+> Comprehensive environment validation system with auto-fix capabilities
 
 ## Overview
 
-This document provides a complete reference for all verification types supported by {ProjectName} Manager. Verifications are checks that validate the presence and configuration of tools, paths, environment variables, and other dependencies required for your development environment.
+The Environment Verification system validates the presence and configuration of tools, paths, environment variables, and other dependencies required for your development environment. It provides real-time checks with one-click auto-fix capabilities.
 
 ### Key Features
 
@@ -12,8 +12,7 @@ This document provides a complete reference for all verification types supported
 - **Auto-Fix Commands**: One-click remediation for failed verifications
 - **Category Organization**: Group related verifications together
 - **Dynamic Environment Selection**: Header dropdowns for environment configuration
-
-For a higher-level overview of the verification system, see the [System Architecture](architecture-details.md#environment-verification-system) document.
+- **Real-Time Updates**: Continuous monitoring with visual indicators
 
 ## Verification Structure
 
@@ -37,7 +36,7 @@ All verifications share a common base structure:
 
 ## File Structure
 
-The `generalEnvironmentVerifications.json` file now supports an optional header configuration:
+The `generalEnvironmentVerifications.json` file supports an optional header configuration:
 
 ```json
 {
@@ -73,8 +72,6 @@ The `generalEnvironmentVerifications.json` file now supports an optional header 
   - `title`: Display title for the environment section
   - `dropdownSelectors`: Array of dropdown selector configurations for global environment settings
 
-For detailed information about dropdown selectors, see the [Configuration Guide](configuration-guide.md#dropdown-selectors).
-
 ## Verification Types
 
 ### 1. Command Success (`commandSuccess`)
@@ -101,13 +98,13 @@ Checks if a command executes successfully (exit code 0).
 
 ### 2. Output Contains (`outputContains`)
 
-Verifies that command output contains specific text. This check is highly flexible and supports both single string and array values for `expectedValue`.
+Verifies that command output contains specific text. This check supports both single string and array values for `expectedValue`.
 
 **Properties:**
 - `command` (string, required): Command to execute
 - `expectedValue` (string or array of strings, optional): The text to find in the output.
   - **As a string:** Checks if this exact string is present.
-  - **As an array:** Checks if *any* of the strings in the array are present. This is ideal for dynamic version checking.
+  - **As an array:** Checks if *any* of the strings in the array are present. Ideal for dynamic version checking.
   - If empty or not provided: Checks for any non-empty output.
 - `outputStream` (string, optional): Which output stream to check (`"stdout"`, `"stderr"`, or `"any"`).
 - `versionId` (string, optional): When using an array for `expectedValue`, the first matched value will be captured and stored with this ID for use in command generation (e.g., `${nodeVersion}`).
@@ -150,12 +147,6 @@ Verifies that command output contains specific text. This check is highly flexib
 }
 ```
 
-**Use Cases:**
-- Verifying specific tool versions
-- Checking if a tool is installed (any output)
-- Checking configuration output
-- Validating command responses
-
 ### 3. Environment Variable Exists (`envVarExists`)
 
 Checks if an environment variable is set (has any value).
@@ -172,11 +163,6 @@ Checks if an environment variable is set (has any value).
   "variableName": "HOME"
 }
 ```
-
-**Use Cases:**
-- Verifying required environment variables are set
-- Checking shell configuration
-- Validating development environment setup
 
 ### 4. Environment Variable Equals (`envVarEquals`)
 
@@ -196,11 +182,6 @@ Checks if an environment variable has a specific value.
   "expectedValue": "development"
 }
 ```
-
-**Use Cases:**
-- Verifying specific environment configurations
-- Checking deployment environment settings
-- Validating configuration values
 
 ### 5. Path Exists (`pathExists`)
 
@@ -230,17 +211,6 @@ Checks if a file or directory exists at the specified path.
 }
 ```
 
-**File check:**
-```json
-{
-  "id": "gradlewExists",
-  "title": "gradlew exists",
-  "checkType": "pathExists",
-  "pathValue": "./gradlew",
-  "pathType": "file"
-}
-```
-
 **File check with environment variable:**
 ```json
 {
@@ -251,23 +221,6 @@ Checks if a file or directory exists at the specified path.
   "pathType": "file"
 }
 ```
-
-**Any path type:**
-```json
-{
-  "id": "configExists",
-  "title": "Configuration file or directory exists",
-  "checkType": "pathExists",
-  "pathValue": "./config"
-}
-```
-
-**Use Cases:**
-- Verifying project directory structure
-- Checking for configuration files
-- Validating installation paths
-- Checking for build scripts (e.g., gradlew, package.json)
-- Verifying tool installations in specific locations
 
 ## Platform-Specific Considerations
 
@@ -350,12 +303,6 @@ The verification system handles various error conditions:
     "title": "Docker installed",
     "checkType": "commandSuccess",
     "command": "docker --version"
-  },
-  {
-    "id": "yarnInstalled",
-    "title": "Yarn package manager",
-    "checkType": "commandSuccess",
-    "command": "yarn --version"
   }
 ]
 ```
@@ -419,214 +366,8 @@ The verification system handles various error conditions:
 ]
 ```
 
+## See Also
 
-#### Dynamic Version Checking with Arrays
-
-You can provide an array of strings for `expectedValue`. The verification will pass if any one of the strings is found in the command's output. This is useful for supporting multiple acceptable versions of a tool.
-
-When combined with the `versionId` property, the first value from the array that is found in the output will be captured and can be used as a variable in the command generation system.
-
-```json
-{
-  "id": "nodeVersionCheck",
-  "title": "Node.js (15 or 16)",
-  "checkType": "outputContains",
-  "command": "nvm ls",
-  "expectedValue": ["v15.", "v16."],
-  "versionId": "nodeVersion",
-  "outputStream": "stdout"
-}
-```
-
-In this example, if `nvm ls` outputs a line containing `v18.12.1`, the check will pass, and the value `v18.` will be stored with the ID `nodeVersion`. This can then be used in `configurationSidebarCommands.json` like so: `nvm use ${nodeVersion}`.
-
-### `envVarExists`
-
-Checks if an environment variable is set (has any value).
-
-**Properties:**
-- `variableName` (string, required): Name of the environment variable
-
-**Example:**
-```json
-{
-  "id": "homeSet",
-  "title": "$HOME environment variable set",
-  "checkType": "envVarExists",
-  "variableName": "HOME"
-}
-```
-
-**Use Cases:**
-- Verifying required environment variables are set
-- Checking shell configuration
-- Validating development environment setup
-
-### `envVarEquals`
-
-Checks if an environment variable has a specific value.
-
-**Properties:**
-- `variableName` (string, required): Name of the environment variable
-- `expectedValue` (string, required): Expected value of the variable
-
-**Example:**
-```json
-{
-  "id": "nodeEnv",
-  "title": "NODE_ENV set to development",
-  "checkType": "envVarEquals",
-  "variableName": "NODE_ENV",
-  "expectedValue": "development"
-}
-```
-
-**Use Cases:**
-- Verifying specific environment configurations
-- Checking deployment environment settings
-- Validating configuration values
-
-### `pathExists`
-
-Checks if a file or directory exists at the specified path.
-
-**Properties:**
-- `pathValue` (string, required): Path to check (supports environment variable substitution)
-- `pathType` (string, optional): Type of path to expect
-  - `"directory"`: Must be a directory
-  - `"file"`: Must be a file
-  - If not specified: Can be either file or directory
-
-**Environment Variable Substitution:**
-- `$HOME`: User's home directory
-- `$GOPATH`: Go workspace path (if set)
-
-**Examples:**
-
-**Directory check:**
-```json
-{
-  "id": "projectDir",
-  "title": "./frontend directory exists",
-  "checkType": "pathExists",
-  "pathValue": "./frontend",
-  "pathType": "directory"
-}
-```
-
-**File check:**
-```json
-{
-  "id": "gradlewExists",
-  "title": "gradlew exists",
-  "checkType": "pathExists",
-  "pathValue": "./gradlew",
-  "pathType": "file"
-}
-```
-
-**File check with environment variable:**
-```json
-{
-  "id": "bashProfile",
-  "title": "Bash profile exists",
-  "checkType": "pathExists",
-  "pathValue": "$HOME/.bash_profile",
-  "pathType": "file"
-}
-```
-
-**Any path type:**
-```json
-{
-  "id": "configExists",
-  "title": "Configuration file or directory exists",
-  "checkType": "pathExists",
-  "pathValue": "./config"
-}
-```
-
-**Use Cases:**
-- Verifying project directory structure
-- Checking for configuration files
-- Validating installation paths
-- Checking for build scripts (e.g., gradlew, package.json)
-- Verifying tool installations in specific locations
-
-## Auto-Fix Commands
-
-Verifications can include an optional `fixCommand` property that provides automatic remediation for failed checks. When a verification fails and has a `fixCommand`, an orange "Fix" button appears in the UI.
-
-### Fix Command Features
-
-- **One-Click Fix**: Orange "Fix" button appears next to invalid verifications
-- **Confirmation Prompt**: Users must confirm the fix command before it runs
-- **Floating Terminal**: Fix commands run in dedicated floating terminals
-- **Auto-Close**: Terminals close automatically when command completes (if minimized)
-- **Re-Validation**: Verification automatically re-runs after fix completes
-- **Safety Features**: Close button disabled for 20 seconds to prevent accidental closure
-- **Smart Notifications**: Success/failure feedback after fix attempts
-
-### Fix Command Examples
-
-**Directory Creation:**
-```json
-{
-  "id": "projectDirExists",
-  "title": "./my-project directory exists",
-  "checkType": "pathExists",
-  "pathValue": "./my-project",
-  "pathType": "directory",
-  "fixCommand": "mkdir -p ./my-project"
-}
-```
-
-**Package Installation:**
-```json
-{
-  "id": "dockerInstalled",
-  "title": "Docker installed",
-  "checkType": "commandSuccess",
-  "command": "docker --version",
-  "fixCommand": "brew install docker"
-}
-```
-
-**Complex Multi-Step Fix:**
-```json
-{
-  "id": "gradlewExists",
-  "title": "gradlew exists",
-  "checkType": "pathExists",
-  "pathValue": "./project/gradlew",
-  "pathType": "file",
-  "fixCommand": "cd ./project && gradle wrapper && chmod +x ./gradlew"
-}
-```
-
-**Environment Setup:**
-```json
-{
-  "id": "nodeVersionCorrect",
-  "title": "Node.js 16.x",
-  "checkType": "outputContains",
-  "command": "node --version",
-  "expectedValue": "v16.",
-  "fixCommand": "nvm install 16 && nvm use 16"
-}
-```
-
-### Best Practices for Fix Commands
-
-1. **Idempotent**: Commands should be safe to run multiple times
-2. **Non-Interactive**: Avoid commands that require user input
-3. **Platform Aware**: Consider using platform-specific commands when needed
-4. **Error Handling**: Commands should handle common error cases gracefully
-5. **Side Effects**: Be mindful of commands that modify global system state
-
-## Related Documentation
-
-- [Configuration Guide](configuration-guide.md) - How to configure verifications
-- [Auto Setup Guide](auto-setup-guide.md) - Using fix commands with Auto Setup
-- [Getting Started](getting-started.md) - First-time setup and verification
-- [Architecture Details](architecture-details.md#environment-verification-system) - Technical implementation
+- [Auto Setup](auto-setup.md) - Automated environment setup using fix commands
+- [Configuration Commands Guide](../configuration/commands.md) - Setting up fix commands
+- [Configuration Dropdowns Guide](../configuration/dropdowns.md) - Dynamic dropdown configuration 
