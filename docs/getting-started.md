@@ -178,7 +178,7 @@ If verifications fail:
 
 ## Next Steps
 
-- Read the [Configuration Guide](configuration-guide.md) to understand the JSON configuration system
-- Explore [Terminal Features](terminal-features.md) to learn about terminal capabilities
-- Check [Auto Setup Guide](auto-setup-guide.md) for automated environment configuration
-- Review [Architecture Overview](architecture-overview.md) to understand how the system works
+ - Read the [Configuration Overview](configuration/overview.md) to understand the JSON configuration system
+ - Explore the [Terminal System Guide](features/terminal-system.md) to learn about terminal capabilities
+ - Check the [Auto Setup Guide](features/auto-setup.md) for automated environment configuration
+ - Review the [Architecture Overview](architecture/overview.md) to understand how the system works
