@@ -27,6 +27,7 @@ These are the primary terminals for executing and monitoring your {ProjectName} 
 -   **Conditional Command Refresh**: Ability to re-run commands with dynamic modifications.
 -   **Tab Overflow Management**: Handles numerous tabs gracefully with a dropdown for overflowed tabs.
 -   **Configurable Appearance**: Font size and scrollback buffer size are configurable via application settings.
+-   **Enhanced Terminal Features**: WebGL acceleration, clipboard integration, clickable links, and search functionality.
 
 ### Tab Information Panel
 
@@ -137,14 +138,6 @@ For processes that exit naturally (not killed by user):
 - **Status Determination**: Distinguishes between successful completion (exit code 0) and errors (non-zero)
 - **Detailed Reporting**: Provides specific exit codes for debugging
 
-#### Process Information Display
-
-The Tab Information Panel shows detailed process information:
-- **Process Count**: Number of active child processes
-- **Process States**: Individual state of each process
-- **Resource Usage**: CPU and memory consumption
-- **Command Hierarchy**: Parent-child process relationships
-
 #### Performance Optimizations
 
 - **Efficient Monitoring**: Only monitors when processes are active
@@ -152,39 +145,6 @@ The Tab Information Panel shows detailed process information:
 - **Resource Management**: Automatic cleanup when processes complete
 - **Smart Filtering**: Avoids monitoring system utilities and shell commands
 
-### Advanced Process Monitoring Details
-
-The terminal system implements comprehensive process monitoring through multiple detection methods:
-
-#### Process Tree Discovery
-- **Method**: Uses `ps -ax -o pid,ppid,state,command,rss,pcpu` on Unix systems
-- **Capability**: Discovers all descendant processes of the shell
-- **Frequency**: Real-time monitoring every second
-- **Filtering**: Intelligently filters out shell utilities and monitoring commands
-
-#### Process State Detection
-The system interprets Unix process states to provide accurate status information:
-
-| State | Status | Description |
-|-------|--------|-------------|
-| `R`, `R+` | running | Process is running or runnable |
-| `S`, `S+` | sleeping | Interruptible sleep (waiting for events) |
-| `D` | waiting | Uninterruptible sleep (I/O operations) |
-| `T` | paused | Stopped by signal (Ctrl+Z) |
-| `Z` | finishing | Zombie process (terminated, not reaped) |
-| `I` | idle | Idle kernel thread |
-
-#### Control Character Detection
-The system monitors input streams for control characters:
-
-- **Ctrl+C (`\x03`)**: Interrupt signal - marks process as terminated by user
-- **Ctrl+D (`\x04`)**: EOF signal - marks process as terminated by EOF
-- **Ctrl+Z (`\x1a`)**: Suspend signal - detected via process state 'T'
-
-#### Exit Code Capture
-- **Method**: Injects `echo "EXIT_CODE:$?"` after natural process completion
-- **Purpose**: Distinguishes between successful completion and error conditions
-- **Pattern Matching**: Monitors output for `EXIT_CODE:(\d+)` pattern
 
 ### Container Status Indicators
 
@@ -361,6 +321,31 @@ Each tab maintains its own state:
 - Refresh count
 - Start time
 
+### Enhanced Terminal Features
+
+{ProjectName} Manager includes advanced terminal enhancements powered by xterm.js addons:
+
+#### Search Functionality
+- **Keyboard Shortcut**: `Ctrl+F` (or `Cmd+F` on Mac) to open search
+- **Navigation**: `Enter` for next match, `Shift+Enter` for previous match
+- **Visual Interface**: Floating search bar with controls and status indicators
+- **Case Sensitivity**: Configurable search options
+
+#### Performance & Rendering
+- **WebGL Acceleration**: Hardware-accelerated rendering for smoother performance
+- **Optimized Scrolling**: Enhanced performance with large terminal outputs
+- **Reduced CPU Usage**: More efficient rendering engine
+
+#### Link Detection
+- **Auto-Detection**: URLs in terminal output become automatically clickable
+- **Visual Styling**: Links highlighted in blue with hover effects
+- **External Opening**: URLs open in default system browser
+
+#### Clipboard Integration
+- **Enhanced Copy/Paste**: Improved clipboard operations across platforms
+- **Visual Selection**: Custom highlighting for selected text
+- **Cross-Platform**: Consistent behavior on all operating systems
+
 ### Keyboard Shortcuts
 
 | Shortcut | Action |
@@ -369,6 +354,10 @@ Each tab maintains its own state:
 | Ctrl/Cmd + W | Close current tab |
 | Ctrl/Cmd + Tab | Next tab |
 | Ctrl/Cmd + Shift + Tab | Previous tab |
+| Ctrl/Cmd + F | Open terminal search |
+| Enter (in search) | Find next match |
+| Shift + Enter (in search) | Find previous match |
+| Escape (in search) | Close search |
 
 *Note: Keyboard shortcuts may vary by platform*
 

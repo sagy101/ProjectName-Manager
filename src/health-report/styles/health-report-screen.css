@@ -625,6 +625,60 @@
   }
 }
 
+/* Enhanced scrollbar styling for health report content */
+.health-report-content::-webkit-scrollbar {
+  width: 12px;
+  background: transparent;
+}
+
+.health-report-content::-webkit-scrollbar-track {
+  background: rgba(45, 46, 44, 0.3);
+  border-radius: 6px;
+  margin: 2px;
+}
+
+.health-report-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #4a505c 0%, #353b48 100%);
+  border-radius: 6px;
+  border: 2px solid #2D2E2C;
+  transition: background 0.2s ease;
+}
+
+.health-report-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #FEB32E 0%, #D97706 100%);
+}
+
+.health-report-content::-webkit-scrollbar-thumb:active {
+  background: #FEB32E;
+}
+
+/* Enhanced scrollbar styling for command popup content */
+.command-popup-content::-webkit-scrollbar {
+  width: 12px;
+  background: transparent;
+}
+
+.command-popup-content::-webkit-scrollbar-track {
+  background: rgba(45, 46, 44, 0.3);
+  border-radius: 6px;
+  margin: 2px;
+}
+
+.command-popup-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #4a505c 0%, #353b48 100%);
+  border-radius: 6px;
+  border: 2px solid #2D2E2C;
+  transition: background 0.2s ease;
+}
+
+.command-popup-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #FEB32E 0%, #D97706 100%);
+}
+
+.command-popup-content::-webkit-scrollbar-thumb:active {
+  background: #FEB32E;
+}
+
 /* Dark theme adjustments */
 @media (prefers-color-scheme: dark) {
   .health-report-overlay {

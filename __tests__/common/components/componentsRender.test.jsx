@@ -40,6 +40,26 @@ jest.mock('@xterm/addon-fit', () => ({
   FitAddon: jest.fn().mockImplementation(() => ({ fit: jest.fn() }))
 }));
 
+jest.mock('@xterm/addon-search', () => ({
+  SearchAddon: jest.fn().mockImplementation(() => ({
+    findNext: jest.fn(),
+    findPrevious: jest.fn(),
+    clearActiveDecoration: jest.fn()
+  }))
+}));
+
+jest.mock('@xterm/addon-webgl', () => ({
+  WebglAddon: jest.fn().mockImplementation(() => ({}))
+}));
+
+jest.mock('@xterm/addon-clipboard', () => ({
+  ClipboardAddon: jest.fn().mockImplementation(() => ({}))
+}));
+
+jest.mock('@xterm/addon-web-links', () => ({
+  WebLinksAddon: jest.fn().mockImplementation(() => ({}))
+}));
+
 // Provide minimal global mocks
 beforeAll(() => {
   global.ResizeObserver = class {

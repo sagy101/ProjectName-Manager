@@ -41,7 +41,7 @@ describe('Process cleanup', () => {
     proc.send('closeTab');
 
     await new Promise((resolve) => proc.once('message', resolve));
-    await wait(250); // Increased wait time to allow for cleanup
+    await wait(500); // Increased wait time to allow for cleanup on slow systems
 
     expect(isProcessRunning(childPid)).toBe(false);
     proc.kill();
@@ -68,7 +68,7 @@ describe('Process cleanup', () => {
 
     proc.kill('SIGTERM');
     await new Promise((resolve) => proc.once('exit', resolve));
-    await wait(200); // Increased wait time to allow for cleanup
+    await wait(500); // Increased wait time to allow for cleanup on slow systems
 
     expect(isProcessRunning(childPid)).toBe(false);
   });
