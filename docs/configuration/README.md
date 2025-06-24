@@ -62,6 +62,5 @@
 
 ## 📖 Related Documentation
 
-- [Getting Started](../../getting-started.md) - Installation and setup
-- [Architecture Overview](../architecture/overview.md) - How the system works
-- [Reference Documentation](../../reference/) - JSON schemas and API reference 
+- [Getting Started](../getting-started.md) - Installation and setup
+- [Architecture Overview](../architecture/overview.md) - How the system works 

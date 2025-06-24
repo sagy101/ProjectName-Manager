@@ -66,4 +66,4 @@ The architecture documentation includes comprehensive Mermaid diagrams showing:
 - **Configuration System**: See [Configuration Guides](../configuration/)
 - **Feature Details**: See [Feature Guides](../features/)
 - **Development**: See [Development Guides](../development/)
-- **Getting Started**: See [Getting Started Guide](../../getting-started.md)
+- **Getting Started**: See [Getting Started Guide](../getting-started.md)
