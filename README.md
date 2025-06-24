@@ -12,15 +12,14 @@
 
 </div>
 
-**Born from the frustration of managing complex development environments.**
-
-Every developer knows the pain: switching between projects means hunting down the right Node version, remembering which containers to spin up, and hoping your environment scripts still work. {ProjectName} Manager solves this by providing a unified, intuitive interface that handles environment verification, terminal management, and configuration—all through simple JSON files.
+**Born from the frustration of juggling complex development setups, {ProjectName} Manager** provides a single interface for environment verification, terminal management, and JSON-based configuration.
 
 **🚀 Why developers love it:**
-- **Set Once, Use Everywhere** - JSON configurations eliminate setup repetition
-- **Catch Issues Early** - Smart verification prevents deployment headaches
-- **Terminal Mastery** - Integrated terminals with advanced tab management
-- **Safety Net** - Preview and read-only modes protect against mistakes
+- **Set Once, Use Everywhere** – JSON configs remove setup repetition
+- **Catch Issues Early** – verification prevents deployment headaches
+- **Terminal Mastery** – integrated terminals with advanced tab management
+- **Safety Net** – preview and read-only modes guard against mistakes
+
 
 
 This project is also an experiment in "vibe coding" mixed with good old coding. I explored a variety of AI tools and language models to see how they complement traditional development. Details can be found in the [AI Coding Experiment](docs/development/ai-experiments.md) document.
