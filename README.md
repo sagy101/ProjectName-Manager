@@ -97,10 +97,15 @@ For complete documentation, see the **[Documentation Guides](docs/README.md)**.
 - [Configuration Examples](docs/configuration/examples.md) - Complete working examples
 
 ### 🎯 Feature Guides
-- [Auto Setup System](docs/features/auto-setup.md) - Automated environment configuration
-- [Terminal System](docs/features/terminal-system.md) - Integrated terminal features
-- [Health Report](docs/features/health-report.md) - Service monitoring
-- [Environment Verification](docs/features/verification.md) - Verification types
+**Detailed guides for major application features**
+
+| Feature | Description | Screenshot |
+|---------|-------------|------------|
+| [Auto Setup](docs/features/auto-setup.md) | Automated environment configuration | <img src="assets/auto_setup.png" alt="Auto Setup" width="200"> |
+| [Terminal System](docs/features/terminal-system.md) | Integrated terminal features | <img src="assets/terminal.png" alt="Terminal System" width="200"> |
+| [Floating Terminal](docs/features/terminal-system.md) | Auxiliary terminals for tasks and log viewing | <img src="assets/floating_terminal.png" alt="Floating Terminal" width="200"> |
+| [Health Report](docs/features/health-report.md) | Service monitoring and health checks | <img src="assets/health_report.png" alt="Health Report" width="200"> |
+| [Environment Verification](docs/features/verification.md) | Verification types and configuration | <img src="assets/loading_screen.png" alt="Environment Verification" width="200"> |
 
 ### 🛠️ Development Resources
 - [Testing Guide](docs/development/testing.md) - Test infrastructure and practices
