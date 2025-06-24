@@ -89,6 +89,7 @@ For complete documentation, see the **[Documentation Guides](docs/README.md)**.
 - [Testing Guide](docs/development/testing.md) - Test infrastructure and practices
 - [Export & Import Tools](docs/development/export-import.md) - Configuration backup
 - [AI Experiments](docs/development/ai-experiments.md) - Development methodology
+- [Development Roadmap](docs/roadmap.md) - Future enhancements and feature timeline
 
 ## ⚙️ Configuration Overview
 
