@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const configDir = path.resolve(__dirname, '../src/project-config/config');
+const srcDir = path.resolve(__dirname, '../src');
 const mockDir = path.resolve(__dirname, '../__tests__/mock-data');
 const backupDir = path.resolve(__dirname, '../.tmp-backup');
 
@@ -20,7 +20,7 @@ function prepareMockBuild() {
     // 2. Back up production files and swap with mock files
     console.log('Backing up production config and preparing mock build...');
     for (const prodFile in filesToSwap) {
-        const prodPath = path.join(configDir, prodFile);
+        const prodPath = path.join(srcDir, prodFile);
         const mockPath = path.join(mockDir, filesToSwap[prodFile]);
         const backupPath = path.join(backupDir, prodFile);
 
@@ -33,7 +33,7 @@ function prepareMockBuild() {
             fs.copyFileSync(mockPath, prodPath);
             console.log(`Swapped in mock version of ${prodFile}`);
         } else {
-            console.warn(`Warning: Production file ${prodFile} not found in src/project-config/config/. Skipping.`);
+            console.warn(`Warning: Production file ${prodFile} not found in src/. Skipping.`);
         }
     }
     console.log('Mock build preparation complete.');

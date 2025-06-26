@@ -6,6 +6,9 @@ const { loggers } = require('./src/common/utils/debugUtils.js');
 
 const log = loggers.app;
 
+// Set main electron PID for child processes to use as session identifier
+process.env.MAIN_ELECTRON_PID = process.pid;
+
 // Handle uncaught exceptions gracefully during tests
 if (process.env.NODE_ENV === 'test') {
   process.on('uncaughtException', (error) => {
@@ -64,8 +67,6 @@ function createWindow(appSettings = {}) {
 
   mainWindow = new BrowserWindow(windowOptions);
 
-  // Increase max listeners to prevent memory leak warnings
-  // This is safe because we properly track and clean up listeners in electron-preload.js
   mainWindow.webContents.setMaxListeners(25);
 
   mainWindow.loadFile('index.html');

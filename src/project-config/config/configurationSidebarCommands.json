@@ -2,88 +2,88 @@
   {
     "id": "testAnalyticsLogCommand",
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Test Analytics Logs'",
+      "base": "echo 'Floating terminal for Test Analytics Logs'",
       "tabTitle": "Test Analytics Logs"
     }
   },
   {
     "id": "mlEngineLogCommand",
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='ML Logs'",
+      "base": "echo 'ML Engine logs'",
       "tabTitle": "ML Logs"
     }
   },
   {
-    "id": "service-a",
+    "id": "mirror",
     "conditions": {
       "enabled": true,
-      "attachState.service-a": false
+      "attachState.mirror": false
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-a,container-b,container-c,container-d,container-e' --variables='nodeVersion=${nodeVersion}' --tabTitle='Service A'",
+      "base": "nvm use ${nodeVersion} && cd ./weblifemirror && ./gradlew bootRun --info  -x runDockerComposeAuthService -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
       "associatedContainers": [
-        "container-a",
-        "container-b",
-        "container-c",
-        "container-d",
-        "container-e"
+        "wiremock",
+        "weblifemirror-db-replica-1",
+        "weblifemirror-db-master-1",
+        "weblifemirror-redis-1",
+        "weblifemirror-localdb-1"
       ],
       "tabTitle": {
-        "base": "Service A"
+        "base": "Mirror + MariaDB"
       }
     }
   },
   {
-    "id": "service-a",
+    "id": "mirror",
     "conditions": {
       "enabled": true,
-      "attachState.service-a": true,
+      "attachState.mirror": true,
       "mode": "suspend"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-a,container-b,container-c,container-d,container-e' --variables='nodeVersion=${nodeVersion}' --tabTitle='Service A (Debug Suspend)'",
+      "base": "nvm use ${nodeVersion} && cd ./weblifemirror && ./gradlew bootRun --debug-jvm --info  -x runDockerComposeAuthService -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
       "associatedContainers": [
-        "container-a",
-        "container-b",
-        "container-c",
-        "container-d",
-        "container-e"
+        "wiremock",
+        "weblifemirror-db-replica-1",
+        "weblifemirror-db-master-1",
+        "weblifemirror-redis-1",
+        "weblifemirror-localdb-1"
       ],
       "tabTitle": {
-        "base": "Service A (Debug Suspend)"
+        "base": "Mirror + MariaDB (Debug Suspend)"
       }
     }
   },
   {
-    "id": "service-a",
+    "id": "mirror",
     "conditions": {
       "enabled": true,
-      "attachState.service-a": true,
+      "attachState.mirror": true,
       "mode": "run"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-a,container-b,container-c,container-d,container-e' --variables='nodeVersion=${nodeVersion},debugPort=${debugPort}' --tabTitle='Service A (Debug Run)'",
+      "base": "nvm use ${nodeVersion} && cd ./weblifemirror && ./gradlew bootRun -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${debugPort}' --info -x runDockerComposeAuthService -x buildAgent -x runDockerComposeRuleEngine -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
       "associatedContainers": [
-        "container-a",
-        "container-b",
-        "container-c",
-        "container-d",
-        "container-e"
+        "wiremock",
+        "weblifemirror-db-replica-1",
+        "weblifemirror-db-master-1",
+        "weblifemirror-redis-1",
+        "weblifemirror-localdb-1"
       ],
       "tabTitle": {
-        "base": "Service A (Debug Run)"
+        "base": "Mirror + MariaDB (Debug Run)"
       }
     }
   },
   {
     "id": "frontend",
     "conditions": {
-      "service-aConfig.enabled": true,
+      "mirrorConfig.enabled": true,
       "frontendConfig.enabled": true,
       "frontendConfig.mode": "dev"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Frontend (Dev Mode)'",
+      "base": "cd ./weblifemirror && npx webpack --watch",
       "prefix": "nvm use ${nodeVersion} && ",
       "tabTitle": "Frontend (Dev Mode)"
     }
@@ -91,57 +91,57 @@
   {
     "id": "frontend",
     "conditions": {
-      "service-aConfig.enabled": true,
+      "mirrorConfig.enabled": true,
       "frontendConfig.enabled": true,
       "frontendConfig.mode": "normal"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Frontend'",
+      "base": "cd ./weblifemirror && npx webpack --bail",
       "prefix": "nvm use ${nodeVersion} && ",
       "tabTitle": "Frontend"
     }
   },
   {
-    "id": "service-b",
+    "id": "gopm",
     "conditions": {
       "enabled": true,
       "deploymentType": "process"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Service B (Process)'",
+      "base": "cd ./gopm && make run-local",
       "prefix": "nvm use ${nodeVersion} && ",
-      "tabTitle": "Service B (Process)",
+      "tabTitle": "gopm (Process)",
       "refreshConfig": {
         "prependCommands": [
           {
-            "command": "echo 'Prepend command simulated' && "
+            "command": "cd ./weblifemirror/agent/src && make darwin-dev && mv bin/agent-darwin-amd64-dev ../bin && cd ../../.. && "
           }
         ]
       }
     }
   },
   {
-    "id": "service-b",
+    "id": "gopm",
     "conditions": {
       "enabled": true,
       "deploymentType": "container"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-f' --tabTitle='Service B (Container)'",
-      "associatedContainers": ["container-f"],
+      "base": "cd ./gopm && make run-local-docker",
+      "associatedContainers": ["serverbrowseragent"],
       "prefix": "nvm use ${nodeVersion} && ",
-      "tabTitle": "Service B (Container)"
+      "tabTitle": "gopm (Container)"
     }
   },
   {
     "id": "url-intelligence-sub",
     "conditions": {
       "enabled": true,
-      "service-cConfig.enabled": true,
-      "service-cConfig.mode": "mock"
+      "url-intelligenceConfig.enabled": true,
+      "url-intelligenceConfig.mode": "mock"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='URL Intelligence (Mock)'",
+      "base": "cd ./ThreatIntelligenceMock && node inteligence.js",
       "prefix": "nvm use ${nodeVersion} && ",
       "tabTitle": {
         "base": "URL Intelligence (Mock)"
@@ -149,14 +149,14 @@
     }
   },
   {
-    "id": "service-c-sub",
+    "id": "url-intelligence-sub",
     "conditions": {
       "enabled": true,
-      "service-cConfig.enabled": true,
-      "service-cConfig.mode": "process"
+      "url-intelligenceConfig.enabled": true,
+      "url-intelligenceConfig.mode": "process"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='kubectlContext=${kubectlContext}' --tabTitle='URL Intelligence (Process)'",
+      "base": "cd ./threatintelligence/url-intelligence && kubectx ${kubectlContext} && PROOFPOINT_AUTH_CLIENT_SECRET=$(../../infrastructure/scripts/decode-secret.sh default env-url-intelligence client_secret) PROOFPOINT_AUTH_CLIENT_ID=$(../../infrastructure/scripts/decode-secret.sh default env-url-intelligence client_id) PROOFPOINT_SCORER_CUSTOMER_ID=$(../../infrastructure/scripts/decode-secret.sh default env-url-intelligence customer_id) ./gradlew bootRun --args='--spring.profiles.active=staging --proofpoint.proxy.url= --server.port=8083 --threatintelligence.url=http://127.0.0.1:8084'",
       "prefix": "nvm use ${nodeVersion} && ",
       "tabTitle": {
         "base": "URL Intelligence (Process)"
@@ -164,21 +164,21 @@
     }
   },
   {
-    "id": "service-c-sub",
+    "id": "url-intelligence-sub",
     "conditions": {
       "enabled": true,
-      "service-cConfig.enabled": true,
-      "service-cConfig.mode": "forwarding",
+      "url-intelligenceConfig.enabled": true,
+      "url-intelligenceConfig.mode": "forwarding",
       "urlIntelPodSelected": true
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='kubectlContext=${kubectlContext},urlIntelPod=${urlIntelPod}' --tabTitle='URL Intelligence (Forwarding)'",
+      "base": "cd ./threatintelligence && kubectx ${kubectlContext} && kubectl port-forward ${urlIntelPod} 8083:8080",
       "prefix": "nvm use ${nodeVersion} && ",
       "tabTitle": {
         "base": "URL Intelligence",
         "conditionalAppends": [
           {
-            "condition": "service-cConfig.mode === 'forwarding' && urlIntelPodSelected === true",
+            "condition": "url-intelligenceConfig.mode === 'forwarding' && urlIntelPodSelected === true",
             "append": " (Forwarding ${urlIntelPod})"
           }
         ]
@@ -187,13 +187,13 @@
   },
   {
     "id": "threat-intelligence-sub",
-          "conditions": {
-        "enabled": true,
-        "service-cConfig.enabled": true,
-        "threatIntelPodSelected": true
-      },
+    "conditions": {
+      "enabled": true,
+      "url-intelligenceConfig.enabled": true,
+      "threatIntelPodSelected": true
+    },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='kubectlContext=${kubectlContext},threatIntelPod=${threatIntelPod}' --tabTitle='Threat Intelligence'",
+      "base": "kubectx ${kubectlContext} && kubectl port-forward ${threatIntelPod} 8084:8080",
       "prefix": "nvm use ${nodeVersion} && ",
       "tabTitle": {
         "base": "Threat Intelligence"
@@ -201,191 +201,191 @@
     }
   },
   {
-    "id": "service-d",
+    "id": "activity-logger",
     "conditions": {
       "enabled": true,
-      "attachState.service-d": false
+      "attachState.activity-logger": false
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='nodeVersion=${nodeVersion},gcloudProject=${gcloudProject}' --tabTitle='Service D'",
-      "tabTitle": "Service D"
+      "base": "nvm use ${nodeVersion} && cd ./activity-logger && ./gradlew bootRun -Dspring.profiles.active=dev -Dgcloud.project=${gcloudProject}",
+      "tabTitle": "Activity Logger"
     }
   },
   {
-    "id": "service-d",
+    "id": "activity-logger",
     "conditions": {
       "enabled": true,
-      "attachState.service-d": true,
+      "attachState.activity-logger": true,
       "mode": "suspend"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='nodeVersion=${nodeVersion},gcloudProject=${gcloudProject}' --tabTitle='Service D (Debug Suspend)'",
-      "tabTitle": "Service D (Debug Suspend)"
+      "base": "nvm use ${nodeVersion} && cd ./activity-logger && ./gradlew bootRun --debug-jvm -Dspring.profiles.active=dev -Dgcloud.project=${gcloudProject}",
+      "tabTitle": "Activity Logger (Debug Suspend)"
     }
   },
   {
-    "id": "service-d",
+    "id": "activity-logger",
     "conditions": {
       "enabled": true,
-      "attachState.service-d": true,
+      "attachState.activity-logger": true,
       "mode": "run"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='nodeVersion=${nodeVersion},gcloudProject=${gcloudProject},debugPort=${debugPort}' --tabTitle='Service D (Debug Run)'",
-      "tabTitle": "Service D (Debug Run)"
+      "base": "nvm use ${nodeVersion} && cd ./activity-logger && ./gradlew bootRun -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${debugPort}' -Dspring.profiles.active=dev -Dgcloud.project=${gcloudProject}",
+      "tabTitle": "Activity Logger (Debug Run)"
     }
   },
   {
-    "id": "service-e",
+    "id": "rule-engine",
     "conditions": {
       "enabled": true,
       "deploymentType": "process"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Service E (Process)'",
+      "base": "cd rule-engine && ./out/rule-engine",
       "tabTitle": {
-        "base": "Service E (Process)"
+        "base": "Rule Engine (Process)"
       },
       "refreshConfig": {
         "prependCommands": [
           {
-            "command": "echo 'Prepend command simulated' && "
+            "command": "make run-local && "
           }
         ]
       }
     }
   },
   {
-    "id": "service-e",
+    "id": "rule-engine",
     "conditions": {
       "enabled": true,
       "deploymentType": "container"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-g' --tabTitle='Service E (Container)'",
-      "associatedContainers": ["container-g"],
+      "base": "cd ./weblifemirror && ./gradlew runDockerComposeRuleEngine",
+      "associatedContainers": ["rule-engine"],
       "prefix": "nvm use ${nodeVersion} && ",
-      "tabTitle": "Service E (Container)"
+      "tabTitle": "Rule Engine (Container)"
     }
   },
   {
-    "id": "service-f",
+    "id": "test-analytics",
     "conditions": {
       "enabled": true,
       "mode": "development"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Service F (Dev)'",
+      "base": "cd test-analytics && npm run dev -- --analytics-mode",
       "tabTitle": {
-        "base": "Service F (Dev)"
+        "base": "Test Analytics (Dev)"
       }
     }
   },
   {
-    "id": "service-f",
+    "id": "test-analytics",
     "conditions": {
       "enabled": true,
       "mode": "staging"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Service F (Staging)'",
+      "base": "cd test-analytics && npm run staging -- --analytics-mode",
       "tabTitle": {
-        "base": "Service F (Staging)"
+        "base": "Test Analytics (Staging)"
       }
     }
   },
   {
-    "id": "service-f",
+    "id": "test-analytics",
     "conditions": {
       "enabled": true,
       "mode": "production"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Service F (Prod)'",
+      "base": "cd test-analytics && npm run prod -- --analytics-mode",
       "tabTitle": {
-        "base": "Service F (Prod)"
+        "base": "Test Analytics (Prod)"
       }
     }
   },
   {
-    "id": "service-f",
+    "id": "test-analytics",
     "conditions": {
       "enabled": true,
       "dataProcessorConfig.enabled": true,
       "dataProcessorConfig.mode": "batch"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='mode=${mode}' --tabTitle='Data Processor (Batch)'",
+      "base": "cd test-analytics/data-processor && python batch_processor.py --mode=${mode}",
       "tabTitle": {
         "base": "Data Processor (Batch)"
       }
     }
   },
   {
-    "id": "service-f",
+    "id": "test-analytics",
     "conditions": {
       "enabled": true,
       "dataProcessorConfig.enabled": true,
       "dataProcessorConfig.mode": "stream"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='mode=${mode}' --tabTitle='Data Processor (Stream)'",
+      "base": "cd test-analytics/data-processor && python stream_processor.py --mode=${mode}",
       "tabTitle": {
         "base": "Data Processor (Stream)"
       }
     }
   },
   {
-    "id": "service-f",
+    "id": "test-analytics",
     "conditions": {
       "enabled": true,
       "dataProcessorConfig.enabled": true,
       "dataProcessorConfig.mode": "hybrid"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='mode=${mode}' --tabTitle='Data Processor (Hybrid)'",
+      "base": "cd test-analytics/data-processor && python hybrid_processor.py --mode=${mode}",
       "tabTitle": {
         "base": "Data Processor (Hybrid)"
       }
     }
   },
   {
-    "id": "service-f",
+    "id": "test-analytics",
     "conditions": {
       "enabled": true,
       "mlEngineConfig.enabled": true,
       "mlEngineConfig.mode": "tensorflow"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='mode=${mode}' --tabTitle='ML Engine (TensorFlow)'",
+      "base": "cd test-analytics/ml-engine && python run_tf_model.py --env=${mode}",
       "tabTitle": {
         "base": "ML Engine (TensorFlow)"
       }
     }
   },
   {
-    "id": "service-f",
+    "id": "test-analytics",
     "conditions": {
       "enabled": true,
       "mlEngineConfig.enabled": true,
       "mlEngineConfig.mode": "pytorch"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='mode=${mode}' --tabTitle='ML Engine (PyTorch)'",
+      "base": "cd test-analytics/ml-engine && python run_pytorch_model.py --env=${mode}",
       "tabTitle": {
         "base": "ML Engine (PyTorch)"
       }
     }
   },
   {
-    "id": "service-f",
+    "id": "test-analytics",
     "conditions": {
       "enabled": true,
       "mlEngineConfig.enabled": true,
       "mlEngineConfig.mode": "sklearn"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='mode=${mode}' --tabTitle='ML Engine (Scikit-learn)'",
+      "base": "cd test-analytics/ml-engine && python run_sklearn_model.py --env=${mode}",
       "tabTitle": {
         "base": "ML Engine (Scikit-learn)"
       }
@@ -394,7 +394,7 @@
   {
     "id": "runStorybook",
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='nodeVersion=${nodeVersion}' --tabTitle='Storybook'",
+      "base": "cd ./weblifemirror && nvm use ${nodeVersion} && npm run storybook",
       "tabTitle": "Storybook"
     }
   }

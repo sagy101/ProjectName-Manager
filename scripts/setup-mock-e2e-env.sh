@@ -14,21 +14,21 @@ parent_dir="$(dirname "$repo_root")"
 cd "$parent_dir"
 
 echo "Creating mock project directories..."
-mkdir -p ./project-a/agent \
-    ./project-c/subproject-a \
-    ./project-c/subproject-b \
-    ./project-infrastructure \
-    ./project-d \
-    ./project-e \
-    ./project-b
-# Note: project-f is intentionally NOT created
+mkdir -p ./weblifemirror/agent \
+    ./threatintelligence/threat-intelligence \
+    ./threatintelligence/url-intelligence \
+    ./infrastructure \
+    ./activity-logger \
+    ./rule-engine \
+    ./gopm
+# Note: test-analytics is intentionally NOT created
 
 # Create mock gradlew files
 for path in \
-    ./project-a/gradlew \
-    ./project-c/subproject-a/gradlew \
-    ./project-c/subproject-b/gradlew \
-    ./project-d/gradlew
+    ./weblifemirror/gradlew \
+    ./threatintelligence/threat-intelligence/gradlew \
+    ./threatintelligence/url-intelligence/gradlew \
+    ./activity-logger/gradlew
 do
     touch "$path"
     chmod +x "$path"
@@ -44,7 +44,7 @@ if [ -n "$GITHUB_PATH" ]; then
 fi
 
 # Create Go environment directories
-GOPM_HOME="${GOPM_HOME:-$repo_root/project-b}"
+GOPM_HOME="${GOPM_HOME:-$repo_root/gopm}"
 mkdir -p "$HOME/go/bin" "$GOPM_HOME"
 
 # Generate dynamic mocks from JSON configuration

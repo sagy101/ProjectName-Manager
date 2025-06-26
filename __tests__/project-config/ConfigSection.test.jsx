@@ -254,8 +254,8 @@ describe('ConfigSection', () => {
 
     it('renders a single customButton and handles click', () => {
         const mockSection = {
-                  id: "service-f",
-      title: "Service F",
+            id: "test-analytics",
+            title: "Test Analytics Engine",
             testSection: true,
             components: {
                 toggle: true,
