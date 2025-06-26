@@ -39,13 +39,13 @@ cd ProjectName-Manager
 # If you don't know your project branch name, check available branches:
 # git branch -r
 
-# Install dependencies
-npm install
+# First-time setup:
+npm install              # Install dependencies
+npm run rebuild         # Rebuild native modules for Electron
+npm run build          # Build the application
+npm start              # Start the application
 
-# Rebuild native modules for Electron
-npm run rebuild
-
-# Start the application
+# After first-time setup, only need:
 npm start
 ```
 

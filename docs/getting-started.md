@@ -78,13 +78,36 @@ npm run rebuild
 
 This step is crucial for terminal functionality to work properly.
 
-### 4. Start the Application
+### 4. Build the Application
+
+Build the renderer process bundle:
+
+```bash
+npm run build
+```
+
+This step is required to generate the `dist/renderer.js` file that the application loads.
+
+### 5. Start the Application
 
 ```bash
 npm start
 ```
 
 The application should launch and display the main window.
+
+## Subsequent Runs
+
+After completing the initial setup, you only need to run:
+
+```bash
+npm start
+```
+
+The build artifacts from step 4 are persistent, so you don't need to rebuild unless:
+- You pull new code changes
+- You modify source files (unless using `npm run watch`)
+- You encounter issues that require a fresh build
 
 ## Development Setup
 
@@ -96,13 +119,21 @@ For active development with automatic rebuilding:
 # Terminal 1: Watch for file changes and rebuild
 npm run watch
 
-# Terminal 2: Run the application
+# Terminal 2: Run the application (rebuild will happen automatically via watch)
 npm start
 ```
 
+**Note**: When using `npm run watch`, you don't need to manually run `npm run build` as the watch process handles automatic rebuilding.
+
 ### Building for Development
 
-To manually build the application:
+To manually build the application for development (with source maps and debugging):
+
+```bash
+npm run build:dev
+```
+
+For production builds:
 
 ```bash
 npm run build
