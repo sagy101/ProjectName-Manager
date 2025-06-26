@@ -109,12 +109,12 @@ describe('refreshGitBranches', () => {
   test('skips test sections to avoid Git errors', async () => {
     const config = JSON.stringify([
       { sectionId: 'regular-section', directoryPath: 'pathA' },
-      { sectionId: 'service-f', directoryPath: 'test-analytics' }
+      { sectionId: 'test-analytics', directoryPath: 'test-analytics' }
     ]);
     const sectionsConfig = JSON.stringify({ 
       sections: [
         { id: 'regular-section', testSection: false },
-        { id: 'service-f', testSection: true }
+        { id: 'test-analytics', testSection: true }
       ] 
     });
     fs.promises.readFile.mockImplementation((path) => {
@@ -127,7 +127,7 @@ describe('refreshGitBranches', () => {
     });
     child_process.exec.mockImplementation((cmd, opts, cb) => cb(null, 'main', ''));
     const result = await refreshGitBranches();
-    // Should only have the regular section, service-f should be skipped
+    // Should only have the regular section, test-analytics should be skipped
     expect(result).toEqual({ regularSection: { gitBranch: 'main' } });
     expect(child_process.exec).toHaveBeenCalledTimes(1); // Only called for regular section
   });

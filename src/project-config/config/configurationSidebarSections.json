@@ -1,24 +1,28 @@
 {
   "settings": {
-    "projectName": "ProjectX",
+    "projectName": "ISO",
     "openDevToolsByDefault": false,
     "autoSetupTimeoutSeconds": 90,
     "loadingScreenTimeoutSeconds": 20,
     "sidebarDefaultExpanded": false,
     "terminalScrollback": 1000,
+<<<<<<< fix/verification-simulator-session-persistence
     "maxFloatingTerminals": 30,
+=======
+    "maxFloatingTerminals": 8,
+>>>>>>> Project-Isolation
     "terminalFontSize": 14,
     "configurationDefaultExpanded": true
   },
   "sections": [
     {
-      "id": "service-a",
-      "title": "Service A",
+      "id": "mirror",
+      "title": "Mirror + MariaDB",
       "components": {
         "toggle": true,
         "attachToggle": {
           "enabled": true,
-          "mutuallyExclusiveWith": ["service-d"]
+          "mutuallyExclusiveWith": ["activity-logger"]
         },
         "infoButton": true,
         "gitBranch": true,
@@ -27,7 +31,7 @@
           "placeholder": "Enter debug port",
           "default": "5005",
           "visibleWhen": {
-            "configKey": "attachState.service-a",
+            "configKey": "attachState.mirror",
             "hasValue": true
           }
         },
@@ -59,8 +63,8 @@
       }
     },
     {
-      "id": "service-b",
-      "title": "Service B",
+      "id": "gopm",
+      "title": "GoPM + Agent + Chromium",
       "components": {
         "toggle": true,
         "infoButton": true,
@@ -72,8 +76,8 @@
       }
     },
     {
-      "id": "service-c",
-      "title": "Service C",
+      "id": "url-intelligence",
+      "title": "URL Intelligence + TI (Cloud)",
       "components": {
         "toggle": true,
         "infoButton": true,
@@ -81,7 +85,7 @@
         "dropdownSelectors": [
           {
             "id": "kubectlContext",
-            "command": "node ./ProjectName-Manager/scripts/simulators/dropdown-simulator.js kubectl-contexts",
+            "command": "kubectl config get-contexts -o name",
             "parseResponse": "lines",
             "placeholder": "Select context...",
             "loadingText": "Loading contexts...",
@@ -95,8 +99,8 @@
         ],
         "subSections": [
           {
-            "id": "service-c-sub",
-            "title": "Service C Sub",
+            "id": "url-intelligence-sub",
+            "title": "URL Intelligence",
             "components": {
               "toggle": true,
               "modeSelector": {
@@ -107,7 +111,7 @@
               "dropdownSelectors": [
                 {
                   "id": "urlIntelPod",
-                  "command": "node ./ProjectName-Manager/scripts/simulators/dropdown-simulator.js kubectl-pods-service-c-sub",
+                  "command": "kubectl --context ${kubectlContext} get pods -l app=url-intelligence --no-headers -o custom-columns=\":metadata.name\"",
                   "parseResponse": "lines",
                   "placeholder": "Select URL Intel pod (for Forwarding)...",
                   "loadingText": "Loading URL Intel pods...",
@@ -130,7 +134,7 @@
               "dropdownSelectors": [
                 {
                   "id": "threatIntelPod",
-                  "command": "node ./ProjectName-Manager/scripts/simulators/dropdown-simulator.js kubectl-pods-threat-intelligence-sub",
+                  "command": "kubectl --context ${kubectlContext} get pods -l app=threat-intelligence --no-headers -o custom-columns=\":metadata.name\"",
                   "parseResponse": "lines",
                   "placeholder": "Select Threat Intel pod...",
                   "loadingText": "Loading Threat Intel pods...",
@@ -145,13 +149,13 @@
       }
     },
     {
-      "id": "service-d",
-      "title": "Service D",
+      "id": "activity-logger",
+      "title": "Activity Logger",
       "components": {
         "toggle": true,
         "attachToggle": {
           "enabled": true,
-          "mutuallyExclusiveWith": ["service-a"]
+          "mutuallyExclusiveWith": ["mirror"]
         },
         "infoButton": true,
         "gitBranch": true,
@@ -160,14 +164,14 @@
           "placeholder": "Enter debug port",
           "default": "5005",
           "visibleWhen": {
-            "configKey": "attachState.service-d",
+            "configKey": "attachState.activity-logger",
             "hasValue": true
           }
         },
         "mainToggle": {
           "validationRequired": {
                         "condition": "gcloudProject && !projectSelectorFallbacks.includes(gcloudProject)",
-              "errorMessage": "Cannot enable Service D until a cloud project is selected."
+              "errorMessage": "Cannot enable Activity Logger until a cloud project is selected."
           }
         },
         "modeSelector": {
@@ -178,8 +182,8 @@
       }
     },
     {
-      "id": "service-e",
-      "title": "Service E",
+      "id": "rule-engine",
+      "title": "Rule Engine",
       "components": {
         "toggle": true,
         "infoButton": true,
@@ -188,8 +192,8 @@
       }
     },
     {
-      "id": "service-f",
-      "title": "Service F",
+      "id": "test-analytics",
+      "title": "Test Analytics Engine",
       "testSection": true,
       "components": {
         "toggle": true,

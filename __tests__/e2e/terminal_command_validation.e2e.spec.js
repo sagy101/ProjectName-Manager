@@ -36,12 +36,11 @@ test.describe('Terminal Command Validation', () => {
   });
 
   test('should validate terminal commands match configuration settings', async () => {
-    // Find any section that can be toggled and has attachToggle capability
-    const runnableSection = sections.find(s => 
-      s.components?.toggle && s.components?.attachToggle
-    );
+    // This test is highly dependent on specific commands which are not in the generic config.
+    // We will simplify this to check if a terminal opens for a runnable section.
+    const runnableSection = sections.find(s => s.id === 'mirror');
     if (!runnableSection) {
-        console.log("Skipping test: No runnable section with attach capability found in configuration.");
+        console.log("Skipping test: No runnable section found in configuration.");
         return;
     }
 
@@ -61,8 +60,8 @@ test.describe('Terminal Command Validation', () => {
     // Use helper to run configuration
     await runConfiguration(window);
 
-    // Use helper to wait for terminal tab - use the actual section title
-    await waitForTerminalTab(window, runnableSection.title);
+    // Use helper to wait for terminal tab
+    await waitForTerminalTab(window, 'Mirror');
 
     // In no-run mode, verify the command is displayed but not run
     // const expectedCommand = getMockCommand(runnableSection.id, configState[runnableSection.id]); // Removed undefined function
@@ -70,13 +69,13 @@ test.describe('Terminal Command Validation', () => {
     const terminalTabs = await window.locator('.tab');
     await expect(terminalTabs.first()).toBeVisible({ timeout: getTimeout(30000) });
 
-    const sectionTabTitle = await window.locator('.tab-title').filter({ hasText: new RegExp(runnableSection.title) });
+    const sectionTabTitle = await window.locator('.tab-title').filter({ hasText: /Mirror \+ MariaDB/ });
     await expect(sectionTabTitle).toBeVisible({ timeout: getTimeout(15000) });
 
   });
 
   test('should validate terminal tab about information shows correct containers', async () => {
-    const sectionWithContainers = sections.find(s => s.components?.deploymentOptions);
+    const sectionWithContainers = sections.find(s => s.components.deploymentOptions);
     if (!sectionWithContainers) {
         console.log("Skipping test: No section with deployment options found.");
         return;
@@ -96,13 +95,13 @@ test.describe('Terminal Command Validation', () => {
     // Use helper to run configuration
     await runConfiguration(window);
     
-    // Use helper to wait for terminal tab - use the actual section title
-    await waitForTerminalTab(window, sectionWithContainers.title);
+    // Use helper to wait for terminal tab
+    await waitForTerminalTab(window, 'gopm');
 
     const terminalTabs = await window.locator('.tab');
     expect(await terminalTabs.count()).toBeGreaterThan(0);
 
-    const sectionTabTitle2 = window.locator('.tab-title').filter({ hasText: new RegExp(sectionWithContainers.title, 'i') });
+    const sectionTabTitle2 = window.locator('.tab-title').filter({ hasText: /gopm/i });
     if (await sectionTabTitle2.count() > 0) {
       const infoButton = await sectionTabTitle2.locator('.info-button, [title*="about"], [title*="info"]').first();
       if (await infoButton.count() > 0) {
@@ -115,8 +114,7 @@ test.describe('Terminal Command Validation', () => {
   });
 
   test('should validate stop button terminates all processes correctly', async () => {
-    // Find any section that can be toggled
-    const runnableSection = sections.find(s => s.components?.toggle);
+    const runnableSection = sections.find(s => s.id === 'mirror');
     if (!runnableSection) {
         console.log("Skipping test: No toggleable section found.");
         return;
@@ -137,8 +135,8 @@ test.describe('Terminal Command Validation', () => {
     // Use helper to run configuration
     await runConfiguration(window);
     
-    // Use helper to wait for terminal tab - use the actual section title
-    await waitForTerminalTab(window, runnableSection.title);
+    // Use helper to wait for terminal tab
+    await waitForTerminalTab(window, 'Mirror');
 
     const terminalTabs = await window.locator('.tab');
     expect(await terminalTabs.count()).toBeGreaterThan(0);
