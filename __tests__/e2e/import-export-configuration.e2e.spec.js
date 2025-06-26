@@ -140,26 +140,26 @@ test.describe('Import/Export Configuration E2E Tests', () => {
     console.log('📋 Setting up initial configuration...');
     
     // Configure multiple sections to create a meaningful test scenario
-    const mirrorSection = sections.find(s => s.id === 'mirror');
-    const gopmSection = sections.find(s => s.id === 'gopm');
+    const serviceASection = sections.find(s => s.id === 'service-a');
+    const serviceBSection = sections.find(s => s.id === 'service-b');
     
-    if (mirrorSection) {
-      await enableSection(window, mirrorSection.title);
+    if (serviceASection) {
+      await enableSection(window, serviceASection.title);
       
       // If the section supports attachment, enable it
-      if (mirrorSection.components.attachToggle) {
-        await attachSection(window, 'mirror');
+      if (serviceASection.components.attachToggle) {
+        await attachSection(window, 'service-a');
       }
       
       // Set deployment mode if available
-      if (mirrorSection.components.modeSelector) {
-        await setDeploymentMode(window, 'mirror', 'run');
+      if (serviceASection.components.modeSelector) {
+        await setDeploymentMode(window, 'service-a', 'run');
       }
     }
     
-    if (gopmSection) {
-      await enableSection(window, gopmSection.title);
-      // Keep gopm in default mode (process) since container is TBD
+    if (serviceBSection) {
+      await enableSection(window, serviceBSection.title);
+      // Keep service-b in default mode (process) since container is TBD
     }
     
     // Wait for configuration to stabilize
@@ -189,16 +189,16 @@ test.describe('Import/Export Configuration E2E Tests', () => {
     console.log('🔧 Modifying configuration...');
     
     // Disable previously enabled sections
-    if (mirrorSection) {
-      await disableSection(window, mirrorSection.title);
+    if (serviceASection) {
+      await disableSection(window, serviceASection.title);
     }
     
-    if (gopmSection) {
-      await disableSection(window, gopmSection.title);
+    if (serviceBSection) {
+      await disableSection(window, serviceBSection.title);
     }
     
     // Enable a different section if available
-    const urlIntelSection = sections.find(s => s.id === 'url-intelligence');
+    const urlIntelSection = sections.find(s => s.id === 'service-c');
     if (urlIntelSection) {
       await enableSection(window, urlIntelSection.title);
     }
@@ -398,12 +398,12 @@ test.describe('Import/Export Configuration E2E Tests', () => {
     console.log('💾 Testing configuration state persistence during session...');
     
     // Set up a configuration
-    const mirrorSection = sections.find(s => s.id === 'mirror');
-    if (mirrorSection) {
-      await enableSection(window, mirrorSection.title);
+    const serviceASection = sections.find(s => s.id === 'service-a');
+    if (serviceASection) {
+      await enableSection(window, serviceASection.title);
       
-      if (mirrorSection.components.attachToggle) {
-        await attachSection(window, 'mirror');
+      if (serviceASection.components.attachToggle) {
+        await attachSection(window, 'service-a');
       }
     }
     

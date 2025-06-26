@@ -86,7 +86,7 @@ test.describe('Fix Command Feature E2E Tests', () => {
 
     test('should show fix buttons for configuration sidebar verifications with fixCommand', async () => {
       // Navigate to a configuration section that actually exists
-      await page.click('text=Mirror + MariaDB');
+      await page.click('text=Service A');
       await page.waitForSelector('.config-section', { timeout: getTimeout(10000) });
 
       // Find configuration sections with verifications that have fix commands
@@ -158,7 +158,7 @@ test.describe('Fix Command Feature E2E Tests', () => {
       if (dirCreationVerifications.length > 0) {
         const testVerification = dirCreationVerifications[0]; // Test first directory creation
         
-        await page.click('text=Mirror + MariaDB');
+        await page.click('text=Service A');
         await page.waitForSelector('.config-section', { timeout: getTimeout(10000) });
         
         // Try to find and click any available fix button (since we can't target specific verifications by ID)
@@ -383,7 +383,7 @@ test.describe('Fix Command Feature E2E Tests', () => {
         });
         
         // Should be able to navigate while fix command runs
-        await page.click('text=Mirror + MariaDB');
+        await page.click('text=Service A');
         await page.waitForSelector('.config-section');
         
         // Navigate back to General Environment

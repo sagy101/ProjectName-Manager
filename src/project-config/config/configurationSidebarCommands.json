@@ -14,10 +14,10 @@
     }
   },
   {
-    "id": "mirror",
+    "id": "service-a",
     "conditions": {
       "enabled": true,
-      "attachState.mirror": false
+      "attachState.service-a": false
     },
     "command": {
       "base": "nvm use ${nodeVersion} && cd ./weblifemirror && ./gradlew bootRun --info  -x runDockerComposeAuthService -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz",
@@ -29,15 +29,15 @@
         "weblifemirror-localdb-1"
       ],
       "tabTitle": {
-        "base": "Mirror + MariaDB"
+        "base": "Service A"
       }
     }
   },
   {
-    "id": "mirror",
+    "id": "service-a",
     "conditions": {
       "enabled": true,
-      "attachState.mirror": true,
+      "attachState.service-a": true,
       "mode": "suspend"
     },
     "command": {
@@ -50,15 +50,15 @@
         "weblifemirror-localdb-1"
       ],
       "tabTitle": {
-        "base": "Mirror + MariaDB (Debug Suspend)"
+        "base": "Service A (Debug Suspend)"
       }
     }
   },
   {
-    "id": "mirror",
+    "id": "service-a",
     "conditions": {
       "enabled": true,
-      "attachState.mirror": true,
+      "attachState.service-a": true,
       "mode": "run"
     },
     "command": {
@@ -71,14 +71,14 @@
         "weblifemirror-localdb-1"
       ],
       "tabTitle": {
-        "base": "Mirror + MariaDB (Debug Run)"
+        "base": "Service A (Debug Run)"
       }
     }
   },
   {
     "id": "frontend",
     "conditions": {
-      "mirrorConfig.enabled": true,
+      "service-aConfig.enabled": true,
       "frontendConfig.enabled": true,
       "frontendConfig.mode": "dev"
     },
@@ -91,7 +91,7 @@
   {
     "id": "frontend",
     "conditions": {
-      "mirrorConfig.enabled": true,
+      "service-aConfig.enabled": true,
       "frontendConfig.enabled": true,
       "frontendConfig.mode": "normal"
     },
@@ -102,7 +102,7 @@
     }
   },
   {
-    "id": "gopm",
+    "id": "service-b",
     "conditions": {
       "enabled": true,
       "deploymentType": "process"
@@ -110,7 +110,7 @@
     "command": {
       "base": "cd ./gopm && make run-local",
       "prefix": "nvm use ${nodeVersion} && ",
-      "tabTitle": "gopm (Process)",
+      "tabTitle": "Service B (Process)",
       "refreshConfig": {
         "prependCommands": [
           {
@@ -121,7 +121,7 @@
     }
   },
   {
-    "id": "gopm",
+    "id": "service-b",
     "conditions": {
       "enabled": true,
       "deploymentType": "container"
@@ -130,15 +130,15 @@
       "base": "cd ./gopm && make run-local-docker",
       "associatedContainers": ["serverbrowseragent"],
       "prefix": "nvm use ${nodeVersion} && ",
-      "tabTitle": "gopm (Container)"
+      "tabTitle": "Service B (Container)"
     }
   },
   {
     "id": "url-intelligence-sub",
     "conditions": {
       "enabled": true,
-      "url-intelligenceConfig.enabled": true,
-      "url-intelligenceConfig.mode": "mock"
+      "service-cConfig.enabled": true,
+      "service-cConfig.mode": "mock"
     },
     "command": {
       "base": "cd ./ThreatIntelligenceMock && node inteligence.js",
@@ -149,11 +149,11 @@
     }
   },
   {
-    "id": "url-intelligence-sub",
+    "id": "service-c-sub",
     "conditions": {
       "enabled": true,
-      "url-intelligenceConfig.enabled": true,
-      "url-intelligenceConfig.mode": "process"
+      "service-cConfig.enabled": true,
+      "service-cConfig.mode": "process"
     },
     "command": {
       "base": "cd ./threatintelligence/url-intelligence && kubectx ${kubectlContext} && PROOFPOINT_AUTH_CLIENT_SECRET=$(../../infrastructure/scripts/decode-secret.sh default env-url-intelligence client_secret) PROOFPOINT_AUTH_CLIENT_ID=$(../../infrastructure/scripts/decode-secret.sh default env-url-intelligence client_id) PROOFPOINT_SCORER_CUSTOMER_ID=$(../../infrastructure/scripts/decode-secret.sh default env-url-intelligence customer_id) ./gradlew bootRun --args='--spring.profiles.active=staging --proofpoint.proxy.url= --server.port=8083 --threatintelligence.url=http://127.0.0.1:8084'",
@@ -164,11 +164,11 @@
     }
   },
   {
-    "id": "url-intelligence-sub",
+    "id": "service-c-sub",
     "conditions": {
       "enabled": true,
-      "url-intelligenceConfig.enabled": true,
-      "url-intelligenceConfig.mode": "forwarding",
+      "service-cConfig.enabled": true,
+      "service-cConfig.mode": "forwarding",
       "urlIntelPodSelected": true
     },
     "command": {
@@ -178,7 +178,7 @@
         "base": "URL Intelligence",
         "conditionalAppends": [
           {
-            "condition": "url-intelligenceConfig.mode === 'forwarding' && urlIntelPodSelected === true",
+            "condition": "service-cConfig.mode === 'forwarding' && urlIntelPodSelected === true",
             "append": " (Forwarding ${urlIntelPod})"
           }
         ]
@@ -187,11 +187,11 @@
   },
   {
     "id": "threat-intelligence-sub",
-    "conditions": {
-      "enabled": true,
-      "url-intelligenceConfig.enabled": true,
-      "threatIntelPodSelected": true
-    },
+          "conditions": {
+        "enabled": true,
+        "service-cConfig.enabled": true,
+        "threatIntelPodSelected": true
+      },
     "command": {
       "base": "kubectx ${kubectlContext} && kubectl port-forward ${threatIntelPod} 8084:8080",
       "prefix": "nvm use ${nodeVersion} && ",
@@ -201,42 +201,42 @@
     }
   },
   {
-    "id": "activity-logger",
+    "id": "service-d",
     "conditions": {
       "enabled": true,
-      "attachState.activity-logger": false
+      "attachState.service-d": false
     },
     "command": {
       "base": "nvm use ${nodeVersion} && cd ./activity-logger && ./gradlew bootRun -Dspring.profiles.active=dev -Dgcloud.project=${gcloudProject}",
-      "tabTitle": "Activity Logger"
+      "tabTitle": "Service D"
     }
   },
   {
-    "id": "activity-logger",
+    "id": "service-d",
     "conditions": {
       "enabled": true,
-      "attachState.activity-logger": true,
+      "attachState.service-d": true,
       "mode": "suspend"
     },
     "command": {
       "base": "nvm use ${nodeVersion} && cd ./activity-logger && ./gradlew bootRun --debug-jvm -Dspring.profiles.active=dev -Dgcloud.project=${gcloudProject}",
-      "tabTitle": "Activity Logger (Debug Suspend)"
+      "tabTitle": "Service D (Debug Suspend)"
     }
   },
   {
-    "id": "activity-logger",
+    "id": "service-d",
     "conditions": {
       "enabled": true,
-      "attachState.activity-logger": true,
+      "attachState.service-d": true,
       "mode": "run"
     },
     "command": {
       "base": "nvm use ${nodeVersion} && cd ./activity-logger && ./gradlew bootRun -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${debugPort}' -Dspring.profiles.active=dev -Dgcloud.project=${gcloudProject}",
-      "tabTitle": "Activity Logger (Debug Run)"
+      "tabTitle": "Service D (Debug Run)"
     }
   },
   {
-    "id": "rule-engine",
+    "id": "service-e",
     "conditions": {
       "enabled": true,
       "deploymentType": "process"
@@ -244,7 +244,7 @@
     "command": {
       "base": "cd rule-engine && ./out/rule-engine",
       "tabTitle": {
-        "base": "Rule Engine (Process)"
+        "base": "Service E (Process)"
       },
       "refreshConfig": {
         "prependCommands": [
@@ -256,7 +256,7 @@
     }
   },
   {
-    "id": "rule-engine",
+    "id": "service-e",
     "conditions": {
       "enabled": true,
       "deploymentType": "container"
@@ -265,11 +265,11 @@
       "base": "cd ./weblifemirror && ./gradlew runDockerComposeRuleEngine",
       "associatedContainers": ["rule-engine"],
       "prefix": "nvm use ${nodeVersion} && ",
-      "tabTitle": "Rule Engine (Container)"
+      "tabTitle": "Service E (Container)"
     }
   },
   {
-    "id": "test-analytics",
+    "id": "service-f",
     "conditions": {
       "enabled": true,
       "mode": "development"
@@ -277,12 +277,12 @@
     "command": {
       "base": "cd test-analytics && npm run dev -- --analytics-mode",
       "tabTitle": {
-        "base": "Test Analytics (Dev)"
+        "base": "Service F (Dev)"
       }
     }
   },
   {
-    "id": "test-analytics",
+    "id": "service-f",
     "conditions": {
       "enabled": true,
       "mode": "staging"
@@ -290,12 +290,12 @@
     "command": {
       "base": "cd test-analytics && npm run staging -- --analytics-mode",
       "tabTitle": {
-        "base": "Test Analytics (Staging)"
+        "base": "Service F (Staging)"
       }
     }
   },
   {
-    "id": "test-analytics",
+    "id": "service-f",
     "conditions": {
       "enabled": true,
       "mode": "production"
@@ -303,12 +303,12 @@
     "command": {
       "base": "cd test-analytics && npm run prod -- --analytics-mode",
       "tabTitle": {
-        "base": "Test Analytics (Prod)"
+        "base": "Service F (Prod)"
       }
     }
   },
   {
-    "id": "test-analytics",
+    "id": "service-f",
     "conditions": {
       "enabled": true,
       "dataProcessorConfig.enabled": true,
@@ -322,7 +322,7 @@
     }
   },
   {
-    "id": "test-analytics",
+    "id": "service-f",
     "conditions": {
       "enabled": true,
       "dataProcessorConfig.enabled": true,
@@ -336,7 +336,7 @@
     }
   },
   {
-    "id": "test-analytics",
+    "id": "service-f",
     "conditions": {
       "enabled": true,
       "dataProcessorConfig.enabled": true,
@@ -350,7 +350,7 @@
     }
   },
   {
-    "id": "test-analytics",
+    "id": "service-f",
     "conditions": {
       "enabled": true,
       "mlEngineConfig.enabled": true,
@@ -364,7 +364,7 @@
     }
   },
   {
-    "id": "test-analytics",
+    "id": "service-f",
     "conditions": {
       "enabled": true,
       "mlEngineConfig.enabled": true,
@@ -378,7 +378,7 @@
     }
   },
   {
-    "id": "test-analytics",
+    "id": "service-f",
     "conditions": {
       "enabled": true,
       "mlEngineConfig.enabled": true,

@@ -10,25 +10,25 @@ describe('Command generation end-to-end', () => {
     nodeVersion: '15.5.1'
   };
 
-  test('Mirror command without attach uses base gradle run', () => {
+  test('Service A command without attach uses base gradle run', () => {
     const config = {
-      mirror: {
+      'service-a': {
         enabled: true,
         mode: 'suspend',
         frontendConfig: { enabled: false }
       }
     };
     const result = generateCommandList(config, {}, {
-      attachState: { mirror: false },
+      attachState: { 'service-a': false },
       configSidebarCommands,
       configSidebarSectionsActual,
       discoveredVersions: mockDiscoveredVersions
     });
-    const mirrorCmd = result.find(c => c.sectionId === 'mirror');
-    expect(mirrorCmd.command).toBe(
+    const serviceACmd = result.find(c => c.sectionId === 'service-a');
+    expect(serviceACmd.command).toBe(
       'nvm use 15.5.1 && cd ./weblifemirror && ./gradlew bootRun --info  -x runDockerComposeAuthService -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz'
     );
-    expect(mirrorCmd.associatedContainers).toEqual(
+    expect(serviceACmd.associatedContainers).toEqual(
       expect.arrayContaining([
         'wiremock',
         'weblifemirror-db-replica-1',
@@ -39,9 +39,9 @@ describe('Command generation end-to-end', () => {
     );
   });
 
-  test('Mirror debug run command when attached', () => {
+  test('Service A debug run command when attached', () => {
     const config = {
-      mirror: {
+      'service-a': {
         enabled: true,
         mode: 'run',
         debugPort: '5005',
@@ -49,27 +49,27 @@ describe('Command generation end-to-end', () => {
       }
     };
     const result = generateCommandList(config, {}, {
-      attachState: { mirror: true },
+      attachState: { 'service-a': true },
       configSidebarCommands,
       configSidebarSectionsActual,
       discoveredVersions: mockDiscoveredVersions
     });
-    const mirrorCmd = result.find(c => c.sectionId === 'mirror');
-    expect(mirrorCmd.command).toBe(
+    const serviceACmd = result.find(c => c.sectionId === 'service-a');
+    expect(serviceACmd.command).toBe(
       'nvm use 15.5.1 && cd ./weblifemirror && ./gradlew bootRun -Dspring-boot.run.jvmArguments=\'-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005\' --info -x runDockerComposeAuthService -x buildAgent -x runDockerComposeRuleEngine -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz'
     );
   });
 
   test('Frontend dev sub-section command generated when enabled', () => {
     const config = {
-      mirror: {
+      'service-a': {
         enabled: true,
         mode: 'suspend',
         frontendConfig: { enabled: true, mode: 'dev' }
       }
     };
     const result = generateCommandList(config, {}, {
-      attachState: { mirror: false },
+      attachState: { 'service-a': false },
       configSidebarCommands,
       configSidebarSectionsActual,
       discoveredVersions: mockDiscoveredVersions

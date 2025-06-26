@@ -243,8 +243,8 @@ test.describe('Fix Command Feature', () => {
     });
 
     test('should show configuration section with fix buttons', async () => {
-      // Use our helper to navigate to a section that actually exists - Mirror + MariaDB
-      await navigateToSection(window, 'Mirror + MariaDB');
+      // Use our helper to navigate to a section that actually exists - Service A
+      await navigateToSection(window, 'Service A');
       
       // Check if fix buttons are available
       const buttonsAvailable = await hasFixButtons();
@@ -303,7 +303,7 @@ test.describe('Fix Command Feature', () => {
 
     test('should test directory creation fix commands safely', async () => {
       // Use our helper to navigate to configuration section where we added mkdir fix commands
-      await navigateToSection(window, 'Mirror + MariaDB');
+      await navigateToSection(window, 'Service A');
       
       // Check if fix buttons are available
       let buttonsAvailable = await hasFixButtons();
@@ -433,7 +433,7 @@ test.describe('Fix Command Feature', () => {
       console.log(`✓ Fix command executed successfully`);
       
       // App should remain responsive - test navigation
-      await window.click('text=Mirror + MariaDB');
+      await window.click('text=Service A');
       await window.waitForSelector('.config-section', { timeout: getTimeout(10000) });
       
       // Navigate back and ensure it's expanded

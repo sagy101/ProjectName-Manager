@@ -103,15 +103,15 @@ describe('setup-mock-e2e-env.sh', () => {
       });
     });
 
-    test('does not create test-analytics directory', () => {
+    test('does not create service-f directory', () => {
       // Run the script
       execSync(`cd "${repoRoot}" && bash "${scriptPath}"`, { 
         stdio: 'pipe',
         env: { ...process.env, HOME: process.env.HOME }
       });
 
-      const testAnalyticsPath = path.join(parentDir, 'test-analytics');
-      expect(fs.existsSync(testAnalyticsPath)).toBe(false);
+      const serviceFPath = path.join(parentDir, 'test-analytics');
+      expect(fs.existsSync(serviceFPath)).toBe(false);
     });
 
     test('creates Go directories', () => {
@@ -122,10 +122,10 @@ describe('setup-mock-e2e-env.sh', () => {
       });
 
       const goBinPath = path.join(process.env.HOME, 'go', 'bin');
-      const gopmPath = path.join(repoRoot, 'gopm');
+      const serviceBPath = path.join(repoRoot, 'gopm');
       
       expect(fs.existsSync(goBinPath)).toBe(true);
-      expect(fs.existsSync(gopmPath)).toBe(true);
+      expect(fs.existsSync(serviceBPath)).toBe(true);
     });
   });
 
@@ -298,30 +298,30 @@ describe('setup-mock-e2e-env.sh', () => {
   });
 
   describe('Environment Setup', () => {
-    test('sets up GOPM_HOME correctly', () => {
-      // Test with default GOPM_HOME
+      test('sets up Service B HOME correctly', () => {
+    // Test with default Service B HOME
       execSync(`cd "${repoRoot}" && bash "${scriptPath}"`, { 
         stdio: 'pipe',
         env: { ...process.env, HOME: process.env.HOME }
       });
 
-      const expectedGopmPath = path.join(repoRoot, 'gopm');
-      expect(fs.existsSync(expectedGopmPath)).toBe(true);
+          const expectedServiceBPath = path.join(repoRoot, 'gopm');
+    expect(fs.existsSync(expectedServiceBPath)).toBe(true);
     });
 
-    test('respects existing GOPM_HOME environment variable', () => {
-      const customGopmHome = path.join(testDir, 'custom-gopm');
+      test('respects existing Service B HOME environment variable', () => {
+    const customServiceBHome = path.join(testDir, 'custom-gopm');
       
       execSync(`cd "${repoRoot}" && bash "${scriptPath}"`, { 
         stdio: 'pipe',
         env: { 
           ...process.env, 
           HOME: process.env.HOME,
-          GOPM_HOME: customGopmHome
+          GOPM_HOME: customServiceBHome
         }
       });
 
-      expect(fs.existsSync(customGopmHome)).toBe(true);
+      expect(fs.existsSync(customServiceBHome)).toBe(true);
     });
 
     test('handles GITHUB_PATH environment variable', () => {

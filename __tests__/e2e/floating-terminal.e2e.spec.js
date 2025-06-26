@@ -299,7 +299,7 @@ test.describe('Floating Terminal Management E2E Tests', () => {
     await expect(terminal).toBeVisible();
     
     // Test state persistence during navigation using helper
-    const sections = ['Mirror + MariaDB', 'GoPM + Agent + Chromium'];
+    const sections = ['Mirror + MariaDB', 'Service B'];
     await testTerminalStatePersistence(window, terminal, sections);
     
     // Test sidebar interactions using helper

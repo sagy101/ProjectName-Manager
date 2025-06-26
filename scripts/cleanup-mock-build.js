@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const srcDir = path.resolve(__dirname, '../src');
+const configDir = path.resolve(__dirname, '../src/project-config/config');
 const backupDir = path.resolve(__dirname, '../.tmp-backup');
 
 const filesToRestore = [
@@ -18,7 +18,7 @@ function cleanupMockBuild() {
 
     console.log('Restoring production config files...');
     for (const prodFile of filesToRestore) {
-        const prodPath = path.join(srcDir, prodFile);
+        const prodPath = path.join(configDir, prodFile);
         const backupPath = path.join(backupDir, prodFile);
 
         if (fs.existsSync(backupPath)) {

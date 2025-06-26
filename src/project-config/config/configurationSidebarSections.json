@@ -1,6 +1,6 @@
 {
   "settings": {
-    "projectName": "ISO",
+    "projectName": "ProjectX",
     "openDevToolsByDefault": false,
     "autoSetupTimeoutSeconds": 90,
     "loadingScreenTimeoutSeconds": 20,
@@ -12,13 +12,13 @@
   },
   "sections": [
     {
-      "id": "mirror",
-      "title": "Mirror + MariaDB",
+      "id": "service-a",
+      "title": "Service A",
       "components": {
         "toggle": true,
         "attachToggle": {
           "enabled": true,
-          "mutuallyExclusiveWith": ["activity-logger"]
+          "mutuallyExclusiveWith": ["service-d"]
         },
         "infoButton": true,
         "gitBranch": true,
@@ -27,7 +27,7 @@
           "placeholder": "Enter debug port",
           "default": "5005",
           "visibleWhen": {
-            "configKey": "attachState.mirror",
+            "configKey": "attachState.service-a",
             "hasValue": true
           }
         },
@@ -59,8 +59,8 @@
       }
     },
     {
-      "id": "gopm",
-      "title": "GoPM + Agent + Chromium",
+      "id": "service-b",
+      "title": "Service B",
       "components": {
         "toggle": true,
         "infoButton": true,
@@ -72,8 +72,8 @@
       }
     },
     {
-      "id": "url-intelligence",
-      "title": "URL Intelligence + TI (Cloud)",
+      "id": "service-c",
+      "title": "Service C",
       "components": {
         "toggle": true,
         "infoButton": true,
@@ -95,8 +95,8 @@
         ],
         "subSections": [
           {
-            "id": "url-intelligence-sub",
-            "title": "URL Intelligence",
+            "id": "service-c-sub",
+            "title": "Service C Sub",
             "components": {
               "toggle": true,
               "modeSelector": {
@@ -145,13 +145,13 @@
       }
     },
     {
-      "id": "activity-logger",
-      "title": "Activity Logger",
+      "id": "service-d",
+      "title": "Service D",
       "components": {
         "toggle": true,
         "attachToggle": {
           "enabled": true,
-          "mutuallyExclusiveWith": ["mirror"]
+          "mutuallyExclusiveWith": ["service-a"]
         },
         "infoButton": true,
         "gitBranch": true,
@@ -160,14 +160,14 @@
           "placeholder": "Enter debug port",
           "default": "5005",
           "visibleWhen": {
-            "configKey": "attachState.activity-logger",
+            "configKey": "attachState.service-d",
             "hasValue": true
           }
         },
         "mainToggle": {
           "validationRequired": {
                         "condition": "gcloudProject && !projectSelectorFallbacks.includes(gcloudProject)",
-              "errorMessage": "Cannot enable Activity Logger until a cloud project is selected."
+              "errorMessage": "Cannot enable Service D until a cloud project is selected."
           }
         },
         "modeSelector": {
@@ -178,8 +178,8 @@
       }
     },
     {
-      "id": "rule-engine",
-      "title": "Rule Engine",
+      "id": "service-e",
+      "title": "Service E",
       "components": {
         "toggle": true,
         "infoButton": true,
@@ -188,8 +188,8 @@
       }
     },
     {
-      "id": "test-analytics",
-      "title": "Test Analytics Engine",
+      "id": "service-f",
+      "title": "Service F",
       "testSection": true,
       "components": {
         "toggle": true,

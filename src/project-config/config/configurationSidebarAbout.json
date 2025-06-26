@@ -5,7 +5,7 @@
     "description": "Frontend section without specific path verification."
   },
   {
-    "sectionId": "mirror",
+    "sectionId": "service-a",
     "directoryPath": "weblifemirror",
     "description": "Handles traffic mirroring and database for ISO testing.",
     "verifications": [
@@ -28,7 +28,7 @@
     ]
   },
   {
-    "sectionId": "gopm",
+    "sectionId": "service-b",
     "directoryPath": "weblifemirror",
     "description": "Manages Go agent and browser automation.",
     "verifications": [
@@ -56,8 +56,8 @@
       }
     ]
   },
-  {
-    "sectionId": "url-intelligence",
+      {
+      "sectionId": "service-c",
     "directoryPath": "threatintelligence",
     "description": "Provides URL and threat analysis capabilities.",
     "verifications": [
@@ -95,8 +95,8 @@
       }
     ]
   },
-  {
-    "sectionId": "activity-logger",
+      {
+      "sectionId": "service-d",
     "directoryPath": "activity-logger",
     "description": "Logs and tracks user and system activity.",
     "verifications": [
@@ -118,8 +118,8 @@
       }
     ]
   },
-  {
-    "sectionId": "rule-engine",
+      {
+      "sectionId": "service-e",
     "directoryPath": "rule-engine",
     "description": "Evaluates and enforces custom rules for ISO.",
     "verifications": [
@@ -134,8 +134,8 @@
       }
     ]
   },
-  {
-    "sectionId": "test-analytics",
+      {
+      "sectionId": "service-f",
     "directoryPath": "test-analytics",
     "description": "Advanced analytics engine for processing test data with ML capabilities and real-time stream processing.",
     "verifications": [
