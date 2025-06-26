@@ -6,7 +6,7 @@
     "loadingScreenTimeoutSeconds": 20,
     "sidebarDefaultExpanded": false,
     "terminalScrollback": 1000,
-    "maxFloatingTerminals": 15,
+    "maxFloatingTerminals": 30,
     "terminalFontSize": 14,
     "configurationDefaultExpanded": true
   },
