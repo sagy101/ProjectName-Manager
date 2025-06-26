@@ -22,21 +22,15 @@ The simulation system replaces all external dependencies (Docker, gcloud, kubect
 The system consists of three interconnected simulators that provide realistic behavior without real operations:
 
 ```mermaid
-graph TD
-    GCS["Generic Command<br/>Simulator<br/>• Container mgmt<br/>• Build processes<br/>• Development runs"]
-    VS["Verification<br/>Simulator<br/>• Tool verification<br/>• Fix commands<br/>• Environment checks"]
-    DS["Dropdown<br/>Simulator<br/>• Project lists<br/>• Context lists<br/>• Pod selections"]
+flowchart TD
+    A[Generic Command Simulator<br/>Container mgmt, Build processes, Development runs]
+    B[Verification Simulator<br/>Tool verification, Fix commands, Environment checks]  
+    C[Dropdown Simulator<br/>Project lists, Context lists, Pod selections]
+    D[Configuration Files<br/>Sections, Commands, Verifications]
     
-    CONFIG["Configuration<br/>Files<br/>• Sections<br/>• Commands<br/>• Verifications"]
-    
-    GCS --> CONFIG
-    VS --> CONFIG
-    DS --> CONFIG
-    
-    style GCS fill:#e8f5e8
-    style VS fill:#fff3e0
-    style DS fill:#e1f5fe
-    style CONFIG fill:#f3e5f5
+    A --> D
+    B --> D
+    C --> D
 ```
 
 ### 1. Generic Command Simulator
