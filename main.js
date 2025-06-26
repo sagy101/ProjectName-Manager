@@ -219,7 +219,7 @@ ipcMain.on('process-exited', (event, data) => {
 
 // ==================== APP LIFECYCLE ====================
 
-app.whenReady().then(async () => { // eslint-disable-line promise/always-return
+app.whenReady().then(async () => {
   log.info('=== APPLICATION STARTUP ===');
   log.info('1. Loading application settings...');
   const appSettings = await loadAppSettings();
