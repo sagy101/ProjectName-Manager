@@ -107,5 +107,28 @@ export default [
       "n/no-unpublished-require": "off", // Allow dev dependencies in config files
       "n/no-missing-require": "off" // Import plugin handles this better
     }
+  },
+  {
+    // Special config for simulator scripts that need shebangs and process.exit
+    files: ["scripts/simulators/**/*.js"],
+    plugins: {
+      n: nodePlugin,
+      promise: promisePlugin,
+    },
+    languageOptions: {
+      sourceType: "commonjs",
+      globals: {
+        ...globals.node
+      }
+    },
+    rules: {
+      ...nodePlugin.configs.recommended.rules,
+      ...promisePlugin.configs.recommended.rules,
+      "n/hashbang": "off", // Allow shebang for executable scripts
+      "n/shebang": "off", // Allow shebang for executable scripts  
+      "n/no-process-exit": "off", // Allow process.exit in CLI scripts
+      "n/no-unpublished-require": "off",
+      "n/no-missing-require": "off"
+    }
   }
 ];

@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 // Dropdown Simulator - Returns varying realistic values for dropdown selectors
 // Usage: node dropdown-simulator.js <command-type> [options]
 

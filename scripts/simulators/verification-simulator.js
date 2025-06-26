@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const fs = require('fs');
 const path = require('path');
 
@@ -112,7 +114,8 @@ let sessionState = {};
 function getVerificationResponse(verificationId, shouldSucceed) {
   const verification = VERIFICATION_RESPONSES[verificationId];
   if (!verification) {
-    throw new Error(`Unknown verification: ${verificationId}`);
+    console.error(`Unknown verification: ${verificationId}`);
+    process.exit(1);
   }
   
   let response = shouldSucceed ? verification.success : verification.failure;
@@ -129,13 +132,13 @@ function getVerificationResponse(verificationId, shouldSucceed) {
     console.log(response);
   }
   
-  // For commandSuccess type, return appropriate code
+  // For commandSuccess type, exit with appropriate code
   if (verification.type === 'commandSuccess') {
-    return shouldSucceed ? 0 : 1;
+    process.exit(shouldSucceed ? 0 : 1);
   }
   
-  // For outputContains, always return 0 (command succeeded in running)
-  return 0;
+  // For outputContains, always exit 0 (command succeeded in running)
+  process.exit(0);
 }
 
 function main() {
@@ -148,7 +151,7 @@ function main() {
     Object.keys(VERIFICATION_RESPONSES).sort().forEach(id => {
       console.error(`  - ${id}`);
     });
-    throw new Error('Insufficient arguments provided');
+    process.exit(1);
   }
   
   const [mode, verificationId] = args;
@@ -159,29 +162,21 @@ function main() {
     // Default to success unless explicitly set to fail in session or global override
     const shouldSucceed = (sessionState[verificationId] !== false) && !shouldFail;
     
-    const exitCode = getVerificationResponse(verificationId, shouldSucceed);
-    return exitCode;
+    getVerificationResponse(verificationId, shouldSucceed);
     
   } else if (mode === 'fix') {
     // Set this verification to succeed for current session only
     sessionState[verificationId] = true;
     
     console.log(`Fixed verification: ${verificationId} - will now return success`);
-    return 0;
+    process.exit(0);
     
   } else {
-    throw new Error(`Invalid mode: ${mode}. Use 'verify' or 'fix'.`);
+    console.error(`Invalid mode: ${mode}. Use 'verify' or 'fix'.`);
+    process.exit(1);
   }
 }
 
 if (require.main === module) {
-  try {
-    const exitCode = main();
-    // eslint-disable-next-line n/no-process-exit
-    process.exit(exitCode);
-  } catch (error) {
-    console.error('Error:', error.message);
-    // eslint-disable-next-line n/no-process-exit
-    process.exit(1);
-  }
+  main();
 } 
