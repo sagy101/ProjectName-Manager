@@ -288,7 +288,7 @@ describe('Fix Command Backend Tests', () => {
         
         // Should have proper verification ID
         const parts = verification.fixCommand.split(' ');
-        expect(parts.length).toBe(4); // ['node', './ProjectName-Manager/scripts/verification-simulator.js', 'fix', 'verificationId']
+        expect(parts.length).toBe(4); // ['node', './ProjectName-Manager/scripts/simulators/verification-simulator.js', 'fix', 'verificationId']
         expect(parts[3]).toBe(verification.id);
       });
     });

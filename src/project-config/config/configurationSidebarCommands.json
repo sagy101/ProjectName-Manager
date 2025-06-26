@@ -2,14 +2,14 @@
   {
     "id": "testAnalyticsLogCommand",
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Test Analytics Logs'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Test Analytics Logs'",
       "tabTitle": "Test Analytics Logs"
     }
   },
   {
     "id": "mlEngineLogCommand",
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='ML Logs'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='ML Logs'",
       "tabTitle": "ML Logs"
     }
   },
@@ -20,7 +20,7 @@
       "attachState.service-a": false
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-a,container-b,container-c,container-d,container-e' --variables='nodeVersion=${nodeVersion}' --tabTitle='Service A'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-a,container-b,container-c,container-d,container-e' --variables='nodeVersion=${nodeVersion}' --tabTitle='Service A'",
       "associatedContainers": [
         "container-a",
         "container-b",
@@ -41,7 +41,7 @@
       "mode": "suspend"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-a,container-b,container-c,container-d,container-e' --variables='nodeVersion=${nodeVersion}' --tabTitle='Service A (Debug Suspend)'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-a,container-b,container-c,container-d,container-e' --variables='nodeVersion=${nodeVersion}' --tabTitle='Service A (Debug Suspend)'",
       "associatedContainers": [
         "container-a",
         "container-b",
@@ -62,7 +62,7 @@
       "mode": "run"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-a,container-b,container-c,container-d,container-e' --variables='nodeVersion=${nodeVersion},debugPort=${debugPort}' --tabTitle='Service A (Debug Run)'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-a,container-b,container-c,container-d,container-e' --variables='nodeVersion=${nodeVersion},debugPort=${debugPort}' --tabTitle='Service A (Debug Run)'",
       "associatedContainers": [
         "container-a",
         "container-b",
@@ -83,7 +83,7 @@
       "frontendConfig.mode": "dev"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Frontend (Dev Mode)'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Frontend (Dev Mode)'",
       "prefix": "nvm use ${nodeVersion} && ",
       "tabTitle": "Frontend (Dev Mode)"
     }
@@ -96,7 +96,7 @@
       "frontendConfig.mode": "normal"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Frontend'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Frontend'",
       "prefix": "nvm use ${nodeVersion} && ",
       "tabTitle": "Frontend"
     }
@@ -108,7 +108,7 @@
       "deploymentType": "process"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Service B (Process)'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Service B (Process)'",
       "prefix": "nvm use ${nodeVersion} && ",
       "tabTitle": "Service B (Process)",
       "refreshConfig": {
@@ -127,7 +127,7 @@
       "deploymentType": "container"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-f' --tabTitle='Service B (Container)'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-f' --tabTitle='Service B (Container)'",
       "associatedContainers": ["container-f"],
       "prefix": "nvm use ${nodeVersion} && ",
       "tabTitle": "Service B (Container)"
@@ -141,7 +141,7 @@
       "service-cConfig.mode": "mock"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='URL Intelligence (Mock)'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='URL Intelligence (Mock)'",
       "prefix": "nvm use ${nodeVersion} && ",
       "tabTitle": {
         "base": "URL Intelligence (Mock)"
@@ -156,7 +156,7 @@
       "service-cConfig.mode": "process"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='kubectlContext=${kubectlContext}' --tabTitle='URL Intelligence (Process)'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='kubectlContext=${kubectlContext}' --tabTitle='URL Intelligence (Process)'",
       "prefix": "nvm use ${nodeVersion} && ",
       "tabTitle": {
         "base": "URL Intelligence (Process)"
@@ -172,7 +172,7 @@
       "urlIntelPodSelected": true
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='kubectlContext=${kubectlContext},urlIntelPod=${urlIntelPod}' --tabTitle='URL Intelligence (Forwarding)'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='kubectlContext=${kubectlContext},urlIntelPod=${urlIntelPod}' --tabTitle='URL Intelligence (Forwarding)'",
       "prefix": "nvm use ${nodeVersion} && ",
       "tabTitle": {
         "base": "URL Intelligence",
@@ -193,7 +193,7 @@
         "threatIntelPodSelected": true
       },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='kubectlContext=${kubectlContext},threatIntelPod=${threatIntelPod}' --tabTitle='Threat Intelligence'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='kubectlContext=${kubectlContext},threatIntelPod=${threatIntelPod}' --tabTitle='Threat Intelligence'",
       "prefix": "nvm use ${nodeVersion} && ",
       "tabTitle": {
         "base": "Threat Intelligence"
@@ -207,7 +207,7 @@
       "attachState.service-d": false
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='nodeVersion=${nodeVersion},gcloudProject=${gcloudProject}' --tabTitle='Service D'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='nodeVersion=${nodeVersion},gcloudProject=${gcloudProject}' --tabTitle='Service D'",
       "tabTitle": "Service D"
     }
   },
@@ -219,7 +219,7 @@
       "mode": "suspend"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='nodeVersion=${nodeVersion},gcloudProject=${gcloudProject}' --tabTitle='Service D (Debug Suspend)'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='nodeVersion=${nodeVersion},gcloudProject=${gcloudProject}' --tabTitle='Service D (Debug Suspend)'",
       "tabTitle": "Service D (Debug Suspend)"
     }
   },
@@ -231,7 +231,7 @@
       "mode": "run"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='nodeVersion=${nodeVersion},gcloudProject=${gcloudProject},debugPort=${debugPort}' --tabTitle='Service D (Debug Run)'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='nodeVersion=${nodeVersion},gcloudProject=${gcloudProject},debugPort=${debugPort}' --tabTitle='Service D (Debug Run)'",
       "tabTitle": "Service D (Debug Run)"
     }
   },
@@ -242,7 +242,7 @@
       "deploymentType": "process"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Service E (Process)'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Service E (Process)'",
       "tabTitle": {
         "base": "Service E (Process)"
       },
@@ -262,7 +262,7 @@
       "deploymentType": "container"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-g' --tabTitle='Service E (Container)'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-g' --tabTitle='Service E (Container)'",
       "associatedContainers": ["container-g"],
       "prefix": "nvm use ${nodeVersion} && ",
       "tabTitle": "Service E (Container)"
@@ -275,7 +275,7 @@
       "mode": "development"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Service F (Dev)'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Service F (Dev)'",
       "tabTitle": {
         "base": "Service F (Dev)"
       }
@@ -288,7 +288,7 @@
       "mode": "staging"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Service F (Staging)'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Service F (Staging)'",
       "tabTitle": {
         "base": "Service F (Staging)"
       }
@@ -301,7 +301,7 @@
       "mode": "production"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Service F (Prod)'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Service F (Prod)'",
       "tabTitle": {
         "base": "Service F (Prod)"
       }
@@ -315,7 +315,7 @@
       "dataProcessorConfig.mode": "batch"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='mode=${mode}' --tabTitle='Data Processor (Batch)'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='mode=${mode}' --tabTitle='Data Processor (Batch)'",
       "tabTitle": {
         "base": "Data Processor (Batch)"
       }
@@ -329,7 +329,7 @@
       "dataProcessorConfig.mode": "stream"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='mode=${mode}' --tabTitle='Data Processor (Stream)'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='mode=${mode}' --tabTitle='Data Processor (Stream)'",
       "tabTitle": {
         "base": "Data Processor (Stream)"
       }
@@ -343,7 +343,7 @@
       "dataProcessorConfig.mode": "hybrid"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='mode=${mode}' --tabTitle='Data Processor (Hybrid)'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='mode=${mode}' --tabTitle='Data Processor (Hybrid)'",
       "tabTitle": {
         "base": "Data Processor (Hybrid)"
       }
@@ -357,7 +357,7 @@
       "mlEngineConfig.mode": "tensorflow"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='mode=${mode}' --tabTitle='ML Engine (TensorFlow)'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='mode=${mode}' --tabTitle='ML Engine (TensorFlow)'",
       "tabTitle": {
         "base": "ML Engine (TensorFlow)"
       }
@@ -371,7 +371,7 @@
       "mlEngineConfig.mode": "pytorch"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='mode=${mode}' --tabTitle='ML Engine (PyTorch)'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='mode=${mode}' --tabTitle='ML Engine (PyTorch)'",
       "tabTitle": {
         "base": "ML Engine (PyTorch)"
       }
@@ -385,7 +385,7 @@
       "mlEngineConfig.mode": "sklearn"
     },
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='mode=${mode}' --tabTitle='ML Engine (Scikit-learn)'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='mode=${mode}' --tabTitle='ML Engine (Scikit-learn)'",
       "tabTitle": {
         "base": "ML Engine (Scikit-learn)"
       }
@@ -394,7 +394,7 @@
   {
     "id": "runStorybook",
     "command": {
-      "base": "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='nodeVersion=${nodeVersion}' --tabTitle='Storybook'",
+      "base": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --variables='nodeVersion=${nodeVersion}' --tabTitle='Storybook'",
       "tabTitle": "Storybook"
     }
   }

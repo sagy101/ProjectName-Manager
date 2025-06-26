@@ -26,7 +26,7 @@ describe('Command generation end-to-end', () => {
     });
     const serviceACmd = result.find(c => c.sectionId === 'service-a');
     expect(serviceACmd.command).toBe(
-      "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-a,container-b,container-c,container-d,container-e' --variables='nodeVersion=15.5.1' --tabTitle='Service A'"
+      "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-a,container-b,container-c,container-d,container-e' --variables='nodeVersion=15.5.1' --tabTitle='Service A'"
     );
     expect(serviceACmd.associatedContainers).toEqual(
       expect.arrayContaining([
@@ -56,7 +56,7 @@ describe('Command generation end-to-end', () => {
     });
     const serviceACmd = result.find(c => c.sectionId === 'service-a');
     expect(serviceACmd.command).toBe(
-      "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-a,container-b,container-c,container-d,container-e' --variables='nodeVersion=15.5.1,debugPort=5005' --tabTitle='Service A (Debug Run)'"
+      "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-a,container-b,container-c,container-d,container-e' --variables='nodeVersion=15.5.1,debugPort=5005' --tabTitle='Service A (Debug Run)'"
     );
   });
 
@@ -75,6 +75,6 @@ describe('Command generation end-to-end', () => {
       discoveredVersions: mockDiscoveredVersions
     });
     const frontendCmd = result.find(c => c.sectionId === 'frontend');
-    expect(frontendCmd.command).toBe("nvm use 15.5.1 && node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Frontend (Dev Mode)'");
+    expect(frontendCmd.command).toBe("nvm use 15.5.1 && node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Frontend (Dev Mode)'");
   });
 });

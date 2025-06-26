@@ -343,26 +343,27 @@ test.describe('Fix Command Feature', () => {
   });
 
   test.describe('Fix Command Types Validation', () => {
-    test('should validate brew install commands exist', async () => {
-      const brewCommands = [];
+    test('should validate verification simulator commands exist', async () => {
+      const simulatorCommands = [];
       
       generalEnvironmentVerifications.categories.forEach(categoryWrapper => {
         const category = categoryWrapper.category;
         if (category && category.verifications) {
           category.verifications.forEach(verification => {
-            if (verification.fixCommand && verification.fixCommand.includes('brew install')) {
-              brewCommands.push(verification);
+            if (verification.fixCommand && verification.fixCommand.includes('verification-simulator.js')) {
+              simulatorCommands.push(verification);
             }
           });
         }
       });
 
-      expect(brewCommands.length).toBeGreaterThan(0);
-      console.log(`Found ${brewCommands.length} brew install fix commands`);
+      expect(simulatorCommands.length).toBeGreaterThan(0);
+      console.log(`Found ${simulatorCommands.length} verification simulator fix commands`);
       
-      brewCommands.forEach(verification => {
+      simulatorCommands.forEach(verification => {
         console.log(`  • ${verification.id}: ${verification.fixCommand}`);
-        expect(verification.fixCommand).toMatch(/^brew install/);
+        expect(verification.fixCommand).toMatch(/verification-simulator\.js fix/);
+        expect(verification.fixCommand).toContain('./ProjectName-Manager/scripts/simulators/');
       });
     });
 

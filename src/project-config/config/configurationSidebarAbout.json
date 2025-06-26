@@ -55,9 +55,9 @@
       {
         "id": "ChromiumInstalled",
         "title": "Chromium installed",
-        "command": "node ./ProjectName-Manager/scripts/verification-simulator.js verify ChromiumInstalled",
+        "command": "node ./ProjectName-Manager/scripts/simulators/verification-simulator.js verify ChromiumInstalled",
         "checkType": "commandSuccess",
-        "fixCommand": "node ./ProjectName-Manager/scripts/verification-simulator.js fix ChromiumInstalled",
+        "fixCommand": "node ./ProjectName-Manager/scripts/simulators/verification-simulator.js fix ChromiumInstalled",
         "fixPriority": 3
       }
     ]

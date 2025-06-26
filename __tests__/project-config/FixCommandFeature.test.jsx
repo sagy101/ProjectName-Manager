@@ -291,7 +291,7 @@ describe('Fix Command Feature Tests', () => {
         const category = categoryWrapper.category;
         if (category && category.verifications) {
           category.verifications.forEach(verification => {
-            if (verification.fixCommand && verification.fixCommand.includes('verification-simulator.js')) {
+            if (verification.fixCommand && verification.fixCommand.includes('simulators/verification-simulator.js')) {
               simulatorCommands.push(verification);
             }
           });
@@ -399,7 +399,7 @@ describe('Fix Command Feature Tests', () => {
         const category = categoryWrapper.category;
         if (category && category.verifications) {
           category.verifications.forEach(verification => {
-            if (verification.fixCommand && verification.fixCommand.includes('verification-simulator.js')) {
+            if (verification.fixCommand && verification.fixCommand.includes('simulators/verification-simulator.js')) {
               allSimulatorCommands.push(verification);
             }
           });
@@ -409,7 +409,7 @@ describe('Fix Command Feature Tests', () => {
       configurationSidebarAbout.forEach(section => {
         if (section.verifications) {
           section.verifications.forEach(verification => {
-            if (verification.fixCommand && verification.fixCommand.includes('verification-simulator.js')) {
+            if (verification.fixCommand && verification.fixCommand.includes('simulators/verification-simulator.js')) {
               allSimulatorCommands.push(verification);
             }
           });
@@ -433,7 +433,7 @@ describe('Fix Command Feature Tests', () => {
         fireEvent.click(fixButton);
         
         expect(mockOnFixCommand).toHaveBeenCalledWith(verification);
-        expect(verification.fixCommand).toContain('verification-simulator.js fix');
+        expect(verification.fixCommand).toContain('simulators/verification-simulator.js fix');
         
         unmount(); // Clean up to avoid multiple elements
       });

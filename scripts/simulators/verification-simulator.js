@@ -47,16 +47,12 @@ const VERIFICATION_RESPONSES = {
   'rancherDesktop': {
     success: 'rdctl version v1.13.1',
     failure: 'rdctl: command not found',
-    type: 'outputContains',
-    expectedValue: '',
-    outputStream: 'stdout'
+    type: 'commandSuccess'
   },
   'containerRuntime': {
     success: '24.0.7',
     failure: 'Cannot connect to the Docker daemon',
-    type: 'outputContains',
-    expectedValue: '',
-    outputStream: 'stdout'
+    type: 'commandSuccess'
   },
   
   // Node.js verifications
@@ -81,7 +77,10 @@ const VERIFICATION_RESPONSES = {
     expectedValue: 'go version go1'
   },
   'goPathIncludes': {
-    success: '/Users/user/go/bin:/usr/local/bin:/usr/bin:/bin:$GOPATH/bin',
+    success: () => {
+      const gopath = process.env.GOPATH || '$HOME/go';
+      return `/Users/user/go/bin:/usr/local/bin:/usr/bin:/bin:${gopath}/bin`;
+    },
     failure: '/usr/local/bin:/usr/bin:/bin',
     type: 'outputContains',
     expectedValue: '$GOPATH/bin'
@@ -109,27 +108,8 @@ const VERIFICATION_RESPONSES = {
   }
 };
 
-// State file to track which verifications should return success
-const STATE_FILE = path.join(__dirname, '.verification-simulator-state.json');
-
-function loadState() {
-  try {
-    if (fs.existsSync(STATE_FILE)) {
-      return JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
-    }
-  } catch (error) {
-    // Ignore errors, use default state
-  }
-  return {};
-}
-
-function saveState(state) {
-  try {
-    fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
-  } catch (error) {
-    console.error('Warning: Could not save verification state:', error.message);
-  }
-}
+// In-memory state for current session only (not persistent)
+let sessionState = {};
 
 function getVerificationResponse(verificationId, shouldSucceed) {
   const verification = VERIFICATION_RESPONSES[verificationId];
@@ -138,7 +118,12 @@ function getVerificationResponse(verificationId, shouldSucceed) {
     process.exit(1);
   }
   
-  const response = shouldSucceed ? verification.success : verification.failure;
+  let response = shouldSucceed ? verification.success : verification.failure;
+  // Handle function-based responses
+  if (typeof response === 'function') {
+    response = response();
+  }
+  
   const outputStream = verification.outputStream || 'stdout';
   
   if (outputStream === 'stderr') {
@@ -170,20 +155,18 @@ function main() {
   }
   
   const [mode, verificationId] = args;
-  const state = loadState();
   
   if (mode === 'verify') {
     // Check environment variable for global override
     const shouldFail = process.env.VERIFICATION_SHOULD_FAIL === 'true';
-    // Default to success unless explicitly set to fail or global override
-    const shouldSucceed = (state[verificationId] !== false) && !shouldFail;
+    // Default to success unless explicitly set to fail in session or global override
+    const shouldSucceed = (sessionState[verificationId] !== false) && !shouldFail;
     
     getVerificationResponse(verificationId, shouldSucceed);
     
   } else if (mode === 'fix') {
-    // Set this verification to succeed
-    state[verificationId] = true;
-    saveState(state);
+    // Set this verification to succeed for current session only
+    sessionState[verificationId] = true;
     
     console.log(`Fixed verification: ${verificationId} - will now return success`);
     process.exit(0);

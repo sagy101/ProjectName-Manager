@@ -20,7 +20,7 @@ function extractBaseCommand(commandStr) {
   if (!commandStr) return null;
   
   // Handle verification simulator commands - extract the original command name
-  if (commandStr.includes('verification-simulator.js verify ')) {
+    if (commandStr.includes('simulators/verification-simulator.js verify ')) {
     const match = commandStr.match(/verification-simulator\.js verify (\w+)/);
     if (match) {
       const verificationId = match[1];
