@@ -112,7 +112,7 @@ For complete documentation, see the **[Documentation Guides](docs/README.md)**.
 - [Export & Import Tools](docs/development/export-import.md) - Configuration backup
 - [AI Experiments](docs/development/ai-experiments.md) - Development methodology
 - [Development Roadmap](docs/roadmap.md) - Future enhancements and feature timeline
-- [**Contributing Guide**](docs/CONTRIBUTIONS.md) - **Project branch strategy and contribution guidelines**
+- [Contributing Guide](docs/CONTRIBUTIONS.md) - Project branch strategy and contribution guidelines**
 
 ## ⚙️ Configuration Overview
 
