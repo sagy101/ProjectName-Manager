@@ -35,3 +35,7 @@ out/
 # Playwright reports
 /playwright-report/
 /test-results/
+
+# Verification simulator session state files
+scripts/simulators/.verification-session-state*.json
+scripts/simulators/.verification-session-state*.lock
