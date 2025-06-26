@@ -22,57 +22,21 @@ The simulation system replaces all external dependencies (Docker, gcloud, kubect
 The system consists of three interconnected simulators that provide realistic behavior without real operations:
 
 ```mermaid
-graph TB
-    subgraph "Configuration System"
-        CONFIG[Configuration Files<br/>• Sections JSON<br/>• Commands JSON<br/>• Verifications JSON]
-    end
+graph TD
+    GCS["Generic Command<br/>Simulator<br/>• Container mgmt<br/>• Build processes<br/>• Development runs"]
+    VS["Verification<br/>Simulator<br/>• Tool verification<br/>• Fix commands<br/>• Environment checks"]
+    DS["Dropdown<br/>Simulator<br/>• Project lists<br/>• Context lists<br/>• Pod selections"]
     
-    subgraph "Simulation Layer"
-        GCS[Generic Command<br/>Simulator<br/>🔧 Build & Run Commands]
-        VS[Verification<br/>Simulator<br/>✅ Tool Validation]
-        DS[Dropdown<br/>Simulator<br/>📋 UI Data Sources]
-    end
+    CONFIG["Configuration<br/>Files<br/>• Sections<br/>• Commands<br/>• Verifications"]
     
-    subgraph "Application Layer"
-        UI[User Interface<br/>• Terminal Tabs<br/>• Dropdowns<br/>• Status Indicators]
-        BACKEND[Backend Process<br/>• Command Execution<br/>• Verification Checks<br/>• Data Fetching]
-    end
+    GCS --> CONFIG
+    VS --> CONFIG
+    DS --> CONFIG
     
-    subgraph "Development Environment"
-        TESTS[E2E Tests<br/>🧪 Automated Testing]
-        DEV[Local Development<br/>👨‍💻 No Dependencies]
-        CI[CI/CD Pipeline<br/>⚙️ GitHub Actions]
-    end
-    
-    CONFIG --> GCS
-    CONFIG --> VS  
-    CONFIG --> DS
-    
-    GCS --> BACKEND
-    VS --> BACKEND
-    DS --> UI
-    
-    BACKEND --> UI
-    
-    TESTS --> GCS
-    TESTS --> VS
-    TESTS --> DS
-    
-    DEV --> GCS
-    DEV --> VS
-    DEV --> DS
-    
-    CI --> TESTS
-    
-    style CONFIG fill:#e1f5fe
-    style GCS fill:#f3e5f5
-    style VS fill:#e8f5e8
-    style DS fill:#fff3e0
-    style UI fill:#fce4ec
-    style BACKEND fill:#f1f8e9
-    style TESTS fill:#e3f2fd
-    style DEV fill:#f9fbe7
-    style CI fill:#e0f2f1
+    style GCS fill:#e8f5e8
+    style VS fill:#fff3e0
+    style DS fill:#e1f5fe
+    style CONFIG fill:#f3e5f5
 ```
 
 ### 1. Generic Command Simulator
