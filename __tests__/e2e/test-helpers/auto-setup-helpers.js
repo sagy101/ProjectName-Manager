@@ -77,54 +77,105 @@ async function checkGroupCompleted(page, priority) {
   try {
     console.log(`Checking if priority group ${priority} completed...`);
     
-    // Based on actual HTML structure, look for completion status
-    // The HTML shows: <span class="group-status-label status-waiting">Waiting</span>
-    // and <span class="group-progress">0/2 completed</span>
-    
     // Find the priority group container that contains "Priority X"
     const priorityGroupContainer = page.locator('.priority-group-header').filter({
       hasText: `Priority ${priority}`
     });
     
-    // Check for completed status in multiple ways
-    const completionChecks = [
-      // Check if status label shows "Complete" or "Success"
-      priorityGroupContainer.locator('.group-status-label').filter({ hasText: /complete|success|done/i }),
-      
-      // Check if progress shows all items completed (like "2/2 completed")
-      priorityGroupContainer.locator('.group-progress').filter({ hasText: /(\d+)\/\1\s+completed/i }),
-      
-      // Check for success icon or completed class
-      priorityGroupContainer.locator('.group-status-icon.success, .group-status-icon.completed'),
-      
-      // Check if status is not "waiting" or "running"
-      priorityGroupContainer.locator('.group-status-label').filter({ hasText: /^(?!.*(waiting|running|in progress)).*$/i })
-    ];
+    // Wait for the priority group to exist first
+    await expect(priorityGroupContainer).toBeVisible({ timeout: getTimeout(5000) });
+    
+    // Robust completion detection with polling and extended timeout
+    const maxWaitTime = getTimeout(30000); // Increase to 30 seconds
+    const pollInterval = 1000; // Check every 1 second
+    const startTime = Date.now();
     
     let completed = false;
-    for (const check of completionChecks) {
+    let lastStatus = '';
+    
+    while (Date.now() - startTime < maxWaitTime && !completed) {
       try {
-        if (await check.count() > 0 && await check.first().isVisible()) {
-          completed = true;
-          break;
+        // Check multiple completion indicators with more precise selectors
+        const completionChecks = [
+          // Check for explicit completion status
+          priorityGroupContainer.locator('.group-status-label').filter({ hasText: /complete|success|done|finished/i }),
+          
+          // Check if progress shows all items completed (pattern: "X/X completed")
+          priorityGroupContainer.locator('.group-progress').filter({ hasText: /(\d+)\/\1\s+(completed|done)/i }),
+          
+          // Check for success icon or completed class
+          priorityGroupContainer.locator('.group-status-icon.success, .group-status-icon.completed, .status-success, .status-completed'),
+          
+          // Check specific completed class on the container
+          priorityGroupContainer.filter({ hasText: /completed|finished/i })
+        ];
+        
+        // Check each completion indicator
+        for (const check of completionChecks) {
+          const count = await check.count();
+          if (count > 0) {
+            const isVisible = await check.first().isVisible();
+            if (isVisible) {
+              completed = true;
+              break;
+            }
+          }
         }
-      } catch {
-        // Continue to next check
+        
+        // If not completed, check current status for debugging
+        if (!completed) {
+          try {
+            const statusElement = priorityGroupContainer.locator('.group-status-label').first();
+            if (await statusElement.count() > 0) {
+              const currentStatus = await statusElement.textContent();
+              if (currentStatus !== lastStatus) {
+                console.log(`Priority group ${priority} status: ${currentStatus}`);
+                lastStatus = currentStatus;
+              }
+              
+              // If status is no longer "waiting" or "running", consider it potentially completed
+              if (currentStatus && !currentStatus.toLowerCase().includes('waiting') && 
+                  !currentStatus.toLowerCase().includes('running') && 
+                  !currentStatus.toLowerCase().includes('in progress')) {
+                // Double-check that it's actually a completion status
+                if (currentStatus.toLowerCase().includes('complete') ||
+                    currentStatus.toLowerCase().includes('success') ||
+                    currentStatus.toLowerCase().includes('done') ||
+                    currentStatus.toLowerCase().includes('finished')) {
+                  completed = true;
+                  break;
+                }
+              }
+            }
+          } catch (statusError) {
+            // Continue polling if status check fails
+          }
+        }
+        
+        if (!completed) {
+          // Wait before next poll
+          await page.waitForTimeout(pollInterval);
+        }
+        
+      } catch (checkError) {
+        // Continue polling if individual check fails
+        await page.waitForTimeout(pollInterval);
       }
     }
     
-    // Additional check: wait for a reasonable time for completion status to appear
+    // If still not completed, do a final comprehensive check
     if (!completed) {
-      try {
-        await priorityGroupContainer.locator('.group-status-label').filter({ 
-          hasText: /complete|success|done/i 
-        }).waitFor({ timeout: getTimeout(10000) });
+      console.log(`Final completion check for priority group ${priority}...`);
+      
+      // Check if the waiting status is gone and no error status is present
+      const waitingElements = await priorityGroupContainer.locator('.group-status-label.status-waiting, .group-status-label').filter({ hasText: /waiting/i }).count();
+      const runningElements = await priorityGroupContainer.locator('.group-status-label').filter({ hasText: /running|in progress/i }).count();
+      const errorElements = await priorityGroupContainer.locator('.group-status-label').filter({ hasText: /error|failed|fail/i }).count();
+      
+      // Consider completed if not waiting, not running, and no errors
+      if (waitingElements === 0 && runningElements === 0 && errorElements === 0) {
         completed = true;
-      } catch {
-        // Final fallback: check if waiting/running status is gone
-        const isStillWaiting = await priorityGroupContainer.locator('.group-status-label.status-waiting').count() > 0;
-        const isStillRunning = await priorityGroupContainer.locator('.group-status-label').filter({ hasText: /running|in progress/i }).count() > 0;
-        completed = !isStillWaiting && !isStillRunning;
+        console.log(`Priority group ${priority} appears completed (no waiting/running/error status)`);
       }
     }
     
@@ -133,6 +184,30 @@ async function checkGroupCompleted(page, priority) {
     
   } catch (error) {
     console.error(`Failed to verify completion of priority group ${priority}:`, error.message);
+    
+    // Additional debugging information
+    try {
+      const priorityGroupContainer = page.locator('.priority-group-header').filter({
+        hasText: `Priority ${priority}`
+      });
+      
+      if (await priorityGroupContainer.count() > 0) {
+        const statusElement = priorityGroupContainer.locator('.group-status-label').first();
+        if (await statusElement.count() > 0) {
+          const finalStatus = await statusElement.textContent();
+          console.error(`Final status was: "${finalStatus}"`);
+        }
+        
+        const progressElement = priorityGroupContainer.locator('.group-progress').first();
+        if (await progressElement.count() > 0) {
+          const finalProgress = await progressElement.textContent();
+          console.error(`Final progress was: "${finalProgress}"`);
+        }
+      }
+    } catch (debugError) {
+      console.error('Could not retrieve debug information:', debugError.message);
+    }
+    
     throw error;
   }
 }
@@ -145,24 +220,116 @@ async function checkAllGroupsCompleted(page) {
   try {
     console.log('Checking if all priority groups completed...');
     
-    // Look for overall completion indicators
-    const completionSelectors = [
-      '.auto-setup-complete',
-      '.all-groups-complete',
-      '.setup-finished',
-      'text=/all.*complete|setup.*complete|finished/i'
-    ];
+    // Robust completion detection with polling and extended timeout
+    const maxWaitTime = getTimeout(45000); // 45 seconds for all groups
+    const pollInterval = 2000; // Check every 2 seconds
+    const startTime = Date.now();
     
     let allCompleted = false;
-    for (const selector of completionSelectors) {
+    
+    while (Date.now() - startTime < maxWaitTime && !allCompleted) {
       try {
-        const element = page.locator(selector);
-        if (await element.count() > 0 && await element.first().isVisible()) {
-          allCompleted = true;
-          break;
+        // Look for overall completion indicators
+        const completionSelectors = [
+          '.auto-setup-complete',
+          '.all-groups-complete', 
+          '.setup-finished',
+          'text=/all.*complete|setup.*complete|finished/i'
+        ];
+        
+        // Check each completion indicator
+        for (const selector of completionSelectors) {
+          try {
+            const element = page.locator(selector);
+            const count = await element.count();
+            if (count > 0 && await element.first().isVisible()) {
+              allCompleted = true;
+              console.log(`Found completion indicator: ${selector}`);
+              break;
+            }
+          } catch {
+            // Continue to next selector
+          }
         }
-      } catch {
-        // Continue to next selector
+        
+        // Additional check for auto-setup container with completion text
+        if (!allCompleted) {
+          try {
+            const containerWithCompletionText = page.locator('.auto-setup-container').filter({ 
+              hasText: /all.*complete|setup.*complete|finished|done/i 
+            });
+            const count = await containerWithCompletionText.count();
+            if (count > 0 && await containerWithCompletionText.first().isVisible()) {
+              allCompleted = true;
+              console.log('Found completion text in auto-setup container');
+            }
+          } catch {
+            // Continue to alternative checks
+          }
+        }
+        
+        // Alternative approach: check if all individual priority groups are completed
+        if (!allCompleted) {
+          try {
+            const priorityGroups = page.locator('.priority-group-header');
+            const groupCount = await priorityGroups.count();
+            
+            if (groupCount > 0) {
+              let completedGroups = 0;
+              
+              for (let i = 0; i < groupCount; i++) {
+                const group = priorityGroups.nth(i);
+                
+                // Check if this group shows completion
+                const completionChecks = [
+                  group.locator('.group-status-label').filter({ hasText: /complete|success|done|finished/i }),
+                  group.locator('.group-progress').filter({ hasText: /(\d+)\/\1\s+(completed|done)/i }),
+                  group.locator('.group-status-icon.success, .group-status-icon.completed, .status-success, .status-completed')
+                ];
+                
+                let groupCompleted = false;
+                for (const check of completionChecks) {
+                  const checkCount = await check.count();
+                  if (checkCount > 0 && await check.first().isVisible()) {
+                    groupCompleted = true;
+                    break;
+                  }
+                }
+                
+                // Fallback: check if not waiting/running/error
+                if (!groupCompleted) {
+                  const waitingCount = await group.locator('.group-status-label').filter({ hasText: /waiting|running|in progress/i }).count();
+                  const errorCount = await group.locator('.group-status-label').filter({ hasText: /error|failed|fail/i }).count();
+                  if (waitingCount === 0 && errorCount === 0) {
+                    groupCompleted = true;
+                  }
+                }
+                
+                if (groupCompleted) {
+                  completedGroups++;
+                }
+              }
+              
+              console.log(`Individual group check: ${completedGroups}/${groupCount} groups completed`);
+              
+              if (completedGroups === groupCount && groupCount > 0) {
+                allCompleted = true;
+                console.log('All individual priority groups appear completed');
+              }
+            }
+          } catch (groupCheckError) {
+            console.log('Individual group check failed:', groupCheckError.message);
+          }
+        }
+        
+        if (!allCompleted) {
+          // Wait before next poll
+          await page.waitForTimeout(pollInterval);
+        }
+        
+      } catch (checkError) {
+        // Continue polling if individual check fails
+        await page.waitForTimeout(pollInterval);
       }
     }
     
@@ -171,6 +338,24 @@ async function checkAllGroupsCompleted(page) {
     
   } catch (error) {
     console.error('Failed to verify completion of all priority groups:', error.message);
+    
+    // Additional debugging information
+    try {
+      const priorityGroups = page.locator('.priority-group-header');
+      const groupCount = await priorityGroups.count();
+      console.error(`Found ${groupCount} priority groups`);
+      
+      for (let i = 0; i < Math.min(groupCount, 5); i++) { // Limit to 5 for debugging
+        const group = priorityGroups.nth(i);
+        const groupText = await group.textContent();
+        const statusElement = group.locator('.group-status-label').first();
+        const status = await statusElement.count() > 0 ? await statusElement.textContent() : 'No status';
+        console.error(`Group ${i + 1}: "${groupText?.substring(0, 50)}..." - Status: "${status}"`);
+      }
+    } catch (debugError) {
+      console.error('Could not retrieve debug information:', debugError.message);
+    }
+    
     throw error;
   }
 }

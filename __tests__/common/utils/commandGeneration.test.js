@@ -10,7 +10,7 @@ describe('Command generation end-to-end', () => {
     nodeVersion: '15.5.1'
   };
 
-  test('Service A command without attach uses base gradle run', () => {
+  test('Service A command without attach uses generic simulator', () => {
     const config = {
       'service-a': {
         enabled: true,
@@ -26,20 +26,20 @@ describe('Command generation end-to-end', () => {
     });
     const serviceACmd = result.find(c => c.sectionId === 'service-a');
     expect(serviceACmd.command).toBe(
-      'nvm use 15.5.1 && cd ./weblifemirror && ./gradlew bootRun --info  -x runDockerComposeAuthService -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz'
+      "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-a,container-b,container-c,container-d,container-e' --variables='nodeVersion=15.5.1' --tabTitle='Service A'"
     );
     expect(serviceACmd.associatedContainers).toEqual(
       expect.arrayContaining([
-        'wiremock',
-        'weblifemirror-db-replica-1',
-        'weblifemirror-db-master-1',
-        'weblifemirror-redis-1',
-        'weblifemirror-localdb-1'
+        'container-a',
+        'container-b',
+        'container-c',
+        'container-d',
+        'container-e'
       ])
     );
   });
 
-  test('Service A debug run command when attached', () => {
+  test('Service A debug run command when attached uses generic simulator', () => {
     const config = {
       'service-a': {
         enabled: true,
@@ -56,11 +56,11 @@ describe('Command generation end-to-end', () => {
     });
     const serviceACmd = result.find(c => c.sectionId === 'service-a');
     expect(serviceACmd.command).toBe(
-      'nvm use 15.5.1 && cd ./weblifemirror && ./gradlew bootRun -Dspring-boot.run.jvmArguments=\'-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005\' --info -x runDockerComposeAuthService -x buildAgent -x runDockerComposeRuleEngine -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz'
+      "node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-a,container-b,container-c,container-d,container-e' --variables='nodeVersion=15.5.1,debugPort=5005' --tabTitle='Service A (Debug Run)'"
     );
   });
 
-  test('Frontend dev sub-section command generated when enabled', () => {
+  test('Frontend dev sub-section command uses generic simulator when enabled', () => {
     const config = {
       'service-a': {
         enabled: true,
@@ -75,6 +75,6 @@ describe('Command generation end-to-end', () => {
       discoveredVersions: mockDiscoveredVersions
     });
     const frontendCmd = result.find(c => c.sectionId === 'frontend');
-    expect(frontendCmd.command).toBe('nvm use 15.5.1 && cd ./weblifemirror && npx webpack --watch');
+    expect(frontendCmd.command).toBe("nvm use 15.5.1 && node ./ProjectName-Manager/scripts/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Frontend (Dev Mode)'");
   });
 });
