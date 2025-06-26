@@ -115,9 +115,9 @@ test.describe('Health Report Feature', () => {
   test.describe('Health Report with Running Terminals', () => {
     test('should display terminal information when terminals are running', async () => {
       // First, start a terminal by enabling a section and running it
-      await enableSection(window, 'Service A');
-      await attachSection(window, 'service-a');
-      await setDeploymentMode(window, 'service-a', 'run');
+      await enableSection(window, 'Mirror + MariaDB');
+      await attachSection(window, 'mirror');
+      await setDeploymentMode(window, 'mirror', 'run');
       await runConfiguration(window);
       
       // Wait for terminal to appear
@@ -135,9 +135,9 @@ test.describe('Health Report Feature', () => {
 
     test('should show different health status based on terminal status', async () => {
       // Start a terminal using helpers
-      await enableSection(window, 'Service A');
-      await attachSection(window, 'service-a');
-      await setDeploymentMode(window, 'service-a', 'run');
+      await enableSection(window, 'Mirror + MariaDB');
+      await attachSection(window, 'mirror');
+      await setDeploymentMode(window, 'mirror', 'run');
       await runConfiguration(window);
       
       // Wait for terminal to be running
@@ -164,9 +164,9 @@ test.describe('Health Report Feature', () => {
 
     test('should expand and collapse terminal sections', async () => {
       // Start a terminal using helpers
-      await enableSection(window, 'Service A');
-      await attachSection(window, 'service-a');
-      await setDeploymentMode(window, 'service-a', 'run');
+      await enableSection(window, 'Mirror + MariaDB');
+      await attachSection(window, 'mirror');
+      await setDeploymentMode(window, 'mirror', 'run');
       await runConfiguration(window);
       
       await expect(window.locator('.tab').first()).toBeVisible({ timeout: 10000 });
@@ -193,9 +193,9 @@ test.describe('Health Report Feature', () => {
 
     test('should show terminal action buttons when expanded', async () => {
       // Start a terminal using helpers
-      await enableSection(window, 'Service A');
-      await attachSection(window, 'service-a');
-      await setDeploymentMode(window, 'service-a', 'run');
+      await enableSection(window, 'Mirror + MariaDB');
+      await attachSection(window, 'mirror');
+      await setDeploymentMode(window, 'mirror', 'run');
       await runConfiguration(window);
       
       await expect(window.locator('.tab').first()).toBeVisible({ timeout: 10000 });
@@ -215,9 +215,9 @@ test.describe('Health Report Feature', () => {
 
     test('should focus terminal tab when focus button is clicked', async () => {
       // Start a terminal using helpers
-      await enableSection(window, 'Service A');
-      await attachSection(window, 'service-a');
-      await setDeploymentMode(window, 'service-a', 'run');
+      await enableSection(window, 'Mirror + MariaDB');
+      await attachSection(window, 'mirror');
+      await setDeploymentMode(window, 'mirror', 'run');
       await runConfiguration(window);
       
       const tab = window.locator('.tab').first();
@@ -242,9 +242,9 @@ test.describe('Health Report Feature', () => {
 
     test('should show command popup when show command button is clicked', async () => {
       // Start a terminal using helpers
-      await enableSection(window, 'Service A');
-      await attachSection(window, 'service-a');
-      await setDeploymentMode(window, 'service-a', 'run');
+      await enableSection(window, 'Mirror + MariaDB');
+      await attachSection(window, 'mirror');
+      await setDeploymentMode(window, 'mirror', 'run');
       await runConfiguration(window);
       
       await expect(window.locator('.tab').first()).toBeVisible({ timeout: 10000 });
@@ -266,9 +266,9 @@ test.describe('Health Report Feature', () => {
 
     test('should close command popup when close button is clicked', async () => {
       // Start a terminal using helpers
-      await enableSection(window, 'Service A');
-      await attachSection(window, 'service-a');
-      await setDeploymentMode(window, 'service-a', 'run');
+      await enableSection(window, 'Mirror + MariaDB');
+      await attachSection(window, 'mirror');
+      await setDeploymentMode(window, 'mirror', 'run');
       await runConfiguration(window);
       
       await expect(window.locator('.tab').first()).toBeVisible({ timeout: 10000 });
@@ -330,9 +330,9 @@ test.describe('Health Report Feature', () => {
       await enableNoRunMode(window);
       
       // Start a terminal using helpers
-      await enableSection(window, 'Service A');
-      await attachSection(window, 'service-a');
-      await setDeploymentMode(window, 'service-a', 'run');
+      await enableSection(window, 'Mirror + MariaDB');
+      await attachSection(window, 'mirror');
+      await setDeploymentMode(window, 'mirror', 'run');
       await runConfiguration(window);
       
       await expect(window.locator('.tab').first()).toBeVisible({ timeout: 10000 });

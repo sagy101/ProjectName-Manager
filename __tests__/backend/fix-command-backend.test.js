@@ -107,19 +107,13 @@ describe('Fix Command Backend Tests', () => {
       
       // Updated to match all actual fix commands in configuration sidebar
       const expectedFixCommands = [
-        'projectADirExists',
-        'projectAGradlewExists',
-        'projectBDirExists',
-        'agentDirExists', 
+        'mirrorDirExists',
         'ChromiumInstalled',
-        'projectCDirExists',
-        'projectCSubprojectAGradlewExists',
-        'projectCSubprojectBGradlewExists',
+        'threatIntelligenceDirExists',
         'infraDirExists',
-        'projectDDirExists',
-        'projectDGradlewExists',
-        'projectEDirExists',
-        'projectFDirExists'
+        'activityLoggerDirExists',
+        'ruleEngineDirExists',
+        'testAnalyticsDirExists'
       ];
 
       expectedFixCommands.forEach(expectedId => {
@@ -172,61 +166,58 @@ describe('Fix Command Backend Tests', () => {
   });
 
   describe('Fix Command Types', () => {
-    it('should validate verification simulator commands', () => {
-      const simulatorCommands = [];
+    it('should validate brew install commands', () => {
+      const brewCommands = [];
       
       generalEnvironmentVerifications.categories.forEach(categoryWrapper => {
         const category = categoryWrapper.category;
         if (category && category.verifications) {
           category.verifications.forEach(verification => {
-            if (verification.fixCommand && verification.fixCommand.includes('verification-simulator.js')) {
-              simulatorCommands.push(verification);
+            if (verification.fixCommand && verification.fixCommand.includes('brew install')) {
+              brewCommands.push(verification);
             }
           });
         }
       });
 
-      expect(simulatorCommands.length).toBeGreaterThan(0);
+      expect(brewCommands.length).toBeGreaterThan(0);
       
-      simulatorCommands.forEach(verification => {
-        expect(verification.fixCommand).toMatch(/verification-simulator\.js fix/);
+      brewCommands.forEach(verification => {
+        expect(verification.fixCommand).toMatch(/^brew install/);
         
-        // Should use correct path
-        expect(verification.fixCommand).toContain('./ProjectName-Manager/scripts/');
-        expect(verification.fixCommand).toContain('node ');
+        // Should not have dangerous flags
+        expect(verification.fixCommand).not.toMatch(/--force-bottle/);
+        expect(verification.fixCommand).not.toMatch(/--ignore-dependencies/);
       });
     });
 
-    it('should validate directory creation commands', () => {
-      const directoryCreationCommands = [];
+    it('should validate git clone commands', () => {
+      const gitCloneCommands = [];
       
       configurationSidebarAbout.forEach(section => {
         if (section.verifications) {
           section.verifications.forEach(verification => {
-            if (verification.fixCommand && (verification.fixCommand.includes('mkdir -p') || verification.fixCommand.includes('git clone'))) {
-              directoryCreationCommands.push(verification);
+            if (verification.fixCommand && verification.fixCommand.includes('git clone')) {
+              gitCloneCommands.push(verification);
             }
           });
         }
       });
 
-      expect(directoryCreationCommands.length).toBeGreaterThan(0);
+      expect(gitCloneCommands.length).toBeGreaterThan(0);
       
-      directoryCreationCommands.forEach(verification => {
-        // Should be either mkdir or git clone commands
-        expect(verification.fixCommand).toMatch(/^(mkdir -p|git clone)/);
+      gitCloneCommands.forEach(verification => {
+        expect(verification.fixCommand).toMatch(/^git clone/);
         
-        // If it's a git clone, should be from trusted repositories
-        if (verification.fixCommand.includes('git clone')) {
-          expect(verification.fixCommand).toContain('github.com/PFPT-Isolation');
-        }
+        // Should be cloning from trusted GitHub repositories
+        expect(verification.fixCommand).toContain('github.com/PFPT-Isolation');
         
-        // Should be targeting relative paths
+        // Should be cloning to relative paths
         expect(verification.fixCommand).toMatch(/\.\//);
       });
     });
 
-    it('should validate mkdir commands', () => {
+    it('should validate directory creation commands', () => {
       const mkdirCommands = [];
       
       configurationSidebarAbout.forEach(section => {
@@ -252,16 +243,16 @@ describe('Fix Command Backend Tests', () => {
       });
     });
 
-    it('should validate all simulator fix commands', () => {
-      const allSimulatorCommands = [];
+    it('should validate download commands', () => {
+      const downloadCommands = [];
       
-      // Check both general and configuration sidebar for verification simulator commands
+      // Check both general and configuration sidebar for download commands
       generalEnvironmentVerifications.categories.forEach(categoryWrapper => {
         const category = categoryWrapper.category;
         if (category && category.verifications) {
           category.verifications.forEach(verification => {
-            if (verification.fixCommand && verification.fixCommand.includes('verification-simulator.js')) {
-              allSimulatorCommands.push(verification);
+            if (verification.fixCommand && (verification.fixCommand.includes('curl') || verification.fixCommand.includes('hdiutil'))) {
+              downloadCommands.push(verification);
             }
           });
         }
@@ -270,26 +261,30 @@ describe('Fix Command Backend Tests', () => {
       configurationSidebarAbout.forEach(section => {
         if (section.verifications) {
           section.verifications.forEach(verification => {
-            if (verification.fixCommand && verification.fixCommand.includes('verification-simulator.js')) {
-              allSimulatorCommands.push(verification);
+            if (verification.fixCommand && (verification.fixCommand.includes('curl') || verification.fixCommand.includes('hdiutil'))) {
+              downloadCommands.push(verification);
             }
           });
         }
       });
 
-      // Should have simulator commands from both general and configuration
-      expect(allSimulatorCommands.length).toBeGreaterThan(0);
+      // Should have at least some download commands (nvm, chromium, etc.)
+      expect(downloadCommands.length).toBeGreaterThan(0);
 
-      allSimulatorCommands.forEach(verification => {
-        // Should use verification simulator
-        expect(verification.fixCommand).toContain('verification-simulator.js fix');
-        expect(verification.fixCommand).toContain('./ProjectName-Manager/scripts/');
-        expect(verification.fixCommand).toMatch(/^node /);
+      downloadCommands.forEach(verification => {
+        // Should be downloading from trusted sources
+        if (verification.fixCommand.includes('nvm')) {
+          expect(verification.fixCommand).toContain('raw.githubusercontent.com/nvm-sh/nvm');
+        }
         
-        // Should have proper verification ID
-        const parts = verification.fixCommand.split(' ');
-        expect(parts.length).toBe(4); // ['node', './ProjectName-Manager/scripts/simulators/verification-simulator.js', 'fix', 'verificationId']
-        expect(parts[3]).toBe(verification.id);
+        if (verification.fixCommand.includes('chromium')) {
+          expect(verification.fixCommand).toContain('github.com/ungoogled-software/ungoogled-chromium-macos');
+        }
+        
+        // Should pipe to bash safely if doing so
+        if (verification.fixCommand.includes('| bash')) {
+          expect(verification.fixCommand).toMatch(/curl.*-o-.*\|.*bash/);
+        }
       });
     });
 

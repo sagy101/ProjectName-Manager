@@ -23,31 +23,31 @@ test.describe('TBD Mode Functionality', () => {
   });
 
   test('should show TBD status and prevent switching', async () => {
-    // Enable test sections to see the service-f section
+    // Enable test sections to see the test-analytics section
     await expandAppControlSidebar(window);
     await openDebugTools(window);
     await showTestSections(window);
 
-    // Find the service-f section and enable it
-    const serviceFSection = window.locator('#section-service-f');
-          await serviceFSection.locator('input[type="checkbox"]').check();
+    // Find the test-analytics section and enable it
+    const testAnalyticsSection = window.locator('#section-test-analytics');
+    await testAnalyticsSection.locator('input[type="checkbox"]').check();
 
     // Find the "mock" button, which is marked as TBD
-        const mockButton = serviceFSection.locator('button:has-text("mock")'); 
+    const mockButton = testAnalyticsSection.locator('button:has-text("mock")');
     
     // Check for the 'tbd' class and the icon
     await expect(mockButton).toHaveClass(/tbd/);
     await expect(mockButton.locator('.tbd-icon')).toBeVisible();
 
     // Get the initial active mode
-    const initialMode = await serviceFSection.locator('.deployment-toggle-btn.active').textContent();
+    const initialMode = await testAnalyticsSection.locator('.deployment-toggle-btn.active').textContent();
     expect(initialMode.trim()).toBe('Development');
 
     // Click the TBD button
     await mockButton.click();
 
     // Verify the mode did NOT change
-    const newMode = await serviceFSection.locator('.deployment-toggle-btn.active').textContent();
+    const newMode = await testAnalyticsSection.locator('.deployment-toggle-btn.active').textContent();
     expect(newMode.trim()).toBe('Development');
 
     // Verify the notification appeared  

@@ -10,38 +10,38 @@ describe('Command generation end-to-end', () => {
     nodeVersion: '15.5.1'
   };
 
-  test('Service A command without attach uses generic simulator', () => {
+  test('Mirror command without attach uses base gradle run', () => {
     const config = {
-      'service-a': {
+      mirror: {
         enabled: true,
         mode: 'suspend',
         frontendConfig: { enabled: false }
       }
     };
     const result = generateCommandList(config, {}, {
-      attachState: { 'service-a': false },
+      attachState: { mirror: false },
       configSidebarCommands,
       configSidebarSectionsActual,
       discoveredVersions: mockDiscoveredVersions
     });
-    const serviceACmd = result.find(c => c.sectionId === 'service-a');
-    expect(serviceACmd.command).toBe(
-      "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-a,container-b,container-c,container-d,container-e' --variables='nodeVersion=15.5.1' --tabTitle='Service A'"
+    const mirrorCmd = result.find(c => c.sectionId === 'mirror');
+    expect(mirrorCmd.command).toBe(
+      'nvm use 15.5.1 && cd ./weblifemirror && ./gradlew bootRun --info  -x runDockerComposeAuthService -x buildAgent -x runDockerComposeRuleEngine  -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz'
     );
-    expect(serviceACmd.associatedContainers).toEqual(
+    expect(mirrorCmd.associatedContainers).toEqual(
       expect.arrayContaining([
-        'container-a',
-        'container-b',
-        'container-c',
-        'container-d',
-        'container-e'
+        'wiremock',
+        'weblifemirror-db-replica-1',
+        'weblifemirror-db-master-1',
+        'weblifemirror-redis-1',
+        'weblifemirror-localdb-1'
       ])
     );
   });
 
-  test('Service A debug run command when attached uses generic simulator', () => {
+  test('Mirror debug run command when attached', () => {
     const config = {
-      'service-a': {
+      mirror: {
         enabled: true,
         mode: 'run',
         debugPort: '5005',
@@ -49,32 +49,32 @@ describe('Command generation end-to-end', () => {
       }
     };
     const result = generateCommandList(config, {}, {
-      attachState: { 'service-a': true },
+      attachState: { mirror: true },
       configSidebarCommands,
       configSidebarSectionsActual,
       discoveredVersions: mockDiscoveredVersions
     });
-    const serviceACmd = result.find(c => c.sectionId === 'service-a');
-    expect(serviceACmd.command).toBe(
-      "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=30 --result=success --silent=false --containers='container-a,container-b,container-c,container-d,container-e' --variables='nodeVersion=15.5.1,debugPort=5005' --tabTitle='Service A (Debug Run)'"
+    const mirrorCmd = result.find(c => c.sectionId === 'mirror');
+    expect(mirrorCmd.command).toBe(
+      'nvm use 15.5.1 && cd ./weblifemirror && ./gradlew bootRun -Dspring-boot.run.jvmArguments=\'-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005\' --info -x runDockerComposeAuthService -x buildAgent -x runDockerComposeRuleEngine -x frontendDev -x runDockerComposeStats -Dspring.profiles.active=localDb,dev,worker,quartz'
     );
   });
 
-  test('Frontend dev sub-section command uses generic simulator when enabled', () => {
+  test('Frontend dev sub-section command generated when enabled', () => {
     const config = {
-      'service-a': {
+      mirror: {
         enabled: true,
         mode: 'suspend',
         frontendConfig: { enabled: true, mode: 'dev' }
       }
     };
     const result = generateCommandList(config, {}, {
-      attachState: { 'service-a': false },
+      attachState: { mirror: false },
       configSidebarCommands,
       configSidebarSectionsActual,
       discoveredVersions: mockDiscoveredVersions
     });
     const frontendCmd = result.find(c => c.sectionId === 'frontend');
-    expect(frontendCmd.command).toBe("nvm use 15.5.1 && node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=infinite --result=success --silent=false --tabTitle='Frontend (Dev Mode)'");
+    expect(frontendCmd.command).toBe('nvm use 15.5.1 && cd ./weblifemirror && npx webpack --watch');
   });
 });

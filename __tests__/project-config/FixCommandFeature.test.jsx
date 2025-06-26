@@ -91,19 +91,13 @@ describe('Fix Command Feature Tests', () => {
       expect(verificationsWithFixCommands.length).toBeGreaterThan(0);
       
       const expectedFixCommands = [
-        'projectADirExists',
-        'projectAGradlewExists',
-        'projectBDirExists', 
-        'agentDirExists',
+        'mirrorDirExists',
         'ChromiumInstalled',
-        'projectCDirExists',
-        'projectCSubprojectAGradlewExists',
-        'projectCSubprojectBGradlewExists',
+        'threatIntelligenceDirExists',
         'infraDirExists',
-        'projectDDirExists',
-        'projectDGradlewExists',
-        'projectEDirExists',
-        'projectFDirExists'
+        'activityLoggerDirExists',
+        'ruleEngineDirExists',
+        'testAnalyticsDirExists'
       ];
 
       expectedFixCommands.forEach(expectedId => {
@@ -284,27 +278,27 @@ describe('Fix Command Feature Tests', () => {
   });
 
   describe('Fix Command Types Validation', () => {
-    it('should validate verification simulator commands', () => {
-      const simulatorCommands = [];
+    it('should validate brew install commands', () => {
+      const brewCommands = [];
       
       generalEnvironmentVerifications.categories.forEach(categoryWrapper => {
         const category = categoryWrapper.category;
         if (category && category.verifications) {
           category.verifications.forEach(verification => {
-            if (verification.fixCommand && verification.fixCommand.includes('simulators/verification-simulator.js')) {
-              simulatorCommands.push(verification);
+            if (verification.fixCommand && verification.fixCommand.includes('brew install')) {
+              brewCommands.push(verification);
             }
           });
         }
       });
 
-      expect(simulatorCommands.length).toBeGreaterThan(0);
+      expect(brewCommands.length).toBeGreaterThan(0);
       
-      // Test each simulator command individually to avoid multiple elements issue
-      simulatorCommands.forEach((verification, index) => {
+      // Test each brew command individually to avoid multiple elements issue
+      brewCommands.forEach((verification, index) => {
         const { unmount } = render(
           <VerificationIndicator
-            key={`simulator-${index}`}
+            key={`brew-${index}`}
             verification={verification}
             status={STATUS.INVALID}
             onFixCommand={jest.fn()}
@@ -313,32 +307,32 @@ describe('Fix Command Feature Tests', () => {
 
         const fixButton = screen.getByText('Fix');
         expect(fixButton).toBeInTheDocument();
-        expect(verification.fixCommand).toMatch(/verification-simulator\.js fix/);
+        expect(verification.fixCommand).toMatch(/^brew install/);
         
         unmount(); // Clean up to avoid multiple elements
       });
     });
 
-    it('should validate directory creation commands', () => {
-      const directoryCreationCommands = [];
+    it('should validate git clone commands', () => {
+      const gitCloneCommands = [];
       
       configurationSidebarAbout.forEach(section => {
         if (section.verifications) {
           section.verifications.forEach(verification => {
-            if (verification.fixCommand && (verification.fixCommand.includes('mkdir -p') || verification.fixCommand.includes('git clone'))) {
-              directoryCreationCommands.push(verification);
+            if (verification.fixCommand && verification.fixCommand.includes('git clone')) {
+              gitCloneCommands.push(verification);
             }
           });
         }
       });
 
-      expect(directoryCreationCommands.length).toBeGreaterThan(0);
+      expect(gitCloneCommands.length).toBeGreaterThan(0);
       
-      directoryCreationCommands.forEach((verification, index) => {
+      gitCloneCommands.forEach((verification, index) => {
         const mockOnFixCommand = jest.fn();
         const { unmount } = render(
           <VerificationIndicator
-            key={`dir-creation-${index}`}
+            key={`git-clone-${index}`}
             verification={verification}
             status={STATUS.INVALID}
             onFixCommand={mockOnFixCommand}
@@ -349,7 +343,7 @@ describe('Fix Command Feature Tests', () => {
         fireEvent.click(fixButton);
         
         expect(mockOnFixCommand).toHaveBeenCalledWith(verification);
-        expect(verification.fixCommand).toMatch(/^(mkdir -p|git clone)/);
+        expect(verification.fixCommand).toMatch(/^git clone/);
         
         unmount(); // Clean up to avoid multiple elements
       });
@@ -391,16 +385,16 @@ describe('Fix Command Feature Tests', () => {
       });
     });
 
-    it('should validate all verification simulator fix commands', () => {
-      const allSimulatorCommands = [];
+    it('should validate download commands', () => {
+      const downloadCommands = [];
       
-      // Check both general and configuration sidebar for verification simulator commands
+      // Check both general and configuration sidebar for download commands
       generalEnvironmentVerifications.categories.forEach(categoryWrapper => {
         const category = categoryWrapper.category;
         if (category && category.verifications) {
           category.verifications.forEach(verification => {
-            if (verification.fixCommand && verification.fixCommand.includes('simulators/verification-simulator.js')) {
-              allSimulatorCommands.push(verification);
+            if (verification.fixCommand && (verification.fixCommand.includes('curl') || verification.fixCommand.includes('hdiutil'))) {
+              downloadCommands.push(verification);
             }
           });
         }
@@ -409,20 +403,20 @@ describe('Fix Command Feature Tests', () => {
       configurationSidebarAbout.forEach(section => {
         if (section.verifications) {
           section.verifications.forEach(verification => {
-            if (verification.fixCommand && verification.fixCommand.includes('simulators/verification-simulator.js')) {
-              allSimulatorCommands.push(verification);
+            if (verification.fixCommand && (verification.fixCommand.includes('curl') || verification.fixCommand.includes('hdiutil'))) {
+              downloadCommands.push(verification);
             }
           });
         }
       });
 
-      expect(allSimulatorCommands.length).toBeGreaterThan(0);
+      expect(downloadCommands.length).toBeGreaterThan(0);
       
-      allSimulatorCommands.forEach((verification, index) => {
+      downloadCommands.forEach((verification, index) => {
         const mockOnFixCommand = jest.fn();
         const { unmount } = render(
           <VerificationIndicator
-            key={`all-simulator-${index}`}
+            key={`download-${index}`}
             verification={verification}
             status={STATUS.INVALID}
             onFixCommand={mockOnFixCommand}
@@ -433,7 +427,6 @@ describe('Fix Command Feature Tests', () => {
         fireEvent.click(fixButton);
         
         expect(mockOnFixCommand).toHaveBeenCalledWith(verification);
-        expect(verification.fixCommand).toContain('simulators/verification-simulator.js fix');
         
         unmount(); // Clean up to avoid multiple elements
       });

@@ -19,32 +19,6 @@ const configAboutPath = path.join(projectRoot, 'src/project-config/config/config
 function extractBaseCommand(commandStr) {
   if (!commandStr) return null;
   
-  // Handle verification simulator commands - extract the original command name
-    if (commandStr.includes('simulators/verification-simulator.js verify ')) {
-    const match = commandStr.match(/verification-simulator\.js verify (\w+)/);
-    if (match) {
-      const verificationId = match[1];
-      // Map verification IDs to actual commands
-      const verificationCommandMap = {
-        'cloudGcloudCLI': 'gcloud',
-        'cloudKubectlCLI': 'kubectl', 
-        'cloudKubectx': 'kubectx',
-        'dockerRunning': 'docker',
-        'dockerDaemon': 'docker',
-        'rancherDesktop': 'rdctl',
-        'containerRuntime': 'docker',
-        'nodeJs': 'nvm',
-        'nvmInstalled': 'nvm',
-        'goInstalled': 'go',
-        'goPathIncludes': 'echo',
-        'javaVersion': 'java',
-        'homebrewInstalled': 'brew',
-        'ChromiumInstalled': 'chromium'
-      };
-      return verificationCommandMap[verificationId] || null;
-    }
-  }
-  
   // Remove shell redirections and pipes
   const cleanCommand = commandStr.replace(/\s*2>&1\s*/, '').replace(/\s*\|\s*.*$/, '');
   

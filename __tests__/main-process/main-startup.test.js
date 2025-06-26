@@ -238,8 +238,8 @@ describe('Main Process Startup Bug Fixes', () => {
     // Mock fs.readFile to return valid config array
     const mockConfigData = [
       {
-              sectionId: 'service-e',
-      directoryPath: './rule-engine'
+        sectionId: 'rule-engine',
+        directoryPath: './rule-engine'
       },
       {
         sectionId: 'web-ui',
