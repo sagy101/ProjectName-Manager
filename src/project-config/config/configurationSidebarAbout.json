@@ -5,147 +5,159 @@
     "description": "Frontend section without specific path verification."
   },
   {
-    "sectionId": "mirror",
-    "directoryPath": "weblifemirror",
+    "sectionId": "service-a",
+    "directoryPath": "project-a",
     "description": "Handles traffic mirroring and database for ISO testing.",
     "verifications": [
       {
-        "id": "mirrorDirExists",
-        "title": "./weblifemirror directory exists",
+        "id": "projectADirExists",
+        "title": "./project-a directory exists",
         "checkType": "pathExists",
-        "pathValue": "./weblifemirror",
+        "pathValue": "./project-a",
         "pathType": "directory",
-        "fixCommand": "git clone https://github.com/PFPT-Isolation/weblifemirror.git ./weblifemirror",
+        "fixCommand": "mkdir -p ./project-a",
         "fixPriority": 1
       },
       {
-        "id": "mirrorGradlewExists",
+        "id": "projectAGradlewExists",
         "title": "gradlew exists",
         "checkType": "pathExists",
-        "pathValue": "./weblifemirror/gradlew",
-        "pathType": "file"
+        "pathValue": "./project-a/gradlew",
+        "pathType": "file",
+        "fixCommand": "mkdir -p ./project-a && echo '#!/bin/bash' > ./project-a/gradlew && echo 'echo \"Gradle wrapper placeholder\"' >> ./project-a/gradlew && chmod +x ./project-a/gradlew",
+        "fixPriority": 2
       }
     ]
   },
   {
-    "sectionId": "gopm",
-    "directoryPath": "weblifemirror",
+    "sectionId": "service-b",
+    "directoryPath": "project-a",
     "description": "Manages Go agent and browser automation.",
     "verifications": [
       {
-        "id": "gopmDirExists",
-        "title": "./gopm directory exists",
+        "id": "projectBDirExists",
+        "title": "./project-b directory exists",
         "checkType": "pathExists",
-        "pathValue": "./gopm",
-        "pathType": "directory"
+        "pathValue": "./project-b",
+        "pathType": "directory",
+        "fixCommand": "mkdir -p ./project-b",
+        "fixPriority": 1
       },
       {
         "id": "agentDirExists",
-        "title": "./weblifemirror/agent directory exists",
+        "title": "./project-a/agent directory exists",
         "checkType": "pathExists",
-        "pathValue": "./weblifemirror/agent",
-        "pathType": "directory"
+        "pathValue": "./project-a/agent",
+        "pathType": "directory",
+        "fixCommand": "mkdir -p ./project-a/agent",
+        "fixPriority": 1
       },
       {
         "id": "ChromiumInstalled",
         "title": "Chromium installed",
-        "command": "chromium --version",
+        "command": "node ./ProjectName-Manager/scripts/simulators/verification-simulator.js verify ChromiumInstalled",
         "checkType": "commandSuccess",
-        "fixCommand": "cd ./ProjectName-Manager/src/project-config/config/scripts && chmod +x install-ungoogled.sh && install-ungoogled.sh",
+        "fixCommand": "node ./ProjectName-Manager/scripts/simulators/verification-simulator.js fix ChromiumInstalled",
         "fixPriority": 3
       }
     ]
   },
-  {
-    "sectionId": "url-intelligence",
-    "directoryPath": "threatintelligence",
+      {
+      "sectionId": "service-c",
+    "directoryPath": "project-c",
     "description": "Provides URL and threat analysis capabilities.",
     "verifications": [
       {
-        "id": "threatIntelligenceDirExists",
-        "title": "./threatintelligence directory exists",
+        "id": "projectCDirExists",
+        "title": "./project-c directory exists",
         "checkType": "pathExists",
-        "pathValue": "./threatintelligence",
+        "pathValue": "./project-c",
         "pathType": "directory",
-        "fixCommand": "git clone https://github.com/PFPT-Isolation/threatintelligence.git ./threatintelligence",
+        "fixCommand": "mkdir -p ./project-c",
         "fixPriority": 1
       },
       {
-        "id": "threatIntelligenceGradlewExists",
-        "title": "/threat-intelligence gradlew exists",
+        "id": "projectCSubprojectAGradlewExists",
+        "title": "/subproject-a gradlew exists",
         "checkType": "pathExists",
-        "pathValue": "./threatintelligence/threat-intelligence/gradlew",
-        "pathType": "file"
+        "pathValue": "./project-c/subproject-a/gradlew",
+        "pathType": "file",
+        "fixCommand": "mkdir -p ./project-c/subproject-a && echo '#!/bin/bash' > ./project-c/subproject-a/gradlew && echo 'echo \"Gradle wrapper placeholder\"' >> ./project-c/subproject-a/gradlew && chmod +x ./project-c/subproject-a/gradlew",
+        "fixPriority": 2
       },
       {
-        "id": "urlIntelligenceGradlewExists",
-        "title": "/url-intelligence gradlew exists",
+        "id": "projectCSubprojectBGradlewExists",
+        "title": "/subproject-b gradlew exists",
         "checkType": "pathExists",
-        "pathValue": "./threatintelligence/url-intelligence/gradlew",
-        "pathType": "file"
+        "pathValue": "./project-c/subproject-b/gradlew",
+        "pathType": "file",
+        "fixCommand": "mkdir -p ./project-c/subproject-b && echo '#!/bin/bash' > ./project-c/subproject-b/gradlew && echo 'echo \"Gradle wrapper placeholder\"' >> ./project-c/subproject-b/gradlew && chmod +x ./project-c/subproject-b/gradlew",
+        "fixPriority": 2
       },
       {
         "id": "infraDirExists",
-        "title": "./infrastructure directory exists",
+        "title": "./project-infrastructure directory exists",
         "checkType": "pathExists",
-        "pathValue": "./infrastructure",
+        "pathValue": "./project-infrastructure",
         "pathType": "directory",
-        "fixCommand": "git clone https://github.com/PFPT-Isolation/infrastructure.git ./infrastructure",
+        "fixCommand": "mkdir -p ./project-infrastructure",
         "fixPriority": 1
       }
     ]
   },
-  {
-    "sectionId": "activity-logger",
-    "directoryPath": "activity-logger",
+      {
+      "sectionId": "service-d",
+    "directoryPath": "project-d",
     "description": "Logs and tracks user and system activity.",
     "verifications": [
       {
-        "id": "activityLoggerDirExists",
-        "title": "./activity-logger directory exists",
+        "id": "projectDDirExists",
+        "title": "./project-d directory exists",
         "checkType": "pathExists",
-        "pathValue": "./activity-logger",
+        "pathValue": "./project-d",
         "pathType": "directory",
-        "fixCommand": "git clone https://github.com/PFPT-Isolation/activity-logger.git ./activity-logger",
+        "fixCommand": "mkdir -p ./project-d",
         "fixPriority": 1
       },
       {
-        "id": "activityLoggerGradlewExists",
+        "id": "projectDGradlewExists",
         "title": "gradlew exists",
         "checkType": "pathExists",
-        "pathValue": "./activity-logger/gradlew",
-        "pathType": "file"
+        "pathValue": "./project-d/gradlew",
+        "pathType": "file",
+        "fixCommand": "mkdir -p ./project-d && echo '#!/bin/bash' > ./project-d/gradlew && echo 'echo \"Gradle wrapper placeholder\"' >> ./project-d/gradlew && chmod +x ./project-d/gradlew",
+        "fixPriority": 2
       }
     ]
   },
-  {
-    "sectionId": "rule-engine",
-    "directoryPath": "rule-engine",
+      {
+      "sectionId": "service-e",
+    "directoryPath": "project-e",
     "description": "Evaluates and enforces custom rules for ISO.",
     "verifications": [
       {
-        "id": "ruleEngineDirExists",
-        "title": "./rule-engine directory exists",
+        "id": "projectEDirExists",
+        "title": "./project-e directory exists",
         "checkType": "pathExists",
-        "pathValue": "./rule-engine",
+        "pathValue": "./project-e",
         "pathType": "directory",
-        "fixCommand": "git clone https://github.com/PFPT-Isolation/rule-engine.git ./rule-engine",
+        "fixCommand": "mkdir -p ./project-e",
         "fixPriority": 1
       }
     ]
   },
-  {
-    "sectionId": "test-analytics",
-    "directoryPath": "test-analytics",
+      {
+      "sectionId": "service-f",
+    "directoryPath": "project-f",
     "description": "Advanced analytics engine for processing test data with ML capabilities and real-time stream processing.",
     "verifications": [
       {
-        "id": "testAnalyticsDirExists",
-        "title": "./test-analytics directory exists",
+        "id": "projectFDirExists",
+        "title": "./project-f directory exists",
         "checkType": "pathExists",
-        "pathValue": "./test-analytics",
+        "pathValue": "./project-f",
         "pathType": "directory",
-        "fixCommand": "mkdir -p ./test-analytics",
+        "fixCommand": "mkdir -p ./project-f",
         "fixPriority": 2
       }
     ]

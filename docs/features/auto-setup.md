@@ -96,11 +96,11 @@ Auto Setup transforms the tedious process of environment configuration into a si
 **For section verifications** (`configurationSidebarAbout.json`):
 ```json
 {
-  "sectionId": "mirror",
+  "sectionId": "service-a",
   "verifications": [
     {
-      "id": "mirrorDirExists",
-      "title": "./weblifemirror directory exists",
+      "id": "serviceADirExists",
+      "title": "./serviceA directory exists",
       "fixCommand": "git clone https://github.com/...",
       "fixPriority": 1
     }

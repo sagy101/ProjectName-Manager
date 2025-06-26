@@ -38,9 +38,9 @@ const mockStatuses = {
     nvmInstalled: 'valid'
   },
   configuration: {
-    mirrorDirExists: 'invalid',
+    projectADirExists: 'invalid',
     ChromiumInstalled: 'invalid',
-    threatIntelligenceDirExists: 'valid'
+    projectCDirExists: 'valid'
   }
 };
 
@@ -243,8 +243,8 @@ test.describe('Fix Command Feature', () => {
     });
 
     test('should show configuration section with fix buttons', async () => {
-      // Use our helper to navigate to a section that actually exists - Mirror + MariaDB
-      await navigateToSection(window, 'Mirror + MariaDB');
+      // Use our helper to navigate to a section that actually exists - Service A
+      await navigateToSection(window, 'Service A');
       
       // Check if fix buttons are available
       const buttonsAvailable = await hasFixButtons();
@@ -303,7 +303,7 @@ test.describe('Fix Command Feature', () => {
 
     test('should test directory creation fix commands safely', async () => {
       // Use our helper to navigate to configuration section where we added mkdir fix commands
-      await navigateToSection(window, 'Mirror + MariaDB');
+      await navigateToSection(window, 'Service A');
       
       // Check if fix buttons are available
       let buttonsAvailable = await hasFixButtons();
@@ -343,26 +343,27 @@ test.describe('Fix Command Feature', () => {
   });
 
   test.describe('Fix Command Types Validation', () => {
-    test('should validate brew install commands exist', async () => {
-      const brewCommands = [];
+    test('should validate verification simulator commands exist', async () => {
+      const simulatorCommands = [];
       
       generalEnvironmentVerifications.categories.forEach(categoryWrapper => {
         const category = categoryWrapper.category;
         if (category && category.verifications) {
           category.verifications.forEach(verification => {
-            if (verification.fixCommand && verification.fixCommand.includes('brew install')) {
-              brewCommands.push(verification);
+            if (verification.fixCommand && verification.fixCommand.includes('verification-simulator.js')) {
+              simulatorCommands.push(verification);
             }
           });
         }
       });
 
-      expect(brewCommands.length).toBeGreaterThan(0);
-      console.log(`Found ${brewCommands.length} brew install fix commands`);
+      expect(simulatorCommands.length).toBeGreaterThan(0);
+      console.log(`Found ${simulatorCommands.length} verification simulator fix commands`);
       
-      brewCommands.forEach(verification => {
+      simulatorCommands.forEach(verification => {
         console.log(`  • ${verification.id}: ${verification.fixCommand}`);
-        expect(verification.fixCommand).toMatch(/^brew install/);
+        expect(verification.fixCommand).toMatch(/verification-simulator\.js fix/);
+        expect(verification.fixCommand).toContain('./ProjectName-Manager/scripts/simulators/');
       });
     });
 
@@ -433,7 +434,7 @@ test.describe('Fix Command Feature', () => {
       console.log(`✓ Fix command executed successfully`);
       
       // App should remain responsive - test navigation
-      await window.click('text=Mirror + MariaDB');
+      await window.click('text=Service A');
       await window.waitForSelector('.config-section', { timeout: getTimeout(10000) });
       
       // Navigate back and ensure it's expanded

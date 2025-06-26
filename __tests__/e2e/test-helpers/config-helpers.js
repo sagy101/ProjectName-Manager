@@ -334,20 +334,95 @@ async function selectGlobalProject(window, projectIndex = 0, options = {}) {
   const { timeout = TIMEOUTS.LONG } = options;
   
   try {
+    console.log(`🔍 Attempting to select global project (index ${projectIndex})...`);
+    
+    // Wait for the app to be fully loaded first
+    await window.waitForSelector('.config-container', { timeout });
+    console.log('✓ App container found');
+    
     // Find the global project dropdown in the environment header
     const gcloudDropdownContainer = window.locator('.environment-header');
+    await gcloudDropdownContainer.waitFor({ state: 'visible', timeout });
+    console.log('✓ Environment header found');
+    
     const gcloudDropdown = gcloudDropdownContainer.locator('.dropdown-selector');
-    
     await gcloudDropdown.waitFor({ state: 'visible', timeout });
-    await gcloudDropdown.click();
+    console.log('✓ Global project dropdown found');
     
-    // Wait for the options list to be visible
+    // Check if dropdown is already populated with data
+    const currentText = await gcloudDropdown.locator('.selected-value').textContent();
+    console.log(`Current dropdown text: "${currentText}"`);
+    
+    // Wait a bit for the dropdown command to execute and populate data
+    await window.waitForTimeout(2000);
+    
+    await gcloudDropdown.click();
+    console.log('✓ Dropdown clicked');
+    
+    // Wait for the options list to be visible with retry logic
     const dropdownList = window.locator('.dropdown-item-list');
-    await dropdownList.waitFor({ state: 'visible', timeout });
+    
+    // Try multiple approaches to find the dropdown list
+    let dropdownVisible = false;
+    const maxRetries = 3;
+    
+    for (let retry = 0; retry < maxRetries; retry++) {
+      try {
+        console.log(`Attempt ${retry + 1}/${maxRetries} to find dropdown list...`);
+        await dropdownList.waitFor({ state: 'visible', timeout: timeout / maxRetries });
+        dropdownVisible = true;
+        break;
+      } catch (e) {
+        console.log(`Attempt ${retry + 1} failed: ${e.message}`);
+        
+        if (retry < maxRetries - 1) {
+          // Click the dropdown again in case it closed
+          await gcloudDropdown.click();
+          await window.waitForTimeout(1000);
+        }
+      }
+    }
+    
+    if (!dropdownVisible) {
+      // Debug: check what's actually in the DOM
+      const debugInfo = await window.evaluate(() => {
+        const header = document.querySelector('.environment-header');
+        const dropdown = document.querySelector('.environment-header .dropdown-selector');
+        const list = document.querySelector('.dropdown-item-list');
+        
+        return {
+          headerExists: !!header,
+          dropdownExists: !!dropdown,
+          dropdownHTML: dropdown ? dropdown.outerHTML.substring(0, 500) : null,
+          listExists: !!list,
+          listVisible: list ? !list.hidden && getComputedStyle(list).display !== 'none' : false,
+          allDropdownLists: Array.from(document.querySelectorAll('.dropdown-item-list')).length
+        };
+      });
+      
+      console.error('Debug info:', JSON.stringify(debugInfo, null, 2));
+      throw new Error('Dropdown list never became visible after multiple attempts');
+    }
+    
+    console.log('✓ Dropdown list is visible');
     
     // Select the project at the specified index
     const projectItems = dropdownList.locator('.dropdown-item');
+    const itemCount = await projectItems.count();
+    console.log(`Found ${itemCount} dropdown items`);
+    
+    if (itemCount === 0) {
+      throw new Error('No dropdown items found - dropdown may not have loaded properly');
+    }
+    
+    if (projectIndex >= itemCount) {
+      console.warn(`Requested index ${projectIndex} but only ${itemCount} items available, using index 0`);
+      projectIndex = 0;
+    }
+    
     const targetProject = projectItems.nth(projectIndex);
+    const projectText = await targetProject.textContent();
+    console.log(`Selecting project: "${projectText}"`);
     
     await targetProject.waitFor({ state: 'visible', timeout });
     await targetProject.click();
@@ -355,12 +430,14 @@ async function selectGlobalProject(window, projectIndex = 0, options = {}) {
     // Verify a selection was made (not the default "Select project..." text)
     const selectedValue = gcloudDropdown.locator('.selected-value');
     await window.waitForFunction(() => {
-      const selectedEl = document.querySelector('.dropdown-selector .selected-value');
-      return selectedEl && !selectedEl.textContent.includes('Select project...');
+      const selectedEl = document.querySelector('.environment-header .dropdown-selector .selected-value');
+      return selectedEl && !selectedEl.textContent.includes('Select project...') && selectedEl.textContent.trim().length > 0;
     }, { timeout });
     
-    console.log(`✓ Global project selected (index ${projectIndex})`);
+    const finalSelection = await selectedValue.textContent();
+    console.log(`✓ Global project selected: "${finalSelection}" (index ${projectIndex})`);
   } catch (error) {
+    console.error(`❌ Failed to select global project:`, error);
     throw new Error(`Failed to select global project: ${error.message}`);
   }
 }

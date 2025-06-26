@@ -36,15 +36,15 @@ test.describe('Terminal Status E2E Tests', () => {
     await setTerminalMode(window, 'writable');
     
     // --- 2. CONFIGURE AND RUN ---
-    // Use helpers to configure and run the mirror section
-    await enableSection(window, 'Mirror + MariaDB');
-    await attachSection(window, 'mirror');
-    await setDeploymentMode(window, 'mirror', 'run');
+    // Use helpers to configure and run the service-a section
+    await enableSection(window, 'Service A');
+    await attachSection(window, 'service-a');
+    await setDeploymentMode(window, 'service-a', 'run');
     await runConfiguration(window);
 
     // --- 3. VERIFY RUNNING STATUS ---
     // Use helper to wait for terminal tab and running status
-    await waitForTerminalTab(window, 'Mirror');
+    await waitForTerminalTab(window, 'Service A');
     await waitForTerminalStatus(window, 'running', { timeout: getTimeout(15000) });
 
     // --- 4. SEND CTRL+C ---

@@ -58,7 +58,7 @@ test.describe('Debug Menu Functionality', () => {
     // Use our helper to enable No Run Mode
     await enableNoRunMode(window);
     
-    const runnableSection = sections.find(s => s.components.toggle && s.id === 'mirror');
+    const runnableSection = sections.find(s => s.components.toggle && s.id === 'service-a');
     if (!runnableSection) {
         console.log("Skipping test: No toggleable section found.");
         return;
@@ -84,10 +84,10 @@ test.describe('Debug Menu Functionality', () => {
     await runConfiguration(window, { waitForTabs: true });
     
     // Wait for the terminal tab using our helper with more flexible pattern
-    const terminalTab = await waitForTerminalTab(window, 'Mirror', { timeout: getTimeout(5000) });
+    const terminalTab = await waitForTerminalTab(window, 'Service A', { timeout: getTimeout(5000) });
     
     // Use our helper to click the terminal tab
-    await clickTerminalTab(window, 'Mirror');
+    await clickTerminalTab(window, 'Service A');
     
     // In "no-run" mode, the terminal should show a specific indicator.
     const terminal = window.locator('.terminal-instance-wrapper.active');
@@ -95,7 +95,7 @@ test.describe('Debug Menu Functionality', () => {
     await expect(noRunIndicator).toBeVisible({ timeout: getTimeout(5000) });
 
     // Also verify the tab title includes a debug indicator
-    const sectionTabTitle = window.locator('.tab-title').filter({ hasText: /Mirror/i });
+    const sectionTabTitle = window.locator('.tab-title').filter({ hasText: /Service A/i });
     await expect(sectionTabTitle).toHaveText(/Debug Run/);
   });
 
@@ -174,7 +174,7 @@ test.describe('Debug Menu Functionality', () => {
   });
 
   test('should prevent debug mode changes when Project is running', async () => {
-    const runnableSection = sections.find(s => s.components.toggle && s.id === 'mirror');
+    const runnableSection = sections.find(s => s.components.toggle && s.id === 'service-a');
     if (!runnableSection) {
         console.log("Skipping test: No toggleable section found.");
         return;
@@ -198,7 +198,7 @@ test.describe('Debug Menu Functionality', () => {
     await runConfiguration(window, { waitForTabs: true });
   
     // Wait for the tab to appear and the process to be running
-    const tab = window.locator('.tab', { hasText: /Mirror/i });
+    const tab = window.locator('.tab', { hasText: /Service A/i });
     await expect(tab).toBeVisible({ timeout: getTimeout(5000) });
     const tabStatus = tab.locator('.tab-status');
     await expect(tabStatus).toHaveClass(/status-running/, { timeout: getTimeout(5000) });

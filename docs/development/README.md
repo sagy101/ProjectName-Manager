@@ -18,6 +18,16 @@ Comprehensive testing infrastructure and strategies covering unit tests, compone
 - Mock environment and dynamic generation
 - GitHub Actions integration
 
+### [Simulation System](simulation-system.md)
+Complete simulation infrastructure that replaces external tools with controlled, predictable simulators for development and testing.
+
+**Key topics:**
+- Generic command simulator for build and container operations
+- Verification simulator for environment validation
+- Dropdown simulator for UI data sources
+- Generic naming conventions and configuration integration
+- Extension and troubleshooting guides
+
 ### [Configuration Export & Import](export-import.md)
 Tools for backing up configuration settings and exporting verification data for troubleshooting and development.
 

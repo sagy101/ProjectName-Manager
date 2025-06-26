@@ -123,9 +123,9 @@ const { launchElectron, enableSection, runConfiguration } = require('./test-help
 | Helper | Purpose | Usage |
 |--------|---------|-------|
 | `launchElectron()` | Start Electron app and return window | `const { electronApp, window } = await launchElectron();` |
-| `enableSection(window, title)` | Enable a configuration section | `await enableSection(window, 'Mirror + MariaDB');` |
+| `enableSection(window, title)` | Enable a configuration section | `await enableSection(window, 'Service A');` |
 | `runConfiguration(window)` | Run the current configuration | `await runConfiguration(window);` |
-| `waitForTerminalTab(window, name)` | Wait for terminal tab to appear | `await waitForTerminalTab(window, 'Mirror');` |
+| `waitForTerminalTab(window, name)` | Wait for terminal tab to appear | `await waitForTerminalTab(window, 'Service A');` |
 | `expandAppControlSidebar(window)` | Open the app control sidebar | `await expandAppControlSidebar(window);` |
 | `openDebugTools(window)` | Open debug tools panel | `await openDebugTools(window);` |
 | `stopConfiguration(window)` | Stop running configuration | `await stopConfiguration(window);` |
@@ -183,6 +183,36 @@ HEADLESS=true npm run test:e2e
 This ensures the Electron window is not shown during tests. You can also add `HEADLESS=true` to explicitly run Playwright in headless mode, but by default Playwright is headless unless configured otherwise.
 
 **Important**: E2E tests require `openDevToolsByDefault` to be set to `false` in `src/configurationSidebarSections.json`. Having dev tools open during automated testing can interfere with test execution and cause failures.
+
+## Simulation System
+
+The testing infrastructure includes a comprehensive simulation system that replaces all external dependencies with controlled, predictable simulators. This system consists of three interconnected simulators that provide realistic behavior without requiring actual tools to be installed.
+
+> **📖 Complete Documentation**: See [Simulation System Guide](./simulation-system.md) for comprehensive details on architecture, usage, and extension.
+
+### Overview
+
+- **Generic Command Simulator**: Replaces all application commands (build, run, container management)
+- **Verification Simulator**: Simulates tool verification and fix commands for environment validation  
+- **Dropdown Simulator**: Provides realistic, varying dropdown data for UI components
+
+### Key Benefits
+
+- **No External Dependencies**: Works immediately after `npm install`
+- **Predictable Behavior**: Deterministic results for reliable testing
+- **Complete Control**: Easy to test both success and failure scenarios
+- **Realistic Simulation**: Tool outputs match real command responses
+
+### Quick Integration
+
+The simulation system is automatically used in E2E tests and integrates seamlessly with the existing configuration system:
+
+```bash
+# All commands are automatically replaced with simulators
+node scripts/simulators/generic-command-simulator.js --duration=30 --result=success
+node scripts/simulators/verification-simulator.js verify cloudGcloudCLI  
+node scripts/simulators/dropdown-simulator.js gcloud-projects
+```
 
 ## Dynamic Mock Environment
 
@@ -271,6 +301,7 @@ This replaces scattered `console.log`/`console.warn`/`console.error` statements 
 
 ## See Also
 
+- [Simulation System Guide](./simulation-system.md) - Comprehensive simulation infrastructure
 - [Configuration Guide](../configuration/) - Understanding test configuration
 - [Architecture Guide](../architecture/) - System architecture affecting tests
 - [Feature Guides](../features/) - Features being tested 

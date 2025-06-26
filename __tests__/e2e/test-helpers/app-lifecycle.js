@@ -168,9 +168,9 @@ async function setupMockVerificationEndpoints(window, mockStatuses = null) {
       nvmInstalled: 'valid'
     },
     configuration: {
-      mirrorDirExists: 'invalid',
+      projectADirExists: 'invalid',
       ChromiumInstalled: 'invalid',
-      threatIntelligenceDirExists: 'valid'
+      projectCDirExists: 'valid'
     }
   };
 
