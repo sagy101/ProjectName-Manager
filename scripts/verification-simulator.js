@@ -109,26 +109,16 @@ const VERIFICATION_RESPONSES = {
   }
 };
 
-// State file to track which verifications should return success
-const STATE_FILE = path.join(__dirname, '.verification-simulator-state.json');
+// In-memory state to track which verifications should return success
+// This resets every time the script is run (no persistence across app restarts)
+let inMemoryState = {};
 
 function loadState() {
-  try {
-    if (fs.existsSync(STATE_FILE)) {
-      return JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
-    }
-  } catch (error) {
-    // Ignore errors, use default state
-  }
-  return {};
+  return inMemoryState;
 }
 
 function saveState(state) {
-  try {
-    fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
-  } catch (error) {
-    console.error('Warning: Could not save verification state:', error.message);
-  }
+  inMemoryState = state;
 }
 
 function getVerificationResponse(verificationId, shouldSucceed) {
