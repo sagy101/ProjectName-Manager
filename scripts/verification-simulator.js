@@ -81,7 +81,7 @@ const VERIFICATION_RESPONSES = {
     expectedValue: 'go version go1'
   },
   'goPathIncludes': {
-    success: '/Users/user/go/bin:/usr/local/bin:/usr/bin:/bin',
+    success: '/Users/user/go/bin:/usr/local/bin:/usr/bin:/bin:$GOPATH/bin',
     failure: '/usr/local/bin:/usr/bin:/bin',
     type: 'outputContains',
     expectedValue: '$GOPATH/bin'
@@ -175,7 +175,8 @@ function main() {
   if (mode === 'verify') {
     // Check environment variable for global override
     const shouldFail = process.env.VERIFICATION_SHOULD_FAIL === 'true';
-    const shouldSucceed = state[verificationId] === true && !shouldFail;
+    // Default to success unless explicitly set to fail or global override
+    const shouldSucceed = (state[verificationId] !== false) && !shouldFail;
     
     getVerificationResponse(verificationId, shouldSucceed);
     
