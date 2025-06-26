@@ -446,7 +446,7 @@ const HealthReportScreen = ({
                             Focus Tab
                           </button>
                           <button 
-                            className="action-button refresh-button"
+                            className="action-button"
                             onClick={() => handleRefresh(terminal.id)}
                             disabled={noRunMode}
                             title={noRunMode ? 'Cannot refresh in No Run Mode' : 'Refresh and re-run command'}
