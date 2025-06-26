@@ -23,14 +23,21 @@ The system consists of three interconnected simulators that provide realistic be
 
 ```mermaid
 flowchart TD
-    A[Generic Command Simulator<br/>Container mgmt, Build processes, Development runs]
-    B[Verification Simulator<br/>Tool verification, Fix commands, Environment checks]  
-    C[Dropdown Simulator<br/>Project lists, Context lists, Pod selections]
-    D[Configuration Files<br/>Sections, Commands, Verifications]
+    GCS["📦 Generic Command<br/>Simulator<br/><br/>• Container mgmt<br/>• Build processes<br/>• Development runs"]
+    VS["✅ Verification<br/>Simulator<br/><br/>• Tool verification<br/>• Fix commands<br/>• Environment checks"]
+    DS["📋 Dropdown<br/>Simulator<br/><br/>• Project lists<br/>• Context lists<br/>• Pod selections"]
     
-    A --> D
-    B --> D
-    C --> D
+    CONFIG["⚙️ Configuration<br/>Files<br/><br/>• Sections<br/>• Commands<br/>• Verifications"]
+    
+    GCS --> CONFIG
+    VS --> CONFIG
+    DS --> CONFIG
+    
+    subgraph " "
+        GCS
+        VS  
+        DS
+    end
 ```
 
 ### 1. Generic Command Simulator
