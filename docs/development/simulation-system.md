@@ -1,419 +1,272 @@
 # Simulation System
 
-> Comprehensive command, verification, and dropdown simulation infrastructure for {ProjectName} Manager
+> Complete replacement for external tools with controlled, predictable simulators
 
 ## Overview
 
-The simulation system provides a complete replacement for real external tools and services during development and testing. This system enables {ProjectName} Manager to run with completely generic, predictable data while maintaining full functionality.
+The simulation system replaces all external dependencies (Docker, gcloud, kubectl, etc.) with intelligent simulators. This means developers can run {ProjectName} Manager immediately after `npm install` without installing any external tools, while maintaining realistic behavior for testing and development.
+
+## Why Use Simulators?
+
+**Before**: Developers needed Docker, gcloud, kubectl, Node.js, Go, Java, and more
+**After**: Everything works with just Node.js installed
+
+### Key Benefits
+- **Zero Setup**: Works immediately after `npm install`
+- **Consistent Results**: No network failures, API limits, or tool version conflicts
+- **Faster Testing**: E2E tests run reliably without external dependencies
+- **Complete Control**: Easy to test both success and failure scenarios
 
 ## Architecture
 
-The simulation system consists of three interconnected simulators that work together to provide a realistic but controlled environment:
+The system consists of three interconnected simulators that provide realistic behavior without real operations:
 
+```mermaid
+graph TB
+    subgraph "Configuration System"
+        CONFIG[Configuration Files<br/>• Sections JSON<br/>• Commands JSON<br/>• Verifications JSON]
+    end
+    
+    subgraph "Simulation Layer"
+        GCS[Generic Command<br/>Simulator<br/>🔧 Build & Run Commands]
+        VS[Verification<br/>Simulator<br/>✅ Tool Validation]
+        DS[Dropdown<br/>Simulator<br/>📋 UI Data Sources]
+    end
+    
+    subgraph "Application Layer"
+        UI[User Interface<br/>• Terminal Tabs<br/>• Dropdowns<br/>• Status Indicators]
+        BACKEND[Backend Process<br/>• Command Execution<br/>• Verification Checks<br/>• Data Fetching]
+    end
+    
+    subgraph "Development Environment"
+        TESTS[E2E Tests<br/>🧪 Automated Testing]
+        DEV[Local Development<br/>👨‍💻 No Dependencies]
+        CI[CI/CD Pipeline<br/>⚙️ GitHub Actions]
+    end
+    
+    CONFIG --> GCS
+    CONFIG --> VS  
+    CONFIG --> DS
+    
+    GCS --> BACKEND
+    VS --> BACKEND
+    DS --> UI
+    
+    BACKEND --> UI
+    
+    TESTS --> GCS
+    TESTS --> VS
+    TESTS --> DS
+    
+    DEV --> GCS
+    DEV --> VS
+    DEV --> DS
+    
+    CI --> TESTS
+    
+    style CONFIG fill:#e1f5fe
+    style GCS fill:#f3e5f5
+    style VS fill:#e8f5e8
+    style DS fill:#fff3e0
+    style UI fill:#fce4ec
+    style BACKEND fill:#f1f8e9
+    style TESTS fill:#e3f2fd
+    style DEV fill:#f9fbe7
+    style CI fill:#e0f2f1
 ```
-┌─────────────────────┐    ┌──────────────────────┐    ┌─────────────────────┐
-│  Generic Command    │    │   Verification       │    │   Dropdown          │
-│     Simulator       │    │     Simulator        │    │   Simulator         │
-│                     │    │                      │    │                     │
-│ • Container mgmt    │    │ • Tool verification  │    │ • Project lists     │
-│ • Build processes   │    │ • Fix commands       │    │ • Context lists     │
-│ • Development runs  │    │ • Environment checks │    │ • Pod selections    │
-└─────────────────────┘    └──────────────────────┘    └─────────────────────┘
-           │                           │                           │
-           └───────────────────────────┼───────────────────────────┘
-                                       │
-                          ┌─────────────────────┐
-                          │   Configuration     │
-                          │      Files          │
-                          │                     │
-                          │ • Sections          │
-                          │ • Commands          │
-                          │ • Verifications     │
-                          └─────────────────────┘
-```
-
-## System Components
 
 ### 1. Generic Command Simulator
 
-**Location**: `scripts/simulators/generic-command-simulator.js`
+**What it does**: Replaces build, run, and container commands with realistic simulations
 
-**Purpose**: Replaces all real application commands (build, run, container management) with a configurable simulator that provides realistic timing and behavior.
+**Key features**:
+- ⏱️ Configurable timing (30 seconds, infinite, etc.)
+- 🎯 Success/failure control for testing scenarios  
+- 📦 Container lifecycle simulation
+- 🔧 Environment variable display
 
-#### Features
-
-- **Configurable Duration**: Commands can run for specific times or indefinitely
-- **Success/Failure Control**: Simulate success or failure scenarios
-- **Container Simulation**: Manages mock container lifecycle
-- **Variable Display**: Shows environment variables in realistic format
-- **Silent/Verbose Modes**: Control output verbosity
-
-#### Usage
-
+**Quick example**:
 ```bash
-# Basic command simulation
+# Simulate a 30-second build process
 node scripts/simulators/generic-command-simulator.js --duration=30 --result=success
-
-# Container mode with variables
-node scripts/simulators/generic-command-simulator.js \
-  --duration=30 \
-  --result=success \
-  --containers='container-a,container-b' \
-  --variables='nodeVersion=15.5.1,debugPort=5005' \
-  --tabTitle='Service A (Debug)'
 ```
 
-#### Parameters
+### 2. Verification Simulator  
 
-| Parameter | Description | Examples |
-|-----------|-------------|----------|
-| `--duration` | How long to run | `30` (seconds), `infinite` |
-| `--result` | Command outcome | `success`, `fail` |
-| `--containers` | Container names | `container-a,container-b` |
-| `--variables` | Environment vars | `nodeVersion=15.5.1,port=8080` |
-| `--silent` | Output control | `true`, `false` |
-| `--tabTitle` | Terminal tab name | `Service A` |
+**What it does**: Simulates tool checks (Docker, gcloud, kubectl) without requiring actual installation
 
-### 2. Verification Simulator
+**Key features**:
+- ✅ Realistic tool responses (matches real command output)
+- 🔄 Session-based state (resets on app restart)
+- 🛠️ Fix command simulation
+- 🎛️ Environment variable control
 
-**Location**: `scripts/simulators/verification-simulator.js`
-
-**Purpose**: Simulates tool verification and fix commands for environment validation without requiring real tools to be installed.
-
-#### Features
-
-- **Session-Based State**: No persistence across app restarts
-- **Realistic Responses**: Tool-specific output that matches real commands
-- **Environment Variable Support**: Dynamic responses based on actual environment
-- **Fix Command Support**: Simulates fixing verification issues
-- **Default Valid State**: Verifications succeed by default unless overridden
-
-#### Usage
-
+**Quick example**:
 ```bash
-# Verify a tool
+# Check if gcloud is "installed"
 node scripts/simulators/verification-simulator.js verify cloudGcloudCLI
 
-# Fix a verification issue  
-node scripts/simulators/verification-simulator.js fix cloudGcloudCLI
-
-# Override behavior with environment variable
+# Test failure scenarios
 VERIFICATION_SHOULD_FAIL=true node scripts/simulators/verification-simulator.js verify nodeJs
 ```
 
-#### Supported Verifications
-
-| Tool | Verification ID | Output Example |
-|------|----------------|----------------|
-| gcloud CLI | `cloudGcloudCLI` | `Google Cloud SDK 458.0.1` |
-| kubectl | `cloudKubectlCLI` | `Client Version: v1.28.4` |
-| Docker | `dockerRunning` | `Docker version 24.0.7` |
-| Node.js | `nodeJs` | `v15.5.1` |
-| Go | `goInstalled` | `go version go1.21.5` |
-| Java | `javaVersion` | `openjdk version "17.0.9"` |
-
-#### State Management
-
-- **No Persistence**: Verification state resets on app restart
-- **Session Memory**: Maintains state during app session
-- **Default Behavior**: All verifications succeed by default
-- **Environment Override**: `VERIFICATION_SHOULD_FAIL=true` forces failures
-- **Fix Commands**: Updates verification state to success
-
 ### 3. Dropdown Simulator
 
-**Location**: `scripts/simulators/dropdown-simulator.js`
+**What it does**: Provides realistic dropdown data for UI components (projects, contexts, pods)
 
-**Purpose**: Provides realistic, varying dropdown data for project selection, Kubernetes contexts, and pod listings.
+**Key features**:
+- 🔄 Time-based variation (changes every 30 seconds for demos)
+- 🏷️ Generic naming conventions  
+- 📝 Multiple output formats (lines, JSON)
+- 🎯 Auto-detection from command strings
 
-#### Features
-
-- **Time-Based Variation**: Results change every 30 seconds for demo purposes
-- **Deterministic**: Same results within time windows for consistency
-- **Generic Data**: All values use generic naming conventions
-- **Multiple Formats**: Supports different dropdown types
-- **Auto-Detection**: Can detect command type from full command strings
-
-#### Usage
-
+**Quick example**:
 ```bash
-# Generate project list
+# Generate project list for dropdown
 node scripts/simulators/dropdown-simulator.js gcloud-projects
 
-# Generate kubectl contexts
+# Get kubectl contexts as JSON
 node scripts/simulators/dropdown-simulator.js kubectl-contexts --json
-
-# Generate pod lists
-node scripts/simulators/dropdown-simulator.js kubectl-pods-service-c-sub --count=3
-
-# Auto-detect from command
-node scripts/simulators/dropdown-simulator.js "gcloud projects list --format=value(projectId)"
 ```
 
-#### Supported Dropdown Types
+## How It Works
 
-| Type | Command | Sample Output |
-|------|---------|---------------|
-| GCP Projects | `gcloud-projects` | `project-a-dev-abe5983f` |
-| Kubectl Contexts | `kubectl-contexts` | `gke_project-a-dev_us-central1_dev-cluster` |
-| Service Pods | `kubectl-pods-service-c-sub` | `service-c-sub-deployment-7c8d9e0f-abc12` |
+The simulators integrate seamlessly with the existing configuration system by replacing real commands:
 
-#### Output Formats
-
-- **Line-separated** (default): One item per line
-- **JSON Array** (`--json`): Valid JSON array format
-- **Limited Count** (`--count=N`): Restrict number of results
-
-## Configuration Integration
-
-### Command Replacement
-
-All real commands in configuration files have been replaced with simulator calls:
-
-**Before:**
+### Command Integration
+Real Docker/build commands → Generic command simulator
 ```json
-{
-  "command": "cd ./project-a && docker-compose up -d"
-}
+// Before: "cd ./project-a && docker-compose up -d"
+// After:  "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=30"
 ```
 
-**After:**
+### Verification Integration  
+Real tool checks → Verification simulator
 ```json
-{
-  "command": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=30 --result=success --containers='container-a,container-b'"
-}
-```
-
-### Verification Integration
-
-Environment verifications now use the verification simulator:
-
-**Before:**
-```json
-{
-  "id": "cloudGcloudCLI",
-  "command": "gcloud --version",
-  "fixCommand": "brew install google-cloud-sdk"
-}
-```
-
-**After:**
-```json
-{
-  "id": "cloudGcloudCLI", 
-  "command": "node ./ProjectName-Manager/scripts/simulators/verification-simulator.js verify cloudGcloudCLI",
-  "fixCommand": "node ./ProjectName-Manager/scripts/simulators/verification-simulator.js fix cloudGcloudCLI"
-}
+// Before: "gcloud --version"
+// After:  "node ./ProjectName-Manager/scripts/simulators/verification-simulator.js verify cloudGcloudCLI"
 ```
 
 ### Dropdown Integration
-
-Dropdown selectors use the dropdown simulator:
-
-**Before:**
+Real API calls → Dropdown simulator
 ```json
-{
-  "id": "gcloudProject",
-  "command": "gcloud projects list --format=\"value(projectId)\""
-}
+// Before: "gcloud projects list --format=value(projectId)"
+// After:  "node ./ProjectName-Manager/scripts/simulators/dropdown-simulator.js gcloud-projects"
 ```
 
-**After:**
-```json
-{
-  "id": "gcloudProject",
-  "command": "node ./ProjectName-Manager/scripts/simulators/dropdown-simulator.js gcloud-projects"
-}
+## Generic Naming
+
+All simulated data uses generic names to avoid project-specific references:
+
+- **Projects**: `project-a`, `project-b`, `project-c`
+- **Services**: `service-a`, `service-b`, `service-c`  
+- **Containers**: `container-a`, `container-b`, `container-c`
+- **Cloud Resources**: `project-a-dev-abe5983f`, `gke_project-a-dev_us-central1_dev-cluster`
+
+This ensures the codebase can be shared without exposing real project names or infrastructure details.
+
+## Development Workflow
+
+### Getting Started
+1. Clone the repository
+2. Run `npm install` 
+3. Start the app immediately - no external tools needed!
+
+### Testing Scenarios
+```bash
+# Test success scenario (default)
+npm start
+
+# Test failures to see error handling  
+VERIFICATION_SHOULD_FAIL=true npm start
+
+# Run E2E tests without external dependencies
+npm run test:e2e
 ```
 
-## Generic Naming Conventions
+### Integration with Testing
 
-The simulation system uses consistent generic naming to avoid any project-specific references:
+The simulators work seamlessly with both Jest and E2E tests:
 
-### Projects and Services
-- `project-a`, `project-b`, `project-c` (main projects)
-- `project-infrastructure` (infrastructure project)
-- `service-a`, `service-b`, `service-c` (UI service names)
+- **Jest Tests**: Mock data ensures consistent unit test results
+- **E2E Tests**: Simulators replace real tools in Playwright tests  
+- **CI/CD**: GitHub Actions runs without installing Docker, gcloud, etc.
 
-### Containers
-- `container-a`, `container-b`, `container-c` (database containers)
-- `container-d`, `container-e` (application containers)  
-- `container-f`, `container-g` (specialized containers)
+## Common Tasks
 
-### Directories
-- `./project-a/`, `./project-b/` (project directories)
-- `./project-c/subproject-a/` (nested projects)
-- `./project-infrastructure/` (infrastructure)
+### Testing Failure Scenarios
+```bash
+# Force all verifications to fail
+VERIFICATION_SHOULD_FAIL=true npm start
 
-### Cloud Resources
-- `project-a-dev-abe5983f` (GCP project IDs)
-- `gke_project-a-dev_us-central1_dev-cluster` (Kubernetes contexts)
-- `service-c-sub-deployment-7c8d9e0f-abc12` (pod names)
-
-## Development Benefits
-
-### 1. **No External Dependencies**
-- Developers don't need gcloud, kubectl, Docker, or other tools installed
-- Works immediately after `npm install`
-- Consistent behavior across all development environments
-
-### 2. **Predictable Behavior**
-- Commands always succeed (unless configured to fail)
-- Dropdown data is consistent and realistic
-- No network dependencies or API rate limits
-
-### 3. **Complete Control**
-- Easy to test failure scenarios with environment variables
-- Configurable timing for performance testing
-- Deterministic results for reliable testing
-
-### 4. **Realistic Simulation**
-- Tool outputs match real command responses
-- Container lifecycle simulation
-- Proper exit codes and error handling
-
-## Testing Integration
-
-### E2E Test Support
-
-The simulation system is fully integrated with E2E tests:
-
-```javascript
-// Tests work with simulated commands
-await enableSection(window, 'Service A');
-await runConfiguration(window);
-await waitForTerminalTab(window, 'Service A');
+# Test specific verification failure
+node scripts/simulators/verification-simulator.js verify cloudGcloudCLI
 ```
 
-### Mock Environment
+### Adding New Tools
+To add support for a new tool (e.g., `terraform`):
 
-E2E tests automatically set up the simulation environment:
-
-- **Script**: `scripts/setup-mock-e2e-env.sh`
-- **Dynamic Generation**: Creates mocks based on configuration files
-- **Path Setup**: Adds simulators to PATH for seamless execution
-
-### GitHub Actions
-
-CI/CD workflows use the simulation system:
-
-- No external tool dependencies in GitHub Actions
-- Consistent behavior across all CI runs
-- Realistic testing without actual cloud resources
-
-## Extending the System
-
-### Adding New Commands
-
-1. **Add to Generic Command Simulator**:
+1. **Add verification response** in `verification-simulator.js`:
    ```javascript
-   // In generic-command-simulator.js
-   if (commandType.includes('new-tool')) {
-     return runNewToolSimulation(options);
-   }
-   ```
-
-2. **Update Configuration**:
-   ```json
-   {
-     "command": "node ./ProjectName-Manager/scripts/simulators/generic-command-simulator.js --duration=10 --result=success --tool=new-tool"
-   }
-   ```
-
-### Adding New Verifications
-
-1. **Add to Verification Simulator**:
-   ```javascript
-   // In verification-simulator.js
-   'newTool': {
-     success: 'New Tool v1.2.3',
-     failure: 'newTool: command not found',
+   'terraformCLI': {
+     success: 'Terraform v1.6.0',
+     failure: 'terraform: command not found',
      type: 'outputContains',
-     expectedValue: 'New Tool'
+     expectedValue: 'Terraform'
    }
    ```
 
-2. **Add to Configuration**:
+2. **Update configuration** to use the simulator:
    ```json
    {
-     "id": "newTool",
-     "command": "node ./ProjectName-Manager/scripts/simulators/verification-simulator.js verify newTool",
-     "fixCommand": "node ./ProjectName-Manager/scripts/simulators/verification-simulator.js fix newTool"
+     "id": "terraformCLI",
+     "command": "node ./ProjectName-Manager/scripts/simulators/verification-simulator.js verify terraformCLI"
    }
    ```
 
-### Adding New Dropdown Types
+### Adding New Dropdown Data
+To support a new dropdown type:
 
-1. **Add to Dropdown Simulator**:
-   ```javascript
-   // In dropdown-simulator.js
-   function generateNewDropdownType() {
-     return ['option-1', 'option-2', 'option-3'];
-   }
-   ```
-
-2. **Add Case Handler**:
-   ```javascript
-   case 'new-dropdown-type':
-     return generateNewDropdownType();
-   ```
+1. **Add generator function** in `dropdown-simulator.js`
+2. **Add case handler** for the new command type
+3. **Update configuration** to use the new simulator command
 
 ## Troubleshooting
 
-### Common Issues
-
-**Commands Not Found**:
-- Ensure `scripts/simulators/` is in PATH for E2E tests
-- Check that simulator files are executable (`chmod +x`)
-
-**Verification Failures**:
-- Use `VERIFICATION_SHOULD_FAIL=true` to test failure scenarios
-- Check that verification IDs match between config and simulator
-
-**Missing Dropdown Data**:
-- Verify command type is supported in dropdown simulator
-- Check that dropdown selectors use correct command format
-
-### Debug Mode
-
-Enable detailed logging for simulators:
-
+### Simulator Not Found
 ```bash
-DEBUG=true node scripts/simulators/generic-command-simulator.js --duration=5
+# Make sure simulators are executable
+chmod +x scripts/simulators/*.js
+
+# Test simulator directly
+node scripts/simulators/verification-simulator.js verify cloudGcloudCLI
 ```
 
-### State Reset
+### Verification Always Fails
+- Check that verification IDs match between config and simulator
+- Restart the app to reset verification state
+- Use `VERIFICATION_SHOULD_FAIL=false` to force success
 
-To reset verification state during development:
-- Restart the application (simulators don't persist state)
-- Use environment variables to override default behavior
+### Dropdown Data Missing
+- Verify command type is supported in dropdown simulator
+- Check that dropdown command uses correct format
 
-## Performance Considerations
+## Best Practices
 
-### Timing
-- Container commands: 30 seconds (realistic build time)
-- Development commands: Infinite (until stopped)
-- Verification commands: Instant
-- Fix commands: Instant
+### Development
+- Use simulators for all local development to avoid external dependencies
+- Test both success and failure scenarios with environment variables
+- Keep simulator responses realistic to catch integration issues
 
-### Resource Usage
-- Minimal CPU usage (no real operations)
-- No network requests
-- No disk I/O (except for logs)
-- Fast startup times
+### Testing  
+- Use simulators in E2E tests for consistent, reliable results
+- Test edge cases by configuring simulator behavior
+- Verify that simulator outputs match what the UI expects
 
-## Security
-
-### No Real Operations
-- Simulators never execute real commands
-- No actual container creation or management
-- No real cloud API calls
-- Safe for any environment
-
-### Data Privacy
-- All generated data is generic and fictional
-- No real project names, IDs, or sensitive information
-- Deterministic output prevents data leaks
+### Configuration
+- Use generic naming conventions for all simulated data
+- Keep simulator commands consistent across configuration files
+- Document any custom simulator additions for team members
 
 ## See Also
 
