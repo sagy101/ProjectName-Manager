@@ -62,18 +62,29 @@ node scripts/simulators/generic-command-simulator.js --duration=30 --result=succ
 
 **Key features**:
 - ✅ Realistic tool responses (matches real command output)
-- 🔄 Session-based state (resets on app restart)
-- 🛠️ Fix command simulation
-- 🎛️ Environment variable control
+- 🔄 Session-based state persistence (using main Electron PID tracking)
+- 🛠️ Fix command simulation with immediate effect
+- 🎛️ Environment variable control (`VERIFICATION_SHOULD_FAIL`)
+- 🔄 Automatic clean slate on app restart
 
 **Quick example**:
 ```bash
 # Check if gcloud is "installed"
 node scripts/simulators/verification-simulator.js verify cloudGcloudCLI
 
+# Fix a verification (persists until app restart)
+node scripts/simulators/verification-simulator.js fix cloudGcloudCLI
+
 # Test failure scenarios
 VERIFICATION_SHOULD_FAIL=true node scripts/simulators/verification-simulator.js verify nodeJs
 ```
+
+**Session State Management**:
+The verification simulator maintains session state using the main Electron process PID:
+- **Fix commands** set `sessionState[verificationId] = true` and persist to disk
+- **Verify commands** check session state first, then fall back to environment variables
+- **App restart** automatically clears session state (new PID = clean slate)
+- **Session file** is shared between all verification processes within the same app session
 
 ### 3. Dropdown Simulator
 
@@ -161,11 +172,14 @@ The simulators work seamlessly with both Jest and E2E tests:
 
 ### Testing Failure Scenarios
 ```bash
-# Force all verifications to fail
+# Force all verifications to fail initially (can be fixed via UI)
 VERIFICATION_SHOULD_FAIL=true npm start
 
-# Test specific verification failure
+# Test individual verification (respects session state)
 node scripts/simulators/verification-simulator.js verify cloudGcloudCLI
+
+# Test fix command (persists until app restart)
+node scripts/simulators/verification-simulator.js fix cloudGcloudCLI
 ```
 
 ### Adding New Tools
@@ -209,8 +223,9 @@ node scripts/simulators/verification-simulator.js verify cloudGcloudCLI
 
 ### Verification Always Fails
 - Check that verification IDs match between config and simulator
-- Restart the app to reset verification state
-- Use `VERIFICATION_SHOULD_FAIL=false` to force success
+- Restart the app to reset verification session state
+- Remove `VERIFICATION_SHOULD_FAIL=true` environment variable
+- Try using fix commands via the UI to override individual verifications
 
 ### Dropdown Data Missing
 - Verify command type is supported in dropdown simulator
