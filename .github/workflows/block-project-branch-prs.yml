@@ -1,0 +1,34 @@
+name: Block Project Branch PRs to Main
+
+on:
+  pull_request:
+    types: [opened]
+    branches: [main]
+
+jobs:
+  check-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close PR if from Project branch
+        if: startsWith(github.head_ref, 'Project-')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const headRef = context.payload.pull_request.head.ref;
+            
+            console.log(`PR #${prNumber} is from branch: ${headRef}`);
+            
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              state: 'closed'
+            });
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: `🚫 **PR Blocked**: Pull requests from \`Project-*\` branches to \`main\` are not allowed.\n\nProject branches are intended for isolated feature development. Please merge to a feature branch or create a PR to a different target branch.`
+            }); 
