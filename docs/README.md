@@ -75,7 +75,7 @@ This documentation is organized into focused guides for different audiences and 
 | **Learn about terminal capabilities** | [Terminal System Guide](features/terminal-system.md) |
 | **Understand the codebase structure** | [Architecture Overview](architecture/overview.md) |
 | **Run tests or contribute code** | [Testing Guide](development/testing.md) |
-| **Contribute to the project or create custom project branches** | [**Contributing Guide**](CONTRIBUTIONS.md) |
+| **Contribute to the project or create custom project branches** | [Contributing Guide](CONTRIBUTIONS.md) |
 | **Monitor running services** | [Health Report Guide](features/health-report.md) |
 | **Configure dynamic dropdowns** | [Dropdown Configuration](configuration/dropdowns.md) |
 | **Export/import configuration** | [Export & Import Guide](development/export-import.md) |
