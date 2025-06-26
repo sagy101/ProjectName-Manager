@@ -172,28 +172,28 @@ describe('Fix Command Backend Tests', () => {
   });
 
   describe('Fix Command Types', () => {
-    it('should validate brew install commands', () => {
-      const brewCommands = [];
+    it('should validate verification simulator commands', () => {
+      const simulatorCommands = [];
       
       generalEnvironmentVerifications.categories.forEach(categoryWrapper => {
         const category = categoryWrapper.category;
         if (category && category.verifications) {
           category.verifications.forEach(verification => {
-            if (verification.fixCommand && verification.fixCommand.includes('brew install')) {
-              brewCommands.push(verification);
+            if (verification.fixCommand && verification.fixCommand.includes('verification-simulator.js')) {
+              simulatorCommands.push(verification);
             }
           });
         }
       });
 
-      expect(brewCommands.length).toBeGreaterThan(0);
+      expect(simulatorCommands.length).toBeGreaterThan(0);
       
-      brewCommands.forEach(verification => {
-        expect(verification.fixCommand).toMatch(/^brew install/);
+      simulatorCommands.forEach(verification => {
+        expect(verification.fixCommand).toMatch(/verification-simulator\.js fix/);
         
-        // Should not have dangerous flags
-        expect(verification.fixCommand).not.toMatch(/--force-bottle/);
-        expect(verification.fixCommand).not.toMatch(/--ignore-dependencies/);
+        // Should use correct path
+        expect(verification.fixCommand).toContain('./ProjectName-Manager/scripts/');
+        expect(verification.fixCommand).toContain('node ');
       });
     });
 
@@ -252,16 +252,16 @@ describe('Fix Command Backend Tests', () => {
       });
     });
 
-    it('should validate download commands', () => {
-      const downloadCommands = [];
+    it('should validate all simulator fix commands', () => {
+      const allSimulatorCommands = [];
       
-      // Check both general and configuration sidebar for download commands
+      // Check both general and configuration sidebar for verification simulator commands
       generalEnvironmentVerifications.categories.forEach(categoryWrapper => {
         const category = categoryWrapper.category;
         if (category && category.verifications) {
           category.verifications.forEach(verification => {
-            if (verification.fixCommand && (verification.fixCommand.includes('curl') || verification.fixCommand.includes('hdiutil'))) {
-              downloadCommands.push(verification);
+            if (verification.fixCommand && verification.fixCommand.includes('verification-simulator.js')) {
+              allSimulatorCommands.push(verification);
             }
           });
         }
@@ -270,30 +270,26 @@ describe('Fix Command Backend Tests', () => {
       configurationSidebarAbout.forEach(section => {
         if (section.verifications) {
           section.verifications.forEach(verification => {
-            if (verification.fixCommand && (verification.fixCommand.includes('curl') || verification.fixCommand.includes('hdiutil'))) {
-              downloadCommands.push(verification);
+            if (verification.fixCommand && verification.fixCommand.includes('verification-simulator.js')) {
+              allSimulatorCommands.push(verification);
             }
           });
         }
       });
 
-      // Should have at least some download commands (nvm, chromium, etc.)
-      expect(downloadCommands.length).toBeGreaterThan(0);
+      // Should have simulator commands from both general and configuration
+      expect(allSimulatorCommands.length).toBeGreaterThan(0);
 
-      downloadCommands.forEach(verification => {
-        // Should be downloading from trusted sources
-        if (verification.fixCommand.includes('nvm')) {
-          expect(verification.fixCommand).toContain('raw.githubusercontent.com/nvm-sh/nvm');
-        }
+      allSimulatorCommands.forEach(verification => {
+        // Should use verification simulator
+        expect(verification.fixCommand).toContain('verification-simulator.js fix');
+        expect(verification.fixCommand).toContain('./ProjectName-Manager/scripts/');
+        expect(verification.fixCommand).toMatch(/^node /);
         
-        if (verification.fixCommand.includes('chromium')) {
-          expect(verification.fixCommand).toContain('github.com/ungoogled-software/ungoogled-chromium-macos');
-        }
-        
-        // Should pipe to bash safely if doing so
-        if (verification.fixCommand.includes('| bash')) {
-          expect(verification.fixCommand).toMatch(/curl.*-o-.*\|.*bash/);
-        }
+        // Should have proper verification ID
+        const parts = verification.fixCommand.split(' ');
+        expect(parts.length).toBe(4); // ['node', './ProjectName-Manager/scripts/verification-simulator.js', 'fix', 'verificationId']
+        expect(parts[3]).toBe(verification.id);
       });
     });
 

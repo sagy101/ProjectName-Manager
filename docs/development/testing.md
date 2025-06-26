@@ -123,9 +123,9 @@ const { launchElectron, enableSection, runConfiguration } = require('./test-help
 | Helper | Purpose | Usage |
 |--------|---------|-------|
 | `launchElectron()` | Start Electron app and return window | `const { electronApp, window } = await launchElectron();` |
-| `enableSection(window, title)` | Enable a configuration section | `await enableSection(window, 'Mirror + MariaDB');` |
+| `enableSection(window, title)` | Enable a configuration section | `await enableSection(window, 'Service A');` |
 | `runConfiguration(window)` | Run the current configuration | `await runConfiguration(window);` |
-| `waitForTerminalTab(window, name)` | Wait for terminal tab to appear | `await waitForTerminalTab(window, 'Mirror');` |
+| `waitForTerminalTab(window, name)` | Wait for terminal tab to appear | `await waitForTerminalTab(window, 'Service A');` |
 | `expandAppControlSidebar(window)` | Open the app control sidebar | `await expandAppControlSidebar(window);` |
 | `openDebugTools(window)` | Open debug tools panel | `await openDebugTools(window);` |
 | `stopConfiguration(window)` | Stop running configuration | `await stopConfiguration(window);` |

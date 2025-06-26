@@ -284,27 +284,27 @@ describe('Fix Command Feature Tests', () => {
   });
 
   describe('Fix Command Types Validation', () => {
-    it('should validate brew install commands', () => {
-      const brewCommands = [];
+    it('should validate verification simulator commands', () => {
+      const simulatorCommands = [];
       
       generalEnvironmentVerifications.categories.forEach(categoryWrapper => {
         const category = categoryWrapper.category;
         if (category && category.verifications) {
           category.verifications.forEach(verification => {
-            if (verification.fixCommand && verification.fixCommand.includes('brew install')) {
-              brewCommands.push(verification);
+            if (verification.fixCommand && verification.fixCommand.includes('verification-simulator.js')) {
+              simulatorCommands.push(verification);
             }
           });
         }
       });
 
-      expect(brewCommands.length).toBeGreaterThan(0);
+      expect(simulatorCommands.length).toBeGreaterThan(0);
       
-      // Test each brew command individually to avoid multiple elements issue
-      brewCommands.forEach((verification, index) => {
+      // Test each simulator command individually to avoid multiple elements issue
+      simulatorCommands.forEach((verification, index) => {
         const { unmount } = render(
           <VerificationIndicator
-            key={`brew-${index}`}
+            key={`simulator-${index}`}
             verification={verification}
             status={STATUS.INVALID}
             onFixCommand={jest.fn()}
@@ -313,7 +313,7 @@ describe('Fix Command Feature Tests', () => {
 
         const fixButton = screen.getByText('Fix');
         expect(fixButton).toBeInTheDocument();
-        expect(verification.fixCommand).toMatch(/^brew install/);
+        expect(verification.fixCommand).toMatch(/verification-simulator\.js fix/);
         
         unmount(); // Clean up to avoid multiple elements
       });
@@ -391,16 +391,16 @@ describe('Fix Command Feature Tests', () => {
       });
     });
 
-    it('should validate download commands', () => {
-      const downloadCommands = [];
+    it('should validate all verification simulator fix commands', () => {
+      const allSimulatorCommands = [];
       
-      // Check both general and configuration sidebar for download commands
+      // Check both general and configuration sidebar for verification simulator commands
       generalEnvironmentVerifications.categories.forEach(categoryWrapper => {
         const category = categoryWrapper.category;
         if (category && category.verifications) {
           category.verifications.forEach(verification => {
-            if (verification.fixCommand && (verification.fixCommand.includes('curl') || verification.fixCommand.includes('hdiutil'))) {
-              downloadCommands.push(verification);
+            if (verification.fixCommand && verification.fixCommand.includes('verification-simulator.js')) {
+              allSimulatorCommands.push(verification);
             }
           });
         }
@@ -409,20 +409,20 @@ describe('Fix Command Feature Tests', () => {
       configurationSidebarAbout.forEach(section => {
         if (section.verifications) {
           section.verifications.forEach(verification => {
-            if (verification.fixCommand && (verification.fixCommand.includes('curl') || verification.fixCommand.includes('hdiutil'))) {
-              downloadCommands.push(verification);
+            if (verification.fixCommand && verification.fixCommand.includes('verification-simulator.js')) {
+              allSimulatorCommands.push(verification);
             }
           });
         }
       });
 
-      expect(downloadCommands.length).toBeGreaterThan(0);
+      expect(allSimulatorCommands.length).toBeGreaterThan(0);
       
-      downloadCommands.forEach((verification, index) => {
+      allSimulatorCommands.forEach((verification, index) => {
         const mockOnFixCommand = jest.fn();
         const { unmount } = render(
           <VerificationIndicator
-            key={`download-${index}`}
+            key={`all-simulator-${index}`}
             verification={verification}
             status={STATUS.INVALID}
             onFixCommand={mockOnFixCommand}
@@ -433,6 +433,7 @@ describe('Fix Command Feature Tests', () => {
         fireEvent.click(fixButton);
         
         expect(mockOnFixCommand).toHaveBeenCalledWith(verification);
+        expect(verification.fixCommand).toContain('verification-simulator.js fix');
         
         unmount(); // Clean up to avoid multiple elements
       });

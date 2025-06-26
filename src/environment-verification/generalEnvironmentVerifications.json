@@ -25,40 +25,40 @@
           {
             "id": "cloudGcloudCLI",
             "title": "gcloud CLI",
-            "command": "gcloud --version",
+            "command": "node ./ProjectName-Manager/scripts/verification-simulator.js verify cloudGcloudCLI",
             "checkType": "outputContains",
             "expectedValue": "Google Cloud SDK",
             "outputStream": "stdout",
-            "fixCommand": "brew install --cask google-cloud-sdk",
+            "fixCommand": "node ./ProjectName-Manager/scripts/verification-simulator.js fix cloudGcloudCLI",
             "fixPriority": 3
           },
           {
             "id": "fileExistsTest",
             "title": "Check if /tmp/testfile exists",
-            "command": "[ -f /tmp/testfile ] && echo exists || echo missing",
+            "command": "node ./ProjectName-Manager/scripts/verification-simulator.js verify fileExistsTest",
             "checkType": "outputContains",
             "expectedValue": "exists",
             "outputStream": "stdout",
-            "fixCommand": "touch /tmp/testfile",
+            "fixCommand": "node ./ProjectName-Manager/scripts/verification-simulator.js fix fileExistsTest",
             "fixPriority": 3,
             "testVerification": true
           },
           {
             "id": "cloudKubectlCLI",
             "title": "kubectl CLI",
-            "command": "kubectl version --client",
+            "command": "node ./ProjectName-Manager/scripts/verification-simulator.js verify cloudKubectlCLI",
             "checkType": "outputContains",
             "expectedValue": "Client Version:",
             "outputStream": "stdout",
-            "fixCommand": "brew install kubectl",
+            "fixCommand": "node ./ProjectName-Manager/scripts/verification-simulator.js fix cloudKubectlCLI",
             "fixPriority": 3
           },
           {
             "id": "cloudKubectx",
             "title": "kubectx",
-            "command": "kubectx --help",
+            "command": "node ./ProjectName-Manager/scripts/verification-simulator.js verify cloudKubectx",
             "checkType": "commandSuccess",
-            "fixCommand": "brew install kubectx",
+            "fixCommand": "node ./ProjectName-Manager/scripts/verification-simulator.js fix cloudKubectx",
             "fixPriority": 3
           }
         ]
@@ -71,32 +71,38 @@
           {
             "id": "dockerRunning",
             "title": "Docker Desktop running",
-            "command": "docker version --format '{{.Server.Version}}'",
-            "checkType": "commandSuccess"
+            "command": "node ./ProjectName-Manager/scripts/verification-simulator.js verify dockerRunning",
+            "checkType": "commandSuccess",
+            "fixCommand": "node ./ProjectName-Manager/scripts/verification-simulator.js fix dockerRunning",
+            "fixPriority": 1
           },
           {
             "id": "dockerDaemon",
             "title": "Docker daemon accessible",
-            "command": "docker ps",
-            "checkType": "commandSuccess"
+            "command": "node ./ProjectName-Manager/scripts/verification-simulator.js verify dockerDaemon",
+            "checkType": "commandSuccess",
+            "fixCommand": "node ./ProjectName-Manager/scripts/verification-simulator.js fix dockerDaemon",
+            "fixPriority": 1
           },
           {
             "id": "rancherDesktop",
             "title": "Rancher Desktop (if installed)",
-            "command": "rdctl version",
+            "command": "node ./ProjectName-Manager/scripts/verification-simulator.js verify rancherDesktop",
             "checkType": "outputContains",
             "expectedValue": "",
             "outputStream": "stdout",
-            "fixCommand": "brew install --cask rancher",
+            "fixCommand": "node ./ProjectName-Manager/scripts/verification-simulator.js fix rancherDesktop",
             "fixPriority": 4
           },
           {
             "id": "containerRuntime",
             "title": "Container runtime available",
-            "command": "docker info --format '{{.ServerVersion}}'",
+            "command": "node ./ProjectName-Manager/scripts/verification-simulator.js verify containerRuntime",
             "checkType": "outputContains",
             "expectedValue": "",
-            "outputStream": "stdout"
+            "outputStream": "stdout",
+            "fixCommand": "node ./ProjectName-Manager/scripts/verification-simulator.js fix containerRuntime",
+            "fixPriority": 1
           }
         ]
       }
@@ -108,20 +114,21 @@
           {
             "id": "nodeJs",
             "title": "Node.js 15.x or 16.x",
-            "command": "nvm ls",
+            "command": "node ./ProjectName-Manager/scripts/verification-simulator.js verify nodeJs",
             "checkType": "outputContains",
             "expectedValue": ["v15.", "v16."],
             "versionId": "nodeVersion",
             "outputStream": "stdout",
-            "fixCommand": "nvm install 16",
+            "fixCommand": "node ./ProjectName-Manager/scripts/verification-simulator.js fix nodeJs",
             "fixPriority": 2
           },
           {
             "id": "nvmInstalled",
             "title": "Nvm installed",
-            "command": "nvm --version",
+            "command": "node ./ProjectName-Manager/scripts/verification-simulator.js verify nvmInstalled",
             "checkType": "commandSuccess",
-            "fixCommand": "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash"
+            "fixCommand": "node ./ProjectName-Manager/scripts/verification-simulator.js fix nvmInstalled",
+            "fixPriority": 1
           }
         ]
       }
@@ -133,10 +140,11 @@
           {
             "id": "goInstalled",
             "title": "Go installed",
-            "command": "go version",
+            "command": "node ./ProjectName-Manager/scripts/verification-simulator.js verify goInstalled",
             "checkType": "outputContains",
             "expectedValue": "go version go1",
-            "fixCommand": "brew install go"
+            "fixCommand": "node ./ProjectName-Manager/scripts/verification-simulator.js fix goInstalled",
+            "fixPriority": 2
           },
           {
             "id": "goLocation",
@@ -156,9 +164,11 @@
           {
             "id": "goPathIncludes",
             "title": "PATH includes: $GOPATH/bin",
-            "command": "echo $PATH",
+            "command": "node ./ProjectName-Manager/scripts/verification-simulator.js verify goPathIncludes",
             "checkType": "outputContains",
-            "expectedValue": "$GOPATH/bin"
+            "expectedValue": "$GOPATH/bin",
+            "fixCommand": "node ./ProjectName-Manager/scripts/verification-simulator.js fix goPathIncludes",
+            "fixPriority": 2
           }
         ]
       }
@@ -170,11 +180,11 @@
           {
             "id": "javaVersion",
             "title": "Java 17 installed",
-            "command": "java -version",
+            "command": "node ./ProjectName-Manager/scripts/verification-simulator.js verify javaVersion",
             "checkType": "outputContains",
             "expectedValue": "openjdk version \"17.",
             "outputStream": "stderr",
-            "fixCommand": "brew install openjdk@17",
+            "fixCommand": "node ./ProjectName-Manager/scripts/verification-simulator.js fix javaVersion",
             "fixPriority": 2
           },
           {
@@ -186,9 +196,9 @@
           {
             "id": "homebrewInstalled",
             "title": "Homebrew installed",
-            "command": "brew --version",
+            "command": "node ./ProjectName-Manager/scripts/verification-simulator.js verify homebrewInstalled",
             "checkType": "commandSuccess",
-            "fixCommand": "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"",
+            "fixCommand": "node ./ProjectName-Manager/scripts/verification-simulator.js fix homebrewInstalled",
             "fixPriority": 1
           }
         ]

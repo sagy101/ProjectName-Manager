@@ -55,9 +55,9 @@
       {
         "id": "ChromiumInstalled",
         "title": "Chromium installed",
-        "command": "chromium --version",
+        "command": "node ./ProjectName-Manager/scripts/verification-simulator.js verify ChromiumInstalled",
         "checkType": "commandSuccess",
-        "fixCommand": "cd ./ProjectName-Manager/src/project-config/config/scripts && chmod +x install-ungoogled.sh && install-ungoogled.sh",
+        "fixCommand": "node ./ProjectName-Manager/scripts/verification-simulator.js fix ChromiumInstalled",
         "fixPriority": 3
       }
     ]
