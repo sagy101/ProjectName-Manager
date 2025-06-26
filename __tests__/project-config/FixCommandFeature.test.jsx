@@ -91,13 +91,19 @@ describe('Fix Command Feature Tests', () => {
       expect(verificationsWithFixCommands.length).toBeGreaterThan(0);
       
       const expectedFixCommands = [
-        'mirrorDirExists',
+        'projectADirExists',
+        'projectAGradlewExists',
+        'projectBDirExists', 
+        'agentDirExists',
         'ChromiumInstalled',
-        'threatIntelligenceDirExists',
+        'projectCDirExists',
+        'projectCSubprojectAGradlewExists',
+        'projectCSubprojectBGradlewExists',
         'infraDirExists',
-        'activityLoggerDirExists',
-        'ruleEngineDirExists',
-        'testAnalyticsDirExists'
+        'projectDDirExists',
+        'projectDGradlewExists',
+        'projectEDirExists',
+        'projectFDirExists'
       ];
 
       expectedFixCommands.forEach(expectedId => {
@@ -313,26 +319,26 @@ describe('Fix Command Feature Tests', () => {
       });
     });
 
-    it('should validate git clone commands', () => {
-      const gitCloneCommands = [];
+    it('should validate directory creation commands', () => {
+      const directoryCreationCommands = [];
       
       configurationSidebarAbout.forEach(section => {
         if (section.verifications) {
           section.verifications.forEach(verification => {
-            if (verification.fixCommand && verification.fixCommand.includes('git clone')) {
-              gitCloneCommands.push(verification);
+            if (verification.fixCommand && (verification.fixCommand.includes('mkdir -p') || verification.fixCommand.includes('git clone'))) {
+              directoryCreationCommands.push(verification);
             }
           });
         }
       });
 
-      expect(gitCloneCommands.length).toBeGreaterThan(0);
+      expect(directoryCreationCommands.length).toBeGreaterThan(0);
       
-      gitCloneCommands.forEach((verification, index) => {
+      directoryCreationCommands.forEach((verification, index) => {
         const mockOnFixCommand = jest.fn();
         const { unmount } = render(
           <VerificationIndicator
-            key={`git-clone-${index}`}
+            key={`dir-creation-${index}`}
             verification={verification}
             status={STATUS.INVALID}
             onFixCommand={mockOnFixCommand}
@@ -343,7 +349,7 @@ describe('Fix Command Feature Tests', () => {
         fireEvent.click(fixButton);
         
         expect(mockOnFixCommand).toHaveBeenCalledWith(verification);
-        expect(verification.fixCommand).toMatch(/^git clone/);
+        expect(verification.fixCommand).toMatch(/^(mkdir -p|git clone)/);
         
         unmount(); // Clean up to avoid multiple elements
       });

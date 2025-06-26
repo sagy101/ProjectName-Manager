@@ -107,13 +107,19 @@ describe('Fix Command Backend Tests', () => {
       
       // Updated to match all actual fix commands in configuration sidebar
       const expectedFixCommands = [
-        'mirrorDirExists',
+        'projectADirExists',
+        'projectAGradlewExists',
+        'projectBDirExists',
+        'agentDirExists', 
         'ChromiumInstalled',
-        'threatIntelligenceDirExists',
+        'projectCDirExists',
+        'projectCSubprojectAGradlewExists',
+        'projectCSubprojectBGradlewExists',
         'infraDirExists',
-        'activityLoggerDirExists',
-        'ruleEngineDirExists',
-        'testAnalyticsDirExists'
+        'projectDDirExists',
+        'projectDGradlewExists',
+        'projectEDirExists',
+        'projectFDirExists'
       ];
 
       expectedFixCommands.forEach(expectedId => {
@@ -191,33 +197,36 @@ describe('Fix Command Backend Tests', () => {
       });
     });
 
-    it('should validate git clone commands', () => {
-      const gitCloneCommands = [];
+    it('should validate directory creation commands', () => {
+      const directoryCreationCommands = [];
       
       configurationSidebarAbout.forEach(section => {
         if (section.verifications) {
           section.verifications.forEach(verification => {
-            if (verification.fixCommand && verification.fixCommand.includes('git clone')) {
-              gitCloneCommands.push(verification);
+            if (verification.fixCommand && (verification.fixCommand.includes('mkdir -p') || verification.fixCommand.includes('git clone'))) {
+              directoryCreationCommands.push(verification);
             }
           });
         }
       });
 
-      expect(gitCloneCommands.length).toBeGreaterThan(0);
+      expect(directoryCreationCommands.length).toBeGreaterThan(0);
       
-      gitCloneCommands.forEach(verification => {
-        expect(verification.fixCommand).toMatch(/^git clone/);
+      directoryCreationCommands.forEach(verification => {
+        // Should be either mkdir or git clone commands
+        expect(verification.fixCommand).toMatch(/^(mkdir -p|git clone)/);
         
-        // Should be cloning from trusted GitHub repositories
-        expect(verification.fixCommand).toContain('github.com/PFPT-Isolation');
+        // If it's a git clone, should be from trusted repositories
+        if (verification.fixCommand.includes('git clone')) {
+          expect(verification.fixCommand).toContain('github.com/PFPT-Isolation');
+        }
         
-        // Should be cloning to relative paths
+        // Should be targeting relative paths
         expect(verification.fixCommand).toMatch(/\.\//);
       });
     });
 
-    it('should validate directory creation commands', () => {
+    it('should validate mkdir commands', () => {
       const mkdirCommands = [];
       
       configurationSidebarAbout.forEach(section => {
