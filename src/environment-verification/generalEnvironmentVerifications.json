@@ -4,7 +4,7 @@
     "dropdownSelectors": [
       {
         "id": "gcloudProject",
-        "command": "gcloud projects list --format=\"value(projectId)\"",
+        "command": "node ./ProjectName-Manager/scripts/simulators/dropdown-simulator.js gcloud-projects",
         "parseResponse": "lines",
         "placeholder": "Select project...",
         "loadingText": "Loading projects...",

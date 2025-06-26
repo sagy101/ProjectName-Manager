@@ -81,7 +81,7 @@
         "dropdownSelectors": [
           {
             "id": "kubectlContext",
-            "command": "kubectl config get-contexts -o name",
+            "command": "node ./ProjectName-Manager/scripts/simulators/dropdown-simulator.js kubectl-contexts",
             "parseResponse": "lines",
             "placeholder": "Select context...",
             "loadingText": "Loading contexts...",
@@ -107,7 +107,7 @@
               "dropdownSelectors": [
                 {
                   "id": "urlIntelPod",
-                  "command": "kubectl --context ${kubectlContext} get pods -l app=url-intelligence --no-headers -o custom-columns=\":metadata.name\"",
+                  "command": "node ./ProjectName-Manager/scripts/simulators/dropdown-simulator.js kubectl-pods-service-c-sub",
                   "parseResponse": "lines",
                   "placeholder": "Select URL Intel pod (for Forwarding)...",
                   "loadingText": "Loading URL Intel pods...",
@@ -130,7 +130,7 @@
               "dropdownSelectors": [
                 {
                   "id": "threatIntelPod",
-                  "command": "kubectl --context ${kubectlContext} get pods -l app=threat-intelligence --no-headers -o custom-columns=\":metadata.name\"",
+                  "command": "node ./ProjectName-Manager/scripts/simulators/dropdown-simulator.js kubectl-pods-threat-intelligence-sub",
                   "parseResponse": "lines",
                   "placeholder": "Select Threat Intel pod...",
                   "loadingText": "Loading Threat Intel pods...",
