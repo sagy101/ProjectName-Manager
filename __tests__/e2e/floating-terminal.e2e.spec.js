@@ -72,7 +72,7 @@ const mockStatuses = {
     nvmInstalled: 'invalid'
   },
   configuration: {
-    mirrorDirExists: 'invalid',
+    projectADirExists: 'invalid',
     ChromiumInstalled: 'invalid'
   }
 };
@@ -299,7 +299,7 @@ test.describe('Floating Terminal Management E2E Tests', () => {
     await expect(terminal).toBeVisible();
     
     // Test state persistence during navigation using helper
-    const sections = ['Mirror + MariaDB', 'Service B'];
+    const sections = ['Service A', 'Service B'];
     await testTerminalStatePersistence(window, terminal, sections);
     
     // Test sidebar interactions using helper

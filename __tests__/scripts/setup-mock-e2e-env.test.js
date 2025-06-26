@@ -87,13 +87,13 @@ describe('setup-mock-e2e-env.sh', () => {
 
       // Check that all expected directories exist
       const expectedDirs = [
-        'weblifemirror/agent',
-        'threatintelligence/threat-intelligence',
-        'threatintelligence/url-intelligence',
-        'infrastructure',
-        'activity-logger',
-        'rule-engine',
-        'gopm'
+        'project-a/agent',
+        'project-c/subproject-a', 
+        'project-c/subproject-b',
+        'project-infrastructure',
+        'project-d',
+        'project-e',
+        'project-b'
       ];
 
       expectedDirs.forEach(dir => {
@@ -103,15 +103,15 @@ describe('setup-mock-e2e-env.sh', () => {
       });
     });
 
-    test('does not create service-f directory', () => {
+    test('does not create project-f directory', () => {
       // Run the script
       execSync(`cd "${repoRoot}" && bash "${scriptPath}"`, { 
         stdio: 'pipe',
         env: { ...process.env, HOME: process.env.HOME }
       });
 
-      const serviceFPath = path.join(parentDir, 'test-analytics');
-      expect(fs.existsSync(serviceFPath)).toBe(false);
+      const projectFPath = path.join(parentDir, 'project-f');
+      expect(fs.existsSync(projectFPath)).toBe(false);
     });
 
     test('creates Go directories', () => {
@@ -122,10 +122,10 @@ describe('setup-mock-e2e-env.sh', () => {
       });
 
       const goBinPath = path.join(process.env.HOME, 'go', 'bin');
-      const serviceBPath = path.join(repoRoot, 'gopm');
+      const projectBPath = path.join(repoRoot, 'project-b');
       
       expect(fs.existsSync(goBinPath)).toBe(true);
-      expect(fs.existsSync(serviceBPath)).toBe(true);
+      expect(fs.existsSync(projectBPath)).toBe(true);
     });
   });
 
@@ -138,10 +138,10 @@ describe('setup-mock-e2e-env.sh', () => {
       });
 
       const gradlewFiles = [
-        'weblifemirror/gradlew',
-        'threatintelligence/threat-intelligence/gradlew',
-        'threatintelligence/url-intelligence/gradlew',
-        'activity-logger/gradlew'
+        'project-a/gradlew',
+        'project-c/subproject-a/gradlew',
+        'project-c/subproject-b/gradlew',
+        'project-d/gradlew'
       ];
 
       gradlewFiles.forEach(gradlewPath => {
@@ -298,30 +298,30 @@ describe('setup-mock-e2e-env.sh', () => {
   });
 
   describe('Environment Setup', () => {
-      test('sets up Service B HOME correctly', () => {
-    // Test with default Service B HOME
+      test('sets up Project B HOME correctly', () => {
+    // Test with default Project B HOME
       execSync(`cd "${repoRoot}" && bash "${scriptPath}"`, { 
         stdio: 'pipe',
         env: { ...process.env, HOME: process.env.HOME }
       });
 
-          const expectedServiceBPath = path.join(repoRoot, 'gopm');
-    expect(fs.existsSync(expectedServiceBPath)).toBe(true);
+          const expectedProjectBPath = path.join(repoRoot, 'project-b');
+    expect(fs.existsSync(expectedProjectBPath)).toBe(true);
     });
 
-      test('respects existing Service B HOME environment variable', () => {
-    const customServiceBHome = path.join(testDir, 'custom-gopm');
+      test('respects existing Project B HOME environment variable', () => {
+    const customProjectBHome = path.join(testDir, 'custom-project-b');
       
       execSync(`cd "${repoRoot}" && bash "${scriptPath}"`, { 
         stdio: 'pipe',
         env: { 
           ...process.env, 
           HOME: process.env.HOME,
-          GOPM_HOME: customServiceBHome
+          GOPM_HOME: customProjectBHome
         }
       });
 
-      expect(fs.existsSync(customServiceBHome)).toBe(true);
+      expect(fs.existsSync(customProjectBHome)).toBe(true);
     });
 
     test('handles GITHUB_PATH environment variable', () => {

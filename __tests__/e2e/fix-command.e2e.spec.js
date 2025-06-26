@@ -38,9 +38,9 @@ const mockStatuses = {
     nvmInstalled: 'valid'
   },
   configuration: {
-    mirrorDirExists: 'invalid',
+    projectADirExists: 'invalid',
     ChromiumInstalled: 'invalid',
-    threatIntelligenceDirExists: 'valid'
+    projectCDirExists: 'valid'
   }
 };
 
