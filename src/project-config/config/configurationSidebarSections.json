@@ -6,11 +6,7 @@
     "loadingScreenTimeoutSeconds": 20,
     "sidebarDefaultExpanded": false,
     "terminalScrollback": 1000,
-<<<<<<< fix/verification-simulator-session-persistence
     "maxFloatingTerminals": 30,
-=======
-    "maxFloatingTerminals": 8,
->>>>>>> Project-Isolation
     "terminalFontSize": 14,
     "configurationDefaultExpanded": true
   },
