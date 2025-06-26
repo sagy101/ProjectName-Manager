@@ -29,10 +29,15 @@ This project is also an experiment in "vibe coding" mixed with good old coding. 
 
 ## 🚀 Quick Start
 
+**Important**: Clone your organization's specific project branch, not the main branch.
+
 ```bash
-# Clone the repository
-git clone https://github.com/sagy101/ProjectName-Manager.git
+# Clone your project's specific branch (replace YourProject with your actual project name)
+git clone -b Project-YourProject https://github.com/sagy101/ProjectName-Manager.git
 cd ProjectName-Manager
+
+# If you don't know your project branch name, check available branches:
+# git branch -r
 
 # Install dependencies
 npm install

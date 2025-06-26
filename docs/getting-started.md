@@ -38,10 +38,25 @@ nvm use 22.16.0
 
 ### 1. Clone the Repository
 
+**Important**: Always clone your organization's specific project branch, not the main branch. Each organization has its own customized configuration.
+
 ```bash
-git clone https://github.com/sagy101/ProjectName-Manager.git
+# Clone your project's specific branch (replace YourProject with your actual project name)
+git clone -b Project-YourProject https://github.com/sagy101/ProjectName-Manager.git
 cd ProjectName-Manager
+
+# If you're unsure of your project branch name, you can:
+# 1. Check with your team lead or project maintainer
+# 2. List all available project branches:
+git branch -r | grep "Project-"
 ```
+
+**Project Branch Examples:**
+- `Project-Isolation` - For Isolation Project team
+- `Project-Acme` - For Acme Corporation
+- `Project-TechCorp` - For TechCorp organization
+
+If you don't have a project branch yet, see the [Contributing Guide](CONTRIBUTIONS.md#getting-started-for-new-projects) for information on setting up a new project branch.
 
 ### 2. Install Dependencies
 
