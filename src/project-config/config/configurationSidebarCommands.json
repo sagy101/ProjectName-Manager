@@ -108,7 +108,7 @@
       "deploymentType": "process"
     },
     "command": {
-      "base": "cd ./gopm && make run-local",
+      "base": "cd ../go/src/github.com/weblifeio/gopm && make run-local",
       "prefix": "nvm use ${nodeVersion} && ",
       "tabTitle": "gopm (Process)",
       "refreshConfig": {
@@ -127,7 +127,7 @@
       "deploymentType": "container"
     },
     "command": {
-      "base": "cd ./gopm && make run-local-docker",
+      "base": "cd ../go/src/github.com/weblifeio/gopm && make run-local-docker",
       "associatedContainers": ["serverbrowseragent"],
       "prefix": "nvm use ${nodeVersion} && ",
       "tabTitle": "gopm (Container)"
