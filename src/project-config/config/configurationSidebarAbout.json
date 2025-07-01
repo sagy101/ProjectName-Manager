@@ -29,14 +29,16 @@
   },
   {
     "sectionId": "gopm",
-    "directoryPath": "weblifemirror",
+    "directoryPath": "../go/src/github.com/weblifeio/gopm",
     "description": "Manages Go agent and browser automation.",
     "verifications": [
       {
         "id": "gopmDirExists",
-        "title": "./gopm directory exists",
+        "title": "gopm directory exists",
         "checkType": "pathExists",
-        "pathValue": "./gopm",
+        "pathValue": "../go/src/github.com/weblifeio/gopm",
+        "fixCommand": "git clone https://github.com/PFPT-Isolation/gopm.git ../go/src/github.com/weblifeio/gopm",
+        "fixPriority": 1,
         "pathType": "directory"
       },
       {
