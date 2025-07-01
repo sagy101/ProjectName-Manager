@@ -91,6 +91,48 @@ async function execCommand(commandString, options = {}) {
   });
 };
 
+// Helper function to resolve paths and check existence
+async function resolvePathAndCheckExists(pathValue, pathType, projectRoot) {
+  let resolvedPath;
+  let pathStatus;
+  
+  // First, always resolve environment variables regardless of path type
+  const envResolvedPath = resolveEnvVars(pathValue);
+  
+  if (envResolvedPath.startsWith('./')) {
+    // Handle relative paths starting with ./
+    const relativePath = envResolvedPath.slice(2);
+    resolvedPath = path.join(projectRoot, relativePath);
+    pathStatus = await checkPathExists(projectRoot, relativePath, pathType);
+  } else if (envResolvedPath.startsWith('../')) {
+    // Handle relative paths starting with ../ (including multiple ../../../)
+    resolvedPath = path.resolve(projectRoot, envResolvedPath);
+    try {
+      const stats = await fs.stat(resolvedPath);
+      if (pathType === 'directory' && stats.isDirectory()) pathStatus = 'valid';
+      else if (pathType === 'file' && stats.isFile()) pathStatus = 'valid';
+      else if (!pathType && (stats.isFile() || stats.isDirectory())) pathStatus = 'valid';
+      else pathStatus = 'invalid';
+    } catch (e) {
+      pathStatus = 'invalid';
+    }
+  } else {
+    // Handle absolute paths (environment variables already resolved above)
+    resolvedPath = envResolvedPath;
+    try {
+      const stats = await fs.stat(resolvedPath);
+      if (pathType === 'directory' && stats.isDirectory()) pathStatus = 'valid';
+      else if (pathType === 'file' && stats.isFile()) pathStatus = 'valid';
+      else if (!pathType && (stats.isFile() || stats.isDirectory())) pathStatus = 'valid';
+      else pathStatus = 'invalid';
+    } catch (e) {
+      pathStatus = 'invalid';
+    }
+  }
+  
+  return { resolvedPath, pathStatus };
+}
+
 // Function to check environment requirements
 async function verifyEnvironment(mainWindow = null) {
   if (isVerifyingEnvironment) {
@@ -392,9 +434,7 @@ async function verifyEnvironment(mainWindow = null) {
       try {
         switch (checkType) {
           case 'pathExists':
-            const resolvedPath = pathValue.startsWith('./') 
-              ? path.join(projectRoot, pathValue.slice(2))
-              : resolveEnvVars(pathValue);
+            const { resolvedPath, pathStatus } = await resolvePathAndCheckExists(pathValue, pathType, projectRoot);
             
             // Add detailed logging for path verification
             logger.debug(`[PATH VERIFICATION] ${id}:`);
@@ -403,9 +443,8 @@ async function verifyEnvironment(mainWindow = null) {
             logger.debug(`  - resolvedPath: ${resolvedPath}`);
             logger.debug(`  - process.cwd(): ${process.cwd()}`);
             logger.debug(`  - __dirname: ${__dirname}`);
-            
-            const pathStatus = await checkPathExists(projectRoot, pathValue.slice(2), pathType);
             logger.debug(`  - result: ${pathStatus}`);
+            
             result = pathStatus;
             break;
             
@@ -726,7 +765,7 @@ async function rerunSingleVerification(verificationId, mainWindow = null) {
           
           switch (checkType) {
             case 'pathExists':
-              const pathStatus = await checkPathExists(projectRoot, pathValue.slice(2), pathType);
+              const { pathStatus } = await resolvePathAndCheckExists(pathValue, pathType, projectRoot);
               result = pathStatus;
               break;
               
@@ -823,5 +862,6 @@ module.exports = {
   getEnvironmentVerification,
   getEnvironmentExportData,
   execCommand,
-  rerunSingleVerification
+  rerunSingleVerification,
+  resolvePathAndCheckExists // Export for testing
 };
